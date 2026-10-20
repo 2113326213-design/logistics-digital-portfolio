@@ -1,0 +1,88 @@
+{
+  "version": "v9.1",
+  "appCount": 76,
+  "capabilityToReview": 38,
+  "processToReview": 46,
+  "level2": {
+    "directFilled": 54,
+    "directValid": 53,
+    "confirmedViaLevel3": 15,
+    "valid": 68,
+    "directMissing": 22,
+    "uncovered": 7,
+    "invalid": 1,
+    "toReview": 8
+  },
+  "agr": {
+    "issues": [],
+    "coverage": [
+      {
+        "raw": "B.06.5.1 Inbound Management and Receiving",
+        "code": "B.06.5.1",
+        "parent": "B.06.5"
+      }
+    ]
+  },
+  "applicationsCoveredViaLevel3": [
+    {
+      "id": "830c8445-c34f-463c-bc08-d494e5e18dc9",
+      "name": "AGR w/ Camera"
+    },
+    {
+      "id": "0bd00479-d233-43f3-84b2-478e7ae90dcb",
+      "name": "Auto capacity simulation"
+    },
+    {
+      "id": "b97561de-87df-46ec-a86c-477fe0e431f9",
+      "name": "AUTO-RACK"
+    },
+    {
+      "id": "10ddca54-501c-4f09-9663-e5970e365c7b",
+      "name": "Control Tower"
+    },
+    {
+      "id": "4035f956-1dc8-4468-94db-0ffe603e29a2",
+      "name": "D-sample tracking system"
+    },
+    {
+      "id": "530143c3-4d5b-4afc-a38b-6b250aeb49dd",
+      "name": "Dolly call off program"
+    },
+    {
+      "id": "9acec7d1-a4b3-4cd0-b6b2-b49cc115dcab",
+      "name": "iTracker"
+    },
+    {
+      "id": "56de5b25-adb2-46cf-99b4-9a8379029e2f",
+      "name": "Physical Logistics Management System"
+    },
+    {
+      "id": "1dd68a89-660c-45ad-9b42-f3856fce0dd7",
+      "name": "RBCD AUTO BLUESHEET"
+    },
+    {
+      "id": "f5a1644f-ecc5-46ca-aca4-0cad0c844bb9",
+      "name": "RBCD LOG Xone"
+    },
+    {
+      "id": "223de1a7-83f4-4d57-9a48-ea6d7a7564ee",
+      "name": "RBCD LOP Bottleneck Management Toolbox"
+    },
+    {
+      "id": "5bde649c-2738-49fd-a00c-ffda8d67382a",
+      "name": "RBCD LOP Transportation Dashboard"
+    },
+    {
+      "id": "e94c1657-4165-4b0f-a6be-399dcd8ed9bc",
+      "name": "RBCD WI management system"
+    },
+    {
+      "id": "6030f219-4b53-4513-a861-f12d5824ee15",
+      "name": "ShzP_DAVIS"
+    },
+    {
+      "id": "8794cd2e-71f8-43c8-b734-8fc56ec5ed89",
+      "name": "VMCN_iWPC_AKL_Szh5"
+    }
+  ]
+}

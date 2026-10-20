@@ -103,16 +103,16 @@ test('Only applied verified mappings repair the quality numerator; notes alone d
  data.corrections=[createCorrection(data,{appId:'B',dimension:'cap',raw,targetId:'B.06.1.1',reviewer:'Test',reason:'Verified source'})];
  const fixed=maintenanceReport(buildModel(data),{},'cap');assert.equal(fixed.quality.length,3);assert.equal(fixed.levels[2].valid.length,2);assert.equal(data.apps[1]['Business Capabilities'],raw);
 });
-test('L2 quality drill includes invalid records and missing L2 records in its denominator',()=>{
+test('L2 quality drill includes real gaps but accepts a confirmed L3 parent in its denominator',()=>{
  const data=fixture();data.apps=[
   app('A','B.06.8 Unknown','','PS'),app('B','B.06.9 Unknown','','PS'),
   app('C','B.06.1.1 Detail','','PS'),app('D','','','PS')
  ];
  const report=maintenanceReport(buildModel(data),{division:'PS',entity:'Plant A'},'cap'),l2=report.levels.find(l=>l.level===2);
- assert.deepEqual([report.apps.length,l2.valid.length,l2.invalid.length,l2.missing.length],[4,0,2,2]);
- assert.deepEqual(applicationsNotPassingLevelQuality(report,l2).map(a=>a.id),['A','B','C','D']);
+ assert.deepEqual([report.apps.length,l2.valid.length,l2.invalid.length,l2.missing.length,l2.uncovered.length],[4,1,2,2,1]);
+ assert.deepEqual(applicationsNotPassingLevelQuality(report,l2).map(a=>a.id),['A','B','D']);
  assert.match(maintenanceGapReasons(report,report,report.apps[0],[2])[0],/L2 · Unrecognized registration/);
- assert.deepEqual(maintenanceGapReasons(report,report,report.apps[2],[2]),['L2 · No explicit registration']);
+ assert.deepEqual(maintenanceGapReasons(report,report,report.apps[2],[2]),[]);
 });
 test('Main Business Capability supplies L1 once when it repeats in the capability list',()=>{
  const data=fixture();data.apps[1]['Main Business Capability']='B.06 Logistics';
@@ -128,8 +128,9 @@ test('An empty-field capability mapping remains counted alongside a recorded mai
  assert.deepEqual(model.apps.find(a=>a.id==='B').cap,['B.06.1.1']);
  assert(report.levels.find(l=>l.level===1).valid.some(a=>a.id==='B'));
  assert(report.levels.find(l=>l.level===3).valid.some(a=>a.id==='B'));
- // Only the level without any record stays open: the main capability gives L1, the mapping gives L3.
- assert.deepEqual(report.issues.get('B').map(i=>i.label),['Level 2 missing']);
+ // The main capability gives L1; the confirmed L3 mapping also covers its standard L2 parent.
+ assert.deepEqual(report.issues.get('B').map(i=>i.label),[]);
+ assert(report.levels.find(l=>l.level===2).inferred.some(a=>a.id==='B'));
  assert.equal(data.apps[1]['Business Capabilities'],'','the mapping must not overwrite raw data');
 });
 test('RBCW and portfolio: the Level 3 gap stays Level 3 only; To review covers every level',()=>{
@@ -141,12 +142,12 @@ test('RBCW and portfolio: the Level 3 gap stays Level 3 only; To review covers e
  // (HC.06.01.01, HC.06.01.05) still needs review, as with the legacy catalogue.
  const old=JSON.parse(readFileSync(new URL('./capability-rows-2026-10-15.json',import.meta.url))),legacy=maintenanceReport(buildModel({...data,capabilityRows:old.capabilityRows,taxonomySource:old.taxonomySource}),{},'cap');
  assert.equal(l3MaintenanceMetrics(legacy).notPassing.length,38);
- // To review (2026-10-20) adds applications whose open issues are at other levels: 63 with the legacy catalogue.
- assert.equal(legacy.needsReview.length,63);
+ // Confirmed L3 coverage removes 15 L2-only gaps from the previous 63 legacy-catalogue reviews.
+ assert.equal(legacy.needsReview.length,48);
  assert(l3MaintenanceMetrics(legacy).notPassing.every(app=>legacy.needsReview.includes(app)),'every Level 3 gap is also To review');
  assert.deepEqual([...model.caps.values()].filter(node=>node.reference&&node.id.startsWith('HC.')).map(node=>node.id),[],'no HC entry in the capability catalogue');
  assert.equal(l3MaintenanceMetrics(all).notPassing.length,37);
- assert.equal(all.needsReview.length,53);
+ assert.equal(all.needsReview.length,38);
  assert.equal(all.levels.find(level=>level.level===3).valid.length,39);
  const names=report=>new Set(l3MaintenanceMetrics(report).notPassing.map(app=>app.Name));
  assert.deepEqual([...names(legacy)].filter(name=>!names(all).has(name)).sort(),['RBCC Supplier Logistics Management Platform','RBHP_LOG SupplierManager']);

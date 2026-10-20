@@ -1,0 +1,54 @@
+{
+  "status": "PASS",
+  "differenceCount": 0,
+  "firstDifferences": [],
+  "appCount": 76,
+  "pairCount": 2850,
+  "directionalResults": 11400,
+  "exportFiles": 386,
+  "internalStatusCounts": {
+    "confirmed": 588,
+    "investigation": 1253,
+    "incomplete": 644,
+    "excluded": 365
+  },
+  "thresholds": {
+    "30": {
+      "apps": 40,
+      "pairs": 70,
+      "labels": {
+        "Not similar": 1117,
+        "Potential overlap": 70,
+        "Needs confirmation": 945,
+        "Review needed": 139,
+        "More detail needed": 214,
+        "Out of scope": 365
+      }
+    },
+    "50": {
+      "apps": 8,
+      "pairs": 7,
+      "labels": {
+        "Not similar": 1180,
+        "Needs confirmation": 945,
+        "Review needed": 139,
+        "More detail needed": 214,
+        "Out of scope": 365,
+        "Potential overlap": 7
+      }
+    },
+    "60": {
+      "apps": 6,
+      "pairs": 3,
+      "labels": {
+        "Not similar": 1184,
+        "Needs confirmation": 945,
+        "Review needed": 139,
+        "More detail needed": 214,
+        "Out of scope": 365,
+        "Potential overlap": 3
+      }
+    }
+  },
+  "snapshotSha256": "c713e2b31ca250669202d8d0e36e3bb150ec0ac2340cf1df105dbe7985db7bfd"
+}

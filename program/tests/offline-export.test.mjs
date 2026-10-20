@@ -12,7 +12,7 @@ const exporter=path.join(root,'scripts/export-offline.mjs');
 test('release date is defined once and names the offline file',()=>{
  assert.match(RELEASE_DATE,/^\d{4}-\d{2}-\d{2}$/);
  assert.equal(new Date(RELEASE_DATE+'T00:00:00Z').toISOString().slice(0,10),RELEASE_DATE,'release date must be a real calendar date');
- assert.match(RELEASE_VERSION,/^v\d+$/);
+ assert.match(RELEASE_VERSION,/^v\d+(?:\.\d+)*$/);
  assert.equal(OFFLINE_FILE_NAME,`物流工具_最新版_离线单文件_${RELEASE_DATE.replaceAll('-','')}_${RELEASE_VERSION}.html`);
 });
 test('offline export embeds current inventory and assets without removed review workflows',async()=>{

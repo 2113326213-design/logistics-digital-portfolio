@@ -44,10 +44,10 @@ test('scenarios: fixing one issue keeps the application; fixing all removes it',
  assert.deepEqual(step(FULL),[[],[]]);
 });
 
-test('Business Capability: L1–L3 from the records actually registered; parents are not inferred',()=>{
+test('Business Capability: explicit registrations stay distinct from confirmed L3 coverage of L2',()=>{
  const data=fixture([app('leafOnly',FULL,'B.06.1.1 Detail'),app('ok',FULL),app('outside',FULL,'B.06 Logistics;B.06.1 Branch;B.06.1.1 Detail;B.06.7.9 Unknown'),app('empty',FULL,'')]);
  const report=maintenanceReport(buildModel(data),{},'cap');
- assert.deepEqual(labels(report,'leafOnly'),['Level 1 missing','Level 2 missing'],'B.06 and B.06.1 are not inferred from B.06.1.1');
+ assert.deepEqual(labels(report,'leafOnly'),['Level 1 missing'],'confirmed L3 covers L2 only; it does not create an L1 registration');
  assert.deepEqual(labels(report,'ok'),[]);
  assert.deepEqual(labels(report,'outside'),['Level 3 match needs review: B.06.7.9 Unknown']);
  assert.equal(report.issues.get('outside')[0].text,REVIEW_TEXT.notInCatalogue,'a catalogue gap is a question, not a confirmed error');
@@ -93,7 +93,7 @@ test('Show all levels does not change To review; the Total and plant rows match 
 test('bundled data: To review counts and the profile shows exactly the same issues',()=>{
  const model=buildModel(workspaceData(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url)))));
  const cap=maintenanceReport(model,{},'cap'),process=maintenanceReport(model,{},'process');
- assert.deepEqual([cap.needsReview.length,process.needsReview.length],[53,46],'Process 45 -> 46 (2026-10-20): one more application uses M.I2D.020.050, whose LeanIX name differs from the snapshot');
+ assert.deepEqual([cap.needsReview.length,process.needsReview.length],[38,46],'Capability 53 -> 38: 15 L2-only gaps are covered by confirmed L3; Process is unchanged');
  assert.deepEqual([l3MaintenanceMetrics(cap).notPassing.length,l3MaintenanceMetrics(process).notPassing.length],[37,21],'Level 3 metrics unchanged');
  for(const a of model.apps){
   assert.deepEqual(capabilityIssues(model,a).map(i=>[i.raw||i.label,i.findings[0]]),cap.issues.get(a.id).map(i=>[i.record||i.label,i.text]),a.Name);

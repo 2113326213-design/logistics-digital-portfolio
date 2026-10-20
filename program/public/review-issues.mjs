@@ -7,8 +7,10 @@ import {STANDARD_SNAPSHOT,matchSource} from './leanix-processes.mjs';
 // One issue result per application and dimension (owner specification 2026-10-20). The Overview To review counts,
 // the To review list and the application detail all use it.
 // Every applicable level is checked on the records actually registered (Business Capability L1–L3, Process L0–L3;
-// parents are never inferred from the category tree):
-//  - a level without any record is 'Level X missing' (and gets no further mismatch issue);
+// explicit registration is kept distinct from coverage by a confirmed child):
+//  - an unregistered Capability L2 is covered when all recorded L3 entries and their standard L2 parents are
+//    confirmed (owner decision 2026-10-20); it is not counted as a directly filled L2;
+//  - other levels without any record are 'Level X missing' (and get no further mismatch issue);
 //  - every record at a level that does not pass the standard match is its own 'Level X match needs review' issue,
 //    even when another record at that level passes.
 // Open questions that are not tied to a level are added: records without a level or with an unreadable code, and,
@@ -70,6 +72,31 @@ function orphanParent(model,app,level){
  return null;
 }
 
+// An application may satisfy Capability L2 through its confirmed L3 entries without registering L2 again.
+// Every L3 must pass, including open name/meaning questions, and every parent must be a real standard record.
+// Never use inferred category-tree placeholders, an unrelated parent, or a good L3 to hide a bad direct L2.
+// The returned evidence describes coverage only: source records and the explicit registration counts stay intact.
+export function capabilityLevel2Coverage(model,report,app){
+ if(report.dimension!=='cap')return [];
+ const records=report.records.get(app.id)||[];
+ if(records.some(r=>r.level===2))return [];
+ const level3=records.filter(r=>r.level===3);
+ if(!level3.length||level3.some(r=>!r.valid))return [];
+ const unresolved=new Set([
+  ...(model.standardCatalogue?nameDifferenceRows(model,app):[]),
+  ...semanticConcerns(app,model.correctionLog,model.caps)
+ ].filter(r=>r.code.split('.').length-1===3).map(r=>r.code));
+ if(unresolved.size)return [];
+ const mappings=model.correctionLog.filter(c=>c.state==='Applied'&&c.appId===app.id&&c.dimension==='cap');
+ const evidence=level3.map(r=>{
+  const code=mappings.find(c=>c.raw===r.raw)?.targetId||capCode(r.raw),node=model.caps.get(code);
+  const parent=code?.split('.').slice(0,-1).join('.'),parentNode=model.caps.get(parent);
+  return node?.reference&&node.level===3&&parentNode?.reference&&parentNode.level===2
+   ?{raw:r.raw,code,parent}:null;
+ });
+ return evidence.every(Boolean)?evidence:[];
+}
+
 // report: a maintenanceReport (or {records, levelsAvailable, dimension}) for the same model and dimension.
 export function reviewIssues(model,report,app){
  const dimension=report.dimension,isCap=dimension==='cap',records=report.records.get(app.id)||[],issues=[];
@@ -79,6 +106,7 @@ export function reviewIssues(model,report,app){
  for(const level of report.levelsAvailable){
   const atLevel=records.filter(r=>r.level===level);
   if(!atLevel.length){
+   if(isCap&&level===2&&(report.level2Coverage?.get(app.id)||capabilityLevel2Coverage(model,report,app)).length)continue;
    const traced=!isCap&&traceableParent(model,app,level),orphan=!isCap&&!traced&&orphanParent(model,app,level);
    if(orphan){issues.push({dimension,level,kind:'catalogue',record:'',label:`Level ${level} parent not in catalogue`,text:`The recorded process ${codeName(model,orphan.from.id)} has no Level ${level} parent (${orphan.parent}) in the catalogue, so the relationship cannot be confirmed. This is a catalogue question, not an application error.`,detail:`Checked against: ${checkedAgainst(model)} · Next: Confirm the parent in the valid process catalogue.`});continue;}
    issues.push({dimension,level,kind:'missing',record:'',label:`Level ${level} missing`,text:traced?`No Level ${level} process recorded directly. A Level ${level} parent can be traced: ${codeName(model,traced.parent)}, from the recorded ${codeName(model,traced.from.id)}. It is not counted as filled and is not a hierarchy error.`:missingText(dimension,level),...(isCap?{}:{traced:!!traced,detail:`Checked against: ${checkedAgainst(model)} · Next: ${traced?`Confirm whether a direct Level ${level} record is required.`:`Add the Level ${level} process if it applies.`}`})});

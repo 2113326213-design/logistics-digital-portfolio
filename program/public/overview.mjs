@@ -1,7 +1,7 @@
 import {formatROIPayback,roiPaybackNote,ROI_PAYBACK_RULE} from './roi.mjs';
 import {annualLabel,scopeReason} from './display.mjs';
 import {capCode,norm,split,PROCESS_LEVEL,compareNatural} from './codes.mjs';
-import {reviewIssues,issueLine} from './review-issues.mjs';
+import {reviewIssues,issueLine,capabilityLevel2Coverage} from './review-issues.mjs';
 import {annualCost,costSummary,formatAnnualCost,formatRMB} from './costs.mjs';
 // Overview reports presence and taxonomy alignment separately. It does not score similarity.
 export const maintenanceFields=[
@@ -42,7 +42,8 @@ export function overviewStats(model,filters={}){
 }
 
 // Use the workbook's explicit levels: Capability L1–L3, Process L0–L3.
-// Parent presence is not inferred. L3V counts as Level 3 (owner decision 2026-10-19).
+// Filled/missing describe explicit registration. Capability L2 quality also accepts coverage by confirmed L3
+// entries and their standard parents (owner decision 2026-10-20). L3V counts as Level 3 (2026-10-19).
 export function maintenanceReport(model,filters={},dimension='cap'){
  const apps=model.apps.filter(a=>(!filters.division||(a.Division||'Not provided')===filters.division)&&(!filters.entity||(a.Entity||'Not provided')===filters.entity)),isCap=dimension==='cap';
  const levels=isCap?[1,2,3]:[0,1,2,3],map=isCap?model.caps:model.procs;
@@ -63,9 +64,10 @@ export function maintenanceReport(model,filters={},dimension='cap'){
    return {raw,level:level===undefined||level===null?null:Number(level),valid,reason:issue?.type||(!valid?'Not matched to the current taxonomy':'')};
   })];
  }));
+ const level2Coverage=new Map(isCap?apps.map(a=>[a.id,capabilityLevel2Coverage(model,{records,dimension},a)]):[]);
  // Every open issue of every applicable level, per application: one result for the To review counts, the To review
  // list and the application detail (owner specification 2026-10-20).
- const issues=new Map(apps.map(a=>[a.id,reviewIssues(model,{records,levelsAvailable:levels,dimension},a)]));
+ const issues=new Map(apps.map(a=>[a.id,reviewIssues(model,{records,levelsAvailable:levels,dimension,level2Coverage},a)]));
  function summarize(group){
   const inScope=a=>records.get(a.id);
   const registered=group.filter(a=>inScope(a).length);
@@ -73,15 +75,18 @@ export function maintenanceReport(model,filters={},dimension='cap'){
   const pending=registered.filter(a=>!quality.includes(a)),missing=group.filter(a=>!registered.includes(a));
   const levelRows=levels.map(level=>{
    const filled=group.filter(a=>inScope(a).some(r=>r.level===level));
-   const valid=filled.filter(a=>inScope(a).filter(r=>r.level===level).every(r=>r.valid));
-   return {level,filled,valid,invalid:filled.filter(a=>!valid.includes(a)),missing:group.filter(a=>!filled.includes(a))};
+   const directValid=filled.filter(a=>inScope(a).filter(r=>r.level===level).every(r=>r.valid));
+   const inferred=isCap&&level===2?group.filter(a=>level2Coverage.get(a.id).length):[];
+   const valid=group.filter(a=>directValid.includes(a)||inferred.includes(a));
+   const covered=group.filter(a=>filled.includes(a)||inferred.includes(a));
+   return {level,filled,directValid,inferred,covered,valid,invalid:filled.filter(a=>!directValid.includes(a)),missing:group.filter(a=>!filled.includes(a)),uncovered:group.filter(a=>!covered.includes(a))};
   });
   // To review: applications with at least one open issue in this dimension, at any level (not only Level 3).
   const needsReview=group.filter(a=>issues.get(a.id).length);
   return {apps:group,registered,quality,pending,missing,needsReview,levels:levelRows};
  }
  const plants=[...new Set(apps.map(a=>a.Entity||'Not provided'))].sort().map(plant=>({plant,...summarize(apps.filter(a=>(a.Entity||'Not provided')===plant))}));
- return {...summarize(apps),plants,levelsAvailable:levels,records,issues,dimension,unknown:apps.filter(a=>records.get(a.id).some(r=>r.level===null))};
+ return {...summarize(apps),plants,levelsAvailable:levels,records,issues,dimension,level2Coverage,unknown:apps.filter(a=>records.get(a.id).some(r=>r.level===null))};
 }
 
 // The percentage uses every application as its denominator, so the drill must
@@ -94,6 +99,7 @@ export function applicationsNotPassingLevelQuality(group,level){
 export function maintenanceGapReasons(report,group,app,onlyLevels=null){
  const levels=onlyLevels?new Set(onlyLevels):null;
  return group.levels.filter(l=>!levels||levels.has(l.level)).flatMap(l=>{
+  if(l.valid.some(a=>a.id===app.id))return [];
   if(l.missing.some(a=>a.id===app.id))return [`L${l.level} · No explicit registration`];
   if(!l.invalid.some(a=>a.id===app.id))return [];
   const raw=report.records.get(app.id)?.filter(r=>r.level===l.level&&!r.valid).map(r=>r.raw).filter(Boolean)||[];
@@ -141,12 +147,12 @@ export function createOverviewUI({getModel,escape:esc,onApp,onStateChange=()=>{}
   function row(r,key,label,isTotal=false){
    const appDrill=drill(key+'apps',label+' · Applications',r.apps);
    const levels=r.levels.filter(l=>cols.includes(l.level)).map(l=>{
-    const notPassing=applicationsNotPassingLevelQuality(r,l),note=`Check Level ${l.level} records and catalogue coverage; add missing details or update confirmed errors.`;
+    const notPassing=applicationsNotPassingLevelQuality(r,l),note=dimension==='cap'&&l.level===2?'Check unresolved Level 2 records and catalogue coverage. A separate Level 2 entry is not required when all registered Level 3 records are confirmed and their Level 2 parents match the standard.':`Check Level ${l.level} records and catalogue coverage; add missing details or update confirmed errors.`;
     return `<td data-label="Level ${l.level} filled">${cell(key+'l'+l.level+'c',label+' · Level '+l.level+' filled',l.filled,r.apps.length,'completion')}</td><td data-label="Level ${l.level} matches standard">${cell(key+'l'+l.level+'q',label+' · Level '+l.level+' matches standard',l.valid,r.apps.length,'quality',notPassing,label+' · To review',note,{group:r,levels:[l.level]})}</td>`;
    }).join('');
    return `<tr ${isTotal?'class="maintenance-total"':''}><th scope="row">${isTotal?esc(label):`<button class="plant-table-link" ${appDrill}>${esc(label)} <span aria-hidden="true">↗</span></button>`}</th><td data-label="Applications"><button class="plant-number" ${appDrill}>${r.apps.length}</button></td>${levels}<td data-label="To review">${r.needsReview.length?`<button class="plant-review has-issues" ${drill(key+'review',label+' · To review',r.needsReview,`Applications with at least one open issue at any level: ${r.needsReview.length} ${r.needsReview.length===1?'application':'applications'}, ${r.needsReview.reduce((n,a)=>n+report.issues.get(a.id).length,0)} issues in total (issue count, not applications). Each application is listed once with all of its issues.`,true,{issues:true})}>${r.needsReview.length}</button>`:'<span class="plant-complete">✓</span>'}</td>${costCell(r.apps,key,label)}</tr>`;
   }
-  return `<section class="overview-card plant-maintenance"><div class="overview-card-title"><h3>Maintenance by plant</h3><label class="all-levels"><input id="showAllLevels" type="checkbox" ${showAllLevels?'checked':''}> Show all levels</label></div><div class="maintenance-table-scroll" role="region" aria-label="${title()} maintenance by plant"><table class="maintenance-table ${showAllLevels?'all-levels-table':''}"><thead><tr><th scope="col">Plant</th><th scope="col">Applications</th>${cols.map(l=>`<th scope="col">Level ${l} filled</th><th scope="col">Level ${l} matches standard</th>`).join('')}<th scope="col">To review</th><th scope="col">Annual cost<span class="cost-column-unit">/ year</span></th></tr></thead><tbody>${report.plants.map((p,i)=>row(p,'plant'+i,p.plant)).join('')||`<tr><td colspan="${cols.length*2+4}">No matching applications. <button data-reset-overview>Reset filters</button></td></tr>`}</tbody><tfoot>${row(report,'total','Total',true)}</tfoot></table></div></section>`;
+  return `<section class="overview-card plant-maintenance"><div class="overview-card-title"><h3>Maintenance by plant</h3><label class="all-levels"><input id="showAllLevels" type="checkbox" ${showAllLevels?'checked':''}> Show all levels</label></div><div class="maintenance-table-scroll" role="region" aria-label="${title()} maintenance by plant"><table class="maintenance-table ${showAllLevels?'all-levels-table':''}"><thead><tr><th scope="col">Plant</th><th scope="col">Applications</th>${cols.map(l=>`<th scope="col">Level ${l} filled</th><th scope="col">Level ${l} matches standard</th>`).join('')}<th scope="col">To review</th><th scope="col">Annual cost<span class="cost-column-unit">/ year</span></th></tr></thead><tbody>${report.plants.map((p,i)=>row(p,'plant'+i,p.plant)).join('')||`<tr><td colspan="${cols.length*2+4}">No matching applications. <button data-reset-overview>Reset filters</button></td></tr>`}</tbody><tfoot>${row(report,'total','Total',true)}</tfoot></table></div>${dimension==='cap'&&showAllLevels?'<p class="hint">Level 2 filled counts direct registrations only. Level 2 matches standard also includes confirmed parents of fully matched Level 3 records; these applications do not need a separate Level 2 entry.</p>':''}</section>`;
  }
  function summaryCards(){
   const total=report.apps.length,l3=l3MaintenanceMetrics(report);
@@ -165,7 +171,7 @@ export function createOverviewUI({getModel,escape:esc,onApp,onStateChange=()=>{}
   el('overviewScope').textContent=`${total} of ${model.apps.length} applications · ${filters.division||'All business units'} · ${filters.entity||'All plants'}`;
   host.querySelectorAll('[data-overview-dim]').forEach(b=>{b.classList.toggle('active',b.dataset.overviewDim===dimension);b.setAttribute('aria-pressed',String(b.dataset.overviewDim===dimension));});
   el('overviewSummary').innerHTML=summaryCards();
-  el('overviewPanels').innerHTML=`${plantTable()}<details class="overview-definitions"><summary>How is this calculated?</summary><p>For each level, filled counts applications with recorded entries; matches standard counts applications whose entries match the current standard list. Both use all ${total} applications. Matching the standard does not confirm business suitability.</p><p>To review counts applications with at least one open issue at any level of this view (a missing level, a record that does not match the standard, a record without a level, or a name or meaning to confirm). It does not depend on Show all levels.</p><p>Annual cost bands: 5 → ¥10,000; 4 → ¥20,000; 3 → ¥50,000; 2 → ¥100,000; 1 → ¥200,000 / year.</p><p>Out-of-scope applications are not included in cost totals.</p></details>`;
+  el('overviewPanels').innerHTML=`${plantTable()}<details class="overview-definitions"><summary>How is this calculated?</summary><p>For each level, filled counts applications with directly recorded entries; matches standard counts applications whose entries match the current standard list. Both use all ${total} applications. Matching the standard does not confirm business suitability.</p>${dimension==='cap'?'<p>For Capability Level 2, matches standard also accepts confirmed Level 2 parents from registered Level 3 records, when all those records match the standard and have no unresolved name or meaning issues. These applications do not need a separate Level 2 entry and are not flagged as Level 2 missing. Directly recorded Level 2 mismatches remain issues. This rule does not change filled counts or source records.</p>':''}<p>To review counts applications with at least one open issue at any level of this view (a missing level, a record that does not match the standard, a record without a level, or a name or meaning to confirm). It does not depend on Show all levels.</p><p>Annual cost bands: 5 → ¥10,000; 4 → ¥20,000; 3 → ¥50,000; 2 → ¥100,000; 1 → ¥200,000 / year.</p><p>Out-of-scope applications are not included in cost totals.</p></details>`;
   el('showAllLevels').onchange=e=>{showAllLevels=e.target.checked;refresh();onStateChange();};
 
  }
