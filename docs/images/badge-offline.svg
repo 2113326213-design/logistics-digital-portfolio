@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="220" height="24" role="img" aria-label="offline: single HTML · no install">
+<title>offline: single HTML · no install</title>
+<defs><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-opacity=".12"/></linearGradient>
+<clipPath id="r"><rect width="220" height="24" rx="6" fill="#fff"/></clipPath></defs>
+<g clip-path="url(#r)"><rect width="61" height="24" fill="#1f2d3d"/><rect x="61" width="159" height="24" fill="#5b6b7a"/><rect width="220" height="24" fill="url(#s)"/></g>
+<g fill="#fff" text-anchor="middle" font-family="'Segoe UI',Verdana,Geneva,DejaVu Sans,'Microsoft YaHei',sans-serif" font-size="12" font-weight="600">
+<text x="30.5" y="16" fill="#010101" fill-opacity=".3">offline</text><text x="30.5" y="15">offline</text>
+<text x="140.5" y="16" fill="#010101" fill-opacity=".3">single HTML · no install</text><text x="140.5" y="15">single HTML · no install</text>
+</g></svg>

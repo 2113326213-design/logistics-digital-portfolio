@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="141" height="24" role="img" aria-label="visibility: private">
+<title>visibility: private</title>
+<defs><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-opacity=".12"/></linearGradient>
+<clipPath id="r"><rect width="141" height="24" rx="6" fill="#fff"/></clipPath></defs>
+<g clip-path="url(#r)"><rect width="80" height="24" fill="#1f2d3d"/><rect x="80" width="61" height="24" fill="#b7791f"/><rect width="141" height="24" fill="url(#s)"/></g>
+<g fill="#fff" text-anchor="middle" font-family="'Segoe UI',Verdana,Geneva,DejaVu Sans,'Microsoft YaHei',sans-serif" font-size="12" font-weight="600">
+<text x="40" y="16" fill="#010101" fill-opacity=".3">visibility</text><text x="40" y="15">visibility</text>
+<text x="110.5" y="16" fill="#010101" fill-opacity=".3">private</text><text x="110.5" y="15">private</text>
+</g></svg>

@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="340" viewBox="0 0 1200 340" role="img" aria-label="Logistics Digital Portfolio">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#071a2b"/>
+      <stop offset="0.55" stop-color="#0d3550"/>
+      <stop offset="1" stop-color="#0b4a6e"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.82" cy="0.35" r="0.5">
+      <stop offset="0" stop-color="#19a6e6" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#19a6e6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#38bdf8"/>
+      <stop offset="1" stop-color="#34d399"/>
+    </linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#ffffff" stroke-opacity="0.06"/>
+    </pattern>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="14"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="340" rx="18" fill="url(#bg)"/>
+  <rect width="1200" height="340" rx="18" fill="url(#grid)"/>
+  <rect width="1200" height="340" rx="18" fill="url(#glow)"/>
+
+  <!-- decorative network on the right: plants and applications linked -->
+  <g transform="translate(780 40)" stroke="#7dd3fc" stroke-opacity="0.35" fill="none" stroke-width="1.5">
+    <path d="M60 200 L170 90 L300 150 L240 250 Z"/>
+    <path d="M170 90 L240 250 M60 200 L300 150 M300 150 L380 70 M240 250 L370 230 M170 90 L120 20"/>
+  </g>
+  <g transform="translate(780 40)" fill="#38bdf8">
+    <circle cx="60" cy="200" r="7" fill-opacity="0.9"/>
+    <circle cx="170" cy="90" r="9"/>
+    <circle cx="300" cy="150" r="11" fill="#34d399"/>
+    <circle cx="240" cy="250" r="6" fill-opacity="0.8"/>
+    <circle cx="380" cy="70" r="5" fill-opacity="0.7"/>
+    <circle cx="370" cy="230" r="5" fill-opacity="0.7"/>
+    <circle cx="120" cy="20" r="4" fill-opacity="0.6"/>
+    <circle cx="300" cy="150" r="26" fill="#34d399" fill-opacity="0.18" filter="url(#soft)"/>
+  </g>
+
+  <!-- title block -->
+  <g font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+    <text x="64" y="110" fill="#e6f4ff" font-size="52" font-weight="700" letter-spacing="-0.5">Logistics Digital Portfolio</text>
+    <rect x="64" y="128" width="120" height="5" rx="2.5" fill="url(#accent)"/>
+    <text x="64" y="176" fill="#b9dcf2" font-size="22" font-weight="400">物流数字化应用组合工具 · 维护质量总览 · 应用全景 · 相似度检查</text>
+
+    <!-- three pillars -->
+    <g transform="translate(64 220)" fill="#dcefff" font-size="16">
+      <g>
+        <rect x="0" y="0" width="34" height="34" rx="8" fill="#ffffff" fill-opacity="0.08" stroke="#7dd3fc" stroke-opacity="0.5"/>
+        <rect x="9" y="9" width="7" height="7" rx="1.5" fill="#7dd3fc"/><rect x="19" y="9" width="7" height="7" rx="1.5" fill="#7dd3fc"/>
+        <rect x="9" y="19" width="7" height="7" rx="1.5" fill="#7dd3fc"/><rect x="19" y="19" width="7" height="7" rx="1.5" fill="#34d399"/>
+        <text x="46" y="23">Overview</text>
+      </g>
+      <g transform="translate(170 0)">
+        <rect x="0" y="0" width="34" height="34" rx="8" fill="#ffffff" fill-opacity="0.08" stroke="#7dd3fc" stroke-opacity="0.5"/>
+        <rect x="8" y="8" width="6" height="18" rx="1.5" fill="#7dd3fc"/><rect x="15" y="12" width="6" height="14" rx="1.5" fill="#7dd3fc"/><rect x="22" y="6" width="6" height="20" rx="1.5" fill="#34d399"/>
+        <text x="46" y="23">Application landscape</text>
+      </g>
+      <g transform="translate(440 0)">
+        <rect x="0" y="0" width="34" height="34" rx="8" fill="#ffffff" fill-opacity="0.08" stroke="#7dd3fc" stroke-opacity="0.5"/>
+        <circle cx="14" cy="17" r="7" fill="#7dd3fc" fill-opacity="0.85"/><circle cx="21" cy="17" r="7" fill="#34d399" fill-opacity="0.85"/>
+        <text x="46" y="23">Similarity check</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- version tag -->
+  <g transform="translate(1056 34)" font-family="'Segoe UI', Helvetica, Arial, sans-serif">
+    <rect x="0" y="0" width="96" height="30" rx="15" fill="#34d399" fill-opacity="0.16" stroke="#34d399" stroke-opacity="0.7"/>
+    <text x="48" y="20" text-anchor="middle" fill="#a7f3d0" font-size="14" font-weight="600">V9.14</text>
+  </g>
+</svg>
