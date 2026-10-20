@@ -49,7 +49,8 @@ export function maintenanceReport(model,filters={},dimension='cap'){
  const records=new Map(apps.map(a=>{
   const rawCapabilities=[...split(a['Main Business Capability']),...a.rawCap];
   const seen=new Set(),uniqueCapabilities=rawCapabilities.filter(raw=>{const key=capCode(raw)||norm(raw);if(seen.has(key))return false;seen.add(key);return true;});
-  const source=isCap?uniqueCapabilities:a.rawProcess;
+  // A process record listed twice in the source is one record (one issue at most), as for capabilities.
+  const source=isCap?uniqueCapabilities:[...new Set(a.rawProcess)];
   const corrections=model.correctionLog.filter(c=>c.state==='Applied'&&c.appId===a.id&&c.dimension===dimension);
   // A mapping for an empty assignment remains effective when a separate main
   // capability supplies L1. Preserve both records in the maintenance report.

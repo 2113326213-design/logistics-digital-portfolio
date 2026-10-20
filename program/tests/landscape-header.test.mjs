@@ -138,3 +138,18 @@ test('the page wires +, −, Expand all, Collapse all and the Category filter (a
  const css=readFileSync(new URL('../public/customer.css',import.meta.url),'utf8');
  assert.match(css,/\.category-step\{[^}]*width:24px;height:24px/);assert.match(css,/\.matrix thead tr\.opened-row th\{height:44px/);assert.match(css,/\.opened-group-head\{/);
 });
+
+test('column headings and opened-category rows show the code exactly as in the source workbook',async()=>{
+ const {workbookCode}=await import('../public/landscape.mjs');
+ // Process codes keep their leading zeros (process sheet 'Data_RBW Process Structure', column Process ID).
+ const proc=model.procs.get('M.O2C.030');
+ assert.equal(workbookCode(proc),'M.O2C.030');
+ assert.match(landscapeHeaderCell({...proc,key:'M.O2C.030',apps:[],canExpand:true,opened:[]},{label:'x',subCategories:2,escape:esc}),/<small class="node-code">M\.O2C\.030<\/small>/);
+ assert.match(openedGroupCell({id:'M.P2F.020',span:2},{node:model.procs.get('M.P2F.020'),level:0,escape:esc}),/<span class="opened-code">M\.P2F\.020<\/span>/);
+ // Capability codes come from the standard+name.xlsx entry string.
+ const cap=model.caps.get('B.06.2.10');
+ assert.equal(workbookCode(cap),String(cap.reference).split(/\s+/)[0]);assert.equal(workbookCode(cap),'B.06.2.10');
+ // Every process column under Expand all shows its process-sheet id.
+ const all=cols('process',expandAll(model,'process',new Set(),'',columns));
+ for(const c of all.filter(c=>c.id!=='unmapped'))assert.equal(workbookCode(c),c.id);
+});

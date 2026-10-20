@@ -1,9 +1,9 @@
 {
-  "createdAt": "2026-10-20T03:08:38.906Z",
-  "snapshot": "20261019_v5",
+  "createdAt": "2026-10-20T03:36:39.725Z",
+  "snapshot": "20261019_v6",
   "applications": 76,
   "tests": {
-    "passed": 336,
+    "passed": 350,
     "failed": 0,
     "log": "verification/test-results.txt"
   },

@@ -5,7 +5,7 @@ import {opportunityEligibility} from './scope.mjs';
 import {semanticConcerns} from './semantic-review.mjs';
 import {createOverviewUI,maintenanceReport} from './overview.mjs';
 import {previewImport,mergeInventoryEvidence,catalogueNotice,importAppliedStatus} from './import-review.mjs';
-import {filterLandscape,landscapeColumns,landscapeHeaderCell,openOneLevel,closeCategory,expandAll,openedGroupRows,openedGroupCell,OPENED_ROW_HEIGHT} from './landscape.mjs';
+import {filterLandscape,landscapeColumns,landscapeHeaderCell,openOneLevel,closeCategory,expandAll,openedGroupRows,openedGroupCell,OPENED_ROW_HEIGHT,categoryOptions} from './landscape.mjs';
 import {processIssues,renderProcessIssues,capabilityIssues,renderCapabilityIssues} from './process-issues.mjs';
 import {english} from './english.mjs';
 import {buildModel,columns,capCode} from './model.mjs';
@@ -28,7 +28,7 @@ const isAdmin=()=>localAdmin||!!autosave?.isSignedIn();
 if(new URLSearchParams(location.search).get('tab')==='review'){const url=new URL(location.href);url.search=searchForTab(url.search,'overview');try{history.replaceState(null,'',url);}catch{/* Some file: browsers restrict URL changes; normal tab routing still applies. */}}
 let startupView=null,startupRenderedView=null,handlingPopstate=false,lastNavTab=null;
 let importGeneration=0,pendingImport,importUndo,data,model,landscapeModel,visibleColumns=[],filters={query:'',division:'',entity:'',branch:''},initialData,initializing=true,viewTimer,view='cap',group='Division',expanded=new Set();
-const comparison=createComparisonUI({getModel:()=>model,getData:()=>data,escape:esc,onApp:showApp,isSignedIn:isAdmin,onStateChange:saveView,onWeightsChange:weights=>{if(!isAdmin())return;data={...data,similarityWeights:weights,similarityWeightsVersion:2};autosave.schedule();}});
+const comparison=createComparisonUI({getModel:()=>model,getData:()=>data,escape:esc,onApp:showApp,isSignedIn:isAdmin,onStateChange:saveView,onPairReview:(key,review)=>{data={...data,pairReviews:{...(data.pairReviews||{}),[key]:review}};if(isAdmin())autosave.schedule();},onWeightsChange:weights=>{if(!isAdmin())return;data={...data,similarityWeights:weights,similarityWeightsVersion:2};autosave.schedule();}});
 const overview=createOverviewUI({getModel:()=>model,escape:esc,onApp:showApp,onStateChange:saveView});
 
 
@@ -58,7 +58,7 @@ function filterOptions(){
  filters.division=option('landscapeGB',[...new Set(model.apps.map(a=>a.Division||'Not provided'))].sort().map(v=>[v,v]),'All business units',filters.division);
  filters.entity=option('landscapeEntity',[...new Set(model.apps.filter(a=>!filters.division||(a.Division||'Not provided')===filters.division).map(a=>a.Entity||'Not provided'))].sort().map(v=>[v,v]),'All plants',filters.entity);
  const map=view==='cap'?model.caps:model.procs;
- filters.branch=option('landscapeBranch',[...map.values()].filter(n=>(view==='cap'?!!n.reference:n.level<=1)&&model.apps.some(a=>a[view+'Leaf'].some(id=>model.ancestor(n.id,id)))).sort((a,b)=>displayName(a).localeCompare(displayName(b))).map(n=>[n.id,displayName(n)]),'All categories',filters.branch);
+ filters.branch=option('landscapeBranch',categoryOptions(model,view),'All categories',filters.branch);
  $('landscapeSearch').value=filters.query;
 }
 function clearFilters(){expanded.clear();filters={query:'',division:'',entity:'',branch:''};render();saveView();}

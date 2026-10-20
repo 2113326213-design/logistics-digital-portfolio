@@ -5,8 +5,11 @@
 - **提速**（结果不变）：共享数字排序器替代每次新建的 localeCompare；每对组合的缺失证据只算一次；文字分词按文本缓存；相似度 “Other results” 列表只在分数、阈值或登录状态变化时重画。优化前后全部输出逐项比对（22 万多条、114 个导出文件）完全一致；页面加载约 0.55 → 0.24 秒，打开一对组合约 70 → 11 毫秒。
 - **Application landscape 的 +/−**：分类标题旁的 “+” 每次只展开一层（只有一个子类时也不连开）；展开后表头上方出现父分类路径行，横跨其子类列，带 “−”，点击收起该分类及其下已展开各层，其他分支不变；只登记到父级的应用放在 “Only at this level” 列，没有时不出现空列；Expand all / Collapse all 保留筛选；流程只到 L3。
 - **To review**：改为统计在任一适用层级（能力 L1–L3、流程 L0–L3）至少有一项未解决问题的应用，不再只看 L3。缺层级记 “Level X missing”（整个字段为空时只记一条 “No process information recorded.” 或 “No capability information recorded.”）；同层每条不匹配的记录各记一项（正常记录不能掩盖问题记录）；另外合并未标层级或无法识别的记录、与标准名称不一致、含义待确认；已生效映射和已确认等价的不算；标准表未收录的记录说明为“需确认”，不说成已确认错误。总览数字、点开的清单（每个应用一次、列出全部问题）和应用详情（Capability issues、Process issues）都用同一份结果（review-issues.mjs）。Show all levels 不影响 To review；“Level 3 matches standard” 及其 “Level 3 to review” 链接仍只看 L3。现有数据：能力 To review 53 个应用、流程 45 个；L3 缺口仍为 37、21。Data checks 仍按 L3 口径。
+- **原始 Excel 编号**：Application landscape 的 Category 下拉显示“原始编号 + 名称”（“All categories” 不变；值、顺序和筛选结果不变）；列标题和展开后的父分类路径行也用同样的编号。流程编号取自 Business Capability + Process.xlsx 的流程表，保留前导零（如 M.O2C.030，不再显示成 M.O2C.30）；能力编号以 standard+name.xlsx 为准。58 个选项已直接对照原始 Excel 逐项核对，无差异。
+- 同一应用中重复登记的同一条流程，在 To review 和应用详情中只列一次。
+- **Similarity check**：单组合比较页顶部新增摘要（状态、分数、比较层级、各自做什么、共同点、差异、待确认项、下一步）和 “Your review” 核对记录；保存的核对记录存在工作区（pairReviews），随 Export / Import workspace 一起带走；候选列表中已核对的组合有标记。分数、标签和 CSV 不变。候选分组及理由、多选比较的上下文暂缓。
 - 侧边会话同日完成：应用详情 Processes 只显示问题（已并入上面的统一结果），ROI 显示为回本时间。
-- 验证：`npm test` 共 336 项全部通过。按用户要求（很急），这批改动只以全套测试为准，没有再跑多轮多代理复核。
+- 验证：`npm test` 共 350 项全部通过。按用户要求（很急），这批改动只以全套测试为准，没有再跑多轮多代理复核。
 
 ## 2026-10-19 更新（用户决定，优先于下文）
 

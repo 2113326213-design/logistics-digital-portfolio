@@ -129,6 +129,31 @@ function normalizeWeights(value2) {
 }
 var DESCRIPTION_STOP_WORDS = new Set("a an and are as at be been being by can for from has have in is it of on or that the this to was were which with".split(" "));
 
+// public/pair-status.mjs
+var oneDecimal = new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 });
+
+// public/costs.mjs
+var ANNUAL_COST_BANDS = Object.freeze({ 1: 2e5, 2: 1e5, 3: 5e4, 4: 2e4, 5: 1e4 });
+function cleanCostScore(value2) {
+  if (value2 === null || value2 === void 0) return null;
+  if (!["string", "number"].includes(typeof value2)) throw Error("App operation cost must be a score from 1 to 5, or blank.");
+  if (typeof value2 === "string" && value2.trim() === "") return null;
+  const score = Number(value2);
+  if (!Number.isInteger(score) || score < 1 || score > 5) throw Error("App operation cost must be a score from 1 to 5, or blank.");
+  return score;
+}
+
+// public/similarity-guide.mjs
+var PAIR_REVIEW_STATUSES = Object.freeze(["Pending review", "Overlap confirmed", "Complementary", "Different purposes", "Related environments"]);
+function cleanPairReviews(value2) {
+  const out = {};
+  for (const [key, review] of Object.entries(value2 && typeof value2 === "object" && !Array.isArray(value2) ? value2 : {})) {
+    if (!/::/.test(key) || !review || typeof review !== "object" || !PAIR_REVIEW_STATUSES.includes(review.status)) continue;
+    out[key] = { status: review.status, reason: String(review.reason ?? "").slice(0, 500), reviewer: String(review.reviewer ?? "").slice(0, 100), date: String(review.date ?? "").slice(0, 10) };
+  }
+  return out;
+}
+
 // public/weight-controls.mjs
 var keys = Object.keys(DEFAULT_WEIGHTS);
 function weightPercentages(rawWeights) {
@@ -143,17 +168,6 @@ function weightPercentages(rawWeights) {
     remaining--;
   }
   return Object.fromEntries(keys.map((key, index) => [key, units[index] / 10]));
-}
-
-// public/costs.mjs
-var ANNUAL_COST_BANDS = Object.freeze({ 1: 2e5, 2: 1e5, 3: 5e4, 4: 2e4, 5: 1e4 });
-function cleanCostScore(value2) {
-  if (value2 === null || value2 === void 0) return null;
-  if (!["string", "number"].includes(typeof value2)) throw Error("App operation cost must be a score from 1 to 5, or blank.");
-  if (typeof value2 === "string" && value2.trim() === "") return null;
-  const score = Number(value2);
-  if (!Number.isInteger(score) || score < 1 || score > 5) throw Error("App operation cost must be a score from 1 to 5, or blank.");
-  return score;
 }
 
 // public/corrections.mjs
@@ -429,7 +443,7 @@ function workspaceData(data) {
     }
     if (needsManufacturingRemoval(app)) app.Processes = manufacturingDecision;
     return app;
-  }), capabilityRows: data.capabilityRows.map((r) => r.map((v) => String(v ?? ""))), processRows: data.processRows.map((r) => r.map((v) => String(v ?? ""))), reviews: cleanReviews(data.reviews), reviewHistory: cleanReviewHistory(data.reviewHistory), applicationEvents: cleanApplicationEvents(data.applicationEvents), importHistory: cleanImportHistory(data.importHistory), corrections: cleanCorrections(data.corrections) };
+  }), capabilityRows: data.capabilityRows.map((r) => r.map((v) => String(v ?? ""))), processRows: data.processRows.map((r) => r.map((v) => String(v ?? ""))), reviews: cleanReviews(data.reviews), reviewHistory: cleanReviewHistory(data.reviewHistory), pairReviews: cleanPairReviews(data.pairReviews), applicationEvents: cleanApplicationEvents(data.applicationEvents), importHistory: cleanImportHistory(data.importHistory), corrections: cleanCorrections(data.corrections) };
 }
 
 // public/autosave.mjs

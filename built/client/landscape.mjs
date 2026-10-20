@@ -14,6 +14,23 @@ export function filterLandscape(model,dimension,{query='',division='',entity='',
  return {...model,apps};
 }
 
+// Category filter options (owner request 2026-10-20): each option shows the category's own code exactly as in the
+// source workbook, then its name. The code is the one read from the same workbook row as the category (process
+// codes from the process sheet, capability codes from the catalogue entry), never derived from the name. The value
+// (the category id), the filter it applies and the option order (by name) are unchanged.
+export function sourceCode(node,view){
+ if(view!=='cap')return String(node.id);
+ const entry=String(node.reference??'').trim();
+ return entry?entry.split(/\s+/)[0]:String(node.id);
+}
+// The source-workbook code of a column or opened category: capability entries carry their catalogue string,
+// process nodes their process-sheet id; a code that is not in the catalogue keeps the code the application recorded.
+export const workbookCode=node=>sourceCode(node,node?.reference?'cap':'process');
+export function categoryOptions(model,view){
+ const map=view==='cap'?model.caps:model.procs;
+ return [...map.values()].filter(n=>(view==='cap'?!!n.reference:n.level<=1)&&model.apps.some(a=>a[view+'Leaf'].some(id=>model.ancestor(n.id,id)))).sort((a,b)=>displayName(a).localeCompare(displayName(b))).map(n=>[n.id,`${sourceCode(n,view)} ${displayName(n)}`]);
+}
+
 // Opening and closing categories (owner specification 2026-10-20):
 // + opens exactly one level, even when that level has a single sub-category; other branches keep their state.
 // − closes a category together with every level opened below it. No empty placeholder columns are added.
@@ -42,14 +59,14 @@ export const OPENED_ROW_HEIGHT=44;
 export function openedGroupCell(cell,{node,level,escape:esc}){
  const top=`style="top:${level*OPENED_ROW_HEIGHT}px"`;
  if(!cell.id)return `<th class="opened-gap" colspan="${cell.span}" ${top} aria-hidden="true"></th>`;
- const code=displayCode(cell.id),name=node?displayName(node):cell.id;
+ const code=node?workbookCode(node):cell.id,name=node?displayName(node):cell.id;
  return `<th scope="colgroup" colspan="${cell.span}" class="opened-group" ${top}><div class="opened-group-head"><button class="category-step" data-collapse="${esc(cell.id)}" aria-label="${esc(`Collapse ${code} ${name}`)}" title="Collapse">−</button><span class="opened-code">${esc(code)}</span><span class="opened-name" title="${esc(name)}">${esc(name)}</span></div></th>`;
 }
 
 // One category heading. A category with sub-categories has a + beside its title that opens one level. The
 // column of applications recorded only at an opened category's own level is labelled 'Only at this level'.
 export function landscapeHeaderCell(c,{label,subCategories=0,escape:esc,top=0}){
- const code=c.id==='unmapped'?'':displayCode(c.id),plural=subCategories===1?'sub-category':'sub-categories';
+ const code=c.id==='unmapped'?'':workbookCode(c),plural=subCategories===1?'sub-category':'sub-categories';
  const title=c.direct?'Only at this level':label;
  const step=!c.direct&&c.canExpand?`<button class="category-step" data-expand="${esc(c.id)}" aria-label="${esc(`Expand ${code}: show ${subCategories} ${plural}`)}" title="${esc(`Show ${subCategories} ${plural}`)}">+</button>`:'';
  const tooltip=c.direct?`Applications recorded at ${code} without a more detailed sub-category`:english(c.reference||c.label);

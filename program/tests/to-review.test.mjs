@@ -8,6 +8,7 @@ import {workspaceData} from '../public/workspace.mjs';
 import {maintenanceReport,l3MaintenanceMetrics,createOverviewUI} from '../public/overview.mjs';
 import {reviewIssues,issueLine,REVIEW_TEXT} from '../public/review-issues.mjs';
 import {processIssues,capabilityIssues,renderProcessIssues,renderCapabilityIssues} from '../public/process-issues.mjs';
+import {createCorrection,revokeCorrection,correctionStates} from '../public/corrections.mjs';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const FULL='BBM PM T Test L0;BBM PM T Stage L1;BBM PM T Step L2;BBM PM T Detail L3';
@@ -123,4 +124,48 @@ test('To review never changes application data',()=>{
  const data=fixture([app('a','BBM PM T Detail L3;BBM PM T Unknown L3')]),before=JSON.stringify(data.apps);
  const model=buildModel(data);maintenanceReport(model,{},'process');reviewIssues(model,maintenanceReport(model,{},'cap'),model.apps[0]);
  assert.equal(JSON.stringify(data.apps),before);
+});
+
+// Profile and To review cases kept from the former tests/process-issues.test.mjs (removed 2026-10-20).
+const profileRaw=(model,id)=>processIssues(model,model.apps.find(a=>a.id===id)).map(i=>i.raw||i.label);
+
+test('a process record listed twice in the source is shown once',()=>{
+ const model=buildModel(fixture([app('twice',FULL+';BBM PM T Unknown L3;BBM PM T Something;BBM PM T Unknown L3;BBM PM T Detail L3;BBM PM T Something')]));
+ const report=maintenanceReport(model,{},'process');
+ assert.deepEqual(labels(report,'twice'),['Level 3 match needs review: BBM PM T Unknown L3','Process level not specified: BBM PM T Something']);
+ assert.deepEqual(profileRaw(model,'twice'),['BBM PM T Unknown L3','BBM PM T Something']);
+ assert.equal(renderProcessIssues(processIssues(model,model.apps[0]),esc).match(/<h4>Process issues · <span>(\d+)<\/span>/)[1],'2');
+ assert.deepEqual(toReview(report),['twice']);
+});
+
+test('issues follow the order of the source records (level by level, as To review lists them)',()=>{
+ const source=['BBM PM T Zeta L3','BBM PM T Zulu','BBM PM T Test L0','BBM PM T Alpha L3','BBM PM T Stage L1','BBM PM T Bad Step L2','BBM PM T Detail L3','BBM PM T Alpha','BBM PM T Mid L3'];
+ const model=buildModel(fixture([app('forward',source.join(';')),app('reversed',source.toReversed().join(';'))])),report=maintenanceReport(model,{},'process');
+ const l3=['Zeta','Alpha','Mid'].map(n=>`Level 3 match needs review: BBM PM T ${n} L3`),noLevel=['Zulu','Alpha'].map(n=>`Process level not specified: BBM PM T ${n}`);
+ const l2='Level 2 match needs review: BBM PM T Bad Step L2';
+ // Not sorted by name: within a level, and among records without a level, the source order is kept.
+ assert.deepEqual(labels(report,'forward'),[l2,...l3,...noLevel]);
+ assert.deepEqual(labels(report,'reversed'),[l2,...l3.toReversed(),...noLevel.toReversed()]);
+ // The profile lists the same issues in the same order.
+ for(const id of ['forward','reversed'])assert.deepEqual(profileRaw(model,id),report.issues.get(id).map(i=>i.record||i.label),id);
+});
+
+test('a record resolved by an applied mapping is not listed; revoking or invalidating the mapping lists it again',()=>{
+ const raw='BBM PM T Unknown L3',data=fixture([app('a',FULL+';'+raw),app('b',FULL+';'+raw)]);
+ const state=d=>{const model=buildModel(d),report=maintenanceReport(model,{},'process');return {toReview:toReview(report),a:labels(report,'a'),profile:profileRaw(model,'a'),b:labels(report,'b')};};
+ const open={toReview:['a','b'],a:['Level 3 match needs review: '+raw],profile:[raw],b:['Level 3 match needs review: '+raw]};
+ assert.deepEqual(state(data),open);
+ const mapping=createCorrection(data,{appId:'a',dimension:'process',raw,targetId:'M.T.010.010.020',reviewer:'Reviewer',reason:'Business confirmed the standard process'});
+ const mapped={...data,corrections:[mapping]};
+ assert.deepEqual(correctionStates(mapped).map(c=>c.state),['Applied']);
+ // Resolved for this application only: not in its To review list or profile; the same record elsewhere stays open.
+ assert.deepEqual(state(mapped),{toReview:['b'],a:[],profile:[],b:['Level 3 match needs review: '+raw]});
+ const revoked=revokeCorrection(mapped,mapping.id);
+ assert.deepEqual(correctionStates(revoked).map(c=>c.state),['Revoked']);
+ assert.deepEqual(state(revoked),open,'revoked');
+ for(const [name,mutate] of [['target renamed in the catalogue',d=>{d.processRows.at(-1)[3]='Renamed';}],['source application changed',d=>{d.apps[0].Description='Changed';}]]){
+  const invalid=structuredClone(mapped);mutate(invalid);
+  assert.deepEqual(correctionStates(invalid).map(c=>c.state),['Needs review'],name);
+  assert.deepEqual(state(invalid),open,name);
+ }
 });
