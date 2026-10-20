@@ -223,3 +223,8 @@ body.portfolio-fullscreen #workspaceNav{display:none}body.portfolio-fullscreen .
 #portfolioProvisional .result-category-note{margin:0;padding:0 15px 12px}
 #portfolioProvisional .diagnostic-pairs{padding:0 12px 12px}
 @media(max-width:480px){#portfolioProvisional .record-readiness{padding:13px}#portfolioProvisional .readiness-app-list button{gap:9px;padding:11px}}
+
+/* Keep record checks visible; screening diagnostics are opened only on demand. */
+#similarityOverview #portfolioOther{margin-top:24px}
+#portfolioOtherOutcomes .other-comparison-body{padding:4px 0 0}
+#portfolioOtherOutcomes>summary:focus-visible{outline:2px solid #0071a8;outline-offset:3px}

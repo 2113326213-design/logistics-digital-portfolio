@@ -84,7 +84,7 @@ test('returning from a portfolio pair restores its original page position and ex
  const previous={scrollY:globalThis.scrollY,scrollTo:globalThis.scrollTo};let restored;
  globalThis.scrollY=624;globalThis.scrollTo=value=>{restored=value.top;};
  try{withUI((ui,doc)=>{
-  const details=[{id:'portfolioOther',open:true}];doc.getElementById('similarityOverview').details=details;
+  const details=[{id:'portfolioOtherOutcomes',open:true}];doc.getElementById('similarityOverview').details=details;
   click(doc.getElementById('similarityReview'),{portfolioApp:app('ARS').id,portfolioPeer:app('Iris').id});
   details[0].open=false;doc.getElementById('backToPairs').onclick();assert.equal(restored,624);assert.equal(details[0].open,true);
  });}finally{globalThis.scrollY=previous.scrollY;globalThis.scrollTo=previous.scrollTo;}

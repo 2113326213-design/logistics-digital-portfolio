@@ -1,6 +1,14 @@
 # 物流工具：Claude 接手说明
 
-## V9.9 当前状态（2026-10-20，优先于所有历史段落）
+## V9.10 当前状态（2026-10-20，优先于所有历史段落）
+
+- 用户确认：将 Other comparison outcomes 默认收起，作为次要的筛选原因查询入口。
+- 默认页面先显示候选比较，再显示 Check application records（默认数据19个应用）；应用清单和受影响比较仍按需展开，问题只在 View details 中查看。
+- 四类正常比较结果（Below threshold、No shared registrations、No complete score、Out of scope）和总配对计数收进 `View other comparison results and screening reasons`，默认折叠；完整说明和配对入口保留。
+- 单对比较后返回会恢复此入口及内部分类的展开状态与位置。未改评分、分类、原始数据或业务映射。
+- 当前离线包：`offline/logistics-offline-20261020-v9.10.zip`。验证见 `verification/v9.10-verification.md`。
+
+## V9.9 历史状态（2026-10-20，受顶部 V9.10 更新）
 
 - 用户疑问：Other results 为什么看起来有几千个问题，希望解决。
 - 核验：76 应用产生 2,850 对，分类数字互斥且正确。15 个应用的未确认记录影响 945 对，另 4 个仅根层级的应用影响 214 对。23 条未确认登记按原始文本去重为 21 种。详见 `verification/v9.9-data-review.md`。
