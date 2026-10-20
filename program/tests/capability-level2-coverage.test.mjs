@@ -89,7 +89,7 @@ test('L2 coverage keeps other issues; Process L2 follows the same rule since V9.
  const process=maintenanceReport(model,{},'process'),processL2=process.levels.find(l=>l.level===2);
  // The confirmed Level 3 'Detail' (M.T.010.010.010) has the catalogue Level 2 parent M.T.010.010: no Level 2 missing.
  assert(!process.issues.get('noL1').some(i=>i.level===2&&i.kind==='missing'));
- assert(process.issues.get('noL1').some(i=>i.level===0&&i.kind==='missing')&&process.issues.get('noL1').some(i=>i.level===1&&i.kind==='missing'),'L0 and L1 are still required');
+ assert(!process.issues.get('noL1').some(i=>[0,1].includes(i.level)&&i.kind==='missing'),'V9.5 covers L0 and L1 through confirmed L3');
  assert.deepEqual(capabilityLevel2Coverage(model,process,model.apps[0]),[],'the capability rule reads capability records only');
  assert.deepEqual(ids(processL2.valid),['noL1','unknown']);assert.deepEqual(ids(processL2.inferred),['noL1','unknown']);
  assert.deepEqual(ids(processL2.filled),[],'coverage is not a direct registration');

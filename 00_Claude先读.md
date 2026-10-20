@@ -1,6 +1,14 @@
 # 物流工具：Claude 接手说明
 
-## V9.4 当前状态（2026-10-20，优先于所有历史段落）
+## V9.5 当前状态（2026-10-20，优先于所有历史段落）
+
+- 用户决定：Process Level 0、Level 1 也采用 Level 2 的规则。全部登记的 Level 3 已确认匹配、编号唯一、无名称待确认，且能找到对应层级的标准上级时，该层未直接登记不再报 missing。
+- 每个目标层级独立检查：找不到上级、L3 未确认、已有上级登记但匹配失败，仍保留问题。Capability 规则保持不变。
+- To review、应用详情和 matches standard 统计采用一致规则；filled 和原始数据不变。
+- 当前数据：Process To review 45 → 24；L0 matches standard 47 → 67；L1 54 → 68；L2 仍为 67。CGQB_Logistic_system 的 Process issues 2 → 0。
+- 当前离线包：`offline/logistics-offline-20261020-v9.5.zip`。验证见 `verification/v9.5-verification.md`。
+
+## V9.4 历史状态（2026-10-20，受顶部 V9.5 更新）
 
 - 基线：V9.3（提交 9735e67），其余规则不变。
 - **比较页记录框修正**：能力全部在 B.06 之外的应用（当前数据只有 RBCD LOM Scrap Management Platform，仅登记 B.14.09.1 Waste Management），和其他应用比较时，记录框原来在 70 组比较里都显示 “More detail needed for this comparison” 和 “Peer records are not detailed enough”，与比较状态里“能力全部在 B.06 范围外”的原因不一致。现在这些分支改列在 “Not compared · outside the B.06 scope (n)” 下，原因写明该应用和它的 B.14.09.1 记录，与比较状态一致。

@@ -93,7 +93,7 @@ test('Show all levels does not change To review; the Total and plant rows match 
 test('bundled data: To review counts and the profile shows exactly the same issues',()=>{
  const model=buildModel(workspaceData(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url)))));
  const cap=maintenanceReport(model,{},'cap'),process=maintenanceReport(model,{},'process');
- assert.deepEqual([cap.needsReview.length,process.needsReview.length],[38,45],'Capability 53 -> 38 (V9.1) and Process 46 -> 45 (V9.2): L2-only gaps are covered by confirmed L3');
+ assert.deepEqual([cap.needsReview.length,process.needsReview.length],[38,24],'Capability unchanged; V9.5 Process L0–L2 gaps covered by confirmed L3');
  assert.deepEqual([l3MaintenanceMetrics(cap).notPassing.length,l3MaintenanceMetrics(process).notPassing.length],[37,21],'Level 3 metrics unchanged');
  for(const a of model.apps){
   assert.deepEqual(capabilityIssues(model,a).map(i=>[i.raw||i.label,i.findings[0]]),cap.issues.get(a.id).map(i=>[i.record||i.label,i.text]),a.Name);

@@ -34,9 +34,9 @@ test('bundled data: Process Level 2 is covered by confirmed Level 3 records for 
  const data=bundled(),before=JSON.stringify(data.apps),model=buildModel(data),report=maintenanceReport(model,{},'process'),l2=report.levels.find(l=>l.level===2);
  assert.deepEqual([l2.filled.length,l2.inferred.length,l2.valid.length],[47,20,67]);
  assert.equal([...report.issues.values()].filter(list=>list.some(i=>i.level===2&&i.kind==='missing')).length,8);
- assert.equal(report.needsReview.length,45);
+ assert.equal(report.needsReview.length,24);
  assert.equal(JSON.stringify(data.apps),before,'source records are not changed');
- // Level 0 and Level 1 are still required: coverage applies to Level 2 only.
+ // V9.5 also accepts confirmed L3 coverage for missing L0 and L1.
  const cgqb=model.apps.find(a=>a.Name==='CGQB_Logistic_system');
  assert(processLevel2Coverage(model,report,cgqb).length);
  assert(!report.issues.get(cgqb.id).some(i=>i.level===2));

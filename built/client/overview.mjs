@@ -1,7 +1,7 @@
 import {formatROIPayback,roiPaybackNote,ROI_PAYBACK_RULE} from './roi.mjs';
 import {annualLabel,scopeReason} from './display.mjs';
 import {capCode,norm,split,PROCESS_LEVEL,compareNatural} from './codes.mjs';
-import {reviewIssues,issueLine,level2Coverage as coverageAtLevel2} from './review-issues.mjs';
+import {reviewIssues,issueLine,processAncestorCoverage,level2Coverage as coverageAtLevel2} from './review-issues.mjs';
 import {annualCost,costSummary,formatAnnualCost,formatRMB} from './costs.mjs';
 // Overview reports presence and taxonomy alignment separately. It does not score similarity.
 export const maintenanceFields=[
@@ -76,7 +76,7 @@ export function maintenanceReport(model,filters={},dimension='cap'){
   const levelRows=levels.map(level=>{
    const filled=group.filter(a=>inScope(a).some(r=>r.level===level));
    const directValid=filled.filter(a=>inScope(a).filter(r=>r.level===level).every(r=>r.valid));
-   const inferred=level===2?group.filter(a=>level2Coverage.get(a.id).length):[];
+   const inferred=level===2?group.filter(a=>level2Coverage.get(a.id).length):dimension==='process'&&level<2?group.filter(a=>processAncestorCoverage(model,{records,dimension},a,level).length):[];
    const valid=group.filter(a=>directValid.includes(a)||inferred.includes(a));
    const covered=group.filter(a=>filled.includes(a)||inferred.includes(a));
    return {level,filled,directValid,inferred,covered,valid,invalid:filled.filter(a=>!directValid.includes(a)),missing:group.filter(a=>!filled.includes(a)),uncovered:group.filter(a=>!covered.includes(a))};
@@ -147,7 +147,7 @@ export function createOverviewUI({getModel,escape:esc,onApp,onStateChange=()=>{}
   function row(r,key,label,isTotal=false){
    const appDrill=drill(key+'apps',label+' · Applications',r.apps);
    const levels=r.levels.filter(l=>cols.includes(l.level)).map(l=>{
-    const notPassing=applicationsNotPassingLevelQuality(r,l),note=l.level===2?'Check unresolved Level 2 records and catalogue coverage. A separate Level 2 entry is not required when all registered Level 3 records are confirmed and their Level 2 parents match the standard.':`Check Level ${l.level} records and catalogue coverage; add missing details or update confirmed errors.`;
+    const notPassing=applicationsNotPassingLevelQuality(r,l),note=(l.level===2||(dimension==='process'&&l.level<2))?`Check unresolved Level ${l.level} records and catalogue coverage. A separate Level ${l.level} entry is not required when all registered Level 3 records are confirmed and their Level ${l.level} parents match the standard.`:`Check Level ${l.level} records and catalogue coverage; add missing details or update confirmed errors.`;
     return `<td data-label="Level ${l.level} filled">${cell(key+'l'+l.level+'c',label+' · Level '+l.level+' filled',l.filled,r.apps.length,'completion')}</td><td data-label="Level ${l.level} matches standard">${cell(key+'l'+l.level+'q',label+' · Level '+l.level+' matches standard',l.valid,r.apps.length,'quality',notPassing,label+' · To review',note,{group:r,levels:[l.level]})}</td>`;
    }).join('');
    return `<tr ${isTotal?'class="maintenance-total"':''}><th scope="row">${isTotal?esc(label):`<button class="plant-table-link" ${appDrill}>${esc(label)} <span aria-hidden="true">↗</span></button>`}</th><td data-label="Applications"><button class="plant-number" ${appDrill}>${r.apps.length}</button></td>${levels}<td data-label="To review">${r.needsReview.length?`<button class="plant-review has-issues" ${drill(key+'review',label+' · To review',r.needsReview,`Applications with at least one open issue at any level: ${r.needsReview.length} ${r.needsReview.length===1?'application':'applications'}, ${r.needsReview.reduce((n,a)=>n+report.issues.get(a.id).length,0)} issues in total (issue count, not applications). Each application is listed once with all of its issues.`,true,{issues:true})}>${r.needsReview.length}</button>`:'<span class="plant-complete">✓</span>'}</td>${costCell(r.apps,key,label)}</tr>`;

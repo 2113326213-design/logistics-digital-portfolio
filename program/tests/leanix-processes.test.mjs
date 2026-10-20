@@ -78,7 +78,7 @@ test('To review: a passing Level 3 does not hide other issues; one application, 
  assert.deepEqual(report.issues.get('noLevel').map(i=>i.label),['Process level not specified','Process name differs between sources']);
  assert.equal(report.needsReview.filter(a=>a.id==='several').length,1);
  const several=report.issues.get('several');
- assert.deepEqual(several.map(i=>i.label),['Level 0 missing','Level 1 missing','Process level not specified'],'Level 2 is covered by the confirmed Level 3 (V9.2)');
+ assert.deepEqual(several.map(i=>i.label),['Process level not specified'],'Levels 0–2 are covered by confirmed Level 3 (V9.5)');
  assert(several.filter(i=>i.kind==='missing').every(i=>i.traced&&/can be traced.*not counted as filled and is not a hierarchy error/.test(i.text)));
  assert.equal(report.levels.find(l=>l.level===2).filled.some(a=>a.id==='several'),false,'a traced parent is not counted as filled');
  // Show all levels changes columns only: the issue set and the count come from the same report.
