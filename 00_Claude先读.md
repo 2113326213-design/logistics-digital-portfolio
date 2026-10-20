@@ -9,7 +9,7 @@
 - 同一应用中重复登记的同一条流程，在 To review 和应用详情中只列一次。
 - **Similarity check**：单组合比较页顶部新增摘要（状态、分数、比较层级、各自做什么、共同点、差异、待确认项、下一步）和 “Your review” 核对记录；保存的核对记录存在工作区（pairReviews），随 Export / Import workspace 一起带走；候选列表中已核对的组合有标记。分数、标签和 CSV 不变。候选分组及理由、多选比较的上下文暂缓。
 - 侧边会话同日完成：应用详情 Processes 只显示问题（已并入上面的统一结果），ROI 显示为回本时间。
-- 验证：`npm test` 共 350 项全部通过。按用户要求（很急），这批改动只以全套测试为准，没有再跑多轮多代理复核。
+- 验证：`npm test` 共 356 项全部通过。按用户要求（很急），这批改动只以全套测试为准，没有再跑多轮多代理复核。
 
 ## 2026-10-19 更新（用户决定，优先于下文）
 
@@ -307,3 +307,15 @@ node scripts/export-offline.mjs
 
 ## 给接手者的首轮任务建议
 先复核当前实现与本交接一致，运行测试，检查实际层级对齐、分母、状态与原始来源是否准确。优先解决可重现问题。任何改动都同步到最新离线 HTML，并说明验证范围。继续使用当前源码，避免另建一个外观近似、数据规则不同的演示程序。
+
+## 2026-10-20 LeanIX 流程导出（v7）
+- 新附件 `20261020_034219_3GLYW_inventory.xlsx`：26 条 M.I2D 流程（L0 1 / L1 3 / L2 22 / L3 0，层级取自 21.02.2025 标准快照），按业务编号增量合并，保存 Fact Sheet ID、LeanIX 名称和描述，快照名称不覆盖，其他流程链和全部 L3 保留。
+- and/& 视为等价；M.I2D.020.050 “Returnable Packaging Handling” 与快照 “Packaging Handling” 作为名称差异待确认；M.I2D.020.070、M.I2D.030.080 标为 “Not included in this export”，不判定失效。
+- Process To review 45 → 46；每条问题附带编号/候选、核对来源与版本、下一步。应用详情新增 “Process matches”，标明每条匹配的来源。
+- 用户决定（2026-10-20）：可由下层记录追溯到的上级（如有 L3 但没直接登记 L2）暂时继续列入 To review，文字说明“可追溯、不算已填写、不是层级错误”。
+
+## 2026-10-20 Similarity 比较说明＋人工评审区域已删除（v8）
+- 用户决定：单组合比较页顶部的整块“比较说明＋Your review”删除（分数/状态/层级说明、What each application does、What they have in common、Key differences、What needs confirmation、Suggested next step、Your review 表单）。不折叠、不替换。
+- 保留：分数和比较结果、应用选择与切换、多应用比较、原有 “Original descriptions and shared words”、共同分类证据、Source records、计算依据、评分设置、导入导出。
+- 已保存的 pairReviews 数据不删除（similarity-guide.mjs 的 cleanPairReviews 仍由 workspace.mjs 使用）；候选列表中已有的 “Reviewed:” 标记保留。
+- 用户已决定以此为准，Similarity 会话停止该区域的一切修改，只完成其余修复。

@@ -1162,31 +1162,7 @@
 .focus-rank.is-provisional .focus-rank-score .focus-rank-code { max-width: none; white-space: nowrap; }
 .compare-pair-row strong .compare-pair-code { margin-top: 2px; color: #456675; font-weight: 600; }
 .compare-pair-row strong { text-align: right; }
-.pair-guide { margin: 14px 0 18px; padding: 16px 18px; border: 1px solid #d4e3ed; border-radius: 8px; background: #fbfdfe; }
-.pair-guide-state { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 14px; }
-.pair-guide-state strong { font-size: 16px; color: #173f58; }
-.pair-guide-state span { font-size: 12px; color: #5b7486; }
-.pair-guide-note { margin: 4px 0 12px; font-size: 12px; color: #5b7486; }
-.pair-guide-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 18px; }
-.pair-guide-grid section, .pair-guide-next, .pair-review { min-width: 0; }
-.pair-guide h4 { margin: 0 0 6px; font-size: 13px; color: #173f58; }
-.pair-guide ul { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.5; color: #24465c; }
-.pair-guide li { margin: 2px 0; overflow-wrap: anywhere; }
-.pair-guide li small { display: block; color: #6b8392; }
-.pair-guide-empty { margin: 0; font-size: 13px; color: #6b8392; }
-.pair-guide-clue { margin: 0 0 6px; padding: 6px 8px; border-left: 3px solid #0071a8; background: #eef6fb; font-size: 13px; color: #24465c; overflow-wrap: anywhere; }
-.pair-guide-needs .link-button { padding: 0; border: 0; background: none; color: #0071a8; font-size: 12px; text-decoration: underline; cursor: pointer; }
-.pair-guide-next { margin-top: 12px; padding-top: 10px; border-top: 1px solid #e3edf3; }
-.pair-guide-next p { margin: 0; font-size: 13px; color: #24465c; }
-.pair-review { margin-top: 12px; padding-top: 10px; border-top: 1px solid #e3edf3; }
-.pair-review-saved { margin: 0 0 8px; font-size: 13px; color: #24465c; }
-.pair-review-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 12px; }
-.pair-review-form label { display: grid; gap: 3px; font-size: 12px; color: #5b7486; }
-.pair-review-form .pair-review-reason { flex: 1 1 220px; }
-.pair-review-form input, .pair-review-form select { min-height: 32px; }
-.pair-review-note { margin: 6px 0 0; font-size: 12px; color: #86611e; }
 .focus-rank-score .focus-rank-review, .focus-rank-name .focus-rank-review { display: block; color: #2f7a4e; font-size: 11px; }
-@media (max-width: 600px) { .pair-guide-grid { grid-template-columns: 1fr; } .pair-guide { padding: 12px; } }
 @media (max-width: 600px) {
  .focus-rank.is-provisional .focus-rank-score .focus-rank-code { max-width: 7.5em; white-space: normal; }
  .compare-pair-row strong .compare-pair-code { font-size: 11px; white-space: normal; max-width: 7.5em; margin-left: auto; }

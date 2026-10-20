@@ -213,6 +213,83 @@ function correctionStates(data) {
   });
 }
 
+// public/leanix-process-export.mjs
+var LEANIX_PROCESS_EXPORT = Object.freeze({ "file": "20261020_034219_3GLYW_inventory.xlsx", "sheets": { "new (Export 2026-10-20 11_42)": [["id", "type", "name", "displayName", "description"], ["ID", "Type", "Name", "Display Name", "Description"], ["c96bcd42-975e-439d-b12c-df0cbf323028", "Process", "M.I2D Intralogistics to Demand", "M.I2D Intralogistics to Demand", "all physical processes of the supply chain within plants"], ["701cfb5d-65b2-47a5-b051-d23b6277561a", "Process", "M.I2D.010 Receive to Store", "M.I2D.010 Receive to Store", "physical inbound process from goods receipt to putaway material to first destination "], ["a6d6abe8-efb4-45c8-822e-ec57803eb81e", "Process", "M.I2D.010.010 Pre-Processing", "M.I2D.010.010 Pre-Processing", "Good receipt preprocessing for EDI vendors and non EDI vendors"], ["11420c99-d651-4b51-8bba-f47c4d3a5a6b", "Process", "M.I2D.010.020 Dock & Yard Management", "M.I2D.010.020 Dock & Yard Management", "management of dock&Yard for incomming goods"], ["8f4a8e3c-81f2-4ca2-8950-41e674dbdfd2", "Process", "M.I2D.010.030 Unloading & Check of Transport", "M.I2D.010.030 Unloading & Check of Transport", "incoming goods unloading "], ["878b7f2f-9fc0-4e20-8c62-6fa90fe7493a", "Process", "M.I2D.010.040 Identification & Booking", "M.I2D.010.040 Identification & Booking", "goods receipt posting with the excecution of all required quality steps"], ["69b20bb1-b4c4-49e9-aec0-ef2d3c7df5e6", "Process", "M.I2D.010.050 Putaway", "M.I2D.010.050 Putaway", "putaway of incoming goods incl. all related operations in the goods receipt area "], ["dcd7807f-17d6-4453-8220-6de4312d35c3", "Process", "M.I2D.020 Warehouse to Consume", "M.I2D.020 Warehouse to Consume", "internal physical processes running in the warehouse for components and material supply to shopfloors"], ["acdc85e7-77cd-4d95-8663-f3f7cc6a8b0c", "Process", "M.I2D.020.010 Material Request", "M.I2D.020.010 Material Request", "material requests without production order relation "], ["6f76983a-1913-4cbe-98e4-e8ed5dc0214f", "Process", "M.I2D.020.020 Picking for Material Supply", "M.I2D.020.020 Picking for Material Supply", "Material removal of components from warehouse"], ["0a57b7ee-7a12-49e6-b180-9da33c96081e", "Process", "M.I2D.020.030 Internal Transport", "M.I2D.020.030 Internal Transport", "internal transports between all physical sources and destinations within a plant"], ["fb753134-b8de-4de7-bf29-76f41210ebd8", "Process", "M.I2D.020.040 Material Consumption", "M.I2D.020.040 Material Consumption", "Consumption of goods to different cost elements"], ["e68d39a2-c6c5-47a7-b0d7-d597823d6c70", "Process", "M.I2D.020.050 Returnable Packaging Handling", "M.I2D.020.050 Returnable Packaging Handling", "special processes for managing packaging in a warehouse"], ["96cbd7a4-4d4b-40b3-aea3-1f641aeefa4b", "Process", "M.I2D.020.060 Warehouse Processing", "M.I2D.020.060 Warehouse Processing", "processes running in the warehouse supporting the material supply chain"], ["c1ce107c-b4fa-4671-888a-61363edb609f", "Process", "M.I2D.020.080 Physical Inventory", "M.I2D.020.080 Physical Inventory", "stocktacking of goods in the warehouse area"], ["3dbec80c-f0c1-4075-a169-da257eb3f201", "Process", "M.I2D.020.090 Warehouse Master Data", "M.I2D.020.090 Warehouse Master Data", "all objets and data under responsibility of I2D which you need as prerequisit to run warehouse processes  "], ["b8a27ce4-223a-46d4-98da-1db0d46cb603", "Process", "M.I2D.020.100 Warehouse Monitoring", "M.I2D.020.100 Warehouse Monitoring", "Warehouse process monitoring and Resourcemanagement"], ["2e67763f-2908-4c5a-b732-682bfebb2b7a", "Process", "M.I2D.020.110 Reporting", "M.I2D.020.110 Reporting", "I2D reporting directly in the operational system or based on external data bases"], ["a394d541-891b-43df-b0fd-e1d3c578f973", "Process", "M.I2D.030 Store to Ship", "M.I2D.030 Store to Ship", "physical outbound processes in our warehouse from put away to goods issue"], ["ce8b0947-0f59-4867-886a-0dff6c0a1d70", "Process", "M.I2D.030.010 Putaway from Production", "M.I2D.030.010 Putaway from Production", "finished goods/ semifinished goods receiving and putaway to warehouse or sub-sequent shopfloor"], ["3c1ba598-ca1a-4586-8f0c-f579c8876b79", "Process", "M.I2D.030.020 Repackaging", "M.I2D.030.020 Repackaging", "repacking of finished goods in the outbound area"], ["3ad36bd0-2c35-427e-b3c5-9480d4d24766", "Process", "M.I2D.030.030 Process and Release Outbound Delivery Order", "M.I2D.030.030 Process and Release Outbound Delivery Order", "Outbound delivery Order management "], ["114cd68c-110e-49d4-b7a2-774fa9554a57", "Process", "M.I2D.030.040 Picking for Outbound", "M.I2D.030.040 Picking for Outbound", "Material removal of finished goods from warehouse"], ["d8e4ee98-f381-4d42-8672-d9674018731c", "Process", "M.I2D.030.050 Packing for Outbound", "M.I2D.030.050 Packing for Outbound", "packging of goods for shipment "], ["26957994-e897-4ab6-a122-500f860c1729", "Process", "M.I2D.030.060 Staging", "M.I2D.030.060 Staging", "staging of goods for shipment"], ["494a5384-205c-4d1b-b4d0-edb006c8df6b", "Process", "M.I2D.030.070 Loading", "M.I2D.030.070 Loading", "Truck Loading incl. the excecution of all quality steps"]], "ReadMe": [["LeanIX inventory export created at: 2026-10-20 03:42:20 GMT"], null, ["General notes"], ["Values must not contain the character < (less than) or the list separator ; (semicolon)."], null, ["Special types"], ["List: multiple values separated by ; (semicolon)"], ["Email address: String specifying a user's email address"], ["Fact Sheet: The displayName of a Fact Sheet (its type is inferred by relation name)"], null, ["Column header", "Type", "Mandatory", "Read only", "Remarks"], ["id", "String (UUID)", "mandatory", "read only", "If id is empty, a Fact Sheet is created; otherwise the Fact Sheet is updated."], ["type", "String", "mandatory", "read only", "Import only one Fact Sheet type per Excel file. Application, BuildingBlock, BusinessCapability, DataObject, ITComponent, Interface, Objective, OrganizationalEntity, Platform, Process, Project, Provider, SystemId, TechnicalStack, UserGroup"], ["name", "String", "mandatory", "", ""], ["displayName", "String", "", "read only", "Unique per Fact Sheet type. Calculated by LeanIX according to the Fact Sheet type's naming rules. Needed to reference Fact Sheets when importing relations."], ["description", "String", "", "", ""]] } });
+
+// public/leanix-processes.mjs
+var STANDARD_SNAPSHOT = Object.freeze({
+  file: "Business Capability + Process.xlsx",
+  sheet: "Data_RBW Process Structure",
+  date: "21.02.2025",
+  note: "Valid version only in Signavio Bosch Process World",
+  label: "Standard snapshot (Business Capability + Process.xlsx, 21.02.2025)"
+});
+var PROCESS_CODE = /^(M\.[A-Z0-9]+(?:\.\d+)*)(?=\s|$)/;
+var processCode = (text) => String(text ?? "").trim().match(PROCESS_CODE)?.[1] ?? null;
+var withoutCode = (text) => String(text ?? "").trim().replace(PROCESS_CODE, "").trim();
+var EXPORTED_AT = /created at:\s*(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) GMT/i;
+var beijing = (gmt) => {
+  const t = Date.parse(gmt.replace(" ", "T") + "Z");
+  return Number.isFinite(t) ? new Date(t + 8 * 36e5).toISOString().slice(0, 19).replace("T", " ") : "";
+};
+function parseLeanixProcessExport(exported = LEANIX_PROCESS_EXPORT) {
+  const sheets = exported.sheets || {}, issues = [];
+  const readme = Object.entries(sheets).find(([name]) => /^readme$/i.test(name))?.[1] || [];
+  const gmt = readme.flat().map(String).map((s) => s.match(EXPORTED_AT)?.[1]).find(Boolean) || "";
+  const entry = Object.entries(sheets).find(([name, rows2]) => !/^readme$/i.test(name) && ["id", "type", "name", "displayName"].every((k) => rows2[0]?.includes(k)));
+  if (!entry) return { file: exported.file || "", sheet: "", exportedAt: gmt, exportedAtBeijing: gmt ? beijing(gmt) : "", records: [], issues: [{ type: "No LeanIX process sheet found" }], label: "LeanIX export" };
+  const [sheet, rows] = entry, head = rows[0], col = (k) => head.indexOf(k);
+  const displayHeader = ["ID", "Name"].every((k) => rows[1]?.includes(k));
+  const records = rows.slice(displayHeader ? 2 : 1).filter((r) => r.some((v) => String(v ?? "").trim())).map((r, i) => {
+    const get = (k) => col(k) < 0 ? "" : String(r[col(k)] ?? "").trim();
+    const name = get("name"), displayName2 = get("displayName"), nameCode = processCode(name), displayCode = processCode(displayName2);
+    return { row: i + (displayHeader ? 3 : 2), factSheetId: get("id"), type: get("type"), code: nameCode || displayCode, nameCode, displayCode, name, displayName: displayName2, processName: withoutCode(name || displayName2), description: get("description") };
+  });
+  const count = (key) => records.reduce((m, r) => r[key] ? m.set(r[key], (m.get(r[key]) || 0) + 1) : m, /* @__PURE__ */ new Map());
+  const codes = count("code"), ids = count("factSheetId");
+  for (const r of records) {
+    if (!r.code) issues.push({ type: "Process code not recognised", row: r.row, value: r.name || r.displayName });
+    if (r.nameCode && r.displayCode && r.nameCode !== r.displayCode) issues.push({ type: "Name and Display Name codes differ", row: r.row, value: `${r.nameCode} / ${r.displayCode}` });
+    if (r.code && codes.get(r.code) > 1) issues.push({ type: "Duplicate process code", row: r.row, value: r.code });
+    if (r.factSheetId && ids.get(r.factSheetId) > 1) issues.push({ type: "Duplicate Fact Sheet ID", row: r.row, value: r.factSheetId });
+    if (r.type && r.type !== "Process") issues.push({ type: "Not a Process record", row: r.row, value: r.type });
+  }
+  const exportedAtBeijing = gmt ? beijing(gmt) : "";
+  return { file: exported.file || "", sheet, exportedAt: gmt, exportedAtBeijing, records, issues, label: `LeanIX export ${exportedAtBeijing ? exportedAtBeijing.slice(0, 16) + " (Beijing time)" : exported.file || ""}`.trim() };
+}
+function applyLeanixExport(procs, exported = LEANIX_PROCESS_EXPORT) {
+  const parsed = parseLeanixProcessExport(exported), usable = /* @__PURE__ */ new Map();
+  const conflicts = new Set(parsed.issues.filter((i) => i.type === "Duplicate process code").map((i) => i.value));
+  for (const r of parsed.records) if (r.code && !conflicts.has(r.code) && !(r.nameCode && r.displayCode && r.nameCode !== r.displayCode)) usable.set(r.code, r);
+  const chains = /* @__PURE__ */ new Set(), levels = /* @__PURE__ */ new Set(), unknown = [];
+  for (const [code, r] of usable) {
+    const node = procs.get(code);
+    if (!node) {
+      unknown.push({ type: "Code not in the standard snapshot", row: r.row, value: code });
+      continue;
+    }
+    const same = r.processName === node.label, equivalent = norm(r.processName) === norm(node.label);
+    node.snapshotName = node.label;
+    node.leanix = { factSheetId: r.factSheetId, name: r.processName, displayName: r.displayName, description: r.description, source: parsed.label, file: parsed.file };
+    node.nameStatus = same ? "same" : equivalent ? "equivalent" : "differs";
+    node.exportStatus = "included";
+    chains.add(code.split(".").slice(0, 2).join("."));
+    levels.add(node.level);
+  }
+  const notIncluded = [];
+  for (const node of procs.values()) {
+    if (node.exportStatus || !chains.has(node.id.split(".").slice(0, 2).join("."))) continue;
+    node.exportStatus = levels.has(node.level) ? "not-included" : "level-not-covered";
+    if (node.exportStatus === "not-included") notIncluded.push(node.id);
+  }
+  return { ...parsed, issues: [...parsed.issues, ...unknown], covered: [...usable.keys()].filter((code) => procs.has(code)), notIncluded, scope: { chains: [...chains].sort(), levels: [...levels].sort() } };
+}
+var EXPORT_STATUS_TEXT = Object.freeze({
+  "included": "Included in this LeanIX export.",
+  "not-included": "Not included in this export. This does not show that the process is retired, deleted or invalid.",
+  "level-not-covered": "This LeanIX export has no records at this level; the standard snapshot is the only source."
+});
+
 // public/model.mjs
 var level = (id) => id.split(".").length - 1;
 function buildModel(data) {
@@ -247,6 +324,13 @@ function buildModel(data) {
     }
     procs.set(String(id), { id: String(id), label: String(label), level: Number(l[1]), chain: String(chain), children: [], parent: l === "L0" ? null : String(id).slice(0, String(id).lastIndexOf(".")) });
   }
+  const leanix = applyLeanixExport(procs, data.leanixProcessExport);
+  const leanixIndex = /* @__PURE__ */ new Map();
+  for (const n of procs.values()) if (n.nameStatus === "differs" && !n.ambiguous) {
+    const k = n.level + "|" + norm(n.leanix.name);
+    if (!leanixIndex.has(k)) leanixIndex.set(k, []);
+    leanixIndex.get(k).push(n);
+  }
   const nameIndex = /* @__PURE__ */ new Map();
   for (const n of procs.values()) {
     if (n.parent && !procs.has(n.parent)) taxonomyIssues.push({ id: n.id, type: "\u6D41\u7A0B\u7F3A\u5C11\u7236\u7EA7\u8BB0\u5F55", value: n.parent });
@@ -264,7 +348,7 @@ function buildModel(data) {
     if (!id || !String(raw.Name ?? "").trim()) throw Error(`\u7B2C ${i + 2} \u884C\u7F3A\u5C11 ID \u6216 Name`);
     if (ids.has(id)) throw Error(`\u5E94\u7528 ID \u91CD\u590D\uFF1A${id}`);
     ids.add(id);
-    const a = { ...raw, id, cap: [], process: [], unmatched: [], rawCap: split(raw["Business Capabilities"]), rawProcess: split(raw.Processes) };
+    const a = { ...raw, id, cap: [], process: [], unmatched: [], processMatches: [], rawCap: split(raw["Business Capabilities"]), rawProcess: split(raw.Processes) };
     for (const s of a.rawCap) {
       const corrected = mapped(id, "cap", s);
       if (corrected) {
@@ -284,6 +368,13 @@ function buildModel(data) {
       const corrected = mapped(id, "process", s);
       if (corrected) {
         a.process.push(corrected);
+        a.processMatches.push({ raw: s, id: corrected, via: "mapping" });
+        continue;
+      }
+      const code = s.match(/\bM\.[A-Z0-9]+(?:\.\d+)+(?=\s|$)/)?.[0];
+      if (code && procs.has(code) && !procs.get(code).ambiguous) {
+        a.process.push(code);
+        a.processMatches.push({ raw: s, id: code, via: "code" });
         continue;
       }
       const m = s.match(PROCESS_LEVEL);
@@ -293,12 +384,14 @@ function buildModel(data) {
         continue;
       }
       const l = +m[1], name = s.replace(/^BBM\s+PM\s+[A-Z0-9]+\s+/i, "").replace(/\s+L[0-3]V?\s*$/i, "");
-      const byName = nameIndex.get(l + "|" + norm(name)) || [];
+      const snapshotNames = nameIndex.get(l + "|" + norm(name)) || [], leanixNames = (leanixIndex.get(l + "|" + norm(name)) || []).filter((n) => !snapshotNames.includes(n)), byName = [...snapshotNames, ...leanixNames];
       let choices = byName;
       const chain = s.match(/^BBM\s+PM\s+([A-Z0-9]+)/i)?.[1];
       if (chain) choices = choices.filter((n) => n.id.split(".")[1] === chain);
-      if (choices.length === 1) a.process.push(choices[0].id);
-      else {
+      if (choices.length === 1) {
+        a.process.push(choices[0].id);
+        a.processMatches.push({ raw: s, id: choices[0].id, via: leanixNames.includes(choices[0]) ? "leanix-name" : "name" });
+      } else {
         a.unmatched.push(s);
         issues.push({ appId: a.id, app: a.Name, type: choices.length ? "\u6D41\u7A0B\u540D\u79F0\u5BF9\u5E94\u591A\u4E2A\u7F16\u53F7" : byName.length ? "\u6D41\u7A0B\u94FE\u7F16\u53F7\u5B58\u5728\u5DEE\u5F02" : "\u6D41\u7A0B\u672A\u5339\u914D\u5C42\u7EA7\u8868", value: s, candidates: (choices.length ? choices : byName).map((n) => ({ id: n.id, label: n.label })) });
       }
@@ -333,7 +426,7 @@ function buildModel(data) {
     n.nameSource = "reference";
   }
   const standardCatalogue = /^.+? \(capabilities\); /.test(String(data.taxonomySource ?? ""));
-  return { apps, caps, procs, issues, conflicts, taxonomyIssues, ancestor, correctionLog, standardCatalogue };
+  return { apps, caps, procs, issues, conflicts, taxonomyIssues, ancestor, correctionLog, standardCatalogue, leanix };
 }
 
 // public/reviews.mjs

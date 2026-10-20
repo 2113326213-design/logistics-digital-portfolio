@@ -93,7 +93,7 @@ test('Show all levels does not change To review; the Total and plant rows match 
 test('bundled data: To review counts and the profile shows exactly the same issues',()=>{
  const model=buildModel(workspaceData(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url)))));
  const cap=maintenanceReport(model,{},'cap'),process=maintenanceReport(model,{},'process');
- assert.deepEqual([cap.needsReview.length,process.needsReview.length],[53,45]);
+ assert.deepEqual([cap.needsReview.length,process.needsReview.length],[53,46],'Process 45 -> 46 (2026-10-20): one more application uses M.I2D.020.050, whose LeanIX name differs from the snapshot');
  assert.deepEqual([l3MaintenanceMetrics(cap).notPassing.length,l3MaintenanceMetrics(process).notPassing.length],[37,21],'Level 3 metrics unchanged');
  for(const a of model.apps){
   assert.deepEqual(capabilityIssues(model,a).map(i=>[i.raw||i.label,i.findings[0]]),cap.issues.get(a.id).map(i=>[i.record||i.label,i.text]),a.Name);

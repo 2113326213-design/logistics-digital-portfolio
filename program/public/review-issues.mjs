@@ -2,6 +2,7 @@ import {capCode} from './codes.mjs';
 import {displayCode} from './display.mjs';
 import {semanticConcerns} from './semantic-review.mjs';
 import {nameDifferenceRows} from './name-differences.mjs';
+import {STANDARD_SNAPSHOT,matchSource} from './leanix-processes.mjs';
 
 // One issue result per application and dimension (owner specification 2026-10-20). The Overview To review counts,
 // the To review list and the application detail all use it.
@@ -45,6 +46,30 @@ function capabilityText(model,raw){
  return model.standardCatalogue?REVIEW_TEXT.notInStandard:REVIEW_TEXT.notInCatalogue;
 }
 
+// Process checks name the sources and versions used (owner specification 2026-10-20).
+const checkedAgainst=model=>`${STANDARD_SNAPSHOT.label}${model.leanix?.records?.length?`; ${model.leanix.label}, ${model.leanix.scope.chains.join(', ')} Level ${model.leanix.scope.levels.join('–')} only`:''}`;
+const codeName=(model,id)=>{const n=model.procs.get(id);return n?`${id} ${n.label} (Level ${n.level})`:id;};
+function processDetail(model,app,raw,kind){
+ const issue=model.issues.find(i=>i.appId===app.id&&i.value===raw&&i.type.startsWith('流程'));
+ const candidates=issue?.candidates?.map(c=>codeName(model,c.id))||[];
+ const code=candidates.length?`Candidates: ${candidates.join('; ')}`:'Process code: not identified';
+ const next=issue?.type==='流程未标注标准层级'?'Confirm which level (L0–L3) this process belongs to.'
+  :candidates.length>1?'Confirm the business branch (parent process) to choose one code.'
+  :candidates.length?'Confirm whether the record belongs to this process chain.'
+  :'Check the name and the catalogue version; this does not show that the process does not exist.';
+ return `${code} · Checked against: ${checkedAgainst(model)} · Next: ${next}`;
+}
+// A level the application did not record can still be traceable from a confirmed deeper record (a code's Level L
+// ancestor is its first L+2 code parts). That is not 'filled' and is not a hierarchy error.
+function traceableParent(model,app,level){
+ for(const id of app.process){const n=model.procs.get(id);if(!n||n.level<=level)continue;const parent=id.split('.').slice(0,level+2).join('.');if(model.procs.has(parent))return {parent,from:n};}
+ return null;
+}
+function orphanParent(model,app,level){
+ for(const id of app.process){const n=model.procs.get(id);if(!n||n.level<=level)continue;const parent=id.split('.').slice(0,level+2).join('.');if(!model.procs.has(parent))return {parent,from:n};}
+ return null;
+}
+
 // report: a maintenanceReport (or {records, levelsAvailable, dimension}) for the same model and dimension.
 export function reviewIssues(model,report,app){
  const dimension=report.dimension,isCap=dimension==='cap',records=report.records.get(app.id)||[],issues=[];
@@ -53,10 +78,18 @@ export function reviewIssues(model,report,app){
  if(!records.length)return [{dimension,level:null,kind:'missing',record:'',label:isCap?'Business capabilities':'Processes',text:isCap?REVIEW_TEXT.emptyCapabilities:REVIEW_TEXT.emptyProcesses}];
  for(const level of report.levelsAvailable){
   const atLevel=records.filter(r=>r.level===level);
-  if(!atLevel.length){issues.push({dimension,level,kind:'missing',record:'',label:`Level ${level} missing`,text:missingText(dimension,level)});continue;}
-  for(const r of atLevel)if(!r.valid)issues.push({dimension,level,kind:'match',record:r.raw,label:`Level ${level} match needs review`,text:textFor(r.raw)});
+  if(!atLevel.length){
+   const traced=!isCap&&traceableParent(model,app,level),orphan=!isCap&&!traced&&orphanParent(model,app,level);
+   if(orphan){issues.push({dimension,level,kind:'catalogue',record:'',label:`Level ${level} parent not in catalogue`,text:`The recorded process ${codeName(model,orphan.from.id)} has no Level ${level} parent (${orphan.parent}) in the catalogue, so the relationship cannot be confirmed. This is a catalogue question, not an application error.`,detail:`Checked against: ${checkedAgainst(model)} · Next: Confirm the parent in the valid process catalogue.`});continue;}
+   issues.push({dimension,level,kind:'missing',record:'',label:`Level ${level} missing`,text:traced?`No Level ${level} process recorded directly. A Level ${level} parent can be traced: ${codeName(model,traced.parent)}, from the recorded ${codeName(model,traced.from.id)}. It is not counted as filled and is not a hierarchy error.`:missingText(dimension,level),...(isCap?{}:{traced:!!traced,detail:`Checked against: ${checkedAgainst(model)} · Next: ${traced?`Confirm whether a direct Level ${level} record is required.`:`Add the Level ${level} process if it applies.`}`})});
+   continue;
+  }
+  for(const r of atLevel)if(!r.valid)issues.push({dimension,level,kind:'match',record:r.raw,label:`Level ${level} match needs review`,text:textFor(r.raw),...(isCap?{}:{detail:processDetail(model,app,r.raw)})});
  }
- for(const r of records)if(r.level===null&&!r.valid)issues.push({dimension,level:null,kind:'record',record:r.raw,label:isCap?'Capability needs review':'Process level not specified',text:textFor(r.raw)});
+ for(const r of records)if(r.level===null&&!r.valid)issues.push({dimension,level:null,kind:'record',record:r.raw,label:isCap?'Capability needs review':'Process level not specified',text:textFor(r.raw),...(isCap?{}:{detail:processDetail(model,app,r.raw)})});
+ // A matched code whose latest LeanIX name has a different meaning from the snapshot name: kept for business
+ // confirmation (a catalogue question; 'and' / '&' spellings are equivalent and are not issues).
+ if(!isCap){const seen=new Set();for(const m of app.processMatches||[]){const n=model.procs.get(m.id);if(n?.nameStatus!=='differs'||seen.has(m.raw))continue;seen.add(m.raw);issues.push({dimension,level:n.level,kind:'catalogue',record:m.raw,label:'Process name differs between sources',text:`${n.id} (Level ${n.level}): the latest LeanIX name "${n.leanix.name}" differs from the standard snapshot name "${n.snapshotName}". Confirm which name or business scope applies.`,detail:`Matched by ${matchSource(model,m.id,m.via).sources.join(' and ')} · Next: Confirm the applicable name; neither name is treated as wrong.`});}}
  if(isCap){
   const listed=new Set(issues.map(i=>i.record).filter(Boolean));
   if(model.standardCatalogue)for(const d of nameDifferenceRows(model,app))if(!listed.has(d.raw))issues.push({dimension,level:d.code.split('.').length-1,kind:'record',record:d.raw,label:'Name differs from standard',text:`The standard name is "${d.standardName}". Correct the record in LeanIX.`});
@@ -66,11 +99,11 @@ export function reviewIssues(model,report,app){
 }
 
 // One line per issue: the record or the missing level, then one sentence.
-export function issueLine(issue){return issue.kind==='missing'?`${issue.label} — ${issue.text}`:`${issue.label}: ${issue.record} — ${issue.text}`;}
+export function issueLine(issue){return issue.kind==='missing'||!issue.record?`${issue.label} — ${issue.text}`:`${issue.label}: ${issue.record} — ${issue.text}`;}
 
 export function renderIssueList(issues,esc,{title}={}){
  const head=title?`<h4>${esc(title)} · <span>${issues.length} ${issues.length===1?'issue':'issues'}</span></h4>`:'';
  if(!issues.length)return `${head}<p class="profile-empty profile-no-issues">No ${title?esc(title.replace(/ issues$/,'').toLowerCase())+' ':''}issues detected.</p>`;
- return `${head}<ul class="review-issue-list">${issues.map(i=>`<li class="review-issue ${i.kind}"><span class="review-issue-label">${esc(i.label)}</span>${i.record?`<span class="review-issue-record">${esc(i.record)}</span>`:''}<small class="review-issue-text">${esc(i.text)}</small></li>`).join('')}</ul>`;
+ return `${head}<ul class="review-issue-list">${issues.map(i=>`<li class="review-issue ${i.kind}"><span class="review-issue-label">${esc(i.label)}</span>${i.record?`<span class="review-issue-record">${esc(i.record)}</span>`:''}<small class="review-issue-text">${esc(i.text)}</small>${i.detail?`<small class="review-issue-detail">${esc(i.detail)}</small>`:''}</li>`).join('')}</ul>`;
 }
 export const dimensionLabel=dimension=>DIMENSION_LABEL[dimension];

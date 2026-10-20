@@ -82,7 +82,7 @@ test('L3V records are Level 3 registrations in the maintenance report',()=>{
  assert.deepEqual(p.unknown,[]);assert.deepEqual(p.quality.map(a=>a.id),['A','B']);assert.deepEqual(l3MaintenanceMetrics(p).notPassing.map(a=>a.id),['C']);
  // To review covers every level (owner specification 2026-10-20): A has no L2, B no L0 and no L2, C no process at all.
  assert.deepEqual(p.needsReview.map(a=>a.id),['A','B','C']);
- assert.deepEqual(p.issues.get('B').map(i=>i.label),['Level 0 missing','Level 2 missing']);
+ assert.deepEqual(p.issues.get('B').map(i=>i.label),['Level 0 missing','Level 2 parent not in catalogue'],'the fixture catalogue has no Level 2 parent for the L3V record: a catalogue question (2026-10-20)');
  const data=fixture();data.apps[1].Processes='BBM PM T Stage L1;BBM PM T Unlisted L3V';
  const u=maintenanceReport(buildModel(data),{},'process'),b=u.apps.find(a=>a.id==='B');
  assert.deepEqual(u.records.get('B').find(r=>r.raw==='BBM PM T Unlisted L3V').level,3);

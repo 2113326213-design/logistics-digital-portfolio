@@ -1,7 +1,5 @@
 import {compareNatural} from './codes.mjs';
 import {pairResultLabel,pairStatusReason,comparisonLevelText,codeEvidenceScore,formatCodeEvidence} from './pair-status.mjs';
-import {compareSummary,PAIR_REVIEW_STATUSES} from './similarity-guide.mjs';
-import {applicationIssues} from './process-issues.mjs';
 import {renderComparisonRecords} from './comparison-records.mjs';
 import {displayName,displayCode,displayRecordLabel,annualLabel,opportunityCostLabel,scopeReason} from './display.mjs';
 import {createWeightedSimilarity,cleanWeights,normalizeWeights,DEFAULT_WEIGHTS,WEIGHT_LABELS,portfolioCandidates,portfolioAtThreshold,belowThresholdConfirmedPairs} from './weighted.mjs';
@@ -107,21 +105,6 @@ export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn
   return `<div class="focus-source"><span class="focus-source-label">${escapedSourceCaption(caption,esc)}</span><h4>${esc(app.Name)}</h4>${list(app.rawCap||[],'Business capabilities')}${list(app.rawProcess||[],'Processes')}</div>`;
  }
  function purposeCard(app,shared){return `<article class="purpose-card"><h5>${esc(app.Name)}</h5><span class="purpose-meta">${esc(app.Entity||'Plant not recorded')} · ${esc(app.Division||'Business unit not recorded')}</span><p class="purpose-label">Original description</p><p class="purpose-description">${highlightSharedDescription(app.Description?.trim()||'Description not recorded.',shared,esc)}</p></article>`;}
- // Business summary of one pair: score state, what each does, common points, differences, open data, next step,
- // and the human review (kept apart from system suggestions).
- const issuesFor=app=>['cap','process'].flatMap(dimension=>applicationIssues(getModel(),app,dimension).map(issue=>({...issue,record:issue.raw,text:issue.findings[0],dimension})));
- function pairGuide(pair,guide,saved){
-  const list=items=>items.length?`<ul>${items.map(item=>`<li>${esc(item)}</li>`).join('')}</ul>`:'';
-  const state=guide.state;
-  const head=`<div class="pair-guide-state"><strong>${state.score?esc(state.score)+' · ':''}${esc(state.state)}</strong><span>${esc(guide.levels)}</span></div><p class="pair-guide-note">${esc(state.note)}</p>`;
-  const each=`<section><h4>What each application does</h4><ul>${guide.each.map(e=>`<li><b>${esc(e.app.Name)}</b> — ${esc(e.purpose)} <small>${esc(e.place)}</small></li>`).join('')}</ul></section>`;
-  const common=`<section><h4>What they have in common</h4>${guide.clue?`<p class="pair-guide-clue">${esc(guide.clue)}</p>`:''}${list(guide.common)||(guide.clue?'':'<p class="pair-guide-empty">Nothing recorded in common.</p>')}</section>`;
-  const differences=`<section><h4>Key differences</h4>${list(guide.differences)||'<p class="pair-guide-empty">No recorded differences.</p>'}</section>`;
-  const needs=`<section><h4>What needs confirmation</h4>${guide.needs.length?`<ul class="pair-guide-needs">${guide.needs.map(n=>`<li><b>${esc(n.app?n.app.Name:'This pair')}</b> · ${esc(n.record)} — ${esc(n.why)} <small>${esc(n.next)}</small>${n.app?` <button class="link-button" data-open-issue-app="${esc(n.app.id)}">View in application</button>`:''}</li>`).join('')}</ul>`:'<p class="pair-guide-empty">Nothing open that affects this comparison.</p>'}</section>`;
-  const next=`<section class="pair-guide-next"><h4>Suggested next step</h4><p>${esc(guide.next)}</p></section>`;
-  const review=`<section class="pair-review"><h4>Your review</h4>${saved?`<p class="pair-review-saved"><b>${esc(saved.status)}</b>${saved.reviewer?' · '+esc(saved.reviewer):''}${saved.date?' · '+esc(saved.date):''}${saved.reason?` — ${esc(saved.reason)}`:''}</p>`:'<p class="pair-guide-empty">Not reviewed yet. The status above is a system suggestion, not a review.</p>'}<div class="pair-review-form"><label>Result<select data-pair-review-status>${PAIR_REVIEW_STATUSES.map(s=>`<option ${saved?.status===s?'selected':''}>${esc(s)}</option>`).join('')}</select></label><label>Reviewer<input data-pair-review-reviewer value="${esc(saved?.reviewer||'')}" maxlength="100"></label><label class="pair-review-reason">Reason<input data-pair-review-reason value="${esc(saved?.reason||'')}" maxlength="500" placeholder="Short reason"></label><button data-save-pair-review="${esc(pair.key)}">Save review</button></div><p class="pair-review-note">Saved in this workspace. In the offline file it stays in this tab only — use Export workspace to keep it.</p></section>`;
-  return `<section class="pair-guide">${head}<div class="pair-guide-grid">${each}${common}${differences}${needs}</div>${next}${review}</section>`;
- }
  function contributionTable(result,pair){
   return `<p class="comparison-note">${pair.status==='confirmed'?'The score measures text and code overlap. It does not measure how much functionality is duplicated.':'A full pair score is unavailable. Known contributions below are not a complete similarity score.'}</p><table class="score-contribution-table"><thead><tr><th scope="col">Field</th><th scope="col">Match</th><th scope="col">Weight</th><th scope="col">Points</th></tr></thead><tbody>${result.components.map(c=>`<tr><th scope="row">${esc(c.key==='cap'?'Capability':c.label)}</th><td>${c.weight===0?'Not used':c.score===null?'Unavailable':pct(c.score)}</td><td>${pct(c.weight)}</td><td>${c.weight===0?'0':c.contribution===null?'—':scoreNumber(c.contribution)}</td></tr>`).join('')}</tbody><tfoot><tr><th scope="row" colspan="3">${pair.status==='confirmed'?'Similarity score':'Known points only'}</th><td>${scoreNumber(pair.status==='confirmed'?pair.coverage:result.knownPoints)}</td></tr></tfoot></table><p class="comparison-note">Shown from ${esc(result.target.app.Name)} to ${esc(result.peer.app.Name)}. The pair score uses the lower complete total from the two directions.</p>`;
  }
@@ -177,10 +160,8 @@ export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn
   const descriptionComponent=direction.components.find(c=>c.key==='description');
   const sharedDescriptionWords=descriptionComponent?.weight>0?descriptionComponent.text?.shared||[]:[];
   const originalDescriptions=`<section class="purpose-comparison"><h4>What each application does</h4>${sharedDescriptionWords.length?'<p class="description-match-key"><mark class="description-shared-word">Highlighted words</mark> are counted in the description match. Repeated words count once.</p>':''}<div class="purpose-grid">${purposeCard(source,sharedDescriptionWords)}${purposeCard(peer,sharedDescriptionWords)}</div></section>`;
-  const guide=compareSummary(active,similarityThreshold,{issuesFor}),savedReview=(getData().pairReviews||{})[active.key];
   const detail=`<section class="focus-panel focus-detail readable-comparison" tabindex="-1">
    <div class="comparison-overview"><div><h3>Compare applications</h3></div><div class="comparison-score"><span>Score</span><strong>${active.status==='confirmed'?`${scoreNumber(active.coverage)}<small> / 100</small>`:'Unavailable'}</strong><em class="comparison-status">${esc(pairStatus(active))}</em>${codeEvidenceScore(active)===null?'':`<small class="comparison-code-evidence">Code evidence ${formatCodeEvidence(codeEvidenceScore(active))}</small>`}</div></div>
-   ${pairGuide(active,guide,savedReview)}
    ${comparisonIdentities(source,peer,esc)}
    <p class="comparison-guidance">Shared codes do not confirm duplicate functionality.</p>
    ${active.status!=='confirmed'&&pairHint(active)?`<p class="comparison-note">${esc(pairHint(active))}</p>`:''}
@@ -287,8 +268,6 @@ export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn
 
  for(const host of [review,dialog])host.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
-  if(b.dataset.savePairReview){const form=b.closest('.pair-review');onPairReview(b.dataset.savePairReview,{status:form.querySelector('[data-pair-review-status]').value,reviewer:form.querySelector('[data-pair-review-reviewer]').value.trim(),reason:form.querySelector('[data-pair-review-reason]').value.trim(),date:new Date().toISOString().slice(0,10)});renderReview();return;}
-  if(b.dataset.openIssueApp){onApp(b.dataset.openIssueApp);return;}
   if(b.hasAttribute('data-reset-threshold')){similarityThreshold=50;renderReview();onStateChange();}
   if(b.hasAttribute('data-clear-app-search')){el('focusAppSearch').value='';renderFocus();}
   if(b.hasAttribute('data-clear-peer-search')){peerSearch='';renderFocus();}
