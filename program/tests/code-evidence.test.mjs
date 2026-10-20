@@ -294,29 +294,21 @@ test('the single-pair score box shows Unavailable, No complete score and the cod
  assert.match(pending,/<strong>Unavailable<\/strong><em class="comparison-status">Needs confirmation<\/em><\/div>/);assert.doesNotMatch(pending,/comparison-code-evidence/);
 }));
 
-test('the candidate ranking shows code evidence on No complete score rows only',()=>withUI((ui,document)=>{
+test('the application chooser keeps every peer selectable without scores or comparison-status labels',()=>withUI((ui,document)=>{
  const iris=app('Iris');
  ui.restoreState({focusAppId:iris.id,focusPeerId:app('RCS-2000').id});
- const html=document.getElementById('focusResult').innerHTML,rows=rankRows(html),row=name=>{const found=rows.get(esc(app(name).id));assert(found,'ranking lists '+name);return found;};
- const code=points=>`<small class="focus-rank-code">Code evidence ${points} / 100</small>`;
- // Iris's six No complete score peers (independent recount), each min(0.3 × capability + 0.4 × process) over both directions:
- // RCS-2000, D-sample tracking system, RBCC_IDPS…, RBCC_VNA task management: capability 1/1, process 0/1 → 30;
- // RBCD B308 AGV Traffic Control System: capability and process 1/1 → 70;
- // BMLP_Nexeed_IAS@WxP: BMLP→Iris capability 1/4, process 0/1 → 0.3 × 1/4 = 7.5.
- assert(row('RCS-2000').includes(`<small class="focus-rank-status">No complete score</small>${code('30')}`));
- for(const name of ['D-sample tracking system','RBCC_IDPS_Intelligent document print system','RBCC_VNA task management'])assert(row(name).includes(code('30')),name);
- assert(row('RBCD B308 AGV Traffic Control System').includes(code('70')));
- assert(row('BMLP_Nexeed_IAS@WxP').includes(code('7.5')));
- assert.equal((html.match(/class="focus-rank-code"/g)||[]).length,6,'one code evidence per No complete score peer');
- // Confirmed (Potential overlap and Below threshold), Needs confirmation, More detail needed, No shared registrations and
- // Out of scope rows have none.
- assert.match(row('CGQB_Logistic_system_Q'),/<strong>Score: [\d.]+<\/strong>/);
- assert.match(row('ARS'),/<strong>Score: 31\.3<\/strong>/);
- assert(row('AUTO-RACK').includes('<small class="focus-rank-status">Needs confirmation</small>'));
- assert(row('RBCW Auto Warehouse Management System').includes('<small class="focus-rank-status">More detail needed</small>'));
- assert(row('AR Stock Taking').includes('<small class="focus-rank-status">No shared registrations</small>'));
- assert(row('VMCN_CONNEX').includes('<small class="focus-rank-status">Out of scope</small>'));
- for(const name of ['CGQB_Logistic_system_Q','ARS','AUTO-RACK','RBCW Auto Warehouse Management System','AR Stock Taking','VMCN_CONNEX'])assert(!row(name).includes('focus-rank-code'),name);
+ const html=document.getElementById('focusResult').innerHTML,rows=rankRows(html);
+ assert.equal(rows.size,75,'the selected application is excluded, without hiding any other application');
+ assert(!rows.has(esc(iris.id)));
+ // Scores and all investigation/scope states belong in the selected comparison, never in the chooser.
+ for(const peer of model.apps.filter(candidate=>candidate.id!==iris.id)){
+  const row=rows.get(esc(peer.id));assert(row,'chooser lists '+peer.Name);
+  assert(row.includes(esc(peer.Name)),peer.Name);
+  assert(row.includes(`${esc(peer.Entity||'Plant not recorded')} · ${esc(peer.Division||'Business unit not recorded')}`),peer.Name);
+  assert.doesNotMatch(row,/focus-rank-(?:score|status|code|review)|Score:|Code evidence|Needs confirmation|More detail needed|No shared registrations|Out of scope|Below threshold|Potential overlap/,peer.Name);
+ }
+ // Removing evidence from the chooser does not remove the selected comparison's 30-point code evidence.
+ assert.match(html,/<small class="comparison-code-evidence">Code evidence 30 \/ 100<\/small>/);
 }));
 
 test('the compare-dialog pair row shows No complete score with the code evidence in its own small line',()=>withUI((ui,document)=>{
@@ -357,8 +349,9 @@ test('code evidence keeps names HTML-escaped, and disappears when no code field 
  },{model:hostile,data:{...FIXTURE_DATA,similarityWeights:weights}});return {focus,matrix};};
  const {focus,matrix}=render(undefined);
  assert(focus.includes('<small class="comparison-code-evidence">Code evidence 70 / 100</small>'));
- const rank=rankRows(focus).get('B');assert(rank,'ranking lists B');
- assert(rank.includes(esc(b.Name))&&rank.includes('<small class="focus-rank-code">Code evidence 70 / 100</small>'),rank);
+ const rank=rankRows(focus).get('B');assert(rank,'chooser lists B');
+ assert(rank.includes(esc(b.Name))&&rank.includes(esc('P&2')),rank);
+ assert.doesNotMatch(rank,/focus-rank-code|Code evidence|No complete score/);
  const row=pairRows(matrix).get('A::B');
  assert.equal(row.strong,pairCode('70'));
  assert(row.inner.startsWith(`<span>${esc(a.Name)} ↔ ${esc(b.Name)}<small>${esc('<P1>')} · ${esc('P&2')}</small>`),row.inner);
@@ -399,17 +392,16 @@ test('an asymmetric No complete score pair shows its lower direction everywhere:
   assert.equal(records(similarityCSV([pair],'weighted',data)).rows[0][CODE_COLUMN],'7.5000');
  }
  const box=/<div class="comparison-score"><span>Score<\/span><strong>Unavailable<\/strong><em class="comparison-status">No complete score<\/em><small class="comparison-code-evidence">Code evidence 7\.5 \/ 100<\/small><\/div>/;
- const rankCode='<small class="focus-rank-status">No complete score</small><small class="focus-rank-code">Code evidence 7.5 / 100</small>';
  for(const [focus,peer] of [[iris,bmlp],[bmlp,iris]])withUI((ui,document)=>{
   // Single-pair score box, with either application as the focus (its direction is the forward one).
   ui.restoreState({focusAppId:focus.id,focusPeerId:peer.id});
   const html=document.getElementById('focusResult').innerHTML;
   assert.match(html,box,focus.Name+' first');
-  // The box holds the only score-box code evidence (other No complete score peers of Iris in the ranking do show 30).
+  // The box holds the only code-evidence summary; the application chooser has no scores.
   assert.equal((html.match(/class="comparison-code-evidence"/g)||[]).length,1,focus.Name+' first');
-  // Ranking row of the peer in the focus application's candidate list.
-  const row=rankRows(html).get(esc(peer.id));assert(row,'ranking lists '+peer.Name);
-  assert(row.includes(rankCode),row);
+  const row=rankRows(html).get(esc(peer.id));assert(row,'chooser lists '+peer.Name);
+  assert(row.includes(esc(peer.Name)));
+  assert.doesNotMatch(row,/focus-rank-code|Code evidence|No complete score/);
   // Compare-dialog pair row, with either application first in the pool (so it is the row target).
   ui.open({poolIds:[focus.id,peer.id],contextLabel:'Asymmetric'});
   const matrix=document.getElementById('comparisonMatrix').innerHTML;

@@ -1,6 +1,15 @@
 # 物流工具：Claude 接手说明
 
-## V9.12 当前状态（2026-10-20，优先于所有历史段落）
+## V9.13 当前状态（2026-10-20，优先于所有历史段落）
+
+- 用户决定：单应用第二步只要 Choose another application 的应用选择数据，不要截图里的评分、状态和分组。
+- 选择列表按名称自然排序，当前应用排除；普通源应用可选择其余全部75个应用。每行只显示名称、工厂和业务部门，按这三个字段搜索；不按评分或状态筛选，包含待确认和范围外的其他应用。
+- 移除列表中的 Score、Code evidence、Reviewed、状态分类及 Show more；主标题为 2. Choose another application。Change selected application 用于更换第一应用；选定对方后继续显示原有对比结果。
+- 完整对比中的 Change comparison application 仍可展开相同的简洁列表，保留搜索与列表滚动位置；搜索内容变化时从列表顶部开始。
+- 多应用比较、资料去重、原始数据、评分/匹配/范围规则和CSV不变。此次未改 Deferred detail；已隐藏的筛选原因入口、已删除的摘要及评审表单保持原状态。
+- 当前离线包：`offline/logistics-offline-20261020-v9.13.zip`。验证见 `verification/v9.13-verification.md`。
+
+## V9.12 历史状态（2026-10-20，受顶部 V9.13 更新）
 
 - 用户决定：Code evidence 和 Needs confirmation 要说清下一步；多选比较的资料待确认直接定位到有问题的应用详情，同一个问题不按配对重复显示。
 - 多选 weighted 结果：有共同业务分类的组改为 `Shared business classifications — compare actual uses`，说明先读应用描述判断实际用途；每行 `Compare actual uses →` 一次点击直达完整比较。原始 No complete score 状态及代码证据数值保留，仍不是完整相似度分数。

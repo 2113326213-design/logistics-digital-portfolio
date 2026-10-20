@@ -12,32 +12,43 @@ const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&
 // State transitions use a small DOM double; browser layout and focus are checked separately.
 function stubDocument(){
  const nodes=new Map();
- const node=()=>({innerHTML:'',value:'',hidden:false,open:false,dataset:{},style:{},scrollTop:0,scrollLeft:0,details:[],classList:{toggle(){},add(){},remove(){}},listeners:new Map(),
+ const node=()=>({get innerHTML(){return this.html||'';},set innerHTML(value){this.html=value;const list=this.children?.get('.focus-rank-list');if(list)list.scrollTop=0;},
+  value:'',hidden:false,open:false,dataset:{},style:{},scrollTop:0,scrollLeft:0,details:[],classList:{toggle(){},add(){},remove(){}},listeners:new Map(),
   addEventListener(type,listener){if(!this.listeners.has(type))this.listeners.set(type,[]);this.listeners.get(type).push(listener);},
   fire(type,event){for(const listener of this.listeners.get(type)||[])listener(event);},setAttribute(){},
   querySelectorAll(selector){return selector==='details'?this.details:selector==='[data-cell-target]'?this.cellButtons||[]:[];},
   querySelector(selector){this.children??=new Map();if(!this.children.has(selector))this.children.set(selector,node());return this.children.get(selector);},
-  insertAdjacentHTML(where,html){this.innerHTML+=html;},scrollIntoView(){},focus(){},showModal(){this.open=true;},close(){this.open=false;}});
- return {body:node(),getElementById(id){if(!nodes.has(id))nodes.set(id,node());return nodes.get(id);}};
+  insertAdjacentHTML(where,html){this.innerHTML+=html;},scrollIntoView(){},focus(){},setSelectionRange(start,end){this.selectionStart=start;this.selectionEnd=end;},showModal(){this.open=true;},close(){this.open=false;}});
+ return {body:node(),getElementById(id){if(!nodes.has(id))nodes.set(id,Object.assign(node(),{id}));return nodes.get(id);}};
 }
 function click(host,dataset={},attributes=[]){const button={dataset,hasAttribute:name=>attributes.includes(name)};host.fire('click',{target:{closest:()=>button}});}
 function withUI(run,uiData=data){const previous=globalThis.document,document=stubDocument();globalThis.document=document;try{const ui=createComparisonUI({getModel:()=>model,getData:()=>uiData,escape:esc,isSignedIn:()=>true});ui.showPortfolio();run(ui,document);}finally{globalThis.document=previous;}}
 
-test('choosing an application stops at candidates; choosing a peer preserves the search',()=>withUI((ui,doc)=>{
+test('choosing another application shows plain application details and preserves the search and list position',()=>withUI((ui,doc)=>{
  doc.getElementById('browseApplications').onclick();
  click(doc.getElementById('similarityReview'),{startApp:app('Iris').id});
  assert.equal(ui.getState().focusPeerId,null);
  assert.match(doc.getElementById('focusResult').innerHTML,/Selected application/);
- assert.match(doc.getElementById('focusResult').innerHTML,/Comparison candidates/);
+ assert.equal(doc.getElementById('focusHeading').textContent,'2. Choose another application');
+ assert.match(doc.getElementById('focusResult').innerHTML,/<h3>Applications<\/h3>/);
  assert.doesNotMatch(doc.getElementById('focusResult').innerHTML,/class="comparison-score"/);
  ui.restoreState({...ui.getState(),peerSearch:'RBCD B308'});
  assert.match(doc.getElementById('focusResult').innerHTML,/RBCD B308 AGV Traffic Control System/);
- assert.match(doc.getElementById('focusResult').innerHTML,/Shared business classifications — compare actual uses/);
+ assert.doesNotMatch(doc.getElementById('focusResult').innerHTML,/Comparison candidates|Shared business classifications|focus-candidate-group|focus-rank-score/);
+ const list=doc.getElementById('focusResult').querySelector('.focus-rank-list');list.scrollTop=115;
  click(doc.getElementById('similarityReview'),{focusPeer:app('RBCD B308 AGV Traffic Control System').id});
  assert.equal(ui.getState().peerSearch,'RBCD B308');
  assert.match(doc.getElementById('focusResult').innerHTML,/<strong>Unavailable<\/strong>/);
  assert.match(doc.getElementById('focusResult').innerHTML,/Code evidence 70 \/ 100/);
  assert.equal(doc.getElementById('focusCandidates').open,false);
+ assert.equal(list.scrollTop,115,'changing from chooser to evidence retains the chooser position');
+ // A closed details element can report zero scrollTop; the saved position must survive that.
+ list.scrollTop=0;
+ const chooser=doc.getElementById('focusCandidates');chooser.open=true;
+ chooser.querySelector('.focus-rank-list');chooser.children.set('.focus-rank-list',list);
+ doc.getElementById('similarityReview').fire('toggle',{target:chooser});
+ assert.equal(ui.getState().peerSearch,'RBCD B308');
+ assert.equal(list.scrollTop,115,'reopening Change comparison application returns to the same list position');
 }));
 
 test('selected chips remain visible across searches, can be filtered and individually removed',()=>withUI((ui,doc)=>{
@@ -116,12 +127,32 @@ test('weighted pair highlighting is symmetric while capability and process highl
  click(dialog,{matrixDim:'weighted'});assert.equal(forward.attributes['aria-pressed'],'true');
 }));
 
-test('candidate groups show three first to leave other evidence groups discoverable; search reveals all matches',()=>withUI((ui,doc)=>{
+test('the plain chooser contains all 75 other applications in natural order and searches name, plant and business unit',()=>withUI((ui,doc)=>{
  ui.restoreState({...ui.getState(),focusAppId:app('Iris').id,focusPeerId:null});
- let html=doc.getElementById('focusResult').innerHTML;
- const firstGroup=html.slice(html.indexOf('id="focusCandidates-complete"'),html.indexOf('id="focusCandidates-complete-more"'));
- assert.equal((firstGroup.match(/data-focus-peer=/g)||[]).length,3);
- assert.match(html,/<summary>Show \d+ more<\/summary>/);
- ui.restoreState({...ui.getState(),peerSearch:'R'});html=doc.getElementById('focusResult').innerHTML;
- assert.doesNotMatch(html,/<summary>Show \d+ more<\/summary>/);
+ const result=doc.getElementById('focusResult'),ids=()=>[...result.innerHTML.matchAll(/data-focus-peer="([^"]*)"/g)].map(match=>match[1]);
+ const others=model.apps.filter(candidate=>candidate.Name!=='Iris');
+ assert.equal(ids().length,75);
+ assert.deepEqual(new Set(ids()),new Set(others.map(candidate=>candidate.id)));
+ const names=ids().map(id=>model.apps.find(candidate=>candidate.id===id).Name);
+ assert.deepEqual(names,[...names].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})),'application order is independent of similarity score');
+ assert.doesNotMatch(result.innerHTML,/focus-candidate-group|focusCandidates-complete|Show \d+ more|focus-rank-score|focus-rank-status/);
+ const search=query=>{
+  result.querySelector('.focus-rank-list').scrollTop=120;
+  const input=doc.getElementById('focusPeerSearch');input.value=query;input.selectionStart=query.length;
+  doc.getElementById('similarityReview').fire('input',{target:input});
+  assert.equal(ui.getState().peerSearch,query);
+  assert.equal(result.querySelector('.focus-rank-list').scrollTop,0,'a new search starts at the first matching application');
+  return ids();
+ };
+ // These examples use differently cased input. RBHP and PS match metadata on apps whose names lack those strings.
+ assert.deepEqual(search('rBcD b308'),[app('RBCD B308 AGV Traffic Control System').id]);
+ const plant=search('rBhP');assert.equal(plant.length,8);assert(plant.includes(app('CGQB_Logistic_monitoring').id));
+ const business=search('pS');assert.equal(business.length,39);assert(business.includes(app('AR Stock Taking').id));
+ assert.deepEqual(search('AUTO-RACK'),[app('AUTO-RACK').id],'pending records do not hide an application');
+ assert.deepEqual(search('VMCN_CONNEX'),[app('VMCN_CONNEX').id],'scope does not hide a peer from selection');
+ assert.deepEqual(search('Iris'),[],'the selected source is excluded even when searched by name');
+ assert.match(result.innerHTML,/data-clear-peer-search/);
+ click(doc.getElementById('similarityReview'),{},['data-clear-peer-search']);
+ assert.equal(ui.getState().peerSearch,'');
+ assert.deepEqual(new Set(ids()),new Set(others.map(candidate=>candidate.id)));
 }));
