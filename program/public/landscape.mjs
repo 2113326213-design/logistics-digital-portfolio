@@ -1,4 +1,5 @@
 import {displayCode,displayName} from './display.mjs';
+import {compareNatural} from './codes.mjs';
 import {english} from './english.mjs';
 
 export function filterLandscape(model,dimension,{query='',division='',entity='',branch=''}={}){
@@ -17,7 +18,10 @@ export function filterLandscape(model,dimension,{query='',division='',entity='',
 // Category filter options (owner request 2026-10-20): each option shows the category's own code exactly as in the
 // source workbook, then its name. The code is the one read from the same workbook row as the category (process
 // codes from the process sheet, capability codes from the catalogue entry), never derived from the name. The value
-// (the category id), the filter it applies and the option order (by name) are unchanged.
+// (the category id) and the filter it applies are unchanged.
+// Order (owner request 2026-10-20): by level — Level 0, Level 1, Level 2, Level 3 — and within a level by the workbook
+// code. Process lists categories of every level (L0–L3), Capability its catalogue levels (L1–L3). Each option carries
+// its level as a third value, which the page shows as an option group.
 export function sourceCode(node,view){
  if(view!=='cap')return String(node.id);
  const entry=String(node.reference??'').trim();
@@ -28,7 +32,7 @@ export function sourceCode(node,view){
 export const workbookCode=node=>sourceCode(node,node?.reference?'cap':'process');
 export function categoryOptions(model,view){
  const map=view==='cap'?model.caps:model.procs;
- return [...map.values()].filter(n=>(view==='cap'?!!n.reference:n.level<=1)&&model.apps.some(a=>a[view+'Leaf'].some(id=>model.ancestor(n.id,id)))).sort((a,b)=>displayName(a).localeCompare(displayName(b))).map(n=>[n.id,`${sourceCode(n,view)} ${displayName(n)}`]);
+ return [...map.values()].filter(n=>(view==='cap'?!!n.reference:n.level<=3)&&model.apps.some(a=>a[view+'Leaf'].some(id=>model.ancestor(n.id,id)))).sort((a,b)=>a.level-b.level||compareNatural(sourceCode(a,view),sourceCode(b,view))).map(n=>[n.id,`${sourceCode(n,view)} ${displayName(n)}`,`Level ${n.level}`]);
 }
 
 // Opening and closing categories (owner specification 2026-10-20):

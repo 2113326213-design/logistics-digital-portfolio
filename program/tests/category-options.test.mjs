@@ -1,6 +1,7 @@
 // Application landscape Category filter (owner request 2026-10-20): every option shows the category's own code
 // exactly as in the original workbook, then its name. 'All categories' stays first and unchanged; the option
-// values (category ids), their order and the filter they apply are the same as before the codes were added.
+// values (category ids) and the filter they apply are the same as before the codes were added. Since the second request
+// of 2026-10-20 the options run in level order (Level 0–3, workbook code order within a level) and Process lists every level.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -27,7 +28,7 @@ function previousOptions(m,view){
 test("'All categories' stays the first option, without a code",()=>{
  assert.match(app,/option\('landscapeBranch',categoryOptions\(model,view\),'All categories',filters\.branch\)/);
  // The option helper writes the 'all' entry (empty value) before the category options.
- assert.match(app,/const option=\(id,values,all,current\)=>\{const select=\$\(id\);select\.innerHTML=`<option value="">\$\{all\}<\/option>`\+values\.map/);
+ assert.match(app,/const option=\(id,values,all,current\)=>\{const select=\$\(id\),item=[^;]*;select\.innerHTML=`<option value="">\$\{all\}<\/option>`\+\(groups\.length\?/);
  assert.match(html,/<select id="landscapeBranch"><option value="">All categories<\/option><\/select>/);
  for(const view of views)assert(!categoryOptions(model,view).some(([value,label])=>value===''||/All categories/.test(label)));
 });
@@ -86,11 +87,14 @@ test('labels match the original workbooks exactly (code text and name, byte for 
  }
 });
 
-test('values, order and filter results are unchanged; only the code is added in front of the name',()=>{
+test('every earlier option is kept with the code in front of its name; options run Level 0, 1, 2, 3 in code order; filters unchanged',()=>{
  for(const view of views){
-  const before=previousOptions(model,view),after=categoryOptions(model,view);
-  assert.deepEqual(after.map(([value])=>value),before.map(([value])=>value),`${view} values and order`);
-  after.forEach(([value,label],i)=>assert.equal(label,`${sourceCode(nodes(view).get(value),view)} ${before[i][1]}`,`${view} ${value}`));
+  const before=new Map(previousOptions(model,view)),after=categoryOptions(model,view),values=after.map(([value])=>value);
+  for(const [value,name] of before){assert(values.includes(value),`${view} keeps ${value}`);assert.equal(after.find(o=>o[0]===value)[1],`${sourceCode(nodes(view).get(value),view)} ${name}`,`${view} ${value}`);}
+  if(view==='cap')assert.deepEqual([...values].sort(),[...before.keys()].sort(),'capability options are the same categories');
+  const key=([value])=>{const n=nodes(view).get(value);return [n.level,sourceCode(n,view)];};
+  for(let i=1;i<after.length;i++){const [l0,c0]=key(after[i-1]),[l1,c1]=key(after[i]);assert(l0<l1||l0===l1&&c0.localeCompare(c1,undefined,{numeric:true})<0,`${view}: ${c0} before ${c1}`);}
+  assert(after.every(([value,,group])=>group===`Level ${nodes(view).get(value).level}`),`${view} groups`);
   for(const [value] of after){
    const shown=filterLandscape(model,view,{branch:value}).apps.map(a=>a.id);
    const expected=model.apps.filter(a=>a[view+'Leaf'].some(id=>model.ancestor(value,id))).map(a=>a.id);
@@ -118,5 +122,5 @@ test("each code is the category's own level, never a parent's",()=>{
   if(n.parent)assert.notEqual(code,n.parent,`${id}: not the parent code`);
   levels.add(n.level);
  }
- assert.deepEqual([...levels].sort(),[0,1],'process options include L0 and L1 categories, each with its own code');
+ assert.deepEqual([...levels].sort(),[0,1,2,3],'process options include L0–L3 categories, each with its own code');
 });

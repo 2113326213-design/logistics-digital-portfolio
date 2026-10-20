@@ -54,7 +54,7 @@ $('recoveryExportSaved').onclick=()=>{if(recoveryRemote)downloadWorkspace(recove
 for(const [id,choice] of [['recoveryLocal','local'],['recoverySaved','saved']])$(id).onclick=async()=>{$(id).disabled=true;try{if(await autosave.resolveRecovery(choice))$('saveRecovery').close();}catch(error){$('recoveryStatus').textContent=english(error.message);}finally{$(id).disabled=false;}};
 function rebuildModels(){model=buildModel(data);}
 function filterOptions(){
- const option=(id,values,all,current)=>{const select=$(id);select.innerHTML=`<option value="">${all}</option>`+values.map(([value,label])=>`<option value="${esc(value)}">${esc(label)}</option>`).join('');select.value=current;if(select.selectedIndex<0)select.value='';return select.value;};
+ const option=(id,values,all,current)=>{const select=$(id),item=([value,label])=>`<option value="${esc(value)}">${esc(label)}</option>`,groups=[...new Set(values.map(v=>v[2]).filter(Boolean))];select.innerHTML=`<option value="">${all}</option>`+(groups.length?groups.map(group=>`<optgroup label="${esc(group)}">${values.filter(v=>v[2]===group).map(item).join('')}</optgroup>`).join(''):values.map(item).join(''));select.value=current;if(select.selectedIndex<0)select.value='';return select.value;};
  filters.division=option('landscapeGB',[...new Set(model.apps.map(a=>a.Division||'Not provided'))].sort().map(v=>[v,v]),'All business units',filters.division);
  filters.entity=option('landscapeEntity',[...new Set(model.apps.filter(a=>!filters.division||(a.Division||'Not provided')===filters.division).map(a=>a.Entity||'Not provided'))].sort().map(v=>[v,v]),'All plants',filters.entity);
  const map=view==='cap'?model.caps:model.procs;

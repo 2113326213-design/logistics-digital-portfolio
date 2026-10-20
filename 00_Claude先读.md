@@ -1,6 +1,12 @@
 # 物流工具：Claude 接手说明
 
-## V9.2 当前状态（2026-10-20，优先于所有历史段落）
+## V9.3 当前状态（2026-10-20，优先于所有历史段落）
+
+- 基线：V9.2（提交 49d9cc7），其余规则不变。
+- **Category 按层级排序**（用户：“category要给我有level 0 level 1 2 3 的顺序”）：Application landscape 的 Category 下拉按 Level 0、Level 1、Level 2、Level 3 分组显示（下拉中的分组标题），同一层级内按原始 Excel 编号排序（如 M.I2D.010 在 M.I2D.020 前）。Process 现在列出有应用的 L0–L3 全部分类（9 / 16 / 49 / 106，共 180 个，原来只列 L0、L1 共 25 个）；Capability 列出 L1–L3（1 / 9 / 23，共 33 个，分类不变，只改顺序）。“All categories” 仍在最前；选项文字仍是“编号 + 名称”；每个分类的筛选结果与之前一致。
+- 当前离线包：`offline/logistics-offline-20261020-v9.3.zip`；HTML 文件名及页面标识均为 V9.3。验证记录见 `verification/v9.3-verification.md`。
+
+## V9.2 历史状态（2026-10-20，受顶部 V9.3 更新）
 
 - 基线：GitHub 上的 V9.1（提交 87bc56a）。用户决定以 V9.1 为准，本地 Similarity 第二轮只带过来 V9 没有的两项；其余（候选分组、多选返回等）以 V9 的实现为准，本地版本只作备份，不再使用。
 - **Process Level 2 同 Capability 规则**（用户：“Process 也按这个规则改，Level 3 已经填好了，就不要再报 Level 2 missing”）：没有直接登记 Level 2，但所登记的 Level 3 流程都已确认匹配、编号唯一、无名称待确认，且各自的 Level 2 父流程在目录中存在时，不再报 Level 2 missing。只适用于 Level 2；Level 0、Level 1 仍按原规则；Level 3 有未确认记录时不豁免。Level 2 filled 仍只统计直接登记。
