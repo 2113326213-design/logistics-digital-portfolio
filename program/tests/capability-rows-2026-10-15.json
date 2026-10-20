@@ -1,0 +1,226 @@
+{
+  "note": "Capability catalogue in public/data.json before the 2026-10-16 switch to the business capability standard (standard+name.xlsx). Tests use it to keep covering the name-difference and unconfirmed-code rules with the real legacy names.",
+  "taxonomySource": "Business Capability + Process.xlsx",
+  "capabilityRows": [
+    [
+      "B.06 Logistics Management",
+      "B.06.1 SupplyChain (Logistics) Strategy and Design Mgmt.",
+      "B.06.1.1 Supply Chain……Strategy Development"
+    ],
+    [
+      null,
+      "B.06.2 Order Planning Management",
+      "B.06.1.2 Supply Chain Network Strategy"
+    ],
+    [
+      null,
+      "B.06.3 Transport Management",
+      "B.06.1.3 Supply Chain Network Design"
+    ],
+    [
+      null,
+      "B.06.4 Storage Management",
+      "B.06.1.4 Supply Chain… …Infrastructure Strategy"
+    ],
+    [
+      null,
+      "B.06.5 Intra Logistics Management",
+      "B.06.1.5 Supply Chain Risk Management"
+    ],
+    [
+      null,
+      "B.06.6 Packaging and Returnables Management",
+      "B.06.1.6 Supply Chain……Innovation Management"
+    ],
+    [
+      null,
+      "B.06.7 Supply Chain (Logistics) Quality Management",
+      "B.06.1.7 Supply Chain……Process Management"
+    ],
+    [
+      null,
+      "B.06.8 Supply Chain (Logistics) Monitoring Management",
+      "B.06.1.8 Tender Management for LSP"
+    ],
+    [
+      null,
+      null,
+      "B.06.1.9 Packaging/……and Engineering"
+    ],
+    [
+      null,
+      "A",
+      "B.06.2.01 Sales and……Integration Management"
+    ],
+    [
+      null,
+      null,
+      "B.06.2.02 Material Requirements Planning"
+    ],
+    [
+      null,
+      null,
+      "B.06.2.03 Supply Chain Demand Management"
+    ],
+    [
+      null,
+      null,
+      "B.06.2.04 Supply Network Planning"
+    ],
+    [
+      null,
+      null,
+      "B.06.2.05 Production Scheduling Management"
+    ],
+    [
+      null,
+      null,
+      "B.06.2.06 Procurement Scheduling Management"
+    ],
+    [
+      null,
+      null,
+      "B.06.2.07 Technical……Management Logistics"
+    ],
+    [
+      null,
+      null,
+      "B.06.2.08 Target Inventory Management"
+    ],
+    [
+      null,
+      null,
+      "B.06.2.09 Supply Chain……Crisis Management"
+    ],
+    [
+      null,
+      null,
+      "B.06.2.10 Order Planning Simulation"
+    ],
+    [
+      null,
+      null,
+      "B.06.3.1 Transport Planning Management"
+    ],
+    [
+      null,
+      null,
+      "B.06.3.2 Transport Execution Management"
+    ],
+    [
+      null,
+      null,
+      "B.06.3.3 Transport Safety Management"
+    ],
+    [
+      null,
+      null,
+      "B.06.3.4 Freight Cost Settlement Management"
+    ],
+    [
+      null,
+      null,
+      "B.06.4.1 Stock Putaway Management"
+    ],
+    [
+      null,
+      null,
+      "B.06.4.2 Stock Removal/Picking Management"
+    ],
+    [
+      null,
+      null,
+      "B.06.4.4 Physical Inventory Management"
+    ],
+    [
+      null,
+      null,
+      "B.06.4.5 Storage……Duration Management"
+    ],
+    [
+      null,
+      null,
+      "B.06.4.6 Storage Strategy Management"
+    ],
+    [
+      null,
+      null,
+      "B.06.5.1 Goods Receipt Management"
+    ],
+    [
+      null,
+      null,
+      "B.06.5.2 Goods Replenishment Management"
+    ],
+    [
+      null,
+      null,
+      "B.06.5.3 Goods Issue Management"
+    ],
+    [
+      null,
+      null,
+      "B.06.5.4 Dock & Yard Management"
+    ],
+    [
+      null,
+      null,
+      "B.06.5.5 Supply Chain……Infrastructure Management"
+    ],
+    [
+      null,
+      null,
+      "B.06.6.1 Returnables Management"
+    ],
+    [
+      null,
+      null,
+      "B.06.6.2 Packaging Management"
+    ],
+    [
+      null,
+      null,
+      "B.06.6.3 Renewables Management"
+    ],
+    [
+      null,
+      null,
+      "B.06.7.1 Supply Chain……Traceability Management"
+    ],
+    [
+      null,
+      null,
+      "B.06.7.2 Supply Chain……Requirement Management"
+    ],
+    [
+      null,
+      null,
+      "B.06.7.3 Supply Chain……FMEA Management"
+    ],
+    [
+      null,
+      null,
+      "B.06.7.4 Supply Chain……Claim Management"
+    ],
+    [
+      null,
+      null,
+      "B.06.7.5 Supply Chain……Development Management"
+    ],
+    [
+      null,
+      null,
+      "B.06.8.1 Supply Chain……Reporting Mgmt."
+    ],
+    [
+      null,
+      null,
+      "B.06.8.2 Supply Chain……and Tracking Mgmt."
+    ],
+    [
+      null,
+      null,
+      "B.06.8.3 Supply Chain (Logistics) Analytics"
+    ]
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "createdAt": "2026-10-20T03:08:38.906Z",
+  "snapshot": "20261019_v5",
+  "applications": 76,
+  "tests": {
+    "passed": 336,
+    "failed": 0,
+    "log": "verification/test-results.txt"
+  },
+  "offlineHTML": "offline/物流工具_最新版_离线单文件_20261019.html",
+  "source": "program/",
+  "workspace": "latest-workspace.json",
+  "browserVisualVerification": "offline HTML checked in a local browser over http://127.0.0.1 (not file://); hosted sign-in not verified",
+  "browserTabUnsavedChangesIncluded": false,
+  "gitHistoryIncluded": false,
+  "nodeModulesIncluded": false,
+  "workspaceFormatVersion": 6,
+  "nodeVerified": "v24.22.0"
+}

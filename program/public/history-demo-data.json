@@ -1,0 +1,61 @@
+{
+  "demo": true,
+  "notice": "Fictional history for presentation only. Not a real application or an importable workspace.",
+  "app": {
+    "ID": "DEMO-HISTORY-001",
+    "Name": "AGV Operations Dashboard (Demo)"
+  },
+  "events": [
+    {
+      "id": "DEMO-20261001-NAME",
+      "at": "2026-10-01T09:00:00+08:00",
+      "kind": "import",
+      "source": "system",
+      "actor": "Workspace import",
+      "description": "Demo import: renamed the application to describe its performance reporting purpose.",
+      "inventoryFile": "DEMO_inventory_20261001.xlsx",
+      "details": [
+        {"field": "Name", "before": "AGV Monitor (Demo)", "after": "AGV Performance Dashboard (Demo)"}
+      ]
+    },
+    {
+      "id": "DEMO-20261004-DESCRIPTION",
+      "at": "2026-10-04T14:30:00+08:00",
+      "kind": "import",
+      "source": "system",
+      "actor": "Workspace import",
+      "description": "Demo import: clarified the operational measures covered by the application.",
+      "inventoryFile": "DEMO_inventory_20261004.xlsx",
+      "details": [
+        {"field": "Description", "before": "Tracks AGV task completion.", "after": "Tracks AGV task completion, cycle time and late deliveries.\nSupports daily warehouse performance reviews."}
+      ]
+    },
+    {
+      "id": "DEMO-20261008-NAME",
+      "at": "2026-10-08T10:15:00+08:00",
+      "kind": "import",
+      "source": "system",
+      "actor": "Workspace import",
+      "description": "Demo import: renamed the application again to reflect its broader operations scope.",
+      "inventoryFile": "DEMO_inventory_20261008.xlsx",
+      "details": [
+        {"field": "Name", "before": "AGV Performance Dashboard (Demo)", "after": "AGV Operations Dashboard (Demo)"}
+      ]
+    },
+    {
+      "id": "DEMO-20261012-MAPPING",
+      "at": "2026-10-12T16:45:00+08:00",
+      "kind": "mapping",
+      "source": "review",
+      "actor": "Demo data steward (fictional)",
+      "description": "Demo data correction: mapped a non-standard source process entry to a fictional standard entry. The source entry is kept unchanged.",
+      "mapping": {
+        "dimension": "process",
+        "raw": "AGV performance reporting (demo source entry)",
+        "targetId": "DEMO.P.1.1",
+        "targetName": "Operations reporting (fictional standard entry)",
+        "reason": "Demo correction: the source entry used a non-standard process name. The original source entry is kept; only the mapping to the standard entry is recorded."
+      }
+    }
+  ]
+}

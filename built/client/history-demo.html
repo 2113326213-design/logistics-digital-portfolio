@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1">
+ <title>DEMO · History Before / After</title>
+ <link rel="stylesheet" href="style.css">
+ <link rel="stylesheet" href="interface.css">
+ <link rel="stylesheet" href="history-demo.css">
+</head>
+<body class="history-demo-page">
+ <div class="history-demo-banner"><strong>DEMO · Fictional data</strong><span>Fictional history · Real records are not changed</span><a href="/?admin=1">Back to inventory</a></div>
+ <main id="detail" class="history-demo-panel">
+  <div id="detailBody">
+   <div class="history-demo-heading"><p>HISTORY PREVIEW</p><h1 id="detailTitle">AGV Operations Dashboard (Demo)</h1><p>DEMO-HISTORY-001 · 4 simulated changes</p></div>
+   <p class="history-demo-intro">Names, dates and people are fictional. Select a date to jump to that change, or scroll down to read the changes from oldest to newest.</p>
+   <nav id="demoEventLinks" class="history-demo-links" aria-label="Jump to a simulated change"></nav>
+   <details class="profile-disclosure" id="demoHistory" open>
+    <summary><span>History</span><small>4 simulated events</small><span class="profile-chevron" aria-hidden="true"></span></summary>
+    <section id="demoHistoryRecords" class="profile-disclosure-body app-history" aria-label="Simulated application history"><p>Loading demo…</p></section>
+   </details>
+  </div>
+ </main>
+ <script type="module" src="history-demo.mjs"></script>
+</body>
+</html>
