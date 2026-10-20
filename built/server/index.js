@@ -130,6 +130,8 @@ function normalizeWeights(value2) {
 var DESCRIPTION_STOP_WORDS = new Set("a an and are as at be been being by can for from has have in is it of on or that the this to was were which with".split(" "));
 
 // public/pair-status.mjs
+var PAIR_STATES = Object.freeze(["Potential overlap", "Below threshold", "No complete score", "No shared registrations", "Data missing", "Needs confirmation", "More detail needed", "Out of scope"]);
+var DATA_TO_CONFIRM = Object.freeze(["Data missing", "Needs confirmation", "More detail needed"]);
 var oneDecimal = new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 });
 
 // public/costs.mjs

@@ -1,4 +1,4 @@
-import {pairResultLabel,missingPairEvidence,codeEvidenceScore,formatCodeEvidence} from './pair-status.mjs';
+import {pairResultLabel,pairStateNote,missingPairEvidence} from './pair-status.mjs';
 import {meetsThreshold,scorePoints} from './score-values.mjs';
 import {displayName} from './display.mjs';
 
@@ -16,17 +16,9 @@ export function purposeLine(app){
 }
 
 // Score, state and comparison level, kept apart (complete score / what the evidence shows / human review).
+// Since 2026-10-20 this follows the one status rule of pair-status.mjs (the single-pair summary that used it was removed).
 export function pairState(pair,threshold){
- const label=pairResultLabel(pair,threshold);
- if(pair.status==='confirmed'){
-  const score=`${points(pair.coverage)} / 100`;
-  return meetsThreshold(pair.coverage,threshold)?{score,state:'Potential overlap',note:`At or above the current threshold of ${threshold}. A high score shows shared registrations and words, not confirmed duplicate functions.`}
-   :{score,state:`Below current threshold: ${threshold}`,note:'Below the threshold does not mean the applications are confirmed to be different.'};
- }
- if(pair.status==='excluded')return {score:null,state:'Out of scope',note:'At least one application is excluded from the similarity check in the source inventory.'};
- if(label==='Not similar')return {score:null,state:'No shared registered capabilities or processes',note:'This reflects the current registrations only; the actual functions may still overlap.'};
- if(label==='Review needed'){const code=codeEvidenceScore(pair);return {score:null,state:'No shared words in names or descriptions',note:code===null?'No full score: the names and descriptions share no word.':`No full score: the names and descriptions share no word. Code evidence ${formatCodeEvidence(code)} from capabilities and processes.`};}
- return {score:null,state:label==='Data missing'?'Insufficient data':'Needs confirmation',note:'No full score yet: some records needed for the comparison are missing or not confirmed (see What needs confirmation).'};
+ return {score:pair.status==='confirmed'?`${points(pair.coverage)} / 100`:null,state:pairResultLabel(pair,threshold),note:pairStateNote(pair,threshold)};
 }
 
 // 'Capability at L2 · Process at L3', saying when finer levels were not compared.
@@ -79,7 +71,7 @@ export function compareSummary(pair,threshold,{issuesFor=()=>[]}={}){
   :clue?'Ask both owners whether these are environments of the same system; if so, record Related environments.'
   :needs.length&&pair.status!=='confirmed'?'Resolve the records under What needs confirmation first; the comparison cannot be judged yet.'
   :state.state==='Potential overlap'?'Compare the original descriptions with both application owners and record the result below.'
-  :procs.length||caps.length?'Shared registrations exist although the score is below the threshold: check with the owners whether the shared registrations are used the same way.'
+  :procs.length||caps.length?(pair.status==='confirmed'?'Shared registrations exist although the score is below the threshold: check with the owners whether the shared registrations are used the same way.':'There is no complete score, but registrations are shared: check with the owners whether the shared registrations are used the same way.')
   :'Currently no evidence of overlap from the registrations; review only if the descriptions suggest a similar purpose.';
  return {each,common,clue,differences,needs,next,state,levels:comparisonLevels(pair)};
 }

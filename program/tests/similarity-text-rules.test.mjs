@@ -16,7 +16,10 @@ import {similarityCSV} from '../public/exports.mjs';
 // "round 1" gives the value under the first implementation of (b), which dropped every single character and matched
 // the suffix before NFKC with no space allowed after the bracket).
 // Unless a fixture says otherwise, both applications record capability B.06.1 and process M.T.1, so capability and
-// process each score 1 in both directions and share a code (a held-back pair is then "Review needed").
+// process each score 1 in both directions and share a code (a held-back pair is then "No complete score").
+// Owner request 2026-10-20 renamed the labels: a confirmed pair below the threshold is "Below threshold" (was "Not
+// similar"); an investigation pair whose weighted codes are complete and share nothing is "No shared registrations"
+// (was "Not similar"); every other investigation pair is "No complete score" (was "Review needed").
 const capabilityRows=[['B.06 Logistics','B.06.1 One','B.06.2 Two']];
 const processRows=[['T','L0','M.T','Root'],['T','L1','M.T.1','One'],['T','L1','M.T.2','Two']];
 const app=(ID,Name,Description,extra={})=>({ID,Name,Description,'Business Capabilities':'B.06.1 One',Processes:'BBM PM T One L1',...extra});
@@ -43,7 +46,7 @@ test('(a) default weights: the zero-text gate behaves exactly as before',()=>{
  assert.equal(both.zeroText,true);
  assert.equal(both.coverage,null);
  assert.equal(both.reason,'Name and description both have zero overlap'+INVESTIGATE);
- assert.equal(pairResultLabel(both),'Review needed');
+ assert.equal(pairResultLabel(both),'No complete score');               // 2026-10-19: Review needed
  assert.ok(pairStatusReason(both).startsWith('No shared words in names or descriptions; compare the recorded functions.'));
  // Name 1, description 0: .1*1 + .2*0 + .3 + .4 = .8, confirmed.
  const name=pairOf(...NAME_SHARED());
@@ -64,7 +67,7 @@ test('(a) description weight 0: a zero name score alone holds the pair back even
  // Both directions are complete; normalized weights .125/0/.375/.5 give 0 + 0 + .375 + .5 = .875 each way.
  close(pair.directionalMinimum,.875);
  assert.equal(pair.reason,'Name has zero overlap'+INVESTIGATE);
- assert.equal(pairResultLabel(pair),'Review needed');
+ assert.equal(pairResultLabel(pair),'No complete score');               // 2026-10-19: Review needed
  // The wording names only the weighted text field; the code evidence is .875 = 87.5 out of 100.
  assert.equal(pairStatusReason(pair),'No shared words in names; compare the recorded functions. Code evidence 87.5 / 100 from capabilities and processes; not a pair score.');
  // Unchanged: with the same weights a shared name is above 0, so the pair stays confirmed at (.1*1 + .3 + .4)/.8 = 1.
@@ -82,7 +85,7 @@ test('(a) name weight 0: a zero description score alone holds the pair back even
  // Normalized weights 0, .2/.9, .3/.9, .4/.9: each direction 0 + 0 + (.3 + .4)/.9 = 7/9 (77.777... points).
  close(pair.directionalMinimum,7/9);
  assert.equal(pair.reason,'Description has zero overlap'+INVESTIGATE);
- assert.equal(pairResultLabel(pair),'Review needed');
+ assert.equal(pairResultLabel(pair),'No complete score');               // 2026-10-19: Review needed
  // 77.777... is shown with at most one decimal: 77.8.
  assert.equal(pairStatusReason(pair),'No shared words in descriptions; compare the recorded functions. Code evidence 77.8 / 100 from capabilities and processes; not a pair score.');
  // Unchanged: shared description words keep the pair confirmed at (.2*1 + .3 + .4)/.9 = 1.
@@ -103,7 +106,7 @@ test('(a) name and description weight 0: the gate never applies and a pair witho
  close(pair.directionalMinimum,11/14);
  assert.equal(pair.reason,CONFIRMED);
  assert.equal(pairResultLabel(pair),'Potential overlap'); // 78.57 >= 50
- assert.equal(pairResultLabel(pair,80),'Not similar');    // 78.57 < 80
+ assert.equal(pairResultLabel(pair,80),'Below threshold'); // 78.57 < 80, confirmed (2026-10-19: Not similar)
 });
 
 test('(a) a text weight of exactly 0 is ignored by the gate, while any positive weight counts',()=>{
@@ -126,14 +129,18 @@ test('(a) a text weight of exactly 0 is ignored by the gate, while any positive 
  assert.equal(pairOf(...DESCRIPTION_SHARED(),W(0,0)).status,'confirmed');        // unchanged
 });
 
-test('(a) a pair held back by its one weighted text field whose codes share nothing is Not similar',()=>{
+test('(a) a pair held back by its one weighted text field whose codes share nothing is No shared registrations',()=>{
  // Name 0 (weighted), description 1 (weight 0); capability B.06.1 vs B.06.2 and process M.T.1 vs M.T.2 share no code.
  const [a,b]=DESCRIPTION_SHARED();Object.assign(b,{'Business Capabilities':'B.06.2 Two',Processes:'BBM PM T Two L1'});
  const pair=pairOf(a,b,W(.1,0));
  assert.equal(pair.status,'investigation');              // was confirmed at 0
  assert.equal(pair.reason,'Name has zero overlap'+INVESTIGATE);
- assert.equal(pairResultLabel(pair),'Not similar');      // label unchanged (was confirmed at 0, below 50)
- assert.equal(pairStatusReason(pair),'No shared capabilities or processes'); // was the confirmed-score reason
+ // Investigation pair, weighted capability and process complete with zero common codes: No shared registrations
+ // (2026-10-19: Not similar, the same label it had when confirmed at 0, below 50).
+ assert.equal(pairResultLabel(pair),'No shared registrations');
+ // The reason names only the weighted text field (names; the description weighs 0) and both weighted code fields
+ // (2026-10-19: the fixed text 'No shared capabilities or processes'; before 2026-10-19 the confirmed-score reason).
+ assert.equal(pairStatusReason(pair),'No shared words in names and no shared capabilities or processes.');
 });
 
 test('(a) a blank description with weight 0 neither blocks nor rescues a pair; a weighted blank stays Data missing',()=>{
@@ -144,7 +151,7 @@ test('(a) a blank description with weight 0 neither blocks nor rescues a pair; a
  assert.equal(unweighted.zeroText,true);                 // was false (null description is not 0)
  assert.equal(unweighted.status,'investigation');        // was confirmed
  assert.equal(unweighted.reason,'Name has zero overlap'+INVESTIGATE);
- assert.equal(pairResultLabel(unweighted),'Review needed');
+ assert.equal(pairResultLabel(unweighted),'No complete score');         // 2026-10-19: Review needed
  // Unchanged: with default weights the blank description is missing data, not zero overlap.
  const weighted=pairOf(app('A','Alpha',''),app('B','Beta','warehouse stock'));
  assert.equal(weighted.zeroText,false);assert.equal(weighted.status,'incomplete');
@@ -304,7 +311,7 @@ test('(b) round 2: single digits stay name words; longer numbers are unchanged',
  assert.equal(digits.forward.components[0].score,0);                                    // round 1: null
  assert.equal(digits.status,'investigation');                                           // round 1: incomplete
  assert.equal(digits.reason,'Name and description both have zero overlap'+INVESTIGATE); // round 1: no gate
- assert.equal(pairResultLabel(digits),'Review needed');                                 // round 1: Needs confirmation
+ assert.equal(pairResultLabel(digits),'No complete score');                             // round 1: Needs confirmation; 2026-10-19: Review needed
 });
 
 test('(b) round 2: a single Chinese (Han) character stays a name word',()=>{
@@ -816,10 +823,11 @@ test('(b) bundled data: recovered names and plant-code names compare on their re
  assert.equal(bmlp.zeroText,true);
  assert.equal(bmlp.status,'investigation');
  assert.equal(bmlp.coverage,null);
- // Its codes are complete in both directions and both record B.06.3 Transport Management: Review needed.
+ // Its codes are complete in both directions and both record B.06.3 Transport Management: No complete score
+ // (2026-10-19: Review needed).
  assert.equal(bmlp.forward.missingWeight,0);assert.equal(bmlp.reverse.missingWeight,0);
  assert.deepEqual(missingPairEvidence(bmlp),[]);
- assert.equal(pairResultLabel(bmlp),'Review needed');
+ assert.equal(pairResultLabel(bmlp),'No complete score');
  // Round 2: the 0 of "I4.0" is a single digit and stays a word: rbcc, i4, 0, visualization, davis.
  const i40='RBCC I4.0 Visualization (Davis)';
  assert.deepEqual(textEvidence(i40,i40).shared,['rbcc','i4','0','visualization','davis']); // round 1: without '0'
@@ -874,8 +882,9 @@ test('CSV column "Zero overlap in all weighted name/description fields" prints t
   assert.equal(headers.includes('Zero name and description overlap'),false,label);    // round 1: true (old header)
   const column=headers.indexOf(COLUMN);
   assert.ok(column>=0,label);                                                          // round 1: -1
-  // It sits right after the Review needed code evidence column, as the old column did.
-  assert.equal(headers[column-1],'Review needed code evidence (out of 100)',label);    // round 1: column -1
+  // It sits right after the No complete score code evidence column (2026-10-19 header: "Review needed code evidence
+  // (out of 100)"), as the old column did.
+  assert.equal(headers[column-1],'No complete score: code evidence (out of 100)',label); // round 1: column -1
   assert.equal(row[column],expected,label);                                            // round 1: undefined
  }
  // The Method text describes the round 2 name rule (U+2026 is the ellipsis).
@@ -910,7 +919,7 @@ test('CSV gate column on Out of scope rows reports the weighted text overlap, no
   // scopeReason gives "Not an application"; U+2013 is the en dash.
   assert.equal(value('Status reason'),'Not in similarity check '+String.fromCharCode(0x2013)+' Not an application',label);
   assert.equal(value('Confirmed pair similarity (out of 100)'),'N/A',label);
-  assert.equal(value('Review needed code evidence (out of 100)'),'',label);
+  assert.equal(value('No complete score: code evidence (out of 100)'),'',label); // 2026-10-19 header: Review needed code evidence (out of 100)
   assert.equal(value(COLUMN),expected,label);
  }
  // Documented the same way: the README names the column, says it reports the zero-text gate, and defines the gate by the

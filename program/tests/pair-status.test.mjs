@@ -13,10 +13,12 @@ function fixture(a={},b={}){
  return {model,pair:createWeightedSimilarity(model).pair('A','B')};
 }
 
-test('zero text overlap with complete shared codes is Review needed, not Data missing',()=>{
+// Owner request 2026-10-20: the investigation label formerly 'Review needed' is now 'No complete score'. These fixtures
+// share capability B.06.1 and process M.T.1 (common codes > 0), so they are not 'No shared registrations'.
+test('zero text overlap with complete shared codes is No complete score, not Data missing',()=>{
  const {pair}=fixture({Name:'Alpha',Description:'orchard'},{Name:'Beta',Description:'tunnel'});
  assert.equal(pair.status,'investigation');assert.equal(pair.forward.missingWeight,0);
- assert.deepEqual(missingPairEvidence(pair),[]);assert.equal(pairResultLabel(pair),'Review needed');
+ assert.deepEqual(missingPairEvidence(pair),[]);assert.equal(pairResultLabel(pair),'No complete score');
 });
 
 test('blank source description is Data missing while an unknown capability Needs confirmation',()=>{
@@ -77,10 +79,10 @@ test('the zero-overlap reason names only the text fields that carry weight',()=>
 
 test('a text field without weight cannot hold a pair back, and without a weighted text field the gate never applies',()=>{
  // "Shared Alpha" vs "Shared Beta" share "shared" (name Jaccard 1/3) but the name carries no weight; the weighted
- // description shares nothing → held back as Review needed.
+ // description shares nothing → held back as No complete score.
  const p=weighted({name:0,description:.2,cap:.3,process:.5},{Name:'Shared Alpha',Description:'orchard'},{Name:'Shared Beta',Description:'tunnel'});
  assert.equal(p.forward.components.find(c=>c.key==='name').score,1/3);
- assert.equal(p.status,'investigation');assert.equal(pairResultLabel(p),'Review needed');
+ assert.equal(p.status,'investigation');assert.equal(pairResultLabel(p),'No complete score');
  // No weighted text field: names and descriptions both 0 but weightless → confirmed at capability 1 × .5 + process 1 × .5 = 1.
  const q=weighted({name:0,description:0,cap:.5,process:.5},ZERO_A,ZERO_B);
  assert.equal(q.status,'confirmed');assert.equal(q.coverage,1);assert.equal(pairResultLabel(q),'Potential overlap');
@@ -100,12 +102,12 @@ test('the code evidence sentence names only the code fields that carry weight',(
 
 test('a lone letter or a "(recovered …)" suffix is not a shared name word',()=>{
  // camelCase splitting gives {qin, p, alpha} and {wx, p, beta}: the shared "p" used to make the names overlap (1/5).
- // Without single letters the names share nothing → Review needed with code evidence 70 (0.3 + 0.4).
+ // Without single letters the names share nothing → No complete score with code evidence 70 (0.3 + 0.4).
  const plant=weighted(undefined,{Name:'QinP Alpha',Description:'orchard'},{Name:'WxP Beta',Description:'tunnel'});
- assert.equal(pairResultLabel(plant),'Review needed');assert.equal(pairStatusReason(plant),sentence('names or descriptions','70'));
+ assert.equal(pairResultLabel(plant),'No complete score');assert.equal(pairStatusReason(plant),sentence('names or descriptions','70'));
  // The LeanIX suffix used to add "recovered", "2025" and "19" as shared words (3/13).
  const recovered=weighted(undefined,{Name:'Alpha (recovered 2025-12-19 10:03:06)',Description:'orchard'},{Name:'Beta (recovered 2025-11-19 08:20:28)',Description:'tunnel'});
- assert.equal(pairResultLabel(recovered),'Review needed');assert.equal(pairStatusReason(recovered),sentence('names or descriptions','70'));
+ assert.equal(pairResultLabel(recovered),'No complete score');assert.equal(pairStatusReason(recovered),sentence('names or descriptions','70'));
  // A real word is still shared: {qin, label} vs {wx, label} = 1/3 → confirmed, 0.1 × 1/3 + 0.3 + 0.4.
  const word=weighted(undefined,{Name:'QinP Label',Description:'orchard'},{Name:'WxP Label',Description:'tunnel'});
  assert.equal(word.status,'confirmed');assert(Math.abs(word.coverage-(0.1/3+0.7))<1e-12,String(word.coverage));
@@ -115,7 +117,7 @@ test('a single digit or a single Chinese character is still a name word; a full-
  // Round 2 (2026-10-19): only single LETTERS are ignored. Codes are shared 1/1 both ways and the descriptions share
  // nothing, so a shared name word gives a confirmed 0.1 × name Jaccard + 0.3 + 0.4.
  const confirmed=(pair,jaccard,message)=>{assert.equal(pair.status,'confirmed',message);assert(Math.abs(pair.coverage-(0.1*jaccard+0.7))<1e-12,`${message}: ${pair.coverage}`);};
- // {alpha, 7} vs {beta, 7} → 1/3 (round 1 dropped the "7" and held the pair back as Review needed).
+ // {alpha, 7} vs {beta, 7} → 1/3 (round 1 dropped the "7" and held the pair back as Review needed, now labelled No complete score).
  confirmed(weighted(undefined,{Name:'Alpha 7',Description:'orchard'},{Name:'Beta 7',Description:'tunnel'}),1/3,'shared digit');
  // {alpha, 仓} vs {beta, 仓} → 1/3 (U+4ED3, a one-character Chinese word).
  const han=String.fromCharCode(0x4ED3);
@@ -126,10 +128,10 @@ test('a single digit or a single Chinese character is still a name word; a full-
  // here and shared {recovered, 2025, 12, 19} of 12 words → confirmed 0.1 × 1/3 + 0.7; now nothing is shared.
  const [open,shut]=[0xFF08,0xFF09].map(code=>String.fromCharCode(code));
  const fullWidth=weighted(undefined,{Name:`Alpha ${open}recovered 2025-12-19 10:03:06${shut}`,Description:'orchard'},{Name:`Beta ${open}recovered 2025-12-19 08:20:28${shut}`,Description:'tunnel'});
- assert.equal(pairResultLabel(fullWidth),'Review needed');assert.equal(pairStatusReason(fullWidth),sentence('names or descriptions','70'));
+ assert.equal(pairResultLabel(fullWidth),'No complete score');assert.equal(pairStatusReason(fullWidth),sentence('names or descriptions','70'));
  // Spaces after the bracket and any letter case: round 1 shared {recovered, 2025, 19} of 7 words (3/7); now nothing.
  const spaced=weighted(undefined,{Name:'Alpha ( recovered 2025-12-19 )',Description:'orchard'},{Name:'Beta (  Recovered 2025-11-19)',Description:'tunnel'});
- assert.equal(pairResultLabel(spaced),'Review needed');assert.equal(pairStatusReason(spaced),sentence('names or descriptions','70'));
+ assert.equal(pairResultLabel(spaced),'No complete score');assert.equal(pairStatusReason(spaced),sentence('names or descriptions','70'));
 });
 
 test('mixed branch depths describe only some deeper records as deferred',()=>{

@@ -20,8 +20,8 @@ const toReview=report=>report.needsReview.map(a=>a.id);
 test('scenarios: missing levels, a bad record beside a good one, several issues counted once, a record without a level',()=>{
  const data=fixture([app('full',FULL),app('noL2','BBM PM T Test L0;BBM PM T Stage L1;BBM PM T Detail L3'),app('mixed',FULL+';BBM PM T Unknown L3'),app('several','BBM PM T Test L0;BBM PM T Detail L3;BBM PM T Unknown L3'),app('noLevel',FULL+';BBM PM T Something')]);
  const model=buildModel(data),report=maintenanceReport(model,{},'process');
- // L3 passes but L2 has no record: To review with Level 2 missing.
- assert.deepEqual(labels(report,'noL2'),['Level 2 missing']);
+ // L3 passes and its catalogue L2 parent exists: L2 is covered, nothing to review (owner decision 2026-10-20, V9.2).
+ assert.deepEqual(labels(report,'noL2'),[]);
  assert(l3MaintenanceMetrics(report).quality.some(a=>a.id==='noL2'),'its Level 3 passes');
  // One good and one bad record at the same level: the bad record is the issue.
  assert.deepEqual(labels(report,'mixed'),['Level 3 match needs review: BBM PM T Unknown L3']);
@@ -29,7 +29,7 @@ test('scenarios: missing levels, a bad record beside a good one, several issues 
  assert.deepEqual(labels(report,'several'),['Level 1 missing','Level 2 missing','Level 3 match needs review: BBM PM T Unknown L3']);
  // Every level fine, plus one record without a level.
  assert.deepEqual(labels(report,'noLevel'),['Process level not specified: BBM PM T Something']);
- assert.deepEqual(toReview(report),['noL2','mixed','several','noLevel']);
+ assert.deepEqual(toReview(report),['mixed','several','noLevel']);
  assert.equal(report.needsReview.length,new Set(toReview(report)).size,'each application once');
  assert.deepEqual(labels(report,'full'),[]);
  // A missing level is never also reported as a mismatch.
@@ -93,7 +93,7 @@ test('Show all levels does not change To review; the Total and plant rows match 
 test('bundled data: To review counts and the profile shows exactly the same issues',()=>{
  const model=buildModel(workspaceData(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url)))));
  const cap=maintenanceReport(model,{},'cap'),process=maintenanceReport(model,{},'process');
- assert.deepEqual([cap.needsReview.length,process.needsReview.length],[38,46],'Capability 53 -> 38: 15 L2-only gaps are covered by confirmed L3; Process is unchanged');
+ assert.deepEqual([cap.needsReview.length,process.needsReview.length],[38,45],'Capability 53 -> 38 (V9.1) and Process 46 -> 45 (V9.2): L2-only gaps are covered by confirmed L3');
  assert.deepEqual([l3MaintenanceMetrics(cap).notPassing.length,l3MaintenanceMetrics(process).notPassing.length],[37,21],'Level 3 metrics unchanged');
  for(const a of model.apps){
   assert.deepEqual(capabilityIssues(model,a).map(i=>[i.raw||i.label,i.findings[0]]),cap.issues.get(a.id).map(i=>[i.record||i.label,i.text]),a.Name);

@@ -81,15 +81,18 @@ test('applied L3 corrections support coverage, including an empty raw field, but
  }
 });
 
-test('the exception applies only to Capability L2, without suppressing an unrelated unknown record',()=>{
+test('L2 coverage keeps other issues; Process L2 follows the same rule since V9.2 and never fills L0 or L1',()=>{
  const data=fixture([app('noL1','B.06.1.1 Detail',{'Main Business Capability':''}),app('unknown','B.06.1.1 Detail;Unreadable assignment')]),{model,report}=reportFor(data);
  assert.deepEqual(ids(l2(report).inferred),['noL1','unknown']);
  assert(report.issues.get('noL1').some(i=>i.level===1&&i.kind==='missing'));
  assert(report.issues.get('unknown').some(i=>i.level===null&&i.kind==='record'));
- const process=maintenanceReport(model,{},'process');
- assert(process.issues.get('noL1').some(i=>i.level===2&&i.kind==='missing'));
- assert.deepEqual(capabilityLevel2Coverage(model,process,model.apps[0]),[]);
- assert.deepEqual(ids(process.levels.find(l=>l.level===2).valid),[]);
+ const process=maintenanceReport(model,{},'process'),processL2=process.levels.find(l=>l.level===2);
+ // The confirmed Level 3 'Detail' (M.T.010.010.010) has the catalogue Level 2 parent M.T.010.010: no Level 2 missing.
+ assert(!process.issues.get('noL1').some(i=>i.level===2&&i.kind==='missing'));
+ assert(process.issues.get('noL1').some(i=>i.level===0&&i.kind==='missing')&&process.issues.get('noL1').some(i=>i.level===1&&i.kind==='missing'),'L0 and L1 are still required');
+ assert.deepEqual(capabilityLevel2Coverage(model,process,model.apps[0]),[],'the capability rule reads capability records only');
+ assert.deepEqual(ids(processL2.valid),['noL1','unknown']);assert.deepEqual(ids(processL2.inferred),['noL1','unknown']);
+ assert.deepEqual(ids(processL2.filled),[],'coverage is not a direct registration');
 });
 
 test('the bundled portfolio keeps direct L2 count 54 and removes only fifteen confirmed-L3 coverage gaps',()=>{

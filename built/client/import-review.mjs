@@ -14,8 +14,17 @@ export function capabilityCatalogueChanges(currentRows,nextRows){
  const renamed=[...after].filter(([id,name])=>before.has(id)&&before.get(id)!==name).length,added=[...after.keys()].filter(id=>!before.has(id)).length,removed=[...before.keys()].filter(id=>!after.has(id)).length;
  return {renamed,added,removed,total:renamed+added+removed};
 }
+// Pair reviews (owner request 2026-10-20): a backup that differs from the current workspace only in its pair reviews
+// is still a change, so it can be previewed and applied. Counts by pair key; an edited conclusion, reviewer, reason
+// or date counts as updated.
+export function pairReviewChanges(current,next){
+ const before=current&&typeof current==='object'?current:{},after=next&&typeof next==='object'?next:{};
+ const added=Object.keys(after).filter(key=>!Object.hasOwn(before,key)).length,removed=Object.keys(before).filter(key=>!Object.hasOwn(after,key)).length;
+ const updated=Object.keys(after).filter(key=>Object.hasOwn(before,key)&&JSON.stringify(before[key])!==JSON.stringify(after[key])).length;
+ return {added,updated,removed,total:added+updated+removed,count:Object.keys(after).length};
+}
 // Status after an import is applied: application changes first, otherwise what did change.
-export const importAppliedStatus=(preview,appCount)=>preview.added.length||preview.updated.length||preview.removed.length?`Updated ${appCount} applications.`:preview.taxonomyChanged?'Taxonomy updated; no application records changed.':'Workspace updated; no application records changed.';
+export const importAppliedStatus=(preview,appCount)=>preview.added.length||preview.updated.length||preview.removed.length?`Updated ${appCount} applications.`:preview.taxonomyChanged?'Taxonomy updated; no application records changed.':preview.pairReviews?.total?`Pair reviews updated (${preview.pairReviews.count} in the workspace); no application records changed.`:'Workspace updated; no application records changed.';
 // A restored saved workspace keeps its own capability list. When the bundled data has switched to a capability
 // standard that the saved workspace does not use, say how to switch; nothing is changed automatically.
 export function catalogueNotice(saved,bundled){
@@ -48,10 +57,11 @@ export function previewImport(current,incoming,raw=incoming){
  const states=correctionStates(next);
  const beforeActivity=reviewAuditEvents(current),afterActivity=reviewAuditEvents(next),retained=new Set(afterActivity.map(e=>e.id));
  const taxonomyChanged=JSON.stringify([current.capabilityRows,current.processRows])!==JSON.stringify([next.capabilityRows,next.processRows]);
- const workspaceChanged=['reviews','corrections','reviewHistory','applicationEvents','importHistory','similarityWeights'].some(key=>JSON.stringify(current[key]??null)!==JSON.stringify(next[key]??null));
+ const pairReviews=pairReviewChanges(current.pairReviews,next.pairReviews);
+ const workspaceChanged=pairReviews.total>0||['reviews','corrections','reviewHistory','applicationEvents','importHistory','similarityWeights'].some(key=>JSON.stringify(current[key]??null)!==JSON.stringify(next[key]??null));
  const costScoresRemoved=updated.filter(app=>cleanCostScore(before.get(String(app.ID).trim())?.operationCostScore)!==null&&cleanCostScore(app.operationCostScore)===null).length;
  const scopeExclusionsRemoved=updated.filter(app=>!opportunityEligibility(before.get(String(app.ID).trim())).eligible&&opportunityEligibility(app).eligible).length;
  // Explicit blank cells in a supplied column replace recorded text; count them for the preview warning.
  const cleared=field=>updated.filter(app=>String(before.get(String(app.ID).trim())?.[field]??'').trim()&&!String(app[field]??'').trim()).length;
- return {next,added,removed,updated,unchanged:next.apps.length-added.length-updated.length,taxonomyChanged,capabilityChanges:capabilityCatalogueChanges(current.capabilityRows,next.capabilityRows),costScoresRemoved,scopeExclusionsRemoved,descriptionsCleared:cleared('Description'),lifecycleValuesCleared:cleared('Lifecycle: Current Lifecycle')+cleared('Lifecycle: Active'),ownerDecisions:ownerDecisions(raw),hasChanges:!!(added.length||removed.length||updated.length||taxonomyChanged||workspaceChanged),appliedMappings:states.filter(c=>c.state==='Applied').length,staleMappings:states.filter(c=>c.state==='Needs review').length,reviewNotes:Object.keys(next.reviews).length,activityRecords:afterActivity.length,activityRemoved:beforeActivity.filter(e=>!retained.has(e.id)).length};
+ return {next,added,removed,updated,unchanged:next.apps.length-added.length-updated.length,taxonomyChanged,capabilityChanges:capabilityCatalogueChanges(current.capabilityRows,next.capabilityRows),costScoresRemoved,scopeExclusionsRemoved,descriptionsCleared:cleared('Description'),lifecycleValuesCleared:cleared('Lifecycle: Current Lifecycle')+cleared('Lifecycle: Active'),ownerDecisions:ownerDecisions(raw),hasChanges:!!(added.length||removed.length||updated.length||taxonomyChanged||workspaceChanged),appliedMappings:states.filter(c=>c.state==='Applied').length,staleMappings:states.filter(c=>c.state==='Needs review').length,reviewNotes:Object.keys(next.reviews).length,pairReviews,activityRecords:afterActivity.length,activityRemoved:beforeActivity.filter(e=>!retained.has(e.id)).length};
 }

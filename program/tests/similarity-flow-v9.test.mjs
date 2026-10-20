@@ -63,7 +63,7 @@ test('switching dimensions keeps the selected pair and reopens its weighted stat
  const a=app('Iris').id,b=app('RCS-2000').id;ui.open({poolIds:[a,b,...ids]});
  click(doc.getElementById('compareDialog'),{cellTarget:a,cellPeer:b});
  for(const dim of ['cap','process','weighted']){click(doc.getElementById('compareDialog'),{matrixDim:dim});assert.deepEqual(ui.getState().cell,[a,b]);}
- assert.match(doc.getElementById('comparisonMatrix').innerHTML,/<details id="matrixPairGroup-0" open><summary>Code evidence · Review needed/);
+ assert.match(doc.getElementById('comparisonMatrix').innerHTML,/<details id="matrixPairGroup-0" open><summary>Code evidence · No complete score/);
 }));
 
 test('returning from a pair restores the multi-selection search, dimension, pair, expanded details and scroll',()=>withUI((ui,doc)=>{
@@ -100,7 +100,7 @@ test('legacy or damaged return state cannot select an invalid dimension or pair'
 test('no code evidence is claimed when both code weights are zero',()=>withUI((ui,doc)=>{
  const a=app('Iris').id,b=app('RCS-2000').id;
  ui.open({poolIds:[a,b]});
- assert.match(doc.getElementById('comparisonMatrix').innerHTML,/<summary>Review needed · 1<\/summary>/);
+ assert.match(doc.getElementById('comparisonMatrix').innerHTML,/<summary>No complete score · 1<\/summary>/);
  assert.doesNotMatch(doc.getElementById('comparisonMatrix').innerHTML,/Code evidence/);
  ui.restoreState({...ui.getState(),focusAppId:a,focusPeerId:b});
  assert.doesNotMatch(doc.getElementById('focusResult').innerHTML,/shared codes remain/);

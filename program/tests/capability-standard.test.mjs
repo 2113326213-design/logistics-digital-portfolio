@@ -466,6 +466,9 @@ const jaccard=(a,b)=>a.size&&b.size?[...a].filter(word=>b.has(word)).length/new 
 // The status and labels a pair had before the 2026-10-19 decision, worked out from its components with this file's own
 // copy of the old rules: old name words, and a pair held back when its name and description both score exactly 0 (at any
 // weight). Labels of unscored pairs depend only on missing evidence and codes, which the decision did not change.
+// Labels are those of the 2026-10-20 status rule (owner request): a confirmed pair below the threshold is 'Below threshold'
+// (until 2026-10-20 'Not similar'); investigation pairs take the program's label ('No shared registrations' and 'No complete
+// score', until 2026-10-20 'Not similar' and 'Review needed').
 const atThreshold=(value,threshold)=>Math.round(value*1e9)>=Math.round(threshold*1e7);
 const beforeDecision=p=>{
  const name=jaccard(oldNameWords(p.target.app.Name),oldNameWords(p.peer.app.Name));
@@ -473,7 +476,7 @@ const beforeDecision=p=>{
  const [forward,reverse]=[total(p.forward),total(p.reverse)];
  const status=!p.scopeEligible?'excluded':name===0&&p.forward.components.find(c=>c.key==='description').score===0?'investigation':forward!==null&&reverse!==null?'confirmed':'incomplete';
  const coverage=status==='confirmed'?Math.min(forward,reverse):null;
- const label=threshold=>status==='confirmed'?(atThreshold(coverage,threshold)?'Potential overlap':'Not similar'):status==='excluded'?'Out of scope':pairResultLabel({...p,status,coverage},threshold);
+ const label=threshold=>status==='confirmed'?(atThreshold(coverage,threshold)?'Potential overlap':'Below threshold'):status==='excluded'?'Out of scope':pairResultLabel({...p,status,coverage},threshold);
  return {status,coverage,label30:label(30),label50:label(50)};
 };
 const thresholdCounts=rows=>[30,50,60].map(t=>{const pairs=rows.filter(r=>r.status==='confirmed'&&atThreshold(r.coverage,t));return [t,new Set(pairs.flatMap(r=>[r.a,r.b])).size,pairs.length];});
@@ -487,7 +490,9 @@ test('the documented portfolio counts with the standard catalogue and, for contr
  // name and are pending like any unmatched L3, so no pair with one of these applications is confirmed and every such pair
  // in scope needs confirmation; all other pairs keep their results. Against the counts before the decision this moves
  // 21 confirmed pairs (all below 50) to incomplete (613 -> 592, 625 -> 646) and 116 labels to Needs confirmation
- // (829 -> 945: Not similar 1228 -> 1181, More detail needed 278 -> 214, Review needed 143 -> 138); at 30 the four
+ // (829 -> 945: Not similar 1228 -> 1181, More detail needed 278 -> 214, Review needed 143 -> 138; these historical counts
+ // use the labels before 2026-10-20, when 'Not similar' covered both what is now 'Below threshold' (confirmed pairs) and
+ // 'No shared registrations' (investigation pairs), and 'Review needed' is now 'No complete score'); at 30 the four
  // applications leave 2 pairs and 2 applications (43 / 73 -> 41 / 71). With the 2026-10-15 catalogue 17 confirmed pairs
  // and 96 labels move the same way.
  const L3V_PENDING=['AUTO-RACK','RBCD LOM Scrap Management Platform','Szh5_ASRS_WCS_WMS','VM-CN_WACOS_Szh5'];
@@ -499,8 +504,10 @@ test('the documented portfolio counts with the standard catalogue and, for contr
  }
  // Owner decision 2026-10-19 on the similarity check: (b) name words ignore single letters and the LeanIX
  // "(recovered …)" suffix (round 2: single digits and single Chinese characters stay words); (a) only name/description
- // fields with weight above 0 can hold a pair back (no effect with the default weights); (c) Review needed pairs show their
- // code evidence (labels unchanged). Derived independently of the program's new code: the pairs of the code before the
+ // fields with weight above 0 can hold a pair back (no effect with the default weights); (c) No complete score pairs
+ // (named Review needed until 2026-10-20) show their code evidence (labels unchanged by that decision). Labels below are
+ // those of the 2026-10-20 status rule: the old 'Not similar' is split into 'Below threshold' (confirmed pairs) and 'No
+ // shared registrations' (investigation pairs). Derived independently of the program's new code: the pairs of the code before the
  // change, re-scored by a separate script with its own copy of rule (b) as corrected in round 2 and gate (a), then compared
  // pair by pair with the program (status, pair score, directional minimum, labels at 30 and 50, name score, code evidence,
  // gate: 0 differences in either catalogue). Round 2 keeps every count of round 1: the single digit it gives back ('0' of
@@ -508,14 +515,21 @@ test('the documented portfolio counts with the standard catalogue and, for contr
  // catalogue exactly six pairs, whose names shared only a single letter and whose descriptions share no word, go to
  // investigation (next test).
  // Standard catalogue: four of them were confirmed, two incomplete, so 592 - 4 = 588 confirmed, 646 - 2 = 644 incomplete,
- // 1,247 + 6 = 1,253 investigation. One of the four (48.5) becomes Review needed (Not similar 1,181 - 1 = 1,180, Review
- // needed 138 + 1 = 139); the other three were Not similar and stay Not similar, the two incomplete pairs stay Needs
- // confirmation. At 30 the 48.5 pair leaves and with it QinP FG Smart Label Management, which has no other pair at 30:
+ // 1,247 + 6 = 1,253 investigation. The four confirmed ones were Below threshold at 50 (585 - 4 = 581): one (48.5) becomes
+ // No complete score (138 + 1 = 139), the other three No shared registrations (596 + 3 = 599); the two incomplete pairs
+ // stay Needs confirmation. (Under the labels before 2026-10-20: Not similar 1,181 - 1 = 1,180 = 581 + 599, Review needed
+ // 138 + 1 = 139.) At 30 the 48.5 pair leaves and with it QinP FG Smart Label Management, which has no other pair at 30:
  // 41 / 71 -> 40 / 70. The 94 pairs that stay confirmed with a changed score cross none of 30, 50 and 60.
- // 2026-10-15 catalogue: two were confirmed (Not similar either way), four incomplete (Needs confirmation either way):
- // 404 - 2 = 402, 834 - 4 = 830, 1,247 + 6 = 1,253; labels and thresholds unchanged (51 confirmed scores change).
+ // 2026-10-15 catalogue: two were confirmed (Below threshold before, No shared registrations now; both were Not similar
+ // under the labels before 2026-10-20), four incomplete (Needs confirmation either way): 404 - 2 = 402, 834 - 4 = 830,
+ // 1,247 + 6 = 1,253; Below threshold 402 - 2 = 400, No shared registrations 372 + 2 = 374, thresholds unchanged (51
+ // confirmed scores change).
+ // The label counts at 50 of the standard catalogue are the ones stated with the 2026-10-20 status rule; the other label
+ // counts in this test were derived by a short node script that tallied pairResultLabel of the public/ modules per
+ // catalogue and threshold (and beforeDecision with 'Below threshold' for the prior counts). Each old 'Not similar' count
+ // equals Below threshold + No shared registrations, and each old 'Review needed' count equals No complete score.
  assert.deepEqual(now.statuses,{confirmed:588,incomplete:644,investigation:1253,excluded:365});
- assert.deepEqual(now.labels,{'Potential overlap':7,'Not similar':1180,'Needs confirmation':945,'More detail needed':214,'Review needed':139,'Out of scope':365});
+ assert.deepEqual(now.labels,{'Potential overlap':7,'Below threshold':581,'No shared registrations':599,'Needs confirmation':945,'More detail needed':214,'No complete score':139,'Out of scope':365});
  assert.deepEqual(now.thresholds,[[30,40,70],[50,8,7],[60,6,3]]);
  assert.deepEqual(now.candidates.pairs.filter(p=>pairResultLabel(p,50)==='Potential overlap').map(pairName).sort(),[
   'CGQB_Logistic_system | CGQB_Logistic_system_Q','CGQB_Logistic_system | Iris','CGQB_Logistic_system | RBCD B308 AGV Traffic Control System',
@@ -525,23 +539,29 @@ test('the documented portfolio counts with the standard catalogue and, for contr
  assert(!at30.confirmedPairs.some(p=>pairName(p)==='BMLP_Nexeed_IAS@WxP | QinP FG Smart Label Management'));
  assert(!at30.confirmed.some(row=>row.app.Name==='QinP FG Smart Label Management')&&at30.confirmed.some(row=>row.app.Name==='BMLP_Nexeed_IAS@WxP'));
  assert.deepEqual(before.statuses,{confirmed:402,incomplete:830,investigation:1253,excluded:365});
- assert.deepEqual(before.labels,{'Potential overlap':2,'Not similar':774,'Needs confirmation':1450,'More detail needed':174,'Review needed':85,'Out of scope':365});
+ // 2026-10-15 catalogue at 50 (node script): Not similar 774 = Below threshold 400 (402 confirmed - 2 Potential overlap)
+ // + No shared registrations 374; Review needed 85 = No complete score 85.
+ assert.deepEqual(before.labels,{'Potential overlap':2,'Below threshold':400,'No shared registrations':374,'Needs confirmation':1450,'More detail needed':174,'No complete score':85,'Out of scope':365});
  assert.deepEqual(before.thresholds,[[30,34,59],[50,4,2],[60,4,2]]);
- // Labels at 30 (same separate script): only the confirmed pairs from 30 to 50 move from Not similar to Potential overlap.
- // Standard: 7 + 63 = 70 Potential overlap, 1,180 - 63 = 1,117 Not similar; the 48.5 pair, Potential overlap at 30 before
- // the decision, is now Review needed (71 -> 70). 2026-10-15: 2 + 57 = 59 and 774 - 57 = 717, unchanged by the decision.
- assert.deepEqual(tally(now.candidates.pairs.map(p=>pairResultLabel(p,30))),{'Potential overlap':70,'Not similar':1117,'Needs confirmation':945,'More detail needed':214,'Review needed':139,'Out of scope':365});
- assert.deepEqual(tally(before.candidates.pairs.map(p=>pairResultLabel(p,30))),{'Potential overlap':59,'Not similar':717,'Needs confirmation':1450,'More detail needed':174,'Review needed':85,'Out of scope':365});
+ // Labels at 30 (same separate script; split by the node script): only the confirmed pairs from 30 to 50 move from Below
+ // threshold to Potential overlap. Standard: 7 + 63 = 70 Potential overlap, 581 - 63 = 518 Below threshold, No shared
+ // registrations 599 as at 50 (old Not similar 1,117 = 518 + 599); the 48.5 pair, Potential overlap at 30 before the
+ // decision, is now No complete score (71 -> 70). 2026-10-15: 2 + 57 = 59 Potential overlap and 400 - 57 = 343 Below
+ // threshold, No shared registrations 374 (old Not similar 717 = 343 + 374).
+ assert.deepEqual(tally(now.candidates.pairs.map(p=>pairResultLabel(p,30))),{'Potential overlap':70,'Below threshold':518,'No shared registrations':599,'Needs confirmation':945,'More detail needed':214,'No complete score':139,'Out of scope':365});
+ assert.deepEqual(tally(before.candidates.pairs.map(p=>pairResultLabel(p,30))),{'Potential overlap':59,'Below threshold':343,'No shared registrations':374,'Needs confirmation':1450,'More detail needed':174,'No complete score':85,'Out of scope':365});
  // The counts before the decision, rebuilt in this file from each pair's components with the old rules (beforeDecision),
  // are the documented ones: standard 592 / 646 / 1,247 / 365, thresholds 41 / 71, 8 / 7, 6 / 3, Not similar 1,181 and
- // Review needed 138 at 50, Potential overlap 71 at 30; 2026-10-15 404 / 834 / 1,247 / 365 with the same labels and
- // thresholds as now.
+ // Review needed 138 at 50, Potential overlap 71 at 30; 2026-10-15 404 / 834 / 1,247 / 365 with the same thresholds as
+ // now. Under the 2026-10-20 labels (node script, beforeDecision with 'Below threshold'): standard Below threshold 585 and
+ // No shared registrations 596 at 50 (= 1,181), 521 and 596 at 30 (= 1,117), No complete score 138; 2026-10-15 Below
+ // threshold 402 and No shared registrations 372 at 50 (= 774), 345 and 372 at 30 (= 717), No complete score 85.
  const prior={standard:{statuses:{confirmed:592,incomplete:646,investigation:1247,excluded:365},thresholds:[[30,41,71],[50,8,7],[60,6,3]],
-   labels50:{'Potential overlap':7,'Not similar':1181,'Needs confirmation':945,'More detail needed':214,'Review needed':138,'Out of scope':365},
-   labels30:{'Potential overlap':71,'Not similar':1117,'Needs confirmation':945,'More detail needed':214,'Review needed':138,'Out of scope':365}},
+   labels50:{'Potential overlap':7,'Below threshold':585,'No shared registrations':596,'Needs confirmation':945,'More detail needed':214,'No complete score':138,'Out of scope':365},
+   labels30:{'Potential overlap':71,'Below threshold':521,'No shared registrations':596,'Needs confirmation':945,'More detail needed':214,'No complete score':138,'Out of scope':365}},
   '2026-10-15':{statuses:{confirmed:404,incomplete:834,investigation:1247,excluded:365},thresholds:[[30,34,59],[50,4,2],[60,4,2]],
-   labels50:{'Potential overlap':2,'Not similar':774,'Needs confirmation':1450,'More detail needed':174,'Review needed':85,'Out of scope':365},
-   labels30:{'Potential overlap':59,'Not similar':717,'Needs confirmation':1450,'More detail needed':174,'Review needed':85,'Out of scope':365}}};
+   labels50:{'Potential overlap':2,'Below threshold':402,'No shared registrations':372,'Needs confirmation':1450,'More detail needed':174,'No complete score':85,'Out of scope':365},
+   labels30:{'Potential overlap':59,'Below threshold':345,'No shared registrations':372,'Needs confirmation':1450,'More detail needed':174,'No complete score':85,'Out of scope':365}}};
  for(const [catalogue,expected] of Object.entries(prior)){
   const rows=portfolio(catalogue).candidates.pairs.map(p=>({a:p.target.app.Name,b:p.peer.app.Name,...beforeDecision(p)}));
   assert.deepEqual({statuses:tally(rows.map(r=>r.status)),thresholds:thresholdCounts(rows),labels50:tally(rows.map(r=>r.label50)),labels30:tally(rows.map(r=>r.label30))},expected,catalogue);
@@ -556,16 +576,18 @@ const SINGLE_LETTER_PAIRS={
  'RBCC I-PFEP | iTracker':'i','VMCN_iWPC_AKL_Szh5 | iTracker':'i','RBCC I-PFEP | VMCN_iSCMP: Intelligent Supply Chain management platform':'i'};
 
 test('similarity decision 2026-10-19 (b): in each catalogue exactly six pairs, whose names shared only a single letter, go to investigation',()=>{
- // Label after the change (the same at 30 and 50); before the change, from the code before it:
- // standard: BMLP | QinP confirmed 48.5 (Potential overlap at 30, Not similar at 50); QinP | ShzP_Karis confirmed 1.25,
- // I-PFEP | iTracker confirmed 2.5 and iWPC | iTracker confirmed 1.67 (only the name scored: 1/8, 1/4, 1/6 x 10, so no
- // shared code: Not similar); QinP | ShzP_DAVIS and I-PFEP | iSCMP incomplete (process needs confirmation).
+ // Label after the change (the same at 30 and 50; labels of the 2026-10-20 status rule); before the change, from the code
+ // before it: standard: BMLP | QinP confirmed 48.5 (Potential overlap at 30, Below threshold at 50); QinP | ShzP_Karis
+ // confirmed 1.25, I-PFEP | iTracker confirmed 2.5 and iWPC | iTracker confirmed 1.67 (only the name scored: 1/8, 1/4,
+ // 1/6 x 10, so no shared code: Below threshold before, No shared registrations now; both were Not similar under the
+ // labels before 2026-10-20); QinP | ShzP_DAVIS and I-PFEP | iSCMP incomplete (process needs confirmation). BMLP | QinP is
+ // No complete score now (Review needed before 2026-10-20).
  // 2026-10-15: BMLP | QinP and QinP | ShzP_Karis are incomplete there (capability needs confirmation), the rest as above.
  const expected={
-  standard:{'BMLP_Nexeed_IAS@WxP | QinP FG Smart Label Management':'Review needed','QinP FG Smart Label Management | ShzP_Karis':'Not similar','QinP FG Smart Label Management | ShzP_DAVIS':'Needs confirmation',
-   'RBCC I-PFEP | iTracker':'Not similar','VMCN_iWPC_AKL_Szh5 | iTracker':'Not similar','RBCC I-PFEP | VMCN_iSCMP: Intelligent Supply Chain management platform':'Needs confirmation'},
+  standard:{'BMLP_Nexeed_IAS@WxP | QinP FG Smart Label Management':'No complete score','QinP FG Smart Label Management | ShzP_Karis':'No shared registrations','QinP FG Smart Label Management | ShzP_DAVIS':'Needs confirmation',
+   'RBCC I-PFEP | iTracker':'No shared registrations','VMCN_iWPC_AKL_Szh5 | iTracker':'No shared registrations','RBCC I-PFEP | VMCN_iSCMP: Intelligent Supply Chain management platform':'Needs confirmation'},
   '2026-10-15':{'BMLP_Nexeed_IAS@WxP | QinP FG Smart Label Management':'Needs confirmation','QinP FG Smart Label Management | ShzP_Karis':'Needs confirmation','QinP FG Smart Label Management | ShzP_DAVIS':'Needs confirmation',
-   'RBCC I-PFEP | iTracker':'Not similar','VMCN_iWPC_AKL_Szh5 | iTracker':'Not similar','RBCC I-PFEP | VMCN_iSCMP: Intelligent Supply Chain management platform':'Needs confirmation'}};
+   'RBCC I-PFEP | iTracker':'No shared registrations','VMCN_iWPC_AKL_Szh5 | iTracker':'No shared registrations','RBCC I-PFEP | VMCN_iSCMP: Intelligent Supply Chain management platform':'Needs confirmation'}};
  for(const [catalogue,labels] of Object.entries(expected)){
   const {candidates,byName}=portfolio(catalogue);
   // Exactly these pairs are in investigation although their names shared a word under the old rule.
@@ -580,7 +602,9 @@ test('similarity decision 2026-10-19 (b): in each catalogue exactly six pairs, w
   // These six are the only pairs whose status or label (at 30 or 50) differs from before the decision (beforeDecision,
   // this file's own copy of the old rules); every other pair keeps both. Before, by hand from the old name words:
   // I-PFEP | iTracker 1/4 x 10 = 2.5, iWPC | iTracker 1/6 x 10 = 1.67, QinP | ShzP_Karis 1/8 x 10 = 1.25 points
-  // (no code in common), BMLP | QinP 48.5 (see below). Only BMLP | QinP in the standard catalogue changes its label.
+  // (no code in common), BMLP | QinP 48.5 (see below). Under the labels before 2026-10-20 only BMLP | QinP in the standard
+  // catalogue changed its label; with the 2026-10-20 labels the formerly confirmed pairs below the threshold also move from
+  // Below threshold to No shared registrations (or, for BMLP | QinP, No complete score).
   const changed=candidates.pairs.map(p=>({p,old:beforeDecision(p)})).filter(({p,old})=>old.status!==p.status||old.label30!==pairResultLabel(p,30)||old.label50!==pairResultLabel(p,50));
   assert.deepEqual(changed.map(({p})=>pairName(p)).sort(),Object.keys(SINGLE_LETTER_PAIRS).sort(),catalogue+': the pairs whose status or label changed');
   const confirmedBefore=catalogue==='standard'?{'BMLP_Nexeed_IAS@WxP | QinP FG Smart Label Management':.485,'QinP FG Smart Label Management | ShzP_Karis':.0125,'RBCC I-PFEP | iTracker':.025,'VMCN_iWPC_AKL_Szh5 | iTracker':.1/6}:{'RBCC I-PFEP | iTracker':.025,'VMCN_iWPC_AKL_Szh5 | iTracker':.1/6};
@@ -588,7 +612,7 @@ test('similarity decision 2026-10-19 (b): in each catalogue exactly six pairs, w
    const name=pairName(p),score=confirmedBefore[name];
    assert.equal(old.status,score===undefined?'incomplete':'confirmed',catalogue+': '+name);
    if(score!==undefined)near(old.coverage,score,catalogue+': '+name);
-   const was=name.startsWith('BMLP')&&catalogue==='standard'?['Potential overlap','Not similar']:score===undefined?['Needs confirmation','Needs confirmation']:['Not similar','Not similar'];
+   const was=name.startsWith('BMLP')&&catalogue==='standard'?['Potential overlap','Below threshold']:score===undefined?['Needs confirmation','Needs confirmation']:['Below threshold','Below threshold'];
    assert.deepEqual([old.label30,old.label50],was,catalogue+': '+name);
   }
  }
@@ -709,11 +733,12 @@ test('the seven Potential overlap pairs at 50 stay the same; two scores rise bec
  for(const name of ['Control Tower | Physical Logistics Management System','Datahub (recovered 2025-12-19 10:03:06) | RBCC_CDP'])near(old15.byName.get(name).coverage,expected[name],name);
 });
 
-test('similarity decision 2026-10-19 (c): every Review needed pair shows its code evidence, the lower capability and process total; no other pair has one',()=>{
+test('similarity decision 2026-10-19 (c): every No complete score pair shows its code evidence, the lower capability and process total; no other pair has one',()=>{
+ // 'No complete score' was named 'Review needed' until the 2026-10-20 status rule; codeEvidenceScore keys on the new label.
  const codeEvidence=pairStatusModule.codeEvidenceScore;
  assert.equal(typeof codeEvidence,'function');
  // Distribution derived independently (component scores of the code before the change, rule (b) and gate (a) applied by
- // the separate script; 0 differences from the program): 139 Review needed pairs in the standard catalogue (138 before
+ // the separate script; 0 differences from the program): 139 No complete score pairs in the standard catalogue (138 before
  // plus BMLP | QinP at 47.5), 85 in the 2026-10-15 catalogue. Keys are points out of 100.
  const expected={
   standard:{'30':57,'15':23,'10':21,'20':12,'7.5':9,'5':5,'47.5':4,'40':3,'22.5':2,'6':1,'50':1,'70':1},
@@ -722,7 +747,7 @@ test('similarity decision 2026-10-19 (c): every Review needed pair shows its cod
   const seen=[];
   for(const p of portfolio(catalogue).candidates.pairs){
    const value=codeEvidence(p);
-   if(pairResultLabel(p,50)!=='Review needed'){assert.equal(value,null,pairName(p));continue;}
+   if(pairResultLabel(p,50)!=='No complete score'){assert.equal(value,null,pairName(p));continue;}
    // The weighted name and description score 0, so each directional total is its capability and process points.
    assert([p.forward,p.reverse].every(d=>component(d,'name').score===0&&component(d,'description').score===0),pairName(p));
    const own=ownCodeEvidence(p);
@@ -734,27 +759,28 @@ test('similarity decision 2026-10-19 (c): every Review needed pair shows its cod
   assert.deepEqual(tally(seen),distribution,catalogue);
  }
  // Owner-confirmed example of 2026-10-15: Iris | RCS-2000 showed 'Unavailable · Review needed' with a directional weighted
- // subtotal of 30.0; that is its code evidence (capability 100% x 30 in both directions, process 0).
+ // subtotal of 30.0 (since 2026-10-20 the status reads 'No complete score'); that is its code evidence (capability 100% x
+ // 30 in both directions, process 0).
  const {byName}=portfolio('standard'),rcs=byName.get('Iris | RCS-2000'),agv=byName.get('Iris | RBCD B308 AGV Traffic Control System');
- assert.equal(pairResultLabel(rcs,50),'Review needed');near(codeEvidence(rcs),.3,'Iris | RCS-2000');
+ assert.equal(pairResultLabel(rcs,50),'No complete score');near(codeEvidence(rcs),.3,'Iris | RCS-2000');
  assert.equal(pairStatusReason(rcs,50),'No shared words in names or descriptions; compare the recorded functions. Code evidence 30 / 100 from capabilities and processes; not a pair score.');
  // Iris | RBCD B308 AGV Traffic Control System: capability 100% x 30 + process 100% x 40 = 70 in both directions.
- assert.equal(pairResultLabel(agv,50),'Review needed');near(codeEvidence(agv),.7,'Iris | RBCD B308 AGV Traffic Control System');
+ assert.equal(pairResultLabel(agv,50),'No complete score');near(codeEvidence(agv),.7,'Iris | RBCD B308 AGV Traffic Control System');
  // Round 2: the reason names only the code fields that carry weight. One pair at a time (no portfolio needed).
  const model=buildModel(data),id=name=>model.apps.find(app=>app.Name===name).id;
  const pairWith=(weights,a,b)=>createWeightedSimilarity(model,weights).pair(id(a),id(b));
  const AGV='RBCD B308 AGV Traffic Control System',PREFIX='No shared words in names or descriptions; compare the recorded functions.';
  // Process weight 0: weights 1/6, 2/6, 3/6, 0. Iris | RCS-2000 capability 100% x 3/6 = 50 in both directions.
  const capOnly=pairWith({name:.1,description:.2,cap:.3,process:0},'Iris','RCS-2000');
- assert.equal(pairResultLabel(capOnly,50),'Review needed');near(codeEvidence(capOnly),.5,'process weight 0');
+ assert.equal(pairResultLabel(capOnly,50),'No complete score');near(codeEvidence(capOnly),.5,'process weight 0');
  assert.equal(pairStatusReason(capOnly,50),PREFIX+' Code evidence 50 / 100 from capabilities; not a pair score.');
  // Capability weight 0: weights 1/7, 2/7, 0, 4/7. Iris | RBCD B308 process 100% x 4/7 = 57.14 (shown 57.1).
  const processOnly=pairWith({name:.1,description:.2,cap:0,process:.4},'Iris',AGV);
- assert.equal(pairResultLabel(processOnly,50),'Review needed');near(codeEvidence(processOnly),4/7,'capability weight 0');
+ assert.equal(pairResultLabel(processOnly,50),'No complete score');near(codeEvidence(processOnly),4/7,'capability weight 0');
  assert.equal(pairStatusReason(processOnly,50),PREFIX+' Code evidence 57.1 / 100 from processes; not a pair score.');
- // No code weight: still Review needed, but no code evidence and no code sentence.
+ // No code weight: still No complete score, but no code evidence and no code sentence.
  const textOnly=pairWith({name:.5,description:.5,cap:0,process:0},'Iris',AGV);
- assert.deepEqual([textOnly.status,pairResultLabel(textOnly,50),codeEvidence(textOnly),pairStatusReason(textOnly,50)],['investigation','Review needed',null,PREFIX]);
+ assert.deepEqual([textOnly.status,pairResultLabel(textOnly,50),codeEvidence(textOnly),pairStatusReason(textOnly,50)],['investigation','No complete score',null,PREFIX]);
 });
 
 test('similarity decision 2026-10-19 (a): only name and description fields with weight above 0 hold a pair back (real portfolio, standard catalogue)',()=>{
@@ -764,14 +790,17 @@ test('similarity decision 2026-10-19 (a): only name and description fields with 
  // Name weight 0: a pair is held back when its descriptions share no word, whatever its names share.
  const W0={name:0,description:.2,cap:.3,process:.4},noName=portfolio('standard',W0);
  assert.deepEqual(noName.statuses,{confirmed:461,incomplete:558,investigation:1466,excluded:365});
- assert.deepEqual(noName.labels,{'Potential overlap':7,'Not similar':1155,'Needs confirmation':945,'More detail needed':214,'Review needed':164,'Out of scope':365});
+ // Labels of the 2026-10-20 status rule, split by a short node script over the public/ modules: the old Not similar 1,155
+ // = Below threshold 454 (461 confirmed - 7 Potential overlap) + No shared registrations 701; Review needed 164 = No
+ // complete score 164.
+ assert.deepEqual(noName.labels,{'Potential overlap':7,'Below threshold':454,'No shared registrations':701,'Needs confirmation':945,'More detail needed':214,'No complete score':164,'Out of scope':365});
  assert.deepEqual(noName.thresholds,[[30,43,61],[50,10,7],[60,6,3]]);
  // CGQB_Logistic_system | D-sample tracking system: the names share 'system' (1 of 5 words), the descriptions nothing.
  // Weights normalized to 0 / 2/9 / 3/9 / 4/9; capability 20% one way and 100% the other, process 0: code evidence
  // min(.2, 1) x 3/9 = 6.67 (shown 6.7). Before the change it was confirmed at 6.67.
  const dsample=noName.byName.get('CGQB_Logistic_system | D-sample tracking system');
  assert.equal(component(dsample.forward,'name').score,1/5);
- assert.deepEqual([dsample.status,pairResultLabel(dsample,50)],['investigation','Review needed']);
+ assert.deepEqual([dsample.status,pairResultLabel(dsample,50)],['investigation','No complete score']);
  assert.equal(dsample.reason,'Description has zero overlap; investigate the underlying function before treating this as an opportunity.');
  near(pairStatusModule.codeEvidenceScore?.(dsample),.2*3/9,'code evidence');
  assert.equal(pairStatusReason(dsample,50),'No shared words in descriptions; compare the recorded functions. Code evidence 6.7 / 100 from capabilities and processes; not a pair score.');
@@ -781,10 +810,12 @@ test('similarity decision 2026-10-19 (a): only name and description fields with 
  const rcs=noDescription.byName.get('Iris | RCS-2000');
  assert.equal(rcs.reason,'Name has zero overlap; investigate the underlying function before treating this as an opportunity.');
  assert.equal(pairStatusReason(rcs,50),'No shared words in names; compare the recorded functions. Code evidence 37.5 / 100 from capabilities and processes; not a pair score.');
- // Name and description weight 0: nothing holds a pair back, so no pair is in investigation and none is Review needed.
+ // Name and description weight 0: nothing holds a pair back, so no pair is in investigation and none is No complete score
+ // or No shared registrations; the old Not similar 1,303 are all confirmed pairs below 50, now Below threshold
+ // (1,326 - 23; node script over the public/ modules).
  const codeOnly=portfolio('standard',{name:0,description:0,cap:.3,process:.4});
  assert.deepEqual(codeOnly.statuses,{confirmed:1326,incomplete:1159,excluded:365});
- assert.deepEqual(codeOnly.labels,{'Potential overlap':23,'Not similar':1303,'Needs confirmation':945,'More detail needed':214,'Out of scope':365});
+ assert.deepEqual(codeOnly.labels,{'Potential overlap':23,'Below threshold':1303,'Needs confirmation':945,'More detail needed':214,'Out of scope':365});
  assert.deepEqual(codeOnly.thresholds,[[30,51,141],[50,23,23],[60,14,14]]);
  // Iris | RBCD B308 AGV Traffic Control System: capability and process 100% -> 3/7 + 4/7 = 100; Iris | RCS-2000: 3/7 = 42.86.
  near(codeOnly.byName.get('Iris | RBCD B308 AGV Traffic Control System').coverage,1,'Iris | RBCD B308');near(codeOnly.byName.get('Iris | RCS-2000').coverage,3/7,'Iris | RCS-2000');
@@ -795,29 +826,32 @@ test('the weighted CSV reports the zero-text gate as "Zero overlap in all weight
  // Round 2 of the 2026-10-19 decision renamed the column "Zero name and description overlap" (it said Yes for pairs whose
  // names share words when the name weight is 0); the value is still the gate (a): every weighted name/description field 0.
  const COLUMN='Zero overlap in all weighted name/description fields';
+ // The code evidence column, renamed with the 2026-10-20 status rule (was 'Review needed code evidence (out of 100)').
+ const CODE_COLUMN='No complete score: code evidence (out of 100)';
  const parse=csv=>csv.replace(String.fromCharCode(0xFEFF),'').split('\r\n').map(line=>[...line.matchAll(/"((?:[^"]|"")*)"(?:,|$)/g)].map(match=>match[1].replaceAll('""','"')));
  const exported=(pairs,weights)=>{
   const [header,...rows]=parse(similarityCSV(pairs,'weighted',weights?{...data,similarityWeights:weights}:data,{threshold:50}));
   assert.deepEqual(header.filter(name=>/zero/i.test(name)),[COLUMN],'one zero-overlap column, under its new name');
-  assert.equal(header.indexOf(COLUMN),header.indexOf('Review needed code evidence (out of 100)')+1);
+  assert.equal(header.indexOf(COLUMN),header.indexOf(CODE_COLUMN)+1);
   assert(rows.every(row=>row.length===header.length));
   return new Map(rows.map(row=>{const record=Object.fromEntries(header.map((name,index)=>[name,row[index]]));return [[record['Application A'],record['Application B']].sort().join(' | '),record];}));
  };
- const fields=record=>[record[COLUMN],record['Status'],record['Confirmed pair similarity (out of 100)'],record['Review needed code evidence (out of 100)']];
+ const fields=record=>[record[COLUMN],record['Status'],record['Confirmed pair similarity (out of 100)'],record[CODE_COLUMN]];
  const DSAMPLE='CGQB_Logistic_system | D-sample tracking system',BMLP='BMLP_Nexeed_IAS@WxP | QinP FG Smart Label Management',RCS='Iris | RCS-2000';
  // Name weight 0: D-sample's names share 'system' (1/5) but carry no weight and the descriptions share nothing, so the
- // gate holds: Yes, Review needed, code evidence min(.2, 1) x 3/9 = 6.6667. Iris | RCS-2000 shares no word at all: Yes.
+ // gate holds: Yes, No complete score, code evidence min(.2, 1) x 3/9 = 6.6667. Iris | RCS-2000 shares no word at all: Yes.
  const W0={name:0,description:.2,cap:.3,process:.4},noName=portfolio('standard',W0);
  assert(component(noName.byName.get(DSAMPLE).forward,'name').score>0,'the names share a word');
  const zeroName=exported([DSAMPLE,RCS].map(name=>noName.byName.get(name)),W0);
- assert.deepEqual(fields(zeroName.get(DSAMPLE)),['Yes','Review needed','N/A','6.6667']);
+ assert.deepEqual(fields(zeroName.get(DSAMPLE)),['Yes','No complete score','N/A','6.6667']);
  // Iris | RCS-2000 at name weight 0: capability 100% x 3/9 = 33.3333 in both directions.
- assert.deepEqual(fields(zeroName.get(RCS)),['Yes','Review needed','N/A','33.3333']);
- // Default weights: the shared name word now counts, so D-sample is confirmed at 1/5 x 10 + 20% x 30 = 8 (No); BMLP | QinP
- // shares nothing in either weighted field (Yes, code evidence 47.5).
+ assert.deepEqual(fields(zeroName.get(RCS)),['Yes','No complete score','N/A','33.3333']);
+ // Default weights: the shared name word now counts, so D-sample is confirmed at 1/5 x 10 + 20% x 30 = 8 (No; a confirmed
+ // pair below 50: Below threshold, Not similar before 2026-10-20); BMLP | QinP shares nothing in either weighted field
+ // (Yes, code evidence 47.5).
  const standard=portfolio('standard'),byDefault=exported([DSAMPLE,BMLP].map(name=>standard.byName.get(name)),undefined);
- assert.deepEqual(fields(byDefault.get(DSAMPLE)),['No','Not similar','8.0000','']);
- assert.deepEqual(fields(byDefault.get(BMLP)),['Yes','Review needed','N/A','47.5000']);
+ assert.deepEqual(fields(byDefault.get(DSAMPLE)),['No','Below threshold','8.0000','']);
+ assert.deepEqual(fields(byDefault.get(BMLP)),['Yes','No complete score','N/A','47.5000']);
 });
 
 test('a saved workspace that still lists HC entries is told how to remove them, even under the same source name',()=>{

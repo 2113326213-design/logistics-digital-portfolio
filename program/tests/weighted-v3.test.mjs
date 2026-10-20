@@ -6,7 +6,9 @@ import {belowThresholdConfirmedPairs,createWeightedSimilarity,portfolioCandidate
 
 const data=JSON.parse(fs.readFileSync(new URL('../public/data.json',import.meta.url)));
 
-test('threshold-below confirmed pairs join the existing Not similar diagnostic count',()=>{
+// The old 'Not similar' count (1,180 at threshold 50) is now split into 'Below threshold' (confirmed, 581) and
+// 'No shared registrations' (investigation, 599); verified against public/pair-status.mjs pairResultLabel with a node script.
+test('threshold-below confirmed pairs (Below threshold) are counted separately from No shared registrations investigation pairs',()=>{
  const candidates=portfolioCandidates(createWeightedSimilarity(buildModel(data)));
  const below=belowThresholdConfirmedPairs(candidates.pairs,50);
  const notSimilarInvestigations=candidates.pairs.filter(pair=>pair.status==='investigation'&&[pair.forward,pair.reverse].every(result=>result.components.filter(component=>['cap','process'].includes(component.key)).every(component=>component.score!==null&&component.result.commonCount===0)));

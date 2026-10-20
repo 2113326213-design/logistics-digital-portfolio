@@ -51,24 +51,26 @@ test('confirmed example 2: Iris vs RBCW process directions 100% and 1/3, total U
  assert.match(missingPairEvidence(p).map(item=>item.reason).join(' '),/B\.06 root/);
 });
 
-test('confirmed example 3: ARS–Iris 31.3, ARS–RCS-2000 32.1, Iris–RCS-2000 Unavailable with Review needed and a 30.0 subtotal',()=>{
+test('confirmed example 3: ARS–Iris 31.3, ARS–RCS-2000 32.1, Iris–RCS-2000 has no complete score (No complete score) and a 30.0 subtotal',()=>{
  const ai=pair('ARS','Iris'),ar=pair('ARS','RCS-2000'),ir=pair('Iris','RCS-2000');
  close(ai.coverage,0.3125);assert.equal(shown(ai.coverage),'31.3');
  close(ar.coverage,0.32105263157894737);assert.equal(shown(ar.coverage),'32.1');
  assert.equal(ir.status,'investigation');assert.equal(ir.coverage,null);close(ir.directionalMinimum,0.3);assert.equal(shown(ir.directionalMinimum),'30');
- assert.equal(pairResultLabel(ir),'Review needed');assert.deepEqual(missingPairEvidence(ir),[]);
+ // Owner request 2026-10-20: an investigation pair with shared codes (capability 1/1 here) is 'No complete score' (was 'Review needed').
+ assert.equal(pairResultLabel(ir),'No complete score');assert.deepEqual(missingPairEvidence(ir),[]);
 });
 
 test('threshold labels are inclusive, use settled scores and keep Out of scope separate',()=>{
  const tower=pair('Control Tower','RBCC LOG Control Tower V2');
  assert.equal(tower.status,'confirmed');assert.equal(shown(tower.coverage),'34');
- assert.equal(pairResultLabel(tower,34),'Potential overlap','an exact 34 meets a threshold of 34');assert.equal(pairResultLabel(tower,35),'Not similar');
+ // Owner request 2026-10-20: a confirmed pair below the threshold is 'Below threshold' (was 'Not similar').
+ assert.equal(pairResultLabel(tower,34),'Potential overlap','an exact 34 meets a threshold of 34');assert.equal(pairResultLabel(tower,35),'Below threshold');
  const candidates=portfolioCandidates(index);
  assert(portfolioAtThreshold(candidates,34).confirmedPairs.some(p=>p.key===tower.key));
  assert(!belowThresholdConfirmedPairs(candidates.pairs,34).some(p=>p.key===tower.key));
  assert(belowThresholdConfirmedPairs(candidates.pairs,35).some(p=>p.key===tower.key));
  const excluded=candidates.pairs.find(p=>p.status==='excluded');assert.equal(pairResultLabel(excluded),'Out of scope');
- assert.equal(pairResultLabel({...tower,coverage:.5},50),'Potential overlap');assert.equal(pairResultLabel({...tower,coverage:.4999},50),'Not similar');
+ assert.equal(pairResultLabel({...tower,coverage:.5},50),'Potential overlap');assert.equal(pairResultLabel({...tower,coverage:.4999},50),'Below threshold');
  assert.equal(meetsThreshold(0.33999999999999997,34),true);assert.equal(meetsThreshold(null,0),false);
 });
 
@@ -106,24 +108,31 @@ test('real CSV exports never list a B.06 root or L0 chain as a confirmed shared 
 test('weighted CSV status matches the UI label and capability/process CSV marks Out of scope',()=>{
  const p=pair('Iris','RCS-2000'),tower=pair('Control Tower','RBCC LOG Control Tower V2');
  const csv=similarityCSV([p,tower],'weighted',data,{threshold:34}),[review,overlap]=records(csv);
- // Owner decision 2026-10-19 (c): a Review needed pair also states its code evidence. Iris–RCS-2000 has capability 1/1
+ // Owner decision 2026-10-19 (c): a No complete score pair (named 'Review needed' before 2026-10-20) also states its
+ // code evidence. Iris–RCS-2000 has capability 1/1
  // and process 0/1 in both directions and no shared name or description word, so each directional total is
  // 0.3 × 1 + 0.4 × 0 = 0.30 (the 30.0 subtotal of confirmed example 3): '30 / 100' in the reason and
  // scorePoints(0.3).toFixed(4) = '30.0000' in the new column, which follows Status reason.
- assert.equal(review.Status,'Review needed');assert.equal(review['Status reason'],'No shared words in names or descriptions; compare the recorded functions. Code evidence 30 / 100 from capabilities and processes; not a pair score.');
+ // Owner request 2026-10-20: the column 'Review needed code evidence (out of 100)' is renamed
+ // 'No complete score: code evidence (out of 100)'; its values are unchanged.
+ assert.equal(review.Status,'No complete score');assert.equal(review['Status reason'],'No shared words in names or descriptions; compare the recorded functions. Code evidence 30 / 100 from capabilities and processes; not a pair score.');
  const header=[...csv.slice(1).split('\r\n')[0].matchAll(/"((?:[^"]|"")*)"(?:,|$)/g)].map(match=>match[1]);
- assert.equal(header[header.indexOf('Status reason')+1],'Review needed code evidence (out of 100)');
- assert.equal(review['Review needed code evidence (out of 100)'],'30.0000');assert.equal(review['Confirmed pair similarity (out of 100)'],'N/A','code evidence is not a pair score');
- assert.equal(overlap.Status,'Potential overlap');assert.equal(overlap['Review needed code evidence (out of 100)'],'','a confirmed pair has no code evidence');
+ assert.equal(header[header.indexOf('Status reason')+1],'No complete score: code evidence (out of 100)');
+ assert.equal(review['No complete score: code evidence (out of 100)'],'30.0000');assert.equal(review['Confirmed pair similarity (out of 100)'],'N/A','code evidence is not a pair score');
+ assert.equal(overlap.Status,'Potential overlap');assert.equal(overlap['No complete score: code evidence (out of 100)'],'','a confirmed pair has no code evidence');
  // Every unscored pair carries the same explanation as the UI hint.
  const unscored=portfolioCandidates(index).pairs.filter(q=>q.status!=='confirmed');
  const exported=records(similarityCSV(unscored,'weighted',data,{threshold:50}));
  exported.forEach((row,i)=>assert.equal(row['Status reason'],pairStatusReason(unscored[i],50,scopeReason),row['Unique pair key']));
- // The code evidence column is filled exactly on the Review needed rows, and their reason quotes the same value.
- exported.forEach(row=>assert.equal(row['Review needed code evidence (out of 100)']!=='',row.Status==='Review needed',row['Unique pair key']));
- const reviewRows=exported.filter(row=>row.Status==='Review needed');assert(reviewRows.length>0);
- for(const row of reviewRows)assert(row['Status reason'].endsWith(` Code evidence ${shown(Number(row['Review needed code evidence (out of 100)'])/100)} / 100 from capabilities and processes; not a pair score.`),row['Unique pair key']+': '+row['Status reason']);
- const zeroCodes=exported.find(row=>row.Status==='Not similar');assert.equal(zeroCodes['Status reason'],'No shared capabilities or processes');
+ // The code evidence column is filled exactly on the No complete score rows, and their reason quotes the same value.
+ exported.forEach(row=>assert.equal(row['No complete score: code evidence (out of 100)']!=='',row.Status==='No complete score',row['Unique pair key']));
+ const reviewRows=exported.filter(row=>row.Status==='No complete score');assert(reviewRows.length>0);
+ for(const row of reviewRows)assert(row['Status reason'].endsWith(` Code evidence ${shown(Number(row['No complete score: code evidence (out of 100)'])/100)} / 100 from capabilities and processes; not a pair score.`),row['Unique pair key']+': '+row['Status reason']);
+ // Owner request 2026-10-20: an unscored (investigation) pair with zero common codes is 'No shared registrations' (was
+ // 'Not similar') and its reason names the weighted fields. With the default weights all four fields count, so the
+ // reason is the one below (checked with a node script against public/pair-status.mjs: every such pair has this text).
+ const zeroRows=exported.filter(row=>row.Status==='No shared registrations');assert(zeroRows.length>0);
+ for(const zeroCodes of zeroRows)assert.equal(zeroCodes['Status reason'],'No shared words in names or descriptions and no shared capabilities or processes.',zeroCodes['Unique pair key']);
  const excludedRow=exported.find(row=>/^Not in similarity check – /.test(row['Status reason']));assert(excludedRow);assert.equal(excludedRow.Status,'Out of scope');
  const outside=model.apps.find(a=>scopeReason(a)),inside=app('ARS');
  const [row]=records(similarityCSV([process.compare(outside.id,inside.id)],'process',data));
@@ -201,20 +210,24 @@ test('capability and process matrices mark Out of scope pairs and show English t
  }
 }));
 
-test('the rendered Not similar diagnostic joins below-threshold confirmed pairs with zero-code investigation pairs',()=>withUI((ui,document)=>{
+// Owner request 2026-10-20: the former single 'Not similar' group (below-threshold confirmed pairs plus zero-code
+// investigation pairs) is split into 'Below threshold' and 'No shared registrations'; together they still cover the same pairs.
+test('the rendered Other results show below-threshold confirmed pairs as Below threshold and zero-code investigation pairs as No shared registrations',()=>withUI((ui,document)=>{
  ui.showPortfolio();
- const html=document.getElementById('portfolioProvisional').innerHTML,count=Number(html.match(/<summary>Not similar · (\d+) pairs?<\/summary>/)?.[1]);
- const pairs=portfolioCandidates(index).pairs,below=belowThresholdConfirmedPairs(pairs,50),zeroCodes=pairs.filter(p=>p.status==='investigation'&&pairResultLabel(p,50)==='Not similar');
+ const html=document.getElementById('portfolioProvisional').innerHTML,groupCount=status=>Number(html.match(new RegExp(`<summary>${status} · (\\d+) pairs?</summary>`))?.[1]);
+ const belowCount=groupCount('Below threshold'),zeroCount=groupCount('No shared registrations');
+ const pairs=portfolioCandidates(index).pairs,below=belowThresholdConfirmedPairs(pairs,50),zeroCodes=pairs.filter(p=>p.status==='investigation'&&pairResultLabel(p,50)==='No shared registrations');
  assert(below.length>0&&zeroCodes.length>0);
- assert.equal(count,below.length+zeroCodes.length);
+ assert.equal(belowCount,below.length);assert.equal(zeroCount,zeroCodes.length);
+ assert.equal(belowCount+zeroCount,below.length+zeroCodes.length);
 }));
 
 test('the single-pair comparison shows the pair status label next to the score',()=>withUI((ui,document)=>{
  ui.restoreState({focusAppId:app('Iris').id,focusPeerId:app('RCS-2000').id});
  const detail=document.getElementById('focusResult').innerHTML;
- assert.match(detail,/<strong>Unavailable<\/strong><em class="comparison-status">Review needed<\/em>/);
+ assert.match(detail,/<strong>Unavailable<\/strong><em class="comparison-status">No complete score<\/em>/);
  ui.restoreState({focusAppId:app('ARS').id,focusPeerId:app('AGR w/ Camera').id});
- assert.match(document.getElementById('focusResult').innerHTML,/30\.9<small> \/ 100<\/small><\/strong><em class="comparison-status">Not similar<\/em>/);
+ assert.match(document.getElementById('focusResult').innerHTML,/30\.9<small> \/ 100<\/small><\/strong><em class="comparison-status">Below threshold<\/em>/);
 }));
 
 test('the in-app calculation note states the name rule of the 2026-10-19 owner decision',()=>withUI((ui,document)=>{
@@ -250,11 +263,11 @@ test('the CSV Status reason equals the hint the UI actually renders for every un
  const rows=records(similarityCSV(unscored,'weighted',data,{threshold:50}));
  assert.equal(rows.length,unscored.length);
  rows.forEach((row,i)=>{assert(shown.has(unscored[i].key),'UI lists '+row['Unique pair key']);assert.equal(shown.get(unscored[i].key),esc(row['Status reason']),row['Unique pair key']);});
- // Since 2026-10-19 the Review needed hints carry the code evidence too, e.g. Iris–RCS-2000:
- // 0.3 × capability 1/1 + 0.4 × process 0/1 = 30 in both directions.
+ // Since 2026-10-19 the No complete score hints (named 'Review needed' before 2026-10-20) carry the code evidence too,
+ // e.g. Iris–RCS-2000: 0.3 × capability 1/1 + 0.4 × process 0/1 = 30 in both directions.
  assert.equal(shown.get(pair('Iris','RCS-2000').key),'No shared words in names or descriptions; compare the recorded functions. Code evidence 30 / 100 from capabilities and processes; not a pair score.');
- const reviewHints=rows.filter(row=>row.Status==='Review needed').map(row=>shown.get(row['Unique pair key']));
- assert(reviewHints.length>0&&reviewHints.every(hint=>/ Code evidence [\d.]+ \/ 100 from capabilities and processes; not a pair score\.$/.test(hint)),'every Review needed hint shows its code evidence');
+ const reviewHints=rows.filter(row=>row.Status==='No complete score').map(row=>shown.get(row['Unique pair key']));
+ assert(reviewHints.length>0&&reviewHints.every(hint=>/ Code evidence [\d.]+ \/ 100 from capabilities and processes; not a pair score\.$/.test(hint)),'every No complete score hint shows its code evidence');
 }));
 
 test('two out-of-scope applications with the same reason state it once in the UI hint and both CSVs',()=>{

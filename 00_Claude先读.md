@@ -1,10 +1,19 @@
 # 物流工具：Claude 接手说明
 
-## V9.1 当前状态（2026-10-20，优先于所有历史段落）
+## V9.2 当前状态（2026-10-20，优先于所有历史段落）
+
+- 基线：GitHub 上的 V9.1（提交 87bc56a）。用户决定以 V9.1 为准，本地 Similarity 第二轮只带过来 V9 没有的两项；其余（候选分组、多选返回等）以 V9 的实现为准，本地版本只作备份，不再使用。
+- **Process Level 2 同 Capability 规则**（用户：“Process 也按这个规则改，Level 3 已经填好了，就不要再报 Level 2 missing”）：没有直接登记 Level 2，但所登记的 Level 3 流程都已确认匹配、编号唯一、无名称待确认，且各自的 Level 2 父流程在目录中存在时，不再报 Level 2 missing。只适用于 Level 2；Level 0、Level 1 仍按原规则；Level 3 有未确认记录时不豁免。Level 2 filled 仍只统计直接登记。
+- 实际数据：Process 的 Level 2 missing 从 28 个应用降到 8 个；Level 2 matches standard 47 → 67（其中 20 个由三级确认）；Process To review 46 → 45（其余 19 个应用仍有 L0/L1 等其他问题）；问题条数 111 → 91。
+- **导入预览修复**：v8 与 V9.1 的导入预览会读取 pairReviews，但缺少对应计算，导入任何文件都会显示 “Import failed: Cannot read properties of undefined (reading 'added')”（已在浏览器复现）。V9.2 补上 pairReviewChanges，预览显示 “Pair reviews” 一行；导入后会删除现有评审时有提示。
+- **统一状态标签**：Not similar 拆为 Below threshold（有完整分数但低于阈值）和 No shared registrations（无完整分数、也没有共同登记）；Review needed 改为 No complete score。候选列表、Other results、多应用比较、单对说明和 CSV 用同一套标签；CSV 列名改为 “No complete score: code evidence (out of 100)”。分数和算法不变：Below threshold 581 + No shared registrations 599 = 原 Not similar 1,180；No complete score 139 = 原 Review needed 139。
+- 当前离线包：`offline/logistics-offline-20261020-v9.2.zip`；HTML 文件名及页面标识均为 V9.2。验证记录见 `verification/v9.2-verification.md`。
+
+## V9.1 历史状态（2026-10-20，受顶部 V9.2 更新）
 
 - 用户确认：“如果 level 3 已经填好了，我们就算 level 2 没有问题。”本次适用于当前讨论的 Business Capability。
 - 没有直接登记 Level 2，但所登记的 Level 3 都能匹配标准、没有三级名称或含义待确认且各自二级父项都能在标准目录确认时，不再报 Level 2 missing。
-- 已直接登记但不匹配的 Level 2 仍报问题；没有有效 Level 3、三级混有错误、父级目录缺失等情况不借此豁免。Process 规则不变。
+- 已直接登记但不匹配的 Level 2 仍报问题；没有有效 Level 3、三级混有错误、父级目录缺失等情况不借此豁免。（当时 Process 规则不变；V9.2 起 Process Level 2 也用同一规则。）
 - Overview To review、应用详情、Level 2 matches standard 和该指标的待检查清单同步；Level 2 filled 继续只统计直接登记，不伪造原始字段、映射或历史记录。界面解释“直接填写”与“从三级确认”两种口径。
 - 原始数据、相似度算法和导出数据保持不变；V9 的逐步比较与返回逻辑保留，已删除摘要及评审表单不恢复。
 - 当前离线包：`offline/logistics-offline-20261020-v9.1.zip`；HTML 文件名及页面标识均为 V9.1。验证记录见 `verification/v9.1-verification.md`。

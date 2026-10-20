@@ -8,6 +8,11 @@
 // Expected values are derived by hand from the fixtures below or, for the bundled data, from the capability/process
 // coverage engine (createSimilarity) and an independent recount that re-implements the name/description tokenizer and
 // the zero-text gate; they are never read back from codeEvidenceScore.
+// Owner request 2026-10-20 (one status rule everywhere): Review needed is now labelled No complete score; a confirmed
+// pair below the threshold is Below threshold (was Not similar); an investigation pair whose weighted code components
+// are all complete with zero common codes is No shared registrations (was Not similar). The CSV code evidence column
+// is renamed 'No complete score: code evidence (out of 100)'; a pair without a complete score shows "—" instead of
+// Unavailable in the score box. Code evidence values are unchanged.
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -28,9 +33,11 @@ const formatCodeEvidence=value=>pairStatus.formatCodeEvidence(value);
 const close=(actual,expected,message='')=>assert(typeof actual==='number'&&Math.abs(actual-expected)<1e-12,`${message} ${actual} ≈ ${expected}`);
 const PREFIX='No shared words in names or descriptions; compare the recorded functions.';
 const withCode=(points,prefix=PREFIX,codes='capabilities and processes')=>`${prefix} Code evidence ${points} / 100 from ${codes}; not a pair score.`;
-const CODE_COLUMN='Review needed code evidence (out of 100)';
+const CODE_COLUMN='No complete score: code evidence (out of 100)';// was 'Review needed code evidence (out of 100)'
 const GATE_COLUMN='Zero overlap in all weighted name/description fields';
-const pairCode=points=>`Review needed<small class="compare-pair-code">Code evidence ${points} / 100</small>`;
+const pairCode=points=>`No complete score<small class="compare-pair-code">Code evidence ${points} / 100</small>`;
+// Score box of a pair without a complete score (2026-10-20: "—" replaces Unavailable), as a regex source.
+const NO_SCORE='<strong><span class="comparison-no-score" title="No complete score">—<\\/span><\\/strong>';
 // A also records process M.U.1, which B does not (used by the asymmetric fixtures below).
 const EXTRA_PROCESS={Processes:'BBM PM T One L1;BBM PM U Other one L1'};
 const PROCESS_ONLY={name:.2,description:.2,cap:0,process:.6};// sums to 1, so the normalized weights are the same
@@ -50,16 +57,16 @@ function records(csv){
  return {header:rows[0],rows:rows.slice(1).map(row=>Object.fromEntries(rows[0].map((header,i)=>[header,row[i]])))};
 }
 
-test('code evidence is the lower directional total of a Review needed pair and holds only capability and process points',()=>{
+test('code evidence is the lower directional total of a No complete score pair and holds only capability and process points',()=>{
  // Capability 1/1 and process 1/1 in both directions, name and description 0:
  // each direction is 0.1 × 0 + 0.2 × 0 + 0.3 × 1 + 0.4 × 1 = 0.7.
  const same=fixture(ZERO_A,ZERO_B);
- assert.equal(pairResultLabel(same),'Review needed');close(codeEvidenceScore(same),0.7);
+ assert.equal(pairResultLabel(same),'No complete score');close(codeEvidenceScore(same),0.7);
  // A also records M.U.1, which B does not: A→B process 1/2 → 0.3 × 1 + 0.4 × 1/2 = 0.5; B→A process 1/1 → 0.7.
  // The code evidence is the lower direction, A→B.
  const extra={...ZERO_A,Processes:'BBM PM T One L1;BBM PM U Other one L1'};
  const lower=fixture(extra,ZERO_B);
- assert.equal(pairResultLabel(lower),'Review needed');
+ assert.equal(pairResultLabel(lower),'No complete score');
  close(lower.forward.coverage,0.5);close(lower.reverse.coverage,0.7);
  close(codeEvidenceScore(lower),0.5);
  const parts=Object.fromEntries(lower.forward.components.map(c=>[c.key,c.contribution]));
@@ -69,14 +76,16 @@ test('code evidence is the lower directional total of a Review needed pair and h
  close(codeEvidenceScore(createWeightedSimilarity(fixtureModel(extra,ZERO_B)).pair('B','A')),0.5);
 });
 
-test('only Review needed has code evidence: every other label gives null',()=>{
+test('only No complete score has code evidence: every other label gives null',()=>{
  const cases=[
   // Names "Shared A"/"Shared B" → {shared} each (single letters ignored) = 1, description 1, codes 1 → confirmed 1.0.
   ['Potential overlap',fixture()],
-  // Name {alpha,gamma} vs {beta,gamma} = 1/3, description 0, no shared code → 0.1/3 ≈ 3.3, confirmed below 50.
-  ['Not similar',fixture({Name:'Alpha Gamma',Description:'orchard'},{Name:'Beta Gamma',Description:'tunnel',...OTHER_CODES}),'confirmed'],
-  // Zero text and no shared capability or process → investigation with every code count 0.
-  ['Not similar',fixture(ZERO_A,{...ZERO_B,...OTHER_CODES}),'investigation'],
+  // Name {alpha,gamma} vs {beta,gamma} = 1/3, description 0, no shared code → 0.1/3 ≈ 3.3, confirmed below 50
+  // (2026-10-20: Below threshold, was Not similar).
+  ['Below threshold',fixture({Name:'Alpha Gamma',Description:'orchard'},{Name:'Beta Gamma',Description:'tunnel',...OTHER_CODES}),'confirmed'],
+  // Zero text and no shared capability or process → investigation with every code count 0
+  // (2026-10-20: No shared registrations, was Not similar).
+  ['No shared registrations',fixture(ZERO_A,{...ZERO_B,...OTHER_CODES}),'investigation'],
   ['Needs confirmation',fixture(ZERO_A,{...ZERO_B,'Business Capabilities':'B.06.99 Unknown'}),'investigation'],
   ['More detail needed',fixture({...ZERO_A,Processes:'BBM PM T Root L0'},ZERO_B),'investigation'],
   ['Data missing',fixture({...ZERO_A,Description:''},ZERO_B),'incomplete'],
@@ -89,28 +98,28 @@ test('only Review needed has code evidence: every other label gives null',()=>{
  }
  // Even where the lower directional total exists (confirmed 1/30, zero-code 0, out of scope 0.7), it is not code evidence.
  close(cases[1][1].directionalMinimum,0.1/3);assert.equal(cases[2][1].directionalMinimum,0);close(cases[6][1].directionalMinimum,0.7);
- // And the one Review needed fixture is not null (0.7, as derived above).
+ // And the one No complete score fixture is not null (0.7, as derived above).
  close(codeEvidenceScore(fixture(ZERO_A,ZERO_B)),0.7);
 });
 
 test('no code evidence when neither capability nor process carries weight; one weighted code field is enough',()=>{
- // Weights name .5, description .5: both 0, so the pair is held back. No weighted code field can show it is Not similar,
- // so it is Review needed, but it has no capability or process points: its lower directional total is 0.
+ // Weights name .5, description .5: both 0, so the pair is held back. No weighted code field can show it has No shared
+ // registrations, so it is No complete score, but it has no capability or process points: its lower directional total is 0.
  const textOnly=fixture(ZERO_A,ZERO_B,{name:.5,description:.5,cap:0,process:0});
- assert.equal(textOnly.status,'investigation');assert.equal(pairResultLabel(textOnly),'Review needed');
+ assert.equal(textOnly.status,'investigation');assert.equal(pairResultLabel(textOnly),'No complete score');
  assert.equal(textOnly.directionalMinimum,0);assert.equal(codeEvidenceScore(textOnly),null);
  assert.equal(pairStatusReason(textOnly),PREFIX,'no code evidence sentence');
  // Weights name 0, description .2, capability .5, process 0 normalize to 0 / 2/7 / 5/7 / 0. Capability 1/1 both ways
  // → code evidence 5/7 = 0.714285… The weightless name does not take part in the gate.
  const capabilityOnly=fixture(ZERO_A,ZERO_B,{name:0,description:.2,cap:.5,process:0});
- assert.equal(pairResultLabel(capabilityOnly),'Review needed');close(codeEvidenceScore(capabilityOnly),5/7);
+ assert.equal(pairResultLabel(capabilityOnly),'No complete score');close(codeEvidenceScore(capabilityOnly),5/7);
 });
 
 test('a process-only code weight (capability 0) still gives code evidence: the lower process total',()=>{
  // Weights name .2 / description .2 / capability 0 / process .6. A also records M.U.1:
  // A→B process 1/2 → 0.6 × 1/2 = 0.3; B→A process 1/1 → 0.6. Capability is shared but weightless (contribution 0).
  const pair=fixture({...ZERO_A,...EXTRA_PROCESS},ZERO_B,PROCESS_ONLY);
- assert.equal(pair.status,'investigation');assert.equal(pairResultLabel(pair),'Review needed');
+ assert.equal(pair.status,'investigation');assert.equal(pairResultLabel(pair),'No complete score');
  close(pair.forward.coverage,0.3);close(pair.reverse.coverage,0.6);
  const cap=pair.forward.components.find(c=>c.key==='cap');assert.equal(cap.weight,0);assert.equal(cap.contribution,0);
  close(codeEvidenceScore(pair),0.3);assert.equal(formatCodeEvidence(codeEvidenceScore(pair)),'30 / 100');
@@ -132,7 +141,7 @@ test('formatCodeEvidence shows settled points out of 100 with at most one decima
  assert.equal(formatCodeEvidence(0.5124999999999999),'51.3 / 100','.x5 rounds the same way as the scores');
 });
 
-test('pairStatusReason quotes the code evidence for Review needed and nowhere else',()=>{
+test('pairStatusReason quotes the code evidence for No complete score and nowhere else',()=>{
  assert.equal(pairStatusReason(fixture(ZERO_A,ZERO_B)),withCode('70'));// 0.3 + 0.4, see above
  assert.equal(pairStatusReason(fixture({...ZERO_A,Processes:'BBM PM T One L1;BBM PM U Other one L1'},ZERO_B)),withCode('50'));// lower direction 0.3 + 0.2
  // Only the weighted description can hold the pair back (name weight 0), and the reason names only it; 5/7 → 71.4.
@@ -144,7 +153,10 @@ test('pairStatusReason quotes the code evidence for Review needed and nowhere el
  // name .1 / description .1 / capability .4 / process .4 → 0.4 + 0.4 = 80.
  assert.equal(pairStatusReason(fixture(ZERO_A,ZERO_B,{name:.1,description:.1,cap:.4,process:.4})),withCode('80',PREFIX,'capabilities and processes'));
  assert.equal(pairStatusReason(fixture(ZERO_A,ZERO_B,{name:.5,description:.5,cap:0,process:0})),PREFIX);
- assert.equal(pairStatusReason(fixture(ZERO_A,{...ZERO_B,...OTHER_CODES})),'No shared capabilities or processes');
+ // No shared registrations (2026-10-20): the reason names the weighted text fields (name .1 and description .2 → "names or
+ // descriptions") and the weighted code fields (capability .3 and process .4 → "capabilities or processes");
+ // before 2026-10-20 it was the fixed text 'No shared capabilities or processes'.
+ assert.equal(pairStatusReason(fixture(ZERO_A,{...ZERO_B,...OTHER_CODES})),'No shared words in names or descriptions and no shared capabilities or processes.');
  assert.equal(pairStatusReason(fixture({...ZERO_A,Processes:'BBM PM T Root L0'},ZERO_B)),'Process is recorded only at Level 0.');
  assert.equal(pairStatusReason(fixture()),'The opportunity score is the lower of the two confirmed directional totals.');
 });
@@ -152,30 +164,31 @@ test('pairStatusReason quotes the code evidence for Review needed and nowhere el
 test('the label, the status and the missing pair score do not change, whatever the code evidence',()=>{
  const model=fixtureModel(ZERO_A,ZERO_B),index=createWeightedSimilarity(model),pair=index.pair('A','B');
  close(codeEvidenceScore(pair),0.7);// 70 is above the default threshold of 50 ...
- for(const threshold of [0,50,70,100])assert.equal(pairResultLabel(pair,threshold),'Review needed',`threshold ${threshold}`);
+ for(const threshold of [0,50,70,100])assert.equal(pairResultLabel(pair,threshold),'No complete score',`threshold ${threshold}`);
  assert.equal(pair.status,'investigation');assert.equal(pair.coverage,null);assert.equal(pair.eligible,false);
  const summary=portfolioAtThreshold(portfolioCandidates(index),0);// ... and it is still not a scored pair at threshold 0.
  assert.equal(summary.pairCount,0);assert.deepEqual(summary.investigationPairs.map(p=>p.key),[pair.key]);
 });
 
-test('the weighted CSV fills the code evidence column right after Status reason, only for Review needed pairs',()=>{
+test('the weighted CSV fills the code evidence column right after Status reason, only for No complete score pairs',()=>{
  const defaults=[fixture(ZERO_A,ZERO_B),fixture(),fixture(ZERO_A,{...ZERO_B,...OTHER_CODES})];
  const {header,rows:[review,overlap,zeroCodes]}=records(similarityCSV(defaults,'weighted',FIXTURE_DATA));
  assert.equal(header[header.indexOf('Status reason')+1],CODE_COLUMN);
  // 0.7 → scorePoints(0.7).toFixed(4); the confirmed score column stays N/A.
- assert.equal(review.Status,'Review needed');assert.equal(review[CODE_COLUMN],'70.0000');assert.equal(review['Status reason'],withCode('70'));
+ assert.equal(review.Status,'No complete score');assert.equal(review[CODE_COLUMN],'70.0000');assert.equal(review['Status reason'],withCode('70'));
  assert.equal(review['Confirmed pair similarity (out of 100)'],'N/A');
  assert.equal(overlap.Status,'Potential overlap');assert.equal(overlap[CODE_COLUMN],'');
- assert.equal(zeroCodes.Status,'Not similar');assert.equal(zeroCodes[CODE_COLUMN],'');
+ // Zero text, zero shared codes (investigation): No shared registrations since 2026-10-20 (was Not similar).
+ assert.equal(zeroCodes.Status,'No shared registrations');assert.equal(zeroCodes[CODE_COLUMN],'');
  // 5/7 × 100 = 71.428571… → '71.4286'.
  const [capabilityOnly]=records(similarityCSV([fixture(ZERO_A,ZERO_B,{name:0,description:.2,cap:.5,process:0})],'weighted',FIXTURE_DATA)).rows;
  assert.equal(capabilityOnly[CODE_COLUMN],'71.4286');
  assert.equal(capabilityOnly['Status reason'],withCode('71.4','No shared words in descriptions; compare the recorded functions.','capabilities'));
  // Process only: lower direction 0.6 × 1/2 = 0.3 → '30.0000', "from processes".
  const [processOnly]=records(similarityCSV([fixture({...ZERO_A,...EXTRA_PROCESS},ZERO_B,PROCESS_ONLY)],'weighted',FIXTURE_DATA)).rows;
- assert.equal(processOnly.Status,'Review needed');assert.equal(processOnly[CODE_COLUMN],'30.0000');assert.equal(processOnly['Status reason'],withCode('30',PREFIX,'processes'));
+ assert.equal(processOnly.Status,'No complete score');assert.equal(processOnly[CODE_COLUMN],'30.0000');assert.equal(processOnly['Status reason'],withCode('30',PREFIX,'processes'));
  const [textOnly]=records(similarityCSV([fixture(ZERO_A,ZERO_B,{name:.5,description:.5,cap:0,process:0})],'weighted',FIXTURE_DATA)).rows;
- assert.equal(textOnly.Status,'Review needed');assert.equal(textOnly[CODE_COLUMN],'','no weighted code field, no code evidence');
+ assert.equal(textOnly.Status,'No complete score');assert.equal(textOnly[CODE_COLUMN],'','no weighted code field, no code evidence');
  // Round 2: the gate column that follows is named for what it reports (r.zeroText, the weighted-field gate).
  assert.equal(header[header.indexOf(CODE_COLUMN)+1],GATE_COLUMN);
  assert(!header.includes('Zero name and description overlap'));
@@ -185,7 +198,7 @@ test('the weighted CSV fills the code evidence column right after Status reason,
 test('the weighted CSV Method column states the round-2 pair-score, code-evidence and name rules',()=>{
  const {rows}=records(similarityCSV([fixture(ZERO_A,ZERO_B),fixture()],'weighted',FIXTURE_DATA));
  const ellipsis=String.fromCharCode(0x2026);
- const pairRule='Pair opportunity score = min(A to B, B to A) only when both directions are complete and eligible and, if Name or Description carries weight above zero, at least one of those weighted fields has a shared word; for Review needed pairs, when Capability or Process carries weight, that minimum (capability and process points only) is reported as code evidence, not as a pair score.';
+ const pairRule='Pair opportunity score = min(A to B, B to A) only when both directions are complete and eligible and, if Name or Description carries weight above zero, at least one of those weighted fields has a shared word; for No complete score pairs, when Capability or Process carries weight, that minimum (capability and process points only) is reported as code evidence, not as a pair score.';
  const nameRule=`Name and Description use distinct-word Jaccard (names ignore single letters and the "(recovered ${ellipsis})" suffix);`;
  for(const row of rows){
   assert(row.Method.includes(pairRule),row.Method);
@@ -193,7 +206,7 @@ test('the weighted CSV Method column states the round-2 pair-score, code-evidenc
   assert(!row.Method.includes('single characters'),'round 1 wording is gone');
   assert(!row.Method.includes('do not all score zero'),'round 1 pair rule is gone');
  }
- // Both rows (Review needed and Potential overlap) carry the same method text.
+ // Both rows (No complete score and Potential overlap) carry the same method text.
  assert.equal(rows[0].Method,rows[1].Method);
 });
 
@@ -205,13 +218,13 @@ const coverage=(similarity,a,b)=>{const r=similarity.compare(a.id,b.id);return [
 // The code evidence re-derived from the coverage engine with the default weights (capability .3, process .4).
 const codeOnly=pair=>Math.min(...[[pair.target.app,pair.peer.app],[pair.peer.app,pair.target.app]].map(([a,b])=>0.3*cap.compare(a.id,b.id).coverage+0.4*processSimilarity.compare(a.id,b.id).coverage));
 
-test('bundled data: Iris | RBCD B308 AGV Traffic Control System is Review needed with code evidence 70',()=>{
+test('bundled data: Iris | RBCD B308 AGV Traffic Control System is No complete score with code evidence 70',()=>{
  const iris=app('Iris'),agv=app('RBCD B308 AGV Traffic Control System'),pair=index.pair(iris.id,agv.id);
  // Capability 1/1 and process 1/1 in both directions, no shared name or description word:
  // 0.3 × 1 + 0.4 × 1 = 0.7 per direction.
  for(const [a,b] of [[iris,agv],[agv,iris]]){assert.deepEqual(coverage(cap,a,b),[1,1]);assert.deepEqual(coverage(processSimilarity,a,b),[1,1]);}
  for(const direction of [pair.forward,pair.reverse])for(const key of ['name','description'])assert.equal(direction.components.find(c=>c.key===key).score,0,key);
- assert.equal(pair.status,'investigation');assert.equal(pair.coverage,null);assert.equal(pairResultLabel(pair),'Review needed');
+ assert.equal(pair.status,'investigation');assert.equal(pair.coverage,null);assert.equal(pairResultLabel(pair),'No complete score');
  close(codeEvidenceScore(pair),0.7);assert.equal(formatCodeEvidence(codeEvidenceScore(pair)),'70 / 100');
  assert.equal(pairStatusReason(pair,50,scopeReason),withCode('70'));
 });
@@ -220,22 +233,23 @@ test('bundled data: Iris–RCS-2000 code evidence is the 30.0 subtotal confirmed
  const iris=app('Iris'),rcs=app('RCS-2000'),pair=index.pair(iris.id,rcs.id);
  // Capability 1/1 both ways, process 0/1 both ways: 0.3 × 1 + 0.4 × 0 = 0.3.
  for(const [a,b] of [[iris,rcs],[rcs,iris]]){assert.deepEqual(coverage(cap,a,b),[1,1]);assert.deepEqual(coverage(processSimilarity,a,b),[0,1]);}
- assert.equal(pairResultLabel(pair),'Review needed');close(codeEvidenceScore(pair),0.3);assert.equal(formatCodeEvidence(codeEvidenceScore(pair)),'30 / 100');
+ assert.equal(pairResultLabel(pair),'No complete score');close(codeEvidenceScore(pair),0.3);assert.equal(formatCodeEvidence(codeEvidenceScore(pair)),'30 / 100');
 });
 
-test('bundled data: BMLP_Nexeed_IAS@WxP | QinP FG Smart Label Management is now Review needed with code evidence 47.5',()=>{
+test('bundled data: BMLP_Nexeed_IAS@WxP | QinP FG Smart Label Management is now No complete score with code evidence 47.5',()=>{
  const bmlp=app('BMLP_Nexeed_IAS@WxP'),qinp=app('QinP FG Smart Label Management'),pair=index.pair(bmlp.id,qinp.id);
  // Before 2026-10-19 the lone "p" split from WxP and QinP was the names' only shared word (1/10), which made the pair a
  // confirmed min(0.475 + 0.1 × 0.1, 0.5 + 0.01) = 48.5. Now the names share nothing. BMLP→QinP: capability 1/4,
  // process 1/1 → 0.3 × 1/4 + 0.4 × 1 = 0.475; QinP→BMLP: capability 1/1, process 1/2 → 0.3 + 0.2 = 0.5. Lower: 0.475.
  assert.deepEqual(coverage(cap,bmlp,qinp),[1,4]);assert.deepEqual(coverage(processSimilarity,bmlp,qinp),[1,1]);
  assert.deepEqual(coverage(cap,qinp,bmlp),[1,1]);assert.deepEqual(coverage(processSimilarity,qinp,bmlp),[1,2]);
- assert.equal(pair.status,'investigation');assert.equal(pairResultLabel(pair),'Review needed');
+ assert.equal(pair.status,'investigation');assert.equal(pairResultLabel(pair),'No complete score');
  close(codeEvidenceScore(pair),0.475);assert.equal(formatCodeEvidence(codeEvidenceScore(pair)),'47.5 / 100');
 });
 
-test('bundled data: all 139 Review needed pairs have code evidence, equal to their lower capability + process total',()=>{
- const pairs=portfolioCandidates(index).pairs,review=pairs.filter(p=>pairResultLabel(p,50)==='Review needed');
+test('bundled data: all 139 No complete score pairs have code evidence, equal to their lower capability + process total',()=>{
+ // 2026-10-20: the 139 pairs once labelled Review needed are exactly the No complete score pairs (owner request).
+ const pairs=portfolioCandidates(index).pairs,review=pairs.filter(p=>pairResultLabel(p,50)==='No complete score');
  // 139 comes from an independent recount over the 2,850 pairs: both applications in scope, name and description
  // distinct-word Jaccard both exactly 0 (own tokenizer: names NFKC-normalized, "( recovered …)" removed, single
  // letters dropped while single digits and Chinese characters stay), all four directional capability/process
@@ -244,7 +258,7 @@ test('bundled data: all 139 Review needed pairs have code evidence, equal to the
  // BMLP_Nexeed_IAS@WxP | QinP FG Smart Label Management.
  assert.equal(review.length,139);
  for(const pair of review)close(codeEvidenceScore(pair),codeOnly(pair),pair.key);
- for(const pair of pairs)if(pairResultLabel(pair,50)!=='Review needed')assert.equal(codeEvidenceScore(pair),null,pair.key);
+ for(const pair of pairs)if(pairResultLabel(pair,50)!=='No complete score')assert.equal(codeEvidenceScore(pair),null,pair.key);
  // The recount's range: highest 0.7 (only Iris | RBCD B308 AGV Traffic Control System), lowest 0.05 — never 0.
  const values=review.map(codeEvidenceScore),top=review.filter(p=>Math.abs(codeEvidenceScore(p)-0.7)<1e-12);
  assert.deepEqual(top.map(p=>[p.target.app.Name,p.peer.app.Name].sort()),[['Iris','RBCD B308 AGV Traffic Control System']]);
@@ -266,59 +280,59 @@ const rankRows=html=>new Map([...html.matchAll(/<button class="focus-rank[^"]*" 
 const pairRows=html=>new Map([...html.matchAll(/<button class="compare-pair-row" data-cell-target="([^"]*)" data-cell-peer="([^"]*)">([\s\S]*?)<\/button>/g)].map(m=>[[m[1],m[2]].sort().join('::'),{inner:m[3],strong:m[3].match(/<strong>([\s\S]*)<\/strong>$/)?.[1]}]));
 const rowKey=(a,b)=>[esc(a.id),esc(b.id)].sort().join('::');
 
-test('the single-pair score box shows Unavailable, Review needed and the code evidence for Iris–RCS-2000',()=>withUI((ui,document)=>{
+test('the single-pair score box shows Unavailable, No complete score and the code evidence for Iris–RCS-2000',()=>withUI((ui,document)=>{
  ui.restoreState({focusAppId:app('Iris').id,focusPeerId:app('RCS-2000').id});
  const html=document.getElementById('focusResult').innerHTML;
  // 0.3 (capability 1/1 × 0.3, process 0/1) → '30 / 100'.
- assert.match(html,/<div class="comparison-score"><span>Score<\/span><strong>Unavailable<\/strong><em class="comparison-status">Review needed<\/em><small class="comparison-code-evidence">Code evidence 30 \/ 100<\/small><\/div>/);
+ assert.match(html,/<div class="comparison-score"><span>Score<\/span><strong>Unavailable<\/strong><em class="comparison-status">No complete score<\/em><small class="comparison-code-evidence">Code evidence 30 \/ 100<\/small><\/div>/);
  // A confirmed pair keeps its score and gets no code evidence; so does a Needs confirmation pair.
  ui.restoreState({focusAppId:app('ARS').id,focusPeerId:app('AGR w/ Camera').id});
  const confirmed=document.getElementById('focusResult').innerHTML;
- assert.match(confirmed,/30\.9<small> \/ 100<\/small><\/strong><em class="comparison-status">Not similar<\/em><\/div>/);assert.doesNotMatch(confirmed,/comparison-code-evidence/);
+ assert.match(confirmed,/30\.9<small> \/ 100<\/small><\/strong><em class="comparison-status">Below threshold<\/em><\/div>/);assert.doesNotMatch(confirmed,/comparison-code-evidence/);
  ui.restoreState({focusAppId:app('Iris').id,focusPeerId:app('AUTO-RACK').id});
  const pending=document.getElementById('focusResult').innerHTML;
  assert.match(pending,/<strong>Unavailable<\/strong><em class="comparison-status">Needs confirmation<\/em><\/div>/);assert.doesNotMatch(pending,/comparison-code-evidence/);
 }));
 
-test('the candidate ranking shows code evidence on Review needed rows only',()=>withUI((ui,document)=>{
+test('the candidate ranking shows code evidence on No complete score rows only',()=>withUI((ui,document)=>{
  const iris=app('Iris');
  ui.restoreState({focusAppId:iris.id,focusPeerId:app('RCS-2000').id});
  const html=document.getElementById('focusResult').innerHTML,rows=rankRows(html),row=name=>{const found=rows.get(esc(app(name).id));assert(found,'ranking lists '+name);return found;};
  const code=points=>`<small class="focus-rank-code">Code evidence ${points} / 100</small>`;
- // Iris's six Review needed peers (independent recount), each min(0.3 × capability + 0.4 × process) over both directions:
+ // Iris's six No complete score peers (independent recount), each min(0.3 × capability + 0.4 × process) over both directions:
  // RCS-2000, D-sample tracking system, RBCC_IDPS…, RBCC_VNA task management: capability 1/1, process 0/1 → 30;
  // RBCD B308 AGV Traffic Control System: capability and process 1/1 → 70;
  // BMLP_Nexeed_IAS@WxP: BMLP→Iris capability 1/4, process 0/1 → 0.3 × 1/4 = 7.5.
- assert(row('RCS-2000').includes(`<small class="focus-rank-status">Review needed</small>${code('30')}`));
+ assert(row('RCS-2000').includes(`<small class="focus-rank-status">No complete score</small>${code('30')}`));
  for(const name of ['D-sample tracking system','RBCC_IDPS_Intelligent document print system','RBCC_VNA task management'])assert(row(name).includes(code('30')),name);
  assert(row('RBCD B308 AGV Traffic Control System').includes(code('70')));
  assert(row('BMLP_Nexeed_IAS@WxP').includes(code('7.5')));
- assert.equal((html.match(/class="focus-rank-code"/g)||[]).length,6,'one code evidence per Review needed peer');
- // Confirmed (Potential overlap and Not similar), Needs confirmation, More detail needed, zero-code Not similar and
+ assert.equal((html.match(/class="focus-rank-code"/g)||[]).length,6,'one code evidence per No complete score peer');
+ // Confirmed (Potential overlap and Below threshold), Needs confirmation, More detail needed, No shared registrations and
  // Out of scope rows have none.
  assert.match(row('CGQB_Logistic_system_Q'),/<strong>Score: [\d.]+<\/strong>/);
  assert.match(row('ARS'),/<strong>Score: 31\.3<\/strong>/);
  assert(row('AUTO-RACK').includes('<small class="focus-rank-status">Needs confirmation</small>'));
  assert(row('RBCW Auto Warehouse Management System').includes('<small class="focus-rank-status">More detail needed</small>'));
- assert(row('AR Stock Taking').includes('<small class="focus-rank-status">Not similar</small>'));
+ assert(row('AR Stock Taking').includes('<small class="focus-rank-status">No shared registrations</small>'));
  assert(row('VMCN_CONNEX').includes('<small class="focus-rank-status">Out of scope</small>'));
  for(const name of ['CGQB_Logistic_system_Q','ARS','AUTO-RACK','RBCW Auto Warehouse Management System','AR Stock Taking','VMCN_CONNEX'])assert(!row(name).includes('focus-rank-code'),name);
 }));
 
-test('the compare-dialog pair row shows Review needed with the code evidence in its own small line',()=>withUI((ui,document)=>{
+test('the compare-dialog pair row shows No complete score with the code evidence in its own small line',()=>withUI((ui,document)=>{
  const [iris,rcs,agv,ars,rack]=['Iris','RCS-2000','RBCD B308 AGV Traffic Control System','ARS','AUTO-RACK'].map(app);
  ui.open({poolIds:[iris,rcs,agv,ars,rack].map(a=>a.id),contextLabel:'Code evidence'});
  const html=document.getElementById('comparisonMatrix').innerHTML,rows=pairRows(html);
  assert.equal(rows.size,10);
- // Round 2 markup: <strong>Review needed<small class="compare-pair-code">Code evidence N / 100</small></strong>.
+ // Round 2 markup: <strong>No complete score<small class="compare-pair-code">Code evidence N / 100</small></strong>.
  assert.equal(rows.get(rowKey(iris,rcs)).strong,pairCode('30'));// 0.3 × 1 + 0.4 × 0
  assert.equal(rows.get(rowKey(iris,agv)).strong,pairCode('70'));// 0.3 × 1 + 0.4 × 1
  assert(!html.includes(' · Code evidence'),'the round-1 inline separator is gone');
- assert.equal((html.match(/<small class="compare-pair-code">/g)||[]).length,2,'one code evidence line per Review needed row');
+ assert.equal((html.match(/<small class="compare-pair-code">/g)||[]).length,2,'one code evidence line per No complete score row');
  assert.equal(rows.get(rowKey(ars,iris)).strong,'31.3 / 100','a confirmed pair shows its score only');
  assert.equal(rows.get(rowKey(ars,rcs)).strong,'32.1 / 100');
- // Code evidence appears on Review needed rows and on no other row.
- for(const [key,{strong}] of rows)assert.equal(/Code evidence/.test(strong),strong.startsWith('Review needed'),key+': '+strong);
+ // Code evidence appears on No complete score rows and on no other row.
+ for(const [key,{strong}] of rows)assert.equal(/Code evidence/.test(strong),strong.startsWith('No complete score'),key+': '+strong);
 }));
 
 test('code evidence keeps names HTML-escaped, and disappears when no code field carries weight',()=>{
@@ -339,17 +353,17 @@ test('code evidence keeps names HTML-escaped, and disappears when no code field 
  assert.equal(row.strong,pairCode('70'));
  assert(row.inner.startsWith(`<span>${esc(a.Name)} ↔ ${esc(b.Name)}<small>${esc('<P1>')} · ${esc('P&2')}</small></span>`),row.inner);
  for(const html of [focus,matrix]){assert(!html.includes('<img'),'no raw image tag');assert(!html.includes('<i>'),'no raw italic tag');assert(!html.includes('<P1>'),'no raw plant markup');}
- // Weights name .5 / description .5: still Review needed, but no capability or process points to show.
+ // Weights name .5 / description .5: still No complete score, but no capability or process points to show.
  const textOnly=render({name:.5,description:.5,cap:0,process:0});
- assert.match(textOnly.focus,/<strong>Unavailable<\/strong><em class="comparison-status">Review needed<\/em><\/div>/);
+ assert.match(textOnly.focus,/<strong>Unavailable<\/strong><em class="comparison-status">No complete score<\/em><\/div>/);
  assert(!textOnly.focus.includes('comparison-code-evidence')&&!textOnly.focus.includes('focus-rank-code'));
- assert.equal(pairRows(textOnly.matrix).get('A::B').strong,'Review needed');
+ assert.equal(pairRows(textOnly.matrix).get('A::B').strong,'No complete score');
 });
 
-// ---- Asymmetric Review needed pair on the bundled data (mutation review, 2026-10-19 round 2) ----
+// ---- Asymmetric No complete score pair on the bundled data (mutation review, 2026-10-19 round 2) ----
 // Iris | BMLP_Nexeed_IAS@WxP, derived by hand from the two source records in public/data.json:
 // - Names {iris} vs {bmlp, nexeed, ias, wx} (the lone P of WxP is a single letter) and descriptions share no word, and
-//   both text fields are weighted → held back, Review needed.
+//   both text fields are weighted → held back, No complete score.
 // - Capability: Iris records B.06.5; BMLP records B.06 (root, not compared), B.06.3, B.06.4.1, B.06.4.2 and B.06.5.
 //   Iris→BMLP: B.06.5 shared → 1/1. BMLP→Iris: B.06.3 (L2), B.06.4.1 and B.06.4.2 (L3, a branch Iris does not record,
 //   so they keep their level) and B.06.5 → 1 shared of 4.
@@ -358,7 +372,7 @@ test('code evidence keeps names HTML-escaped, and disappears when no code field 
 //   compared at BMLP's L1: M.I2D.020 vs M.I2D.010 → 0/1 both ways.
 // - Iris→BMLP = 0.3 × 1 + 0.4 × 0 = 0.30; BMLP→Iris = 0.3 × 1/4 + 0.4 × 0 = 0.075. The code evidence is the lower
 //   direction, 7.5 / 100, whichever application is the target; 30 / 100 (the higher direction) must not appear.
-test('an asymmetric Review needed pair shows its lower direction everywhere: Iris | BMLP_Nexeed_IAS@WxP is 7.5, never 30',()=>{
+test('an asymmetric No complete score pair shows its lower direction everywhere: Iris | BMLP_Nexeed_IAS@WxP is 7.5, never 30',()=>{
  const iris=app('Iris'),bmlp=app('BMLP_Nexeed_IAS@WxP');
  // The coverage engine agrees with the hand derivation.
  assert.deepEqual(coverage(cap,iris,bmlp),[1,1]);assert.deepEqual(coverage(cap,bmlp,iris),[1,4]);
@@ -367,19 +381,19 @@ test('an asymmetric Review needed pair shows its lower direction everywhere: Iri
  close(fromIris.forward.coverage,0.3);close(fromIris.reverse.coverage,0.075);
  close(fromBmlp.forward.coverage,0.075);close(fromBmlp.reverse.coverage,0.3);
  for(const pair of [fromIris,fromBmlp]){
-  assert.equal(pair.status,'investigation');assert.equal(pairResultLabel(pair),'Review needed');
+  assert.equal(pair.status,'investigation');assert.equal(pairResultLabel(pair),'No complete score');
   close(codeEvidenceScore(pair),0.075);assert.equal(pairStatusReason(pair,50,scopeReason),withCode('7.5'));
   // 0.075 × 100 = 7.5 → '7.5000' in the CSV column.
   assert.equal(records(similarityCSV([pair],'weighted',data)).rows[0][CODE_COLUMN],'7.5000');
  }
- const box=/<div class="comparison-score"><span>Score<\/span><strong>Unavailable<\/strong><em class="comparison-status">Review needed<\/em><small class="comparison-code-evidence">Code evidence 7\.5 \/ 100<\/small><\/div>/;
- const rankCode='<small class="focus-rank-status">Review needed</small><small class="focus-rank-code">Code evidence 7.5 / 100</small>';
+ const box=/<div class="comparison-score"><span>Score<\/span><strong>Unavailable<\/strong><em class="comparison-status">No complete score<\/em><small class="comparison-code-evidence">Code evidence 7\.5 \/ 100<\/small><\/div>/;
+ const rankCode='<small class="focus-rank-status">No complete score</small><small class="focus-rank-code">Code evidence 7.5 / 100</small>';
  for(const [focus,peer] of [[iris,bmlp],[bmlp,iris]])withUI((ui,document)=>{
   // Single-pair score box, with either application as the focus (its direction is the forward one).
   ui.restoreState({focusAppId:focus.id,focusPeerId:peer.id});
   const html=document.getElementById('focusResult').innerHTML;
   assert.match(html,box,focus.Name+' first');
-  // The box holds the only score-box code evidence (other Review needed peers of Iris in the ranking do show 30).
+  // The box holds the only score-box code evidence (other No complete score peers of Iris in the ranking do show 30).
   assert.equal((html.match(/class="comparison-code-evidence"/g)||[]).length,1,focus.Name+' first');
   // Ranking row of the peer in the focus application's candidate list.
   const row=rankRows(html).get(esc(peer.id));assert(row,'ranking lists '+peer.Name);
@@ -455,7 +469,7 @@ test('every code evidence style rule is present: own lines, one colour, right-al
  assert.deepEqual(only(PAIR_CODE).declarations,{'margin-top':'2px',color:'#456675','font-weight':'600'});
  // The three code evidence lines share one colour.
  assert.deepEqual([SCORE_BOX,RANK,PAIR_CODE].map(selector=>only(selector).declarations.color),['#456675','#456675','#456675']);
- // Round 3: the pair row label (score, or Review needed with its code evidence line) is right-aligned.
+ // Round 3: the pair row label (score, or No complete score with its code evidence line) is right-aligned.
  assert.deepEqual(only(PAIR_LABEL).declarations,{'text-align':'right'});                        // before round 3: no rule
  // Round 3: one phone block holds exactly the two wrapping rules.
  const phoneRank=only(RANK_PROVISIONAL,PHONE),phonePair=only(PAIR_CODE,PHONE);                  // before round 3: none
