@@ -1,0 +1,32 @@
+✔ Drill search intersects plant and original cohort without changing the source applications (10.149357ms)
+✔ Overview separates field presence, exact taxonomy matches and deepest confirmed levels (33.11943ms)
+✔ Filters intersect and zero-result scopes keep taxonomy denominators without inventing matches (1.155726ms)
+✔ Effective mapping can resolve classification without changing source completeness (0.615782ms)
+✔ Plant rates count registered and valid applications separately with the same denominator (3.117449ms)
+✔ Any bad registration at a level reduces quality once, and no L3V record is held outside the report (3.543591ms)
+✔ L3V records are Level 3 registrations in the maintenance report (3.613319ms)
+✔ Only applied verified mappings repair the quality numerator; notes alone do not (11.203694ms)
+✔ L2 quality drill includes real gaps but accepts a confirmed L3 parent in its denominator (1.239018ms)
+✔ Main Business Capability supplies L1 once when it repeats in the capability list (1.579132ms)
+✔ An empty-field capability mapping remains counted alongside a recorded main capability (1.533247ms)
+✔ RBCW and portfolio: the Level 3 gap stays Level 3 only; To review covers every level (636.219952ms)
+✔ V9.5: confirmed L3 covers missing L0/L1 without filling or changing source data (557.082935ms)
+✔ unconfirmed L3, absent ancestor and invalid directly registered ancestor stay reviewable (1780.382705ms)
+✔ scenarios: missing levels, a bad record beside a good one, several issues counted once, a record without a level (186.676935ms)
+✔ scenarios: fixing one issue keeps the application; fixing all removes it (18.378205ms)
+✔ Business Capability: explicit registrations stay distinct from confirmed L3 coverage of L2 (14.74342ms)
+✔ Show all levels does not change To review; the Total and plant rows match their lists (1977.033534ms)
+✔ bundled data: To review counts and the profile shows exactly the same issues (272.850689ms)
+✔ profile rendering: title with the issue count, one line per issue, escaping, none (97.305705ms)
+✔ To review never changes application data (1.646836ms)
+✔ a process record listed twice in the source is shown once (1.413975ms)
+✔ issues follow the order of the source records (level by level, as To review lists them) (1.887681ms)
+✔ a record resolved by an applied mapping is not listed; revoking or invalidating the mapping lists it again (12.18206ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 24
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5148.896605

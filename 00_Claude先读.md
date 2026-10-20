@@ -1,6 +1,13 @@
 # 物流工具：Claude 接手说明
 
-## V9.6 当前状态（2026-10-20，优先于所有历史段落）
+## V9.7 当前状态（2026-10-20，优先于所有历史段落）
+
+- 用户决定：Overview 的 To review / 分层应用列表不直接显示黄色问题说明；点击 View details 后再看原因。
+- 列表只保留应用名、事业部、费用及 View details；完整问题、来源和下一步仍在应用详情中。窄窗口也显示 View details。
+- 列表筛选、应用数量、问题生成与详情返回原列表逻辑不变。Capability To review 38、Process 24。
+- 当前离线包：`offline/logistics-offline-20261020-v9.7.zip`。验证：24 项针对性测试通过，构建/离线导出成功；浏览器复核 ShzP_DAVIS 的列表→详情→返回。
+
+## V9.6 历史状态（2026-10-20，受顶部 V9.7 更新）
 
 - 用户决定：应用详情里只展示有问题的项目；截图里的正常能力清单以及 No capability issues detected 提示去掉。
 - 默认详情不再重复展示 Capabilities 清单和 Process matches；无问题的维度不显示标题/提示，两侧都无问题时整个问题区隐藏；只有一侧有问题时用完整宽度。
