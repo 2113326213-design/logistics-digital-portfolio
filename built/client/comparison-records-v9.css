@@ -1,0 +1,45 @@
+/* Progressive evidence lists: closed sections retain their issue counts. */
+.readable-comparison .comparison-record-disclosure{
+ margin:12px 0;
+ border-top:1px solid #e0e8ee;
+ padding-top:10px;
+}
+.readable-comparison .comparison-record-disclosure>summary{
+ cursor:pointer;
+ color:#386c86;
+ font-size:13px;
+ line-height:1.6;
+}
+.readable-comparison .comparison-record-disclosure>summary:focus-visible{
+ outline:2px solid #0071a8;
+ outline-offset:4px;
+ border-radius:2px;
+}
+.readable-comparison .comparison-record-disclosure[open]>summary{
+ margin-bottom:12px;
+}
+.readable-comparison .comparison-disclosure-hint{
+ font-weight:400;
+ color:#60798a;
+}
+.readable-comparison .unconfirmed-records>summary,
+.readable-comparison .comparison-depth-gaps>summary{
+ color:#795d25;
+}
+.readable-comparison .pending-record-columns.has-one-side{
+ grid-template-columns:minmax(0,1fr);
+}
+.readable-comparison .comparison-missing-records{
+ padding:10px 12px;
+ border-left:3px solid #ceac64;
+ background:#faf7ef;
+ color:#6d5728;
+ overflow-wrap:anywhere;
+}
+.readable-comparison .comparison-record-more{
+ border:0;
+ padding:0;
+}
+@media(max-width:600px){
+ .readable-comparison .comparison-disclosure-hint{display:block}
+}

@@ -1,10 +1,12 @@
 # Logistics Digital Portfolio
 
-物流工具（Logistics Digital Portfolio）交接包，当前版本 v8（2026-10-20）。本仓库包含真实的应用清单数据，请保持私有。
+物流工具（Logistics Digital Portfolio）交接包，当前版本 **V9（2026-10-20）**。本仓库包含真实的应用清单数据，请保持私有。
 
-- **直接使用**：到本仓库的 Releases 下载最新的 `logistics-offline-20261020-v8.zip`，解压后双击里面的 HTML，用 Chrome 打开即可，不需要联网。
+- **直接使用**：下载 [V9 离线包](offline/logistics-offline-20261020-v9.zip)，或到本仓库 Releases 下载同名文件，解压后用 Chrome 打开 `物流工具_最新版_离线单文件_20261020_v9.html`，不需要联网。页面顶部会明确显示 V9。
 - **交接说明**：先读 `00_Claude先读.md`（中文，按日期记录每次改动和用户决定），再读 `program/README.md`（英文，"Current state" 一节是当前状态）。
 - **程序源码**：`program/`（`npm ci`、`npm test`、`npm run build`、`npm run export:offline`，需要 Node 22.13 或更新版本）。
+
+V9 调整 Similarity check 的操作顺序、候选展示、多选和返回位置。V8 已删除的比较摘要与人工评审表单保持删除；相似度算法和原始数据保持原口径。当前说明和验证边界见 `00_Claude先读.md` 顶部 V9 章节。
 
 ## 文件地图（给 AI 助手和新接手的人）
 
@@ -27,7 +29,7 @@
 | 导入 / 导出（Excel、工作区、CSV） | `program/public/xlsx.mjs`、`program/public/import-review.mjs`、`program/public/workspace.mjs`、`program/public/exports.mjs` |
 | 样式 | `program/public/*.css` |
 | 构建和离线单文件 | `program/scripts/build.mjs`、`program/scripts/export-offline.mjs` |
-| 测试（`npm test`，当前 356 项） | `program/tests/*.test.mjs`；最近一次结果在 `verification/test-results.txt` |
+| 测试（`npm test`，当前 369 项） | `program/tests/*.test.mjs`；最近一次结果在 `verification/test-results.txt` |
 | 离线单文件版 | `offline/` |
 | 构建输出、文件校验清单 | `built/`、`MANIFEST.sha256` |
 

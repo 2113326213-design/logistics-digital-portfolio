@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "pairCount": 2850,
+  "groups": 5700,
+  "pendingRecordsChecked": 1725,
+  "missingSourceSidesChecked": 75,
+  "excludedRecordsChecked": 525,
+  "deferredRecordsChecked": 634,
+  "sharedRecordsChecked": 748,
+  "scope": "All bundled pairs; generated HTML only, not browser layout"
+}

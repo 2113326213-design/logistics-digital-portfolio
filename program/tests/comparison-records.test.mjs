@@ -123,3 +123,57 @@ test('a semantic concern stays attached only to the original name requiring conf
  const current=buildModel({...data,apps:[a,{...structuredClone(a),ID:'Other',Name:'Other'}]}),now=pair(current,a.ID,'Other');
  assert.deepEqual(comparisonRecordEvidence(current,now.cap,now.capBack).sides[0].unconfirmed,[]);
 });
+
+test('fully confirmed pairs do not render empty unconfirmed panels',()=>{
+ const args=pair(model,id('CGQB_Logistic_system'),id('CGQB_Logistic_system_Q'));
+ for(const dimension of [comparisonRecordEvidence(model,args.cap,args.capBack),comparisonRecordEvidence(model,args.process,args.processBack)]){
+  assert.equal(dimension.sides.reduce((sum,side)=>sum+side.unconfirmed.length,0),0);
+ }
+ const html=renderComparisonRecords(args);
+ assert.doesNotMatch(html,/Records not yet confirmed|No unconfirmed records|pending-record-columns/);
+ assert.match(html,/<h5>Capability<\/h5>/);assert.match(html,/<h5>Process<\/h5>/);
+ assert.match(html,/Shared codes at compared level/);
+});
+
+test('missing source registrations remain explicit when there are no pending records',()=>{
+ const fixture=buildModel({apps:[{ID:'A',Name:'No registrations'},{ID:'B',Name:'Also empty'}],capabilityRows:[],processRows:[]});
+ const html=renderComparisonRecords(pair(fixture,'A','B'));
+ assert.equal((html.match(/No business capability records supplied/g)||[]).length,2);
+ assert.equal((html.match(/No process records supplied/g)||[]).length,2);
+ assert.equal((html.match(/This comparison has missing data/g)||[]).length,4);
+ assert.doesNotMatch(html,/Records not yet confirmed|No unconfirmed records|No recorded differences|Nothing open/);
+});
+
+test('pending evidence is collapsed with a count and preserves original records, reasons and ownership',()=>{
+ const fixture=buildModel({apps:[
+  {ID:'A',Name:'App <A>','Business Capabilities':'B.06.99 Original <source>'},
+  {ID:'B',Name:'App B','Business Capabilities':'B.06.1 Known'}
+ ],capabilityRows:[['B.06.1 Known']],processRows:[]});
+ const args=pair(fixture,'A','B'),html=renderComparisonRecords(args);
+ assert.match(html,/<details class="comparison-record-disclosure unconfirmed-records" id="focusRecordsCapabilityPending" ><summary>Records not yet confirmed \(1\)/);
+ assert.match(html,/Application A · App &lt;A&gt; \(1\)/);
+ assert.match(html,/B\.06\.99 Original &lt;source&gt;/);
+ assert.match(html,/No confirmed standard code in the taxonomy/);
+ assert.match(html,/pending-record-columns has-one-side/);
+ assert.doesNotMatch(html,/No unconfirmed records/);
+ const reopened=renderComparisonRecords({...args,opened:new Set(['focusRecordsCapabilityPending'])});
+ assert.match(reopened,/id="focusRecordsCapabilityPending" open>/);
+});
+
+test('long shared lists show five records first and retain every remaining record in a disclosure',()=>{
+ const values=Array.from({length:7},(_,i)=>`B.06.${i+1} Capability ${i+1}`);
+ const fixture=buildModel({apps:[
+  {ID:'A',Name:'A','Business Capabilities':values.join(';')},
+  {ID:'B',Name:'B','Business Capabilities':values.join(';')}
+ ],capabilityRows:values.map(value=>[value]),processRows:[]});
+ const args=pair(fixture,'A','B'),snapshot=JSON.stringify(args),html=renderComparisonRecords(args);
+ assert.equal(comparisonRecordEvidence(fixture,args.cap,args.capBack).shared.length,7);
+ const initial=html.match(/Shared codes at compared level \(7\)<\/h6><ul class="comparison-code-list">([\s\S]*?)<\/ul>/)?.[1];
+ assert(initial);assert.equal((initial.match(/<li>/g)||[]).length,5);
+ const overflow=html.match(/<details class="comparison-record-disclosure comparison-record-more" id="focusRecordsCapabilityMoreShared" ><summary>Show 2 more shared codes<\/summary>([\s\S]*?)<\/details>/)?.[1];
+ assert(overflow);assert.equal((overflow.match(/<li>/g)||[]).length,2);
+ assert.match(overflow,/Capability 6/);assert.match(overflow,/Capability 7/);
+ assert.equal(JSON.stringify(args),snapshot,'rendering must not mutate scores, evidence or model data');
+ const reopened=renderComparisonRecords({...args,opened:new Set(['focusRecordsCapabilityMoreShared'])});
+ assert.match(reopened,/id="focusRecordsCapabilityMoreShared" open>/);
+});

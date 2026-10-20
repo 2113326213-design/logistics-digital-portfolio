@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "checked": [
+    "three apps produce three pairs",
+    "search preserves selected chips",
+    "switching process/cap/weighted preserves directional cell",
+    "detail return restores selection, pool, search, dimension, cell and dialog offsets",
+    "removing active app clears stale evidence",
+    "one and zero app guards"
+  ],
+  "scope": "Event/state transitions in a DOM double; no browser or layout claim"
+}

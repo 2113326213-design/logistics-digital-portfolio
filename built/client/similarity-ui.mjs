@@ -30,6 +30,14 @@ export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn
  const el=id=>document.getElementById(id),dialog=el('compareDialog'),review=el('similarityReview');
  let lastModel,indexes={},pool=[],selected=new Set(),dimension='weighted',context='All applications',cell=null;
  let lastProvisional=null,weights={...DEFAULT_WEIGHTS},similarityThreshold=50,focusAppId=null,focusPeerId=null,peerSearch='',portfolioRows=[],mode='portfolio',choosingApp=false;
+ let showSelectedOnly=false,returnTo=null,portfolioPosition=null;
+ const detailState=root=>[...root.querySelectorAll('details')].map((node,index)=>({id:node.id||null,index,open:node.open}));
+ const restoreDetails=(root,state)=>{const nodes=[...root.querySelectorAll('details')];for(const item of Array.isArray(state)?state:[]){if(!item||typeof item!=='object')continue;const node=item.id?nodes.find(node=>node.id===item.id):nodes[item.index];if(node)node.open=item.open;}};
+ const afterPaint=fn=>typeof globalThis.requestAnimationFrame==='function'?globalThis.requestAnimationFrame(fn):fn();
+ const pagePosition=()=>({scrollY:globalThis.scrollY||0,details:detailState(el('similarityOverview'))});
+ function restorePagePosition(position){if(!position)return;restoreDetails(el('similarityOverview'),position.details);afterPaint(()=>globalThis.scrollTo?.({top:position.scrollY||0,behavior:'instant'}));}
+ function multiPosition(){return {pool:[...pool],selected:[...selected],dimension,context,cell:cell&&[...cell],search:el('selectionSearch').value,showSelectedOnly,details:detailState(dialog),scrollTop:dialog.scrollTop||0,choicesScroll:el('applicationChoices').scrollTop||0,matrixScroll:el('comparisonMatrix').querySelector('.directional-scroll')?.scrollLeft||0};}
+ function restoreMultiPosition(state){pool=(Array.isArray(state.pool)?state.pool:[]).filter(id=>indexes.cap.scopes.has(id));if(!pool.length)pool=getModel().apps.map(app=>app.id);selected=new Set((Array.isArray(state.selected)?state.selected:[]).filter(id=>pool.includes(id)));dimension=['weighted','cap','process'].includes(state.dimension)?state.dimension:'weighted';context=typeof state.context==='string'?state.context:'All applications';cell=Array.isArray(state.cell)&&state.cell.length===2&&state.cell[0]!==state.cell[1]&&state.cell.every(id=>selected.has(id))?[...state.cell]:null;showSelectedOnly=state.showSelectedOnly===true;el('selectionSearch').value=typeof state.search==='string'?state.search:'';renderChoices();renderMatrix();restoreDetails(dialog,state.details);if(!dialog.open)dialog.showModal();afterPaint(()=>{dialog.scrollTop=Number.isFinite(state.scrollTop)?state.scrollTop:0;el('applicationChoices').scrollTop=Number.isFinite(state.choicesScroll)?state.choicesScroll:0;const matrix=el('comparisonMatrix').querySelector('.directional-scroll');if(matrix)matrix.scrollLeft=Number.isFinite(state.matrixScroll)?state.matrixScroll:0;});}
  const pct=n=>n===null?'N/A':new Intl.NumberFormat('en-US',{maximumFractionDigits:1,style:'percent'}).format(settledScore(n));
  const scoreNumber=n=>n===null?'N/A':new Intl.NumberFormat('en-US',{maximumFractionDigits:1}).format(scorePoints(n));
  const scoreText=n=>n===null?'N/A':scoreNumber(n)+' / 100';
@@ -37,7 +45,7 @@ export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn
  const title=dim=>dim==='weighted'?'Weighted similarity':dim==='cap'?'Capability match only':'Process match only';
  const depth=s=>s.levels.length?s.levels.map(n=>'L'+n).join(' / '):'Unknown';
  const matches=(a,q)=>[a.Name,a.Entity,a.Division].join(' ').toLowerCase().includes(q.toLowerCase());
- dialog.innerHTML=`<button class="close" id="compareClose" aria-label="Close comparison">×</button><h2 id="compareTitle">Application comparison</h2><p id="compareScope" class="comparison-context"></p><details id="compareSelection" class="compare-selection" open><summary>Select applications<span id="selectionCount" role="status"></span></summary><div class="selection-toolbar"><label>Find applications<input id="selectionSearch" type="search" placeholder="Name or plant"></label><button id="selectVisible">Select visible</button><button id="clearSelection">Clear selection</button></div><div id="applicationChoices" class="application-choices"></div></details><div class="matrix-toolbar"><div class="segments" aria-label="Matrix dimension"><button data-matrix-dim="weighted" class="active" aria-pressed="true">Weighted similarity</button><button data-matrix-dim="cap" aria-pressed="false">Capability match only</button><button data-matrix-dim="process" aria-pressed="false">Process match only</button></div><span id="coverageScope" class="scope-pill"></span><button id="exportSelection">Export selection</button></div><div id="comparisonMatrix"></div><div id="comparisonEvidence" aria-live="polite"></div>`;
+ dialog.innerHTML=`<button class="close" id="compareClose" aria-label="Close comparison">×</button><h2 id="compareTitle">Application comparison</h2><p id="compareScope" class="comparison-context"></p><details id="compareSelection" class="compare-selection" open><summary>1. Select applications<span id="selectionCount" role="status"></span></summary><div class="selection-toolbar"><label>Find applications<input id="selectionSearch" type="search" placeholder="Name or plant"></label><button id="selectVisible">Select visible</button><button id="clearSelection">Clear selection</button></div><div id="applicationChoices" class="application-choices"></div></details><div class="selected-applications" aria-label="Selected applications"><div class="selected-applications-head"><strong id="selectedApplicationsCount" role="status"></strong><button id="showSelectedApplications" aria-pressed="false">View selected</button><button id="clearSelectedApplications">Clear selection</button></div><div id="selectedApplications" class="selected-app-chips"></div></div><h3 class="comparison-step-heading">2. Choose a pair</h3><div class="matrix-toolbar"><div class="segments" aria-label="Matrix dimension"><button data-matrix-dim="weighted" class="active" aria-pressed="true">Weighted similarity</button><button data-matrix-dim="cap" aria-pressed="false">Capability match only</button><button data-matrix-dim="process" aria-pressed="false">Process match only</button></div><span id="coverageScope" class="scope-pill"></span><button id="exportSelection">Export selection</button></div><div id="comparisonMatrix"></div><div id="comparisonEvidence" aria-live="polite"></div>`;
 
  function weightPanel(opened){return `<details class="weight-panel" ${opened?'open':''}><summary><span>Weights:</span><span class="weight-summary-note" data-weight-note></span><span class="weight-edit">Edit</span><small data-weight-save></small></summary><p class="weight-intro">Divide 100% across four fields. A higher percentage has more influence on the similarity score.</p><div class="weight-allocation"><strong data-weight-total>100% / 100% allocated</strong><div class="weight-allocation-bar" aria-hidden="true">${Object.keys(WEIGHT_LABELS).map(key=>`<span data-weight-bar="${key}"></span>`).join('')}</div></div><div class="weight-inputs">${Object.entries(WEIGHT_LABELS).map(([key,label])=>`<label class="weight-card"><span class="weight-name">${label}</span><span class="weight-card-values"><input type="number" aria-label="${label} weight in percent" data-weight="${key}" min="0" max="100" step="0.1" inputmode="decimal" value="${weights[key]*100}"><span class="weight-unit">%</span></span></label>`).join('')}</div><div class="weight-actions"><span data-weight-status role="status" aria-live="polite"></span><div class="weight-buttons"><button data-reset-weights>Restore defaults</button><button data-apply-weights disabled>Apply weights</button></div></div></details>`;}
 
@@ -53,7 +61,7 @@ export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn
    </details>
   </div>
   <section class="focus-analyzer similarity-flow" id="focusAnalyzer" aria-label="Application similarity explorer" hidden>
-   <div class="focus-controls"><div class="focus-title"><button id="backToPairs" class="back-to-portfolio">← Back to results</button><h2 id="focusHeading">Choose an application</h2><p id="focusHelp" class="focus-entry-help"></p><button id="changeFocusApp" class="back-to-portfolio" hidden>Choose another application</button></div><div class="focus-filters"><label id="focusSearchPicker" for="focusAppSearch">Find application<input id="focusAppSearch" type="search" placeholder="Name, plant or business unit" autocomplete="off"></label><label id="focusAppPicker" for="focusApp" hidden>Application<select id="focusApp"><option value="">Select an application</option></select></label></div></div>
+   <div class="focus-controls"><div class="focus-title"><button id="backToPairs" class="back-to-portfolio">← Back to results</button><h2 id="focusHeading">1. Choose an application</h2><p id="focusHelp" class="focus-entry-help"></p><button id="changeFocusApp" class="back-to-portfolio" hidden>Choose another application</button></div><div class="focus-filters"><label id="focusSearchPicker" for="focusAppSearch">Find application<input id="focusAppSearch" type="search" placeholder="Name, plant or business unit" autocomplete="off"></label><label id="focusAppPicker" for="focusApp" hidden>Application<select id="focusApp"><option value="">Select an application</option></select></label></div></div>
    <p id="focusAppSearchStatus" class="focus-search-status" role="status"></p><p id="focusStatus" class="focus-status" role="status" aria-live="polite"></p><div id="focusResult"></div>
   </section>`;
  const weightsPanel=review.querySelector('.weight-panel');
@@ -73,6 +81,21 @@ export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn
  syncWeights();
 
  function pairStatus(pair){return pairResultLabel(pair,similarityThreshold);}
+ function statusHelp(pair){
+  const status=pairStatus(pair);
+  if(pair.status==='confirmed')return status==='Potential overlap'?`At or above the current threshold of ${similarityThreshold}. This is text and code overlap, not confirmed duplicate functionality.`:`Below the current threshold of ${similarityThreshold}. This does not establish that the applications have different functions.`;
+  if(status==='Review needed')return codeEvidenceScore(pair)===null?'No shared words in the weighted text fields. A complete similarity score is unavailable.':'No shared words in the weighted text fields, but shared codes remain. Code evidence is not a complete similarity score.';
+  if(status==='Not similar')return 'No complete similarity score and no shared confirmed codes in the weighted capability/process fields. This does not establish that the applications have different functions.';
+  if(status==='Out of scope')return pairHint(pair);
+  return 'A complete similarity score is unavailable. Unavailable does not mean zero.';
+ }
+ function candidateGroups(pairs){
+  const complete=pairs.filter(pair=>pair.status==='confirmed'),code=pairs.filter(pair=>pair.status!=='confirmed'&&codeEvidenceScore(pair)!==null);
+  code.sort((a,b)=>codeEvidenceScore(b)-codeEvidenceScore(a)||compareNatural(a.peer.app.Name,b.peer.app.Name));
+  const other=pairs.filter(pair=>pair.status!=='confirmed'&&codeEvidenceScore(pair)===null);
+  return [{id:'complete',label:'Complete scores',pairs:complete},{id:'code',label:'Code evidence · no complete score',pairs:code},...['Data missing','Needs confirmation','More detail needed','Review needed','Not similar','Out of scope'].map((label,i)=>({id:'status'+i,label,pairs:other.filter(pair=>pairStatus(pair)===label)}))].filter(group=>group.pairs.length);
+ }
+
  function orderedPeers(id){
   return indexes.weighted.pairPeers(id).sort((a,b)=>Number(b.status==='confirmed')-Number(a.status==='confirmed')||(b.coverage??-1)-(a.coverage??-1)||a.peer.app.Name.localeCompare(b.peer.app.Name));
  }
@@ -137,20 +160,22 @@ export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn
   syncFocusOptions(model);
   el('similarityOverview').hidden=!!focusAppId||choosingApp;el('focusAnalyzer').hidden=!focusAppId&&!choosingApp;
   el('focusAppPicker').hidden=true;el('changeFocusApp').hidden=!focusAppId;el('focusSearchPicker').hidden=!!focusAppId;review.querySelector('.focus-filters').hidden=!!focusAppId;
-  el('focusHeading').textContent='Choose an application';el('focusHeading').hidden=!!focusAppId;el('focusHelp').textContent='';el('focusStatus').textContent='';
+  el('focusHeading').textContent=focusAppId?(focusPeerId?'3. View comparison evidence':'2. Choose a comparison application'):'1. Choose an application';el('focusHeading').hidden=false;el('focusHelp').textContent=focusAppId?'':'Find an application, then choose one to compare with it.';el('focusStatus').textContent='';el('backToPairs').textContent=returnTo?.kind==='multi'?'← Back to selected applications':'← Back to results';
   if(!focusAppId){
    const query=el('focusAppSearch').value.trim().toLowerCase(),apps=model.apps.filter(a=>!query||matchesApplication(a,query)).sort((a,b)=>Number(!!scopeReason(a))-Number(!!scopeReason(b))||compareNatural(a.Name,b.Name));
    el('focusResult').innerHTML=`<section class="focus-app-options" aria-label="Choose an application"><p>${apps.length} ${apps.length===1?'application':'applications'}</p><div class="focus-app-list">${apps.map(a=>{return `<button data-start-app="${esc(a.id)}"><strong>${esc(a.Name)}</strong><span>${esc(a.Entity||'Plant not recorded')} · ${scopeReason(a)?'Out of scope':'Application'}</span></button>`;}).join('')||'<p>No matching applications. <button data-clear-app-search>Clear search</button></p>'}</div></section>`;return;
   }
   const source=indexes.weighted.scopes.get(focusAppId).app;
-  if(scopeReason(source)){el('focusResult').innerHTML=`<p class="scope-banner">Not in similarity check – ${esc(scopeReason(source))}</p>`;return;}
+  const sourceIdentity=`<div class="focus-selected-app"><span>Selected application</span><strong>${esc(source.Name)}</strong><small>${esc(source.Entity||'Plant not recorded')} · ${esc(source.Division||'Business unit not recorded')}</small></div>`;
+  if(scopeReason(source)){el('focusResult').innerHTML=sourceIdentity+`<p class="scope-banner">Not in similarity check – ${esc(scopeReason(source))}</p>`;return;}
   const opened=new Set([...el('focusResult').querySelectorAll('details[open][id]')].map(d=>d.id));
-  const all=orderedPeers(focusAppId),q=peerSearch.trim().toLowerCase(),filtered=all.filter(r=>!q||matchesApplication(r.peer.app,q)),shown=filtered.slice(0,q?filtered.length:12),more=q?[]:filtered.slice(12);
-  if(!all.some(r=>r.peer.app.id===focusPeerId))focusPeerId=all[0]?.peer.app.id||null;
+  const all=orderedPeers(focusAppId),q=peerSearch.trim().toLowerCase(),filtered=all.filter(r=>!q||matchesApplication(r.peer.app,q));
+  if(!all.some(r=>r.peer.app.id===focusPeerId))focusPeerId=null;
   const active=all.find(r=>r.peer.app.id===focusPeerId);
-  const row=r=>`<button class="focus-rank ${r.status!=='confirmed'?'is-provisional':''} ${r.peer.app.id===focusPeerId?'is-active':''}" data-focus-peer="${esc(r.peer.app.id)}" aria-pressed="${r.peer.app.id===focusPeerId}"><span class="focus-rank-top"><span class="focus-rank-name"><span class="focus-rank-label" title="${esc(r.peer.app.Name)}">${esc(r.peer.app.Name)}</span><small>${esc(r.peer.app.Entity||'Plant not recorded')}</small>${(getData().pairReviews||{})[r.key]?`<small class="focus-rank-review">Reviewed: ${esc(getData().pairReviews[r.key].status)}</small>`:''}</span><span class="focus-rank-score">${r.status==='confirmed'?`<strong>Score: ${scoreNumber(r.coverage)}</strong>`:`<small class="focus-rank-status">${esc(pairStatus(r))}</small>${codeEvidenceScore(r)===null?'':`<small class="focus-rank-code">Code evidence ${formatCodeEvidence(codeEvidenceScore(r))}</small>`}`}</span></span></button>`;
-  const ranking=`<section class="focus-panel focus-ranking"><div class="focus-panel-head"><h3>Choose a candidate</h3><span>${filtered.length} ${filtered.length===1?'candidate':'candidates'}</span></div><label class="focus-peer-search">Find a candidate<input id="focusPeerSearch" type="search" placeholder="Name or plant" value="${esc(peerSearch)}" autocomplete="off"></label><div class="focus-rank-list">${shown.map(row).join('')}${more.length?`<details class="focus-extra" id="focusMore" ${opened.has('focusMore')||more.some(r=>r.peer.app.id===focusPeerId)?'open':''}><summary>More candidates (${more.length})</summary>${more.map(row).join('')}</details>`:''}${!filtered.length?'<p class="focus-empty">No matching candidates. <button data-clear-peer-search>Clear search</button></p>':''}</div></section>`;
-  if(!active){el('focusResult').innerHTML=`<section class="focus-panel"><h3>${esc(source.Name)}</h3><p class="focus-empty">No other applications are available to compare. Add another application to this workspace to compare descriptions and codes.</p></section>`;return;}
+  const row=r=>`<button class="focus-rank ${r.status!=='confirmed'?'is-provisional':''} ${r.peer.app.id===focusPeerId?'is-active':''}" data-focus-peer="${esc(r.peer.app.id)}" aria-pressed="${r.peer.app.id===focusPeerId}"><span class="focus-rank-top"><span class="focus-rank-name"><span class="focus-rank-label" title="${esc(r.peer.app.Name)}">${esc(r.peer.app.Name)}</span><small>${esc(r.peer.app.Entity||'Plant not recorded')} · ${esc(r.peer.app.Division||'Business unit not recorded')}</small>${(getData().pairReviews||{})[r.key]?`<small class="focus-rank-review">Reviewed: ${esc(getData().pairReviews[r.key].status)}</small>`:''}</span><span class="focus-rank-score">${r.status==='confirmed'?`<strong>Score: ${scoreNumber(r.coverage)}</strong><small class="focus-rank-status">${esc(pairStatus(r))}</small>`:`<small class="focus-rank-status">${esc(pairStatus(r))}</small>${codeEvidenceScore(r)===null?'':`<small class="focus-rank-code">Code evidence ${formatCodeEvidence(codeEvidenceScore(r))}</small>`}`}</span></span></button>`;
+  const groups=candidateGroups(filtered);
+  const ranking=`<section class="focus-panel focus-ranking"><div class="focus-panel-head"><h3>Comparison candidates</h3><span>${filtered.length} ${filtered.length===1?'candidate':'candidates'}</span></div><label class="focus-peer-search">Search all applications<input id="focusPeerSearch" type="search" placeholder="Name, plant or business unit" value="${esc(peerSearch)}" autocomplete="off"></label><div class="focus-rank-list">${groups.map((group,i)=>{const id='focusCandidates-'+group.id,visible=q?group.pairs:group.pairs.slice(0,3),more=q?[]:group.pairs.slice(3),moreId=id+'-more';return `<details class="focus-candidate-group" id="${id}" ${q||opened.has(id)||group.pairs.some(r=>r.peer.app.id===focusPeerId)||!active&&i===0?'open':''}><summary>${esc(group.label)} <span>(${group.pairs.length})</span></summary>${visible.map(row).join('')}${more.length?`<details class="focus-extra" id="${moreId}" ${opened.has(moreId)||more.some(r=>r.peer.app.id===focusPeerId)?'open':''}><summary>Show ${more.length} more</summary>${more.map(row).join('')}</details>`:''}</details>`;}).join('')}${!filtered.length?'<p class="focus-empty">No matching candidates. <button data-clear-peer-search>Clear search</button></p>':''}</div></section>`;
+  if(!active){el('focusResult').innerHTML=sourceIdentity+(all.length?ranking:'<section class="focus-panel"><p class="focus-empty">No other applications are available to compare. Add another application to this workspace to compare descriptions and codes.</p></section>');return;}
   const peer=active.peer.app,forward=active.forward,reverse=active.reverse,id=peer.id;
   const cap=indexes.cap.compare(focusAppId,id),capBack=indexes.cap.compare(id,focusAppId),process=indexes.process.compare(focusAppId,id),processBack=indexes.process.compare(id,focusAppId);
   const direction=(reverse.coverage??reverse.knownPoints)<(forward.coverage??forward.knownPoints)?reverse:forward;
@@ -159,17 +184,17 @@ export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn
   const costs=`<details class="similarity-secondary" id="focusCosts" ${opened.has('focusCosts')?'open':''}><summary>Annual costs</summary><div class="pair-costs"><p><span>${esc(source.Name)}</span><strong>${esc(opportunityCostLabel(source))}</strong></p><p><span>${esc(peer.Name)}</span><strong>${esc(opportunityCostLabel(peer))}</strong></p></div></details>`;
   const descriptionComponent=direction.components.find(c=>c.key==='description');
   const sharedDescriptionWords=descriptionComponent?.weight>0?descriptionComponent.text?.shared||[]:[];
-  const originalDescriptions=`<section class="purpose-comparison"><h4>What each application does</h4>${sharedDescriptionWords.length?'<p class="description-match-key"><mark class="description-shared-word">Highlighted words</mark> are counted in the description match. Repeated words count once.</p>':''}<div class="purpose-grid">${purposeCard(source,sharedDescriptionWords)}${purposeCard(peer,sharedDescriptionWords)}</div></section>`;
+  const originalDescriptions=`<section class="purpose-comparison"><h4>Original descriptions</h4>${sharedDescriptionWords.length?'<p class="description-match-key"><mark class="description-shared-word">Highlighted words</mark> show text overlap, not proof of the same function. Repeated words count once.</p>':''}<div class="purpose-grid">${purposeCard(source,sharedDescriptionWords)}${purposeCard(peer,sharedDescriptionWords)}</div></section>`;
   const detail=`<section class="focus-panel focus-detail readable-comparison" tabindex="-1">
    <div class="comparison-overview"><div><h3>Compare applications</h3></div><div class="comparison-score"><span>Score</span><strong>${active.status==='confirmed'?`${scoreNumber(active.coverage)}<small> / 100</small>`:'Unavailable'}</strong><em class="comparison-status">${esc(pairStatus(active))}</em>${codeEvidenceScore(active)===null?'':`<small class="comparison-code-evidence">Code evidence ${formatCodeEvidence(codeEvidenceScore(active))}</small>`}</div></div>
    ${comparisonIdentities(source,peer,esc)}
-   <p class="comparison-guidance">Shared codes do not confirm duplicate functionality.</p>
+   <p class="comparison-guidance">${esc(statusHelp(active))}</p>
    ${active.status!=='confirmed'&&pairHint(active)?`<p class="comparison-note">${esc(pairHint(active))}</p>`:''}
    ${`<details class="similarity-secondary" id="focusOriginalDescriptions" ${opened.has('focusOriginalDescriptions')?'open':''}><summary>Original descriptions and shared words</summary>${originalDescriptions}</details>`}
    ${renderComparisonRecords({model:getModel(),cap,capBack,process,processBack,opened,escape:esc})}
    ${records}${evidence}${costs}
   </section>`;
-  el('focusResult').innerHTML=`<details class="similarity-secondary" id="focusCandidates" ${opened.has('focusCandidates')?'open':''}><summary>Change comparison</summary>${ranking}</details>${detail}`;
+  el('focusResult').innerHTML=`<details class="similarity-secondary" id="focusCandidates" ${opened.has('focusCandidates')?'open':''}><summary>Change comparison application</summary>${sourceIdentity}${ranking}</details>${detail}`;
 
  }
 
@@ -188,23 +213,29 @@ export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn
  function open({poolIds,contextLabel,seedId,targetId,peerId,dimension:dim}={}){
   refresh();const model=getModel();if(!model)return;
   pool=poolIds?.length?[...new Set(poolIds)].filter(id=>indexes.cap.scopes.has(id)):model.apps.map(a=>a.id);
-  context=contextLabel||'All applications';dimension=dim||'weighted';el('selectionSearch').value='';
+  context=contextLabel||'All applications';dimension=dim||'weighted';el('selectionSearch').value='';showSelectedOnly=false;
   if(targetId&&peerId){selected=new Set([targetId,peerId]);cell=[targetId,peerId];}
   else if(poolIds){selected=new Set(dimension==='weighted'?pool:pool.slice(0,2));cell=selected.size===2?[...selected]:null;}
   else {selected=new Set([...selected].filter(id=>pool.includes(id)));if(seedId)selected.add(seedId);cell=null;}
   el('compareSelection').open=selected.size<2;
   renderChoices();renderMatrix();if(!dialog.open)dialog.showModal();
  }
- function visibleChoices(){const q=el('selectionSearch').value;return pool.map(id=>indexes.cap.scopes.get(id).app).filter(a=>matches(a,q)).sort((a,b)=>compareNatural(a.Name,b.Name));}
+ function visibleChoices(){const q=el('selectionSearch').value.trim();return pool.map(id=>indexes.cap.scopes.get(id)?.app).filter(Boolean).filter(a=>(!showSelectedOnly||selected.has(a.id))&&matches(a,q)).sort((a,b)=>compareNatural(a.Name,b.Name));}
  function renderChoices(){
   el('compareScope').textContent=`Candidate group: ${context} · ${pool.length} applications`;
   const apps=visibleChoices();
   el('selectionCount').textContent=`${selected.size} selected · ${apps.length} shown`;
-  el('applicationChoices').innerHTML=apps.map(a=>`<label class="application-choice"><input type="checkbox" data-select-app="${esc(a.id)}" ${selected.has(a.id)?'checked':''}><span>${esc(a.Name)}<small>${esc(a.Entity||'Plant not provided')} · ${esc(a.Division||'Business unit not recorded')}</small></span></label>`).join('')||'<p class="hint">No applications found.</p>';
+  el('selectedApplicationsCount').textContent=`${selected.size} selected`;
+  el('selectedApplications').innerHTML=[...selected].map(id=>indexes.cap.scopes.get(id)?.app).filter(Boolean).map(a=>`<span class="selected-app-chip"><span>${esc(a.Name)}</span><button data-remove-selected="${esc(a.id)}" aria-label="Remove ${esc(a.Name)} from selection">×</button></span>`).join('')||'<span class="selection-empty">Select applications above to begin.</span>';
+  el('showSelectedApplications').textContent=showSelectedOnly?'Show all applications':'View selected';el('showSelectedApplications').setAttribute('aria-pressed',String(showSelectedOnly));el('showSelectedApplications').disabled=!selected.size&&!showSelectedOnly;
+  el('clearSelectedApplications').disabled=!selected.size;el('clearSelection').disabled=!selected.size;el('selectVisible').disabled=!apps.length;
+  el('applicationChoices').innerHTML=apps.map(a=>`<label class="application-choice"><input type="checkbox" data-select-app="${esc(a.id)}" ${selected.has(a.id)?'checked':''}><span>${esc(a.Name)}<small>${esc(a.Entity||'Plant not provided')} · ${esc(a.Division||'Business unit not recorded')}</small></span></label>`).join('')||(showSelectedOnly&&!selected.size?'<p class="hint">No applications selected. <button data-show-all-applications>Show all applications</button></p>':'<p class="hint">No applications found. <button data-clear-selection-search>Clear search and filters</button></p>');
  }
  function renderMatrix(){
   el('coverageScope').textContent='';
   dialog.querySelectorAll('[data-matrix-dim]').forEach(b=>{const active=b.dataset.matrixDim===dimension;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));});
+  if(cell&&!cell.every(id=>selected.has(id)))cell=null;
+  const matrixOpened=new Set([...el('comparisonMatrix').querySelectorAll('details[open][id]')].map(node=>node.id));
   const apps=[...selected].map(id=>indexes[dimension].scopes.get(id)?.app).filter(Boolean),index=indexes[dimension];
   el('exportSelection').disabled=apps.length<2;
   if(apps.length<2){el('comparisonMatrix').innerHTML='<p class="compare-placeholder">Select at least two applications to compare.</p>';el('comparisonEvidence').innerHTML='';return;}
@@ -212,7 +243,7 @@ export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn
    const pairs=apps.flatMap((a,i)=>apps.slice(i+1).map(b=>index.pair(a.id,b.id))),scored=pairs.filter(p=>p.status==='confirmed').sort((a,b)=>b.coverage-a.coverage);
    const label=pairStatus;
    const pairRow=p=>`<button class="compare-pair-row" data-cell-target="${esc(p.target.app.id)}" data-cell-peer="${esc(p.peer.app.id)}"><span>${esc(p.target.app.Name)} ↔ ${esc(p.peer.app.Name)}<small>${esc(p.target.app.Entity)} · ${esc(p.peer.app.Entity)}</small></span><strong>${p.status==='confirmed'?scoreText(p.coverage):label(p)+(codeEvidenceScore(p)===null?'':'<small class="compare-pair-code">Code evidence '+formatCodeEvidence(codeEvidenceScore(p))+'</small>')}</strong></button>`;
-   el('comparisonMatrix').innerHTML=`<p class="comparison-context">Comparing ${apps.length} applications · ${pairs.length} ${pairs.length===1?'pair':'pairs'}</p><div class="compare-pair-list">${scored.length?scored.map(pairRow).join(''):'<p>No scored pairs among the selected applications.</p>'}${['Data missing','Needs confirmation','More detail needed','Review needed','Not similar','Out of scope'].map(group=>{const rest=pairs.filter(p=>p.status!=='confirmed'&&label(p)===group);return rest.length?`<details><summary>${group} · ${rest.length}</summary>${rest.map(pairRow).join('')}</details>`:''}).join('')}</div>`;
+   el('comparisonMatrix').innerHTML=`<p class="comparison-context">Comparing ${apps.length} applications · ${pairs.length} ${pairs.length===1?'pair':'pairs'}</p><div class="compare-pair-list">${scored.length?scored.map(pairRow).join(''):'<p>No scored pairs among the selected applications.</p>'}${['Review needed','Data missing','Needs confirmation','More detail needed','Not similar','Out of scope'].map((group,i)=>{const rest=pairs.filter(p=>p.status!=='confirmed'&&label(p)===group),id='matrixPairGroup-'+i,active=cell&&rest.some(pair=>[pair.target.app.id,pair.peer.app.id].every(appId=>cell.includes(appId)));return rest.length?`<details id="${id}" ${matrixOpened.has(id)||active?'open':''}><summary>${group==='Review needed'&&rest.some(pair=>codeEvidenceScore(pair)!==null)?'Code evidence · Review needed':group} · ${rest.length}</summary>${rest.map(pairRow).join('')}</details>`:''}).join('')}</div>`;
    const active=cell&&cell.every(id=>selected.has(id))&&index.pair(...cell);
    if(active||scored[0]){const p=active||scored[0];renderEvidence(p.target.app.id,p.peer.app.id);}else{cell=null;el('comparisonEvidence').innerHTML='';}
    return;
@@ -223,7 +254,7 @@ export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn
  function recordList(items){return items.length?'<ul class="record-list">'+items.map(n=>`<li><b>${esc(displayCode(n.id))}</b><span title="${esc(n.label)}">${esc(displayName(n))}</span>${n.sources?`<small>Source: ${esc(n.sources.map(s=>s.id).join(', '))}</small>`:''}</li>`).join('')+'</ul>':'<p class="compare-empty">No records.</p>';}
  function branchEvidence(r,label,opened){return `<details class="direction-evidence" ${opened?'open':''}><summary>${escapedCodeEvidenceSummary(label,esc)}</summary>${r.reason?`<p class="score-note">${esc(english(r.reason))}</p>`:''}${isSignedIn()&&r.target.pending.length?`<ul class="record-list">${r.target.pending.map(p=>`<li><b>${esc(english(p.value))}</b><span>${esc(english(p.reason))}</span></li>`).join('')}</ul>`:''}${r.branches.map(b=>`<details class="branch-evidence"><summary><span>${esc(displayCode(b.id))} · Level ${b.level} · ${b.items.length} target records</span><strong>${b.coverage===null?'N/A':b.common.length+' / '+b.items.length}</strong></summary><p class="branch-label">${esc(displayName({id:b.id,label:b.label}))}</p>${b.reason?`<p class="score-note">${esc(english(b.reason))}</p>`:''}<div class="comparison-lists"><section><h4>Shared records</h4>${recordList(b.common)}</section><section><h4>Target-only records</h4>${recordList(b.onlyTarget)}</section><section><h4>Peer records at this level</h4>${recordList(b.peerItems)}</section></div></details>`).join('')}</details>`;}
  function renderEvidence(targetId,peerId){
-  cell=[targetId,peerId];dialog.querySelectorAll('[data-cell-target]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.cellTarget===targetId&&button.dataset.cellPeer===peerId)));const index=indexes[dimension],a=index.compare(targetId,peerId),b=index.compare(peerId,targetId);
+  cell=[targetId,peerId];dialog.querySelectorAll('[data-cell-target]').forEach(button=>button.setAttribute('aria-pressed',String(dimension==='weighted'?[button.dataset.cellTarget,button.dataset.cellPeer].every(id=>cell.includes(id)):button.dataset.cellTarget===targetId&&button.dataset.cellPeer===peerId)));const index=indexes[dimension],a=index.compare(targetId,peerId),b=index.compare(peerId,targetId);
   if(dimension==='weighted'){renderWeightedEvidence(index.pair(targetId,peerId));return;}
   const card=(r,label)=>`<div class="coverage-card"><span>${label}</span><div class="selected-component"><h4>${esc(title(dimension))} score</h4>${scoreDisplay(r.coverage,dimension)}</div><p>${esc(depth(r.target))} · ${r.comparableBranches} / ${r.branches.length} comparable branches</p>${r.coverage!==null?`<p class="score-fraction">Shared ${r.commonCount} / Target ${r.targetCount}</p>`:`<p class="score-note">${esc(explainResult(r))}</p>`}</div>`;
   const diff=quickDifference(a,b),labels=nodes=>nodes.length?nodes.slice(0,4).map(displayRecordLabel).join('; ')+(nodes.length>4?'; '+(nodes.length-4)+' more':''):(diff.partial?'None among confirmed records':'None');
@@ -233,7 +264,7 @@ export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn
   el('comparisonEvidence').innerHTML=`<section class="selected-evidence"><div class="pair-summary">${appCard(a.target.app,'Row target')}${appCard(a.peer.app,'Column application')}</div>${outOfScope.length?`<p class="scope-banner">Out of scope · Not in similarity check – ${esc(outOfScope.join('; '))}</p>`:''}<div class="coverage-grid">${card(a,'Row target covered by column')}${card(b,'Column covered by row target')}</div>${quick}${branchEvidence(a,'Row target',true)}${branchEvidence(b,'Column application',false)}</section>`;
  }
  function renderWeightedEvidence(pair){
-  el('comparisonEvidence').innerHTML=`<section class="selected-evidence"><h3>${esc(pair.target.app.Name)} ↔ ${esc(pair.peer.app.Name)}</h3><div class="total-result"><span>${pairStatus(pair)}</span>${pair.status==='confirmed'?`<strong>${scoreMarkup(pair.coverage)}</strong>`:''}<p>${esc(pairHint(pair))}</p></div><p>${esc(pair.target.app.Name)} ${esc(opportunityCostLabel(pair.target.app))} · ${esc(pair.peer.app.Name)} ${esc(opportunityCostLabel(pair.peer.app))}</p><button data-open-similarity-target="${esc(pair.target.app.id)}" data-open-similarity-peer="${esc(pair.peer.app.id)}">View comparison</button><details><summary>How is this calculated?</summary>${calculationDetails(pair.forward)}${calculationDetails(pair.reverse)}</details></section>`;
+  el('comparisonEvidence').innerHTML=`<section class="selected-evidence"><h3>3. View comparison evidence</h3><h4>${esc(pair.target.app.Name)} ↔ ${esc(pair.peer.app.Name)}</h4><div class="total-result"><span>${pairStatus(pair)}</span>${pair.status==='confirmed'?`<strong>${scoreMarkup(pair.coverage)}</strong>`:''}<p>${esc(statusHelp(pair))}</p>${pairHint(pair)?`<p>${esc(pairHint(pair))}</p>`:''}</div><p>${esc(pair.target.app.Name)} ${esc(opportunityCostLabel(pair.target.app))} · ${esc(pair.peer.app.Name)} ${esc(opportunityCostLabel(pair.peer.app))}</p><button data-open-similarity-target="${esc(pair.target.app.id)}" data-open-similarity-peer="${esc(pair.peer.app.id)}">View comparison</button><details><summary>How is this calculated?</summary>${calculationDetails(pair.forward)}${calculationDetails(pair.reverse)}</details></section>`;
  }
 
  function exportRows(rows,dim,name){
@@ -242,23 +273,24 @@ export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn
  }
 
  function revealResult(){const panel=el('focusAnalyzer');panel.scrollIntoView({block:'start',behavior:'smooth'});}
- function startReview(){choosingApp=true;focusAppId=null;focusPeerId=null;peerSearch='';el('focusAppSearch').value='';el('focusResult').innerHTML='';showReview();revealResult();}
- function backToResults(){choosingApp=false;focusAppId=null;focusPeerId=null;peerSearch='';el('focusResult').innerHTML='';showPortfolio();el('similarityOverview').scrollIntoView({block:'start',behavior:'smooth'});}
- el('similarityTab').onclick=backToResults;el('backToPairs').onclick=backToResults;el('changeFocusApp').onclick=startReview;el('browseApplications').onclick=startReview;
+ function startReview(){if(!focusAppId&&!choosingApp){portfolioPosition=pagePosition();returnTo=null;}choosingApp=true;focusAppId=null;focusPeerId=null;peerSearch='';el('focusResult').innerHTML='';showReview();revealResult();}
+ function backToResults(){const destination=returnTo;returnTo=null;choosingApp=false;focusAppId=null;focusPeerId=null;peerSearch='';el('focusResult').innerHTML='';showPortfolio();if(destination?.kind==='multi'){restorePagePosition(destination.page);restoreMultiPosition(destination.state);}else restorePagePosition(portfolioPosition);onStateChange();}
+ el('similarityTab').onclick=()=>{returnTo=null;backToResults();};el('backToPairs').onclick=backToResults;el('changeFocusApp').onclick=startReview;el('browseApplications').onclick=startReview;
  el('compareMultipleApplications').onclick=()=>{open();el('compareSelection').open=true;onStateChange();};
 
  el('portfolioThresholdForm').onsubmit=e=>{e.preventDefault();try{similarityThreshold=Number(el('portfolioThreshold').value);renderReview();onStateChange();}catch(error){el('portfolioStats').textContent=error.message;}};
  el('focusAppSearch').oninput=()=>{if(focusAppId)syncFocusOptions(getModel());else renderFocus();};
- el('focusApp').onchange=e=>{focusAppId=e.target.value||null;focusPeerId=null;peerSearch='';el('focusAppSearch').value='';el('focusResult').innerHTML='';renderFocus();onStateChange();};
+ el('focusApp').onchange=e=>{focusAppId=e.target.value||null;focusPeerId=null;peerSearch='';el('focusResult').innerHTML='';renderFocus();onStateChange();};
  review.addEventListener('input',e=>{if(e.target.id!=='focusPeerSearch')return;peerSearch=e.target.value;const caret=e.target.selectionStart;renderFocus();const search=el('focusPeerSearch');search.focus({preventScroll:true});search.setSelectionRange(caret,caret);});
  weightsPanel.addEventListener('toggle',onStateChange);
- el('selectionSearch').oninput=renderChoices;
- el('selectVisible').onclick=()=>{visibleChoices().forEach(a=>selected.add(a.id));renderChoices();renderMatrix();};
- el('clearSelection').onclick=()=>{selected.clear();cell=null;renderChoices();renderMatrix();};
+ el('selectionSearch').oninput=()=>{renderChoices();onStateChange();};
+ el('selectVisible').onclick=()=>{visibleChoices().forEach(a=>selected.add(a.id));renderChoices();renderMatrix();onStateChange();};
+ el('clearSelection').onclick=el('clearSelectedApplications').onclick=()=>{selected.clear();cell=null;showSelectedOnly=false;renderChoices();renderMatrix();onStateChange();};
+ el('showSelectedApplications').onclick=()=>{showSelectedOnly=!showSelectedOnly;el('selectionSearch').value='';el('compareSelection').open=true;renderChoices();el('applicationChoices').scrollTop=0;onStateChange();};
  el('compareClose').onclick=()=>dialog.close();
  dialog.addEventListener('close',onStateChange);
  el('exportSelection').onclick=()=>{const ids=[...selected];const rows=dimension==='weighted'?ids.flatMap((a,i)=>ids.slice(i+1).map(b=>indexes.weighted.pair(a,b))):ids.flatMap(a=>ids.filter(b=>b!==a).map(b=>indexes[dimension].compare(a,b)));exportRows(rows,dimension,'logistics-comparison');};
- dialog.addEventListener('change',e=>{const id=e.target.dataset.selectApp;if(id){if(e.target.checked)selected.add(id);else selected.delete(id);renderChoices();renderMatrix();}});
+ dialog.addEventListener('change',e=>{const id=e.target.dataset.selectApp;if(id){if(e.target.checked)selected.add(id);else selected.delete(id);renderChoices();renderMatrix();onStateChange();}});
  weightsPanel.addEventListener('input',e=>{if(e.target.hasAttribute('data-weight')){weightsPanel.dataset.dirty='true';previewWeights();}});
  weightsPanel.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
@@ -271,15 +303,17 @@ export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn
   if(b.hasAttribute('data-reset-threshold')){similarityThreshold=50;renderReview();onStateChange();}
   if(b.hasAttribute('data-clear-app-search')){el('focusAppSearch').value='';renderFocus();}
   if(b.hasAttribute('data-clear-peer-search')){peerSearch='';renderFocus();}
-  if(b.dataset.startApp){choosingApp=false;el('focusResult').innerHTML='';focusAppId=b.dataset.startApp;focusPeerId=null;peerSearch='';el('focusAppSearch').value='';showReview();revealResult();}
-  if(b.dataset.portfolioApp){choosingApp=false;el('focusResult').innerHTML='';focusAppId=b.dataset.portfolioApp;focusPeerId=b.dataset.portfolioPeer;peerSearch='';el('focusAppSearch').value='';showReview();revealResult();}
-  if(b.dataset.matrixDim){dimension=b.dataset.matrixDim;renderMatrix();}
-  if(b.dataset.cellTarget)renderEvidence(b.dataset.cellTarget,b.dataset.cellPeer);
-  if(b.dataset.openSimilarityTarget){choosingApp=false;el('focusResult').innerHTML='';focusAppId=b.dataset.openSimilarityTarget;focusPeerId=b.dataset.openSimilarityPeer;peerSearch='';el('focusAppSearch').value='';dialog.close();showReview();revealResult();}
-  if(b.dataset.focusPeer){focusPeerId=b.dataset.focusPeer;peerSearch='';el('focusResult').innerHTML='';renderFocus();el('focusResult').querySelector('.focus-detail')?.focus({preventScroll:true});revealResult();onStateChange();}
+  if(b.hasAttribute('data-clear-selection-search')||b.hasAttribute('data-show-all-applications')){el('selectionSearch').value='';showSelectedOnly=false;renderChoices();onStateChange();}
+  if(b.dataset.removeSelected){selected.delete(b.dataset.removeSelected);if(!selected.size)showSelectedOnly=false;renderChoices();renderMatrix();onStateChange();}
+  if(b.dataset.startApp){choosingApp=false;el('focusResult').innerHTML='';focusAppId=b.dataset.startApp;focusPeerId=null;peerSearch='';showReview();revealResult();}
+  if(b.dataset.portfolioApp){portfolioPosition=pagePosition();returnTo=null;choosingApp=false;el('focusResult').innerHTML='';focusAppId=b.dataset.portfolioApp;focusPeerId=b.dataset.portfolioPeer;peerSearch='';el('focusAppSearch').value='';showReview();revealResult();}
+  if(b.dataset.matrixDim){dimension=b.dataset.matrixDim;renderMatrix();onStateChange();}
+  if(b.dataset.cellTarget){renderEvidence(b.dataset.cellTarget,b.dataset.cellPeer);onStateChange();}
+  if(b.dataset.openSimilarityTarget){returnTo={kind:'multi',state:multiPosition(),page:pagePosition()};choosingApp=false;el('focusResult').innerHTML='';focusAppId=b.dataset.openSimilarityTarget;focusPeerId=b.dataset.openSimilarityPeer;peerSearch='';el('focusAppSearch').value='';dialog.close();showReview();revealResult();}
+  if(b.dataset.focusPeer){focusPeerId=b.dataset.focusPeer;renderFocus();el('focusCandidates').open=false;el('focusResult').querySelector('.focus-detail')?.focus?.({preventScroll:true});revealResult();onStateChange();}
  });
  dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}});
- function getState(){return {customerViewVersion:1,weightsOpen:weightsPanel.open,similarityThreshold,dimension,mode,choosingApp,focusAppId,focusPeerId,focusAppSearch:el('focusAppSearch').value,peerSearch,selected:[...selected],pool,context,selectionSearch:el('selectionSearch').value};}
+ function getState(){return {customerViewVersion:1,weightsOpen:weightsPanel.open,similarityThreshold,dimension,mode,choosingApp,focusAppId,focusPeerId,focusAppSearch:el('focusAppSearch').value,peerSearch,selected:[...selected],pool,context,selectionSearch:el('selectionSearch').value,cell:cell&&[...cell],showSelectedOnly,returnTo,portfolioPosition};}
  function restoreState(state){
   if(!state||typeof state!=='object')return;
   refresh();
@@ -296,6 +330,8 @@ export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn
   selected=new Set(Array.isArray(state.selected)?state.selected.filter(id=>pool.includes(id)):[]);
   context=english(state.context||'All applications');
   el('selectionSearch').value=String(state.selectionSearch||'');
+  cell=Array.isArray(state.cell)&&state.cell.length===2&&state.cell[0]!==state.cell[1]&&state.cell.every(id=>selected.has(id))?[...state.cell]:null;showSelectedOnly=state.showSelectedOnly===true;
+  returnTo=state.returnTo?.kind==='multi'&&Array.isArray(state.returnTo.state?.pool)&&Array.isArray(state.returnTo.state?.selected)?state.returnTo:null;portfolioPosition=state.portfolioPosition||null;
   if(!review.hidden)renderReview();
   if(dialog.open){renderChoices();renderMatrix();}
  }

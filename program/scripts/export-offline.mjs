@@ -1,7 +1,7 @@
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import path from 'node:path';
 import {build} from 'esbuild';
-import {RELEASE_DATE,OFFLINE_FILE_NAME} from './release.mjs';
+import {RELEASE_DATE,RELEASE_VERSION,OFFLINE_FILE_NAME} from './release.mjs';
 const root=process.cwd(),pub=path.join(root,'public');
 function replaceRequired(text,pattern,replacement,label){
  const matches=typeof pattern==='string'?text.split(pattern).length-1:[...text.matchAll(new RegExp(pattern.source,'g'))].length;
@@ -30,7 +30,7 @@ source+=`\nfunction createOfflineAutosave({onStatus}){let pending=false;const st
 const result=await build({stdin:{contents:source,resolveDir:pub,sourcefile:'offline-app.js',loader:'js'},bundle:true,write:false,format:'esm',target:'es2022',minify:true});
 let markup=await readFile(path.join(pub,'index.html'),'utf8');
 // Insert the banner before CSS and scripts are embedded, so '<main' can only match the page's own element.
-markup=replaceRequired(markup,'<main',()=>`<aside style="padding:10px 24px;background:#edf5f8;color:#25485b;font:14px system-ui">Offline edition · ${RELEASE_DATE} | All data is included. No internet connection required. Changes remain in this tab only; use Export workspace to save a backup and Import data to restore it. Reopening this HTML loads the bundled data. Incomplete Level 3 records are currently deferred.</aside><main`,'offline banner position');
+markup=replaceRequired(markup,'<main',()=>`<aside style="padding:10px 24px;background:#edf5f8;color:#25485b;font:14px system-ui">Offline edition · ${RELEASE_VERSION.toUpperCase()} · ${RELEASE_DATE} | All data is included. No internet connection required. Changes remain in this tab only; use Export workspace to save a backup and Import data to restore it. Reopening this HTML loads the bundled data. Incomplete Level 3 records are currently deferred.</aside><main`,'offline banner position');
 for(const match of [...markup.matchAll(/<link rel="stylesheet" href="([^"]+)">/g)]){
  const css=await inlineAssets(await readFile(path.join(pub,match[1]),'utf8'),/url\(["']?([^\s)"']+)["']?\)/g,uri=>`url("${uri}")`);
  markup=replaceRequired(markup,match[0],()=>'<style>'+css+'</style>',`stylesheet link ${match[1]}`);
