@@ -180,3 +180,22 @@ body.portfolio-fullscreen #workspaceNav{display:none}body.portfolio-fullscreen .
 .readable-comparison .comparison-level-note{padding:10px 12px;background:#edf5fa;border-left:3px solid #78abc6;border-radius:4px;color:#31586f}
 .readable-comparison .comparison-deferred{margin:12px 0 18px;color:#526d7f;font-size:13px}
 .readable-comparison .comparison-deferred>summary{cursor:pointer;color:#386c86}
+
+/* Score settings is a primary entry above the result list, including on narrow screens. */
+#similarityOverview #similaritySettings{margin:0 0 18px;border:1px solid #86b8d2;border-left:4px solid #0071a8;border-radius:9px;padding:0;background:#edf6fb;overflow:hidden}
+#similarityOverview #similaritySettings>summary{display:flex;align-items:center;justify-content:space-between;gap:16px;list-style:none;padding:17px 20px;color:#154861}
+#similaritySettings>summary::-webkit-details-marker{display:none}
+#similaritySettings>summary:hover{background:#e1f0f8}
+#similaritySettings>summary:focus-visible{outline:3px solid #e7a425;outline-offset:-3px}
+#similaritySettings .score-settings-label{display:grid;gap:4px;min-width:0}
+#similaritySettings .score-settings-label strong{font-size:18px;font-weight:700}
+#similaritySettings .score-settings-label small{font-size:13px;font-weight:400;color:#446b80}
+#similaritySettings .score-settings-action{display:flex;align-items:center;gap:9px;flex-shrink:0;background:#0071a8;color:#fff;border-radius:6px;padding:9px 13px;font-size:13px;font-weight:600}
+#similaritySettings .settings-close-label{display:none}
+#similaritySettings[open] .settings-open-label{display:none}
+#similaritySettings[open] .settings-close-label{display:inline}
+#similaritySettings[open] .settings-chevron{transform:rotate(180deg)}
+#similarityOverview #similaritySettings[open]{padding-bottom:18px}
+#similaritySettings>.weight-panel{margin:0 18px 16px}
+#similaritySettings>#portfolioThresholdForm{margin:0 18px}
+@media(max-width:480px){#similarityOverview #similaritySettings>summary{padding:15px 12px;gap:10px}#similaritySettings .score-settings-action{padding:9px;font-size:12px}#similaritySettings .score-settings-label strong{font-size:17px}#similaritySettings .score-settings-label small{font-size:12px}}

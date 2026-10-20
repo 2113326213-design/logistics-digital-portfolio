@@ -1,10 +1,12 @@
 # Logistics Digital Portfolio
 
-物流工具（Logistics Digital Portfolio）交接包，当前版本 **V9.7（2026-10-20）**。本仓库包含真实的应用清单数据，请保持私有。
+物流工具（Logistics Digital Portfolio）交接包，当前版本 **V9.8（2026-10-20）**。本仓库包含真实的应用清单数据，请保持私有。
 
-- **直接使用**：下载 [V9.7 离线包](offline/logistics-offline-20261020-v9.7.zip)，或到本仓库 Releases 下载同名文件，解压后用 Chrome 打开 `物流工具_最新版_离线单文件_20261020_v9.7.html`，不需要联网。页面顶部会明确显示 V9.7。
+- **直接使用**：下载 [V9.8 离线包](offline/logistics-offline-20261020-v9.8.zip)，或到本仓库 Releases 下载同名文件，解压后用 Chrome 打开 `物流工具_最新版_离线单文件_20261020_v9.8.html`，不需要联网。页面顶部会明确显示 V9.8。
 - **交接说明**：先读 `00_Claude先读.md`（中文，按日期记录每次改动和用户决定），再读 `program/README.md`（英文，"Current state" 一节是当前状态）。
 - **程序源码**：`program/`（`npm ci`、`npm test`、`npm run build`、`npm run export:offline`，需要 Node 22.13 或更新版本）。
+
+V9.8 将 Score settings 移到 Similarity check 顶部，使用浅蓝色设置栏、清晰标题和 Edit settings 入口，窄窗口也可见。权重与阈值规则不变。
 
 V9.7 精简 Overview 应用列表：问题原因不在列表内展开，点击 View details 后在详情查看；窄窗口也保留 View details 入口。
 
@@ -20,7 +22,7 @@ V9.2 让 Process 的二级检查也采用 V9.1 的规则（三级流程都已确
 
 V9.1 更新 Capability 的二级检查：三级登记完整匹配、无待确认事项且能确认标准二级父项时，二级未单独登记不再算问题。To review、应用详情与 Level 2 合规统计使用同一规则；“filled”仍仅统计直接填写的记录。
 
-保留 V9 的 Similarity check 操作顺序、候选展示、多选和返回位置。V8 已删除的比较摘要与人工评审表单保持删除。当前说明和验证边界见 `00_Claude先读.md` 顶部 V9.7 章节。
+保留 V9 的 Similarity check 操作顺序、候选展示、多选和返回位置。V8 已删除的比较摘要与人工评审表单保持删除。当前说明和验证边界见 `00_Claude先读.md` 顶部 V9.8 章节。
 
 ## 文件地图（给 AI 助手和新接手的人）
 

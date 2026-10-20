@@ -1,6 +1,13 @@
 # 物流工具：Claude 接手说明
 
-## V9.7 当前状态（2026-10-20，优先于所有历史段落）
+## V9.8 当前状态（2026-10-20，优先于所有历史段落）
+
+- 用户决定：Score settings 放得明显一些。
+- 将原有唯一的设置面板从结果列表底部移到 Similarity check 顶部，在 Score 折叠之前；浅蓝背景、蓝色边框、较大标题、Edit settings 入口，并说明 Adjust weights and minimum score。
+- 默认仍折叠；不复制控件，不修改权重、阈值、评分、保存或恢复逻辑。小屏允许说明换行，入口保持可见。
+- 当前离线包：`offline/logistics-offline-20261020-v9.8.zip`。验证见 `verification/v9.8-verification.md`。
+
+## V9.7 历史状态（2026-10-20，受顶部 V9.8 更新）
 
 - 用户决定：Overview 的 To review / 分层应用列表不直接显示黄色问题说明；点击 View details 后再看原因。
 - 列表只保留应用名、事业部、费用及 View details；完整问题、来源和下一步仍在应用详情中。窄窗口也显示 View details。

@@ -1,0 +1,28 @@
+✔ threshold counts each application once and each unordered eligible pair once (5.625041ms)
+✔ real portfolio counts and displayed rows use only fully evidenced in-scope pairs (609.787008ms)
+✔ choosing an application stops at candidates; choosing a peer preserves the search (598.571155ms)
+✔ selected chips remain visible across searches, can be filtered and individually removed (381.129037ms)
+✔ switching dimensions keeps the selected pair and reopens its weighted status group (347.175822ms)
+✔ returning from a pair restores the multi-selection search, dimension, pair, expanded details and scroll (335.920769ms)
+✔ returning from a portfolio pair restores its original page position and expanded results (369.115775ms)
+✔ legacy or damaged return state cannot select an invalid dimension or pair (348.23167ms)
+✔ no code evidence is claimed when both code weights are zero (272.285598ms)
+✔ weighted pair highlighting is symmetric while capability and process highlighting stays directional (282.26975ms)
+✔ candidate groups show three first to leave other evidence groups discoverable; search reveals all matches (299.655235ms)
+✔ percent editor applies only a complete 100% allocation (63.862203ms)
+✔ legacy ratios display as percentages that add to exactly 100 (0.333875ms)
+✔ a weight that is not a multiple of 0.1% is rejected with "Use steps of 0.1%." (1.855187ms)
+✔ values on the 0.1% grid stay valid, including 33.3, 0.1 and 99.9 (10.245237ms)
+✔ weightPercentages output is always accepted by the 0.1% rule (49.450766ms)
+✔ empty, negative, over-100 and total messages are unchanged and take precedence as before (0.58718ms)
+✔ a weight too small to show must not count as weighted (17.246504ms)
+✔ the 1e-9 step tolerance holds from both sides: 5e-10 steps off is accepted, 2e-9 steps off is rejected (0.64366ms)
+✔ Apply snaps each value to the 0.1% step it shows (round 4) (4.328337ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3603.572682

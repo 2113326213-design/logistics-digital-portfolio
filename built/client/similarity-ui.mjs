@@ -51,13 +51,13 @@ export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn
 
  review.innerHTML=`
   <div id="similarityOverview">
+   <details class="similarity-secondary" id="similaritySettings"><summary><span class="score-settings-label"><strong>Score settings</strong><small>Adjust weights and minimum score</small></span><span class="score-settings-action" aria-hidden="true"><span class="settings-open-label">Edit settings</span><span class="settings-close-label">Close settings</span><span class="settings-chevron">⌄</span></span></summary>${weightPanel(false)}<form id="portfolioThresholdForm"><label for="portfolioThreshold">Minimum score for potential overlap</label><div><input id="portfolioThreshold" type="number" min="0" max="100" step="1" value="50" required><button type="submit">Apply</button></div></form></details>
    <details class="similarity-secondary" id="codeReview" open><summary>Score</summary>
    <section id="portfolioIntro" class="portfolio-intro" aria-label="Similarity opportunities"><div><h2>Potential overlap</h2><p>Choose a pair to compare its purpose and records.</p></div></section>
    <div id="portfolioStats" role="status"></div>
    <section id="portfolioOverview" class="portfolio-overview" aria-label="Portfolio similarity overview"><div id="portfolioResults"></div></section>
    <div class="portfolio-actions"><button id="browseApplications">Compare an application</button><button id="compareMultipleApplications">Compare multiple applications</button></div>
    <details class="similarity-secondary" id="portfolioOther"><summary>Other results</summary><div id="portfolioProvisional"></div></details>
-   <details class="similarity-secondary" id="similaritySettings"><summary>Score settings</summary>${weightPanel(false)}<form id="portfolioThresholdForm"><label for="portfolioThreshold">Minimum score for potential overlap</label><div><input id="portfolioThreshold" type="number" min="0" max="100" step="1" value="50" required><button type="submit">Apply</button></div></form></details>
    </details>
   </div>
   <section class="focus-analyzer similarity-flow" id="focusAnalyzer" aria-label="Application similarity explorer" hidden>
