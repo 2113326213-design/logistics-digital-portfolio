@@ -138,5 +138,6 @@ test('unexplained unavailable evidence is counted without blaming either applica
  const direction=result=>({...result,coverage:null,components:result.components.map(component=>
   component.key==='process'?{...component,score:null,result:null}:component)});
  const pair={...original,status:'incomplete',coverage:null,forward:direction(original.forward),reverse:direction(original.reverse)};
- assert.deepEqual(comparisonReadiness([pair]),{apps:[],pairCount:1,unattributedPairCount:1});
+ assert.deepEqual(comparisonReadiness([pair]),{apps:[],pairCount:1,unattributedPairCount:1,unattributedPairs:[pair]},
+  'preserve the comparison for inspection without assigning the problem to either application');
 });

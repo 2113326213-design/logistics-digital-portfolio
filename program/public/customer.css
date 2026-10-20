@@ -228,3 +228,16 @@ body.portfolio-fullscreen #workspaceNav{display:none}body.portfolio-fullscreen .
 #similarityOverview #portfolioOther{margin-top:24px}
 #portfolioOtherOutcomes .other-comparison-body{padding:4px 0 0}
 #portfolioOtherOutcomes>summary:focus-visible{outline:2px solid #0071a8;outline-offset:3px}
+
+/* Comparison actions: compare actual uses, or check each application's records once. */
+.comparison-action-help{font-size:13px;line-height:1.6;color:#526d7e;padding:0 13px;margin:10px 0 14px}
+.compare-pair-row small.pair-next-action{color:#0071a8;font-weight:600;margin-top:6px}
+.comparison-record-actions{margin:16px 0;padding:15px;border:1px solid #ddc9a1;border-radius:8px;background:#fffaf0}
+.comparison-record-actions h4{margin:0 0 7px;font-size:16px;color:#244b61}
+.comparison-record-actions p{font-size:13px;line-height:1.6;color:#526d7e;margin:7px 0 13px}
+.readiness-app-action{display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;padding:13px;margin-top:7px;text-align:left;background:white;border-color:#d8e3eb}
+.readiness-app-action>span:first-child{min-width:0}
+.readiness-app-action strong{font-size:14px;overflow-wrap:anywhere}
+.readiness-app-action small{display:block;font-size:12px;color:#60798a;margin-top:5px;line-height:1.5}
+.readiness-app-action>span:last-child{flex-shrink:0;font-size:13px;color:#0071a8}
+@media(max-width:480px){.comparison-record-actions{padding:11px}.readiness-app-action{gap:9px;padding:11px}.readiness-app-action>span:last-child{font-size:12px}}

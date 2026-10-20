@@ -277,7 +277,7 @@ function withUI(run,{model:uiModel=model,data:uiData=data}={}){
  try{run(createComparisonUI({getModel:()=>uiModel,getData:()=>uiData,escape:esc,isSignedIn:()=>true}),document);}finally{globalThis.document=old;}
 }
 const rankRows=html=>new Map([...html.matchAll(/<button class="focus-rank[^"]*" data-focus-peer="([^"]*)"[^>]*>([\s\S]*?)<\/button>/g)].map(m=>[m[1],m[2]]));
-const pairRows=html=>new Map([...html.matchAll(/<button class="compare-pair-row" data-cell-target="([^"]*)" data-cell-peer="([^"]*)">([\s\S]*?)<\/button>/g)].map(m=>[[m[1],m[2]].sort().join('::'),{inner:m[3],strong:m[3].match(/<strong>([\s\S]*)<\/strong>$/)?.[1]}]));
+const pairRows=html=>new Map([...html.matchAll(/<button class="compare-pair-row" data-cell-target="([^"]*)" data-cell-peer="([^"]*)"([^>]*)>([\s\S]*?)<\/button>/g)].map(m=>[[m[1],m[2]].sort().join('::'),{target:m[1],peer:m[2],attributes:m[3],inner:m[4],strong:m[4].match(/<strong>([\s\S]*)<\/strong>$/)?.[1]}]));
 const rowKey=(a,b)=>[esc(a.id),esc(b.id)].sort().join('::');
 
 test('the single-pair score box shows Unavailable, No complete score and the code evidence for Iris–RCS-2000',()=>withUI((ui,document)=>{
@@ -323,7 +323,11 @@ test('the compare-dialog pair row shows No complete score with the code evidence
  const [iris,rcs,agv,ars,rack]=['Iris','RCS-2000','RBCD B308 AGV Traffic Control System','ARS','AUTO-RACK'].map(app);
  ui.open({poolIds:[iris,rcs,agv,ars,rack].map(a=>a.id),contextLabel:'Code evidence'});
  const html=document.getElementById('comparisonMatrix').innerHTML,rows=pairRows(html);
- assert.equal(rows.size,10);
+ // The four AUTO-RACK investigation pairs now share one application-record action.
+ // The other four applications still form six independently comparable pairs.
+ assert.equal(rows.size,6);
+ assert.deepEqual([...html.matchAll(/data-readiness-app="([^"]*)"/g)].map(match=>match[1]),[esc(rack.id)]);
+ for(const a of [iris,rcs,agv,ars])assert(!rows.has(rowKey(a,rack)),'AUTO-RACK is checked once, not once per peer');
  // Round 2 markup: <strong>No complete score<small class="compare-pair-code">Code evidence N / 100</small></strong>.
  assert.equal(rows.get(rowKey(iris,rcs)).strong,pairCode('30'));// 0.3 × 1 + 0.4 × 0
  assert.equal(rows.get(rowKey(iris,agv)).strong,pairCode('70'));// 0.3 × 1 + 0.4 × 1
@@ -332,7 +336,13 @@ test('the compare-dialog pair row shows No complete score with the code evidence
  assert.equal(rows.get(rowKey(ars,iris)).strong,'31.3 / 100','a confirmed pair shows its score only');
  assert.equal(rows.get(rowKey(ars,rcs)).strong,'32.1 / 100');
  // Code evidence appears on No complete score rows and on no other row.
- for(const [key,{strong}] of rows)assert.equal(/Code evidence/.test(strong),strong.startsWith('No complete score'),key+': '+strong);
+ for(const [key,{strong,target,peer,attributes,inner}] of rows){
+  assert.equal(/Code evidence/.test(strong),strong.startsWith('No complete score'),key+': '+strong);
+  if(strong.startsWith('No complete score')){
+   assert(attributes.includes(`data-open-similarity-target="${target}" data-open-similarity-peer="${peer}"`),'code evidence row opens its own comparison');
+   assert.match(inner,/<small(?: class="[^"]*")?>Compare actual uses →<\/small>/);
+  }
+ }
 }));
 
 test('code evidence keeps names HTML-escaped, and disappears when no code field carries weight',()=>{
@@ -351,7 +361,9 @@ test('code evidence keeps names HTML-escaped, and disappears when no code field 
  assert(rank.includes(esc(b.Name))&&rank.includes('<small class="focus-rank-code">Code evidence 70 / 100</small>'),rank);
  const row=pairRows(matrix).get('A::B');
  assert.equal(row.strong,pairCode('70'));
- assert(row.inner.startsWith(`<span>${esc(a.Name)} ↔ ${esc(b.Name)}<small>${esc('<P1>')} · ${esc('P&2')}</small></span>`),row.inner);
+ assert(row.inner.startsWith(`<span>${esc(a.Name)} ↔ ${esc(b.Name)}<small>${esc('<P1>')} · ${esc('P&2')}</small>`),row.inner);
+ assert.match(row.inner,/<small(?: class="[^"]*")?>Compare actual uses →<\/small><\/span>/);
+ assert(row.attributes.includes('data-open-similarity-target="A" data-open-similarity-peer="B"'));
  for(const html of [focus,matrix]){assert(!html.includes('<img'),'no raw image tag');assert(!html.includes('<i>'),'no raw italic tag');assert(!html.includes('<P1>'),'no raw plant markup');}
  // Weights name .5 / description .5: still No complete score, but no capability or process points to show.
  const textOnly=render({name:.5,description:.5,cap:0,process:0});
@@ -401,7 +413,10 @@ test('an asymmetric No complete score pair shows its lower direction everywhere:
   // Compare-dialog pair row, with either application first in the pool (so it is the row target).
   ui.open({poolIds:[focus.id,peer.id],contextLabel:'Asymmetric'});
   const matrix=document.getElementById('comparisonMatrix').innerHTML;
-  assert.match(matrix,new RegExp(`<button class="compare-pair-row" data-cell-target="${esc(focus.id)}" data-cell-peer="${esc(peer.id)}">`),'row target follows the pool order');
+  const rendered=pairRows(matrix).get(rowKey(iris,bmlp));
+  assert.equal(rendered.target,esc(focus.id),'row target follows the pool order');
+  assert.equal(rendered.peer,esc(peer.id),'row peer follows the pool order');
+  assert(rendered.attributes.includes(`data-open-similarity-target="${esc(focus.id)}" data-open-similarity-peer="${esc(peer.id)}"`),'direct comparison follows the same direction');
   assert.equal(pairRows(matrix).get(rowKey(iris,bmlp)).strong,pairCode('7.5'));
   assert(!matrix.includes('Code evidence 30 / 100'));
  });

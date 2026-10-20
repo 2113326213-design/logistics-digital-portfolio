@@ -1,6 +1,16 @@
 # 物流工具：Claude 接手说明
 
-## V9.11 当前状态（2026-10-20，优先于所有历史段落）
+## V9.12 当前状态（2026-10-20，优先于所有历史段落）
+
+- 用户决定：Code evidence 和 Needs confirmation 要说清下一步；多选比较的资料待确认直接定位到有问题的应用详情，同一个问题不按配对重复显示。
+- 多选 weighted 结果：有共同业务分类的组改为 `Shared business classifications — compare actual uses`，说明先读应用描述判断实际用途；每行 `Compare actual uses →` 一次点击直达完整比较。原始 No complete score 状态及代码证据数值保留，仍不是完整相似度分数。
+- Data missing / Needs confirmation / More detail needed 复用 comparisonReadiness，只归因到有问题的应用；每应用列一次，按维度＋来源记录去重计数，同时说明影响几对比较。点击 View details 直接打开应用详情，底下的多选对话框保留原选择、搜索与位置。
+- 用户5应用案例（AR Stock Taking、AUTO-RACK、Control Tower、Dolly call off program、Physical Logistics Management System）：10对比较 = 2对已有分数 + 4对共同分类线索 + 4对受 AUTO-RACK 流程待确认影响。后4对变为一个 AUTO-RACK 入口：1 process record to check · affects 4 comparisons。
+- 无法可靠归因的比较保留 Check comparison details 入口，不随应用去重丢失；零权重的字段问题不进入当前比较资料清单。归因清单不替代全量数据质量检查。
+- 单应用候选中共同分类组同步行动标题和用途说明；分类、评分、CSV、原始数据及匹配规则不变。V9.11 隐藏的筛选原因入口继续隐藏；已删除的摘要与评审表单不恢复。
+- 当前离线包：`offline/logistics-offline-20261020-v9.12.zip`。验证见 `verification/v9.12-verification.md`。
+
+## V9.11 历史状态（2026-10-20，受顶部 V9.12 更新）
 
 - 用户决定：直接隐藏 `View other comparison results and screening reasons` 入口。
 - 在总览的 `portfolioOtherOutcomes` 整块添加 hidden，入口、分隔线和其中的分类均不可见，也不进入键盘和辅助技术导航。重新渲染时保持隐藏。

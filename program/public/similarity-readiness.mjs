@@ -16,7 +16,7 @@ function recordsForNode(scope,dimension,node){
 // compared with. This is a comparison-readiness queue, not the broader maintenance checklist: an unfilled level
 // that does not prevent this comparison is deliberately absent. Source records, pair labels and scores stay intact.
 export function comparisonReadiness(pairs,threshold=50){
- const apps=new Map(),seenPairs=new Set();
+ const apps=new Map(),seenPairs=new Set(),unattributedPairs=[];
  let pairCount=0,unattributedPairCount=0;
  for(const pair of pairs){
   if(pair.status==='excluded'||!pendingKinds.has(pairResultLabel(pair,threshold)))continue;
@@ -94,7 +94,7 @@ export function comparisonReadiness(pairs,threshold=50){
     }
    }
   }
-  if(!attributed)unattributedPairCount++;
+  if(!attributed){unattributedPairCount++;unattributedPairs.push(pair);}
  }
  return {
   apps:[...apps.values()].map(row=>({
@@ -102,6 +102,6 @@ export function comparisonReadiness(pairs,threshold=50){
    kinds:DATA_TO_CONFIRM.filter(kind=>row.kinds.has(kind)),
    records:[...row.records.values()].sort((a,b)=>compareNatural(a.dimension,b.dimension)||compareNatural(a.kind,b.kind)||compareNatural(a.raw,b.raw)||compareNatural(a.reason,b.reason))
   })).sort((a,b)=>b.pairCount-a.pairCount||compareNatural(a.app.Name,b.app.Name)||compareNatural(a.app.id,b.app.id)),
-  pairCount,unattributedPairCount
+  pairCount,unattributedPairCount,...(unattributedPairCount?{unattributedPairs}:{})
  };
 }

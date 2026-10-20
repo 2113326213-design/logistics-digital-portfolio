@@ -27,6 +27,24 @@ export function comparisonIdentities(source,peer,esc){
 export const escapedSourceCaption=(caption,esc)=>esc(caption);
 export const escapedCodeEvidenceSummary=(label,esc)=>`${esc(label)} · Code evidence`;
 
+const sharedClassificationAction='Shared business classifications — compare actual uses';
+const sharedClassificationHelp='Read the application descriptions and compare what they do. Shared capability or process registrations are a clue, not proof of duplicate functions. Code evidence points are not a complete similarity score.';
+
+export function renderComparisonReadiness(readiness,esc){
+ if(!readiness.pairCount)return '';
+ const recordSummary=records=>{
+  const unique=new Map(records.map(record=>[JSON.stringify([record.dimension,record.raw||record.reason]),record]));
+  const labels={name:'name',description:'description',cap:'capability',process:'process'};
+  return Object.entries(labels).map(([dimension,label])=>{
+   const count=[...unique.values()].filter(record=>record.dimension===dimension).length;
+   return count?`${count} ${label} ${count===1?'record':'records'}`:'';
+  }).filter(Boolean).join(' + ')+' to check';
+ };
+ const rows=readiness.apps.map(row=>`<button class="readiness-app-action" data-readiness-app="${esc(row.app.id)}"><span><strong>${esc(row.app.Name)}</strong><small>${esc(recordSummary(row.records))} · affects ${row.pairCount} ${row.pairCount===1?'comparison':'comparisons'}</small></span><span>View details →</span></button>`).join('');
+ const fallback=readiness.unattributedPairCount?`<details class="comparison-specific-checks"><summary>Check comparison details · ${readiness.unattributedPairCount} ${readiness.unattributedPairCount===1?'pair':'pairs'}</summary><p>These checks cannot yet be assigned to one application. Open the comparison to inspect its catalogue evidence.</p>${(readiness.unattributedPairs||[]).map(pair=>`<button class="compare-pair-row" data-open-similarity-target="${esc(pair.target.app.id)}" data-open-similarity-peer="${esc(pair.peer.app.id)}"><span>${esc(pair.target.app.Name)} ↔ ${esc(pair.peer.app.Name)}</span><span>View comparison →</span></button>`).join('')}</details>`:'';
+ return `<section class="comparison-record-actions" aria-label="Application records to check"><h4>Check application records${readiness.apps.length?' · '+readiness.apps.length+' '+(readiness.apps.length===1?'application':'applications'):''}</h4><p>Confirm the records in View details before relying on these comparisons. Each application is listed once; ${readiness.pairCount} ${readiness.pairCount===1?'comparison is':'comparisons are'} affected.</p>${rows}${fallback}</section>`;
+}
+
 export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn=()=>false,onStateChange=()=>{},onWeightsChange=()=>{},onPairReview=()=>{}}){
  const el=id=>document.getElementById(id),dialog=el('compareDialog'),review=el('similarityReview');
  let lastModel,indexes={},pool=[],selected=new Set(),dimension='weighted',context='All applications',cell=null;
@@ -94,7 +112,7 @@ export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn
   const complete=pairs.filter(pair=>pair.status==='confirmed'),code=pairs.filter(pair=>pair.status!=='confirmed'&&codeEvidenceScore(pair)!==null);
   code.sort((a,b)=>codeEvidenceScore(b)-codeEvidenceScore(a)||compareNatural(a.peer.app.Name,b.peer.app.Name));
   const other=pairs.filter(pair=>pair.status!=='confirmed'&&codeEvidenceScore(pair)===null);
-  return [{id:'complete',label:'Complete scores',pairs:complete},{id:'code',label:'Code evidence · no complete score',pairs:code},...['Data missing','Needs confirmation','More detail needed','No complete score','No shared registrations','Out of scope'].map((label,i)=>({id:'status'+i,label,pairs:other.filter(pair=>pairStatus(pair)===label)}))].filter(group=>group.pairs.length);
+  return [{id:'complete',label:'Complete scores',pairs:complete},{id:'code',label:sharedClassificationAction,pairs:code},...['Data missing','Needs confirmation','More detail needed','No complete score','No shared registrations','Out of scope'].map((label,i)=>({id:'status'+i,label,pairs:other.filter(pair=>pairStatus(pair)===label)}))].filter(group=>group.pairs.length);
  }
 
  function orderedPeers(id){
@@ -191,7 +209,7 @@ export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn
   const active=all.find(r=>r.peer.app.id===focusPeerId);
   const row=r=>`<button class="focus-rank ${r.status!=='confirmed'?'is-provisional':''} ${r.peer.app.id===focusPeerId?'is-active':''}" data-focus-peer="${esc(r.peer.app.id)}" aria-pressed="${r.peer.app.id===focusPeerId}"><span class="focus-rank-top"><span class="focus-rank-name"><span class="focus-rank-label" title="${esc(r.peer.app.Name)}">${esc(r.peer.app.Name)}</span><small>${esc(r.peer.app.Entity||'Plant not recorded')} · ${esc(r.peer.app.Division||'Business unit not recorded')}</small>${(getData().pairReviews||{})[r.key]?`<small class="focus-rank-review">Reviewed: ${esc(getData().pairReviews[r.key].status)}</small>`:''}</span><span class="focus-rank-score">${r.status==='confirmed'?`<strong>Score: ${scoreNumber(r.coverage)}</strong><small class="focus-rank-status">${esc(pairStatus(r))}</small>`:`<small class="focus-rank-status">${esc(pairStatus(r))}</small>${codeEvidenceScore(r)===null?'':`<small class="focus-rank-code">Code evidence ${formatCodeEvidence(codeEvidenceScore(r))}</small>`}`}</span></span></button>`;
   const groups=candidateGroups(filtered);
-  const ranking=`<section class="focus-panel focus-ranking"><div class="focus-panel-head"><h3>Comparison candidates</h3><span>${filtered.length} ${filtered.length===1?'candidate':'candidates'}</span></div><label class="focus-peer-search">Search all applications<input id="focusPeerSearch" type="search" placeholder="Name, plant or business unit" value="${esc(peerSearch)}" autocomplete="off"></label><div class="focus-rank-list">${groups.map((group,i)=>{const id='focusCandidates-'+group.id,visible=q?group.pairs:group.pairs.slice(0,3),more=q?[]:group.pairs.slice(3),moreId=id+'-more';return `<details class="focus-candidate-group" id="${id}" ${q||opened.has(id)||group.pairs.some(r=>r.peer.app.id===focusPeerId)||!active&&i===0?'open':''}><summary>${esc(group.label)} <span>(${group.pairs.length})</span></summary>${visible.map(row).join('')}${more.length?`<details class="focus-extra" id="${moreId}" ${opened.has(moreId)||more.some(r=>r.peer.app.id===focusPeerId)?'open':''}><summary>Show ${more.length} more</summary>${more.map(row).join('')}</details>`:''}</details>`;}).join('')}${!filtered.length?'<p class="focus-empty">No matching candidates. <button data-clear-peer-search>Clear search</button></p>':''}</div></section>`;
+  const ranking=`<section class="focus-panel focus-ranking"><div class="focus-panel-head"><h3>Comparison candidates</h3><span>${filtered.length} ${filtered.length===1?'candidate':'candidates'}</span></div><label class="focus-peer-search">Search all applications<input id="focusPeerSearch" type="search" placeholder="Name, plant or business unit" value="${esc(peerSearch)}" autocomplete="off"></label><div class="focus-rank-list">${groups.map((group,i)=>{const id='focusCandidates-'+group.id,visible=q?group.pairs:group.pairs.slice(0,3),more=q?[]:group.pairs.slice(3),moreId=id+'-more';return `<details class="focus-candidate-group" id="${id}" ${q||opened.has(id)||group.pairs.some(r=>r.peer.app.id===focusPeerId)||!active&&i===0?'open':''}><summary>${esc(group.label)} <span>(${group.pairs.length})</span></summary>${group.id==='code'?`<p class="comparison-action-help">${sharedClassificationHelp}</p>`:''}${visible.map(row).join('')}${more.length?`<details class="focus-extra" id="${moreId}" ${opened.has(moreId)||more.some(r=>r.peer.app.id===focusPeerId)?'open':''}><summary>Show ${more.length} more</summary>${more.map(row).join('')}</details>`:''}</details>`;}).join('')}${!filtered.length?'<p class="focus-empty">No matching candidates. <button data-clear-peer-search>Clear search</button></p>':''}</div></section>`;
   if(!active){el('focusResult').innerHTML=sourceIdentity+(all.length?ranking:'<section class="focus-panel"><p class="focus-empty">No other applications are available to compare. Add another application to this workspace to compare descriptions and codes.</p></section>');return;}
   const peer=active.peer.app,forward=active.forward,reverse=active.reverse,id=peer.id;
   const cap=indexes.cap.compare(focusAppId,id),capBack=indexes.cap.compare(id,focusAppId),process=indexes.process.compare(focusAppId,id),processBack=indexes.process.compare(id,focusAppId);
@@ -259,9 +277,18 @@ export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn
   if(dimension==='weighted'){
    const pairs=apps.flatMap((a,i)=>apps.slice(i+1).map(b=>index.pair(a.id,b.id))),scored=pairs.filter(p=>p.status==='confirmed').sort((a,b)=>b.coverage-a.coverage);
    const label=pairStatus;
-   const pairRow=p=>`<button class="compare-pair-row" data-cell-target="${esc(p.target.app.id)}" data-cell-peer="${esc(p.peer.app.id)}"><span>${esc(p.target.app.Name)} ↔ ${esc(p.peer.app.Name)}<small>${esc(p.target.app.Entity)} · ${esc(p.peer.app.Entity)}</small></span><strong>${p.status==='confirmed'?scoreText(p.coverage):label(p)+(codeEvidenceScore(p)===null?'':'<small class="compare-pair-code">Code evidence '+formatCodeEvidence(codeEvidenceScore(p))+'</small>')}</strong></button>`;
-   el('comparisonMatrix').innerHTML=`<p class="comparison-context">Comparing ${apps.length} applications · ${pairs.length} ${pairs.length===1?'pair':'pairs'}</p><div class="compare-pair-list">${scored.length?scored.map(pairRow).join(''):'<p>No scored pairs among the selected applications.</p>'}${['No complete score','Data missing','Needs confirmation','More detail needed','No shared registrations','Out of scope'].map((group,i)=>{const rest=pairs.filter(p=>p.status!=='confirmed'&&label(p)===group),id='matrixPairGroup-'+i,active=cell&&rest.some(pair=>[pair.target.app.id,pair.peer.app.id].every(appId=>cell.includes(appId)));return rest.length?`<details id="${id}" ${matrixOpened.has(id)||active?'open':''}><summary>${group==='No complete score'&&rest.some(pair=>codeEvidenceScore(pair)!==null)?'Code evidence · No complete score':group} · ${rest.length}</summary>${rest.map(pairRow).join('')}</details>`:''}).join('')}</div>`;
-   const active=cell&&cell.every(id=>selected.has(id))&&index.pair(...cell);
+   const pairRow=p=>{const code=codeEvidenceScore(p);return `<button class="compare-pair-row" data-cell-target="${esc(p.target.app.id)}" data-cell-peer="${esc(p.peer.app.id)}"${code===null?'':` data-open-similarity-target="${esc(p.target.app.id)}" data-open-similarity-peer="${esc(p.peer.app.id)}"`}><span>${esc(p.target.app.Name)} ↔ ${esc(p.peer.app.Name)}<small>${esc(p.target.app.Entity)} · ${esc(p.peer.app.Entity)}</small>${code===null?'':'<small class="pair-next-action">Compare actual uses →</small>'}</span><strong>${p.status==='confirmed'?scoreText(p.coverage):label(p)+(code===null?'':'<small class="compare-pair-code">Code evidence '+formatCodeEvidence(code)+'</small>')}</strong></button>`;};
+   const readiness=comparisonReadiness(pairs,similarityThreshold);
+   const groups=['No complete score','Data missing','Needs confirmation','More detail needed','No shared registrations','Out of scope'].map((group,i)=>{
+    if(DATA_TO_CONFIRM.includes(group))return '';
+    const rest=pairs.filter(p=>p.status!=='confirmed'&&label(p)===group),id='matrixPairGroup-'+i,active=cell&&rest.some(pair=>[pair.target.app.id,pair.peer.app.id].every(appId=>cell.includes(appId)));
+    if(!rest.length)return '';
+    const shared=group==='No complete score'&&rest.some(pair=>codeEvidenceScore(pair)!==null);
+    return `<details id="${id}" ${matrixOpened.has(id)||active?'open':''}><summary>${shared?sharedClassificationAction:group} · ${rest.length} ${rest.length===1?'pair':'pairs'}</summary>${shared?`<p class="comparison-action-help">${sharedClassificationHelp}</p>`:''}${rest.map(pairRow).join('')}</details>`;
+   }).join('');
+   el('comparisonMatrix').innerHTML=`<p class="comparison-context">Comparing ${apps.length} applications · ${pairs.length} ${pairs.length===1?'pair':'pairs'}</p><div class="compare-pair-list">${scored.length?scored.map(pairRow).join(''):'<p>No scored pairs among the selected applications.</p>'}${groups}</div>${renderComparisonReadiness(readiness,esc)}`;
+   let active=cell&&cell.every(id=>selected.has(id))&&index.pair(...cell);
+   if(active&&DATA_TO_CONFIRM.includes(label(active))){active=null;cell=null;}
    if(active||scored[0]){const p=active||scored[0];renderEvidence(p.target.app.id,p.peer.app.id);}else{cell=null;el('comparisonEvidence').innerHTML='';}
    return;
   }
@@ -327,7 +354,7 @@ export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn
   if(b.dataset.portfolioApp){portfolioPosition=pagePosition();returnTo=null;choosingApp=false;el('focusResult').innerHTML='';focusAppId=b.dataset.portfolioApp;focusPeerId=b.dataset.portfolioPeer;peerSearch='';el('focusAppSearch').value='';showReview();revealResult();}
   if(b.dataset.matrixDim){dimension=b.dataset.matrixDim;renderMatrix();onStateChange();}
   if(b.dataset.cellTarget){renderEvidence(b.dataset.cellTarget,b.dataset.cellPeer);onStateChange();}
-  if(b.dataset.openSimilarityTarget){returnTo={kind:'multi',state:multiPosition(),page:pagePosition()};choosingApp=false;el('focusResult').innerHTML='';focusAppId=b.dataset.openSimilarityTarget;focusPeerId=b.dataset.openSimilarityPeer;peerSearch='';el('focusAppSearch').value='';dialog.close();showReview();revealResult();}
+  if(b.dataset.openSimilarityTarget){cell=[b.dataset.openSimilarityTarget,b.dataset.openSimilarityPeer];returnTo={kind:'multi',state:multiPosition(),page:pagePosition()};choosingApp=false;el('focusResult').innerHTML='';focusAppId=b.dataset.openSimilarityTarget;focusPeerId=b.dataset.openSimilarityPeer;peerSearch='';el('focusAppSearch').value='';dialog.close();showReview();revealResult();}
   if(b.dataset.focusPeer){focusPeerId=b.dataset.focusPeer;renderFocus();el('focusCandidates').open=false;el('focusResult').querySelector('.focus-detail')?.focus?.({preventScroll:true});revealResult();onStateChange();}
  });
  dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}});
