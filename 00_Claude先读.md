@@ -1,6 +1,15 @@
 # 物流工具：Claude 接手说明
 
-## V9.14 当前状态（2026-10-20，优先于所有历史段落）
+## V9.15 当前状态（2026-10-20，优先于所有历史段落）
+
+- 基线：V9.14 程序；用户提出四项使用问题，并要求拆成小部分分别完成再综合（四个代理并行、三方合并）。规则、评分和数据不变。
+- **单对比较的资料归因**：同一应用、同一维度、同一来源记录的问题只显示一次。未确认记录不再误报为 “More detail needed”；真正过粗的登记仍然提示。单对比较页沿用多应用比较的口径，按应用列出，例如 “AUTO-RACK · 1 process record to check”。View details 打开该应用详情并定位到对应问题，关闭后比较页不变。
+- **切换页面保留比较**：在三个页面之间切换，或用浏览器后退、前进，都保留当前单对或多应用比较的状态；只有 Back to results 才返回列表。
+- **结果页精简**：主区域只写实际比较层级（如 “Compared at Level 2”，不同层级如实列出）。Deferred detail 移到 How the score is calculated。
+- **备份包含阈值**：Minimum score 随工作区导出、导入；0 和 100 有效；旧备份保持当前设置，没有时用 50。离线导出提示区分“修改未导出”和“已发起导出”，不声称已保存。
+- 当前离线包：`offline/logistics-offline-20261020-v9.15.zip`；验证见 `verification/v9.15-verification.md`。
+
+## V9.14 历史状态（2026-10-20，受顶部 V9.15 更新）
 
 - 基线：V9.13（提交 c97e391），用户要求修改复查时发现的两个小问题（“小问题修改一下”），其余规则、评分和数据不变。
 - **不再生成已隐藏的结果区**：V9.11 按用户要求隐藏的 “View other comparison results and screening reasons”（Below threshold、No shared registrations、No complete score、Out of scope 四组）此前仍在页面里生成 1,684 个隐藏按钮。现在不再生成；Other results 区域的按钮从 2,862 个降到 1,178 个（19 个应用入口 + 1,159 个受影响比较）。页面看到的内容不变。

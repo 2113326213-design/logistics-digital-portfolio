@@ -172,6 +172,17 @@ function weightPercentages(rawWeights) {
   return Object.fromEntries(keys.map((key, index) => [key, units[index] / 10]));
 }
 
+// public/score-settings.mjs
+var numeric = /^\s*\+?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?\s*$/i;
+function cleanThreshold(value2) {
+  const number = typeof value2 === "number" ? value2 : typeof value2 === "string" && numeric.test(value2) ? Number(value2) : NaN;
+  return Number.isFinite(number) && number >= 0 && number <= 100 ? number + 0 : null;
+}
+function thresholdField(data) {
+  const value2 = cleanThreshold(data?.similarityThreshold);
+  return value2 === null ? {} : { similarityThreshold: value2 };
+}
+
 // public/corrections.mjs
 var sourceFields = ["ID", "Name", "Division", "Entity", "Description", "Business Capabilities", "Processes", "Lifecycle: Current Lifecycle"];
 var recordKey = (c) => JSON.stringify([String(c.appId).trim(), c.dimension, c.raw]);
@@ -517,7 +528,7 @@ function workspaceWeights(data) {
 function workspaceData(data) {
   if (!data || !Array.isArray(data.apps) || !data.apps.length || !Array.isArray(data.capabilityRows) || !Array.isArray(data.processRows)) throw Error("\u5DE5\u4F5C\u533A\u7F3A\u5C11\u5E94\u7528\u6E05\u5355\u6216\u5206\u7C7B\u8868");
   if (!data.apps.every((a) => a && typeof a === "object" && !Array.isArray(a)) || !data.capabilityRows.every(Array.isArray) || !data.processRows.every(Array.isArray)) throw Error("\u5DE5\u4F5C\u533A\u6570\u636E\u7ED3\u6784\u65E0\u6548");
-  return { similarityWeights: workspaceWeights(data), similarityWeightsVersion: 2, source: String(data.source || "Imported workspace"), taxonomySource: String(data.taxonomySource || "Workspace taxonomy"), isAcceptanceSample: data.isAcceptanceSample === true, apps: data.apps.map((a) => {
+  return { similarityWeights: workspaceWeights(data), similarityWeightsVersion: 2, ...thresholdField(data), source: String(data.source || "Imported workspace"), taxonomySource: String(data.taxonomySource || "Workspace taxonomy"), isAcceptanceSample: data.isAcceptanceSample === true, apps: data.apps.map((a) => {
     const app = Object.fromEntries(fields2.map((k) => [k, String(a[k] ?? "")]));
     if (Object.hasOwn(a, mainCapabilityField)) app[mainCapabilityField] = String(a[mainCapabilityField] ?? "");
     if (Object.hasOwn(a, "scopeNote")) {

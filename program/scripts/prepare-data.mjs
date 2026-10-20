@@ -66,7 +66,7 @@ import {english} from '../public/english.mjs';
 export const DEFAULT_OUTPUT=fileURLToPath(new URL('../public/data.json',import.meta.url));
 // Output order of application fields. Contact and infrastructure columns are never copied.
 export const APP_COLUMNS=['ID','Division','Entity','Name','Description','Main Business Capability','Business Capabilities','Processes','Lifecycle: Current Lifecycle','Lifecycle: Active'];
-export const PRESERVED_KEYS=['corrections','reviews','reviewHistory','applicationEvents','importHistory','similarityWeights','similarityWeightsVersion'];
+export const PRESERVED_KEYS=['corrections','reviews','reviewHistory','applicationEvents','importHistory','similarityWeights','similarityWeightsVersion','similarityThreshold'];
 const SCORE_COLUMNS=['LeanIX ID','App operation cost','ROI'];
 const PROCESS_COLUMNS=['RBW E2E Process Chain','Process Level','Process ID','Process Name'];
 const ANNUAL_BENEFIT_COLUMN='Annual benefit (CNY/year)';

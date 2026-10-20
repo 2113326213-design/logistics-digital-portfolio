@@ -26,7 +26,8 @@ source=replaceRequired(source,"const response=await fetch('./data.json');","cons
 source=replaceRequired(source,'autosave=createAutosave({','autosave=createOfflineAutosave({','offline save adapter');
 source=replaceRequired(source,"'Admin preview'","'Offline edition'",'offline account label');
 source=replaceRequired(source,"(alias?history.replaceState:history.pushState).call(history,null,'',url);","try{(alias?history.replaceState:history.pushState).call(history,null,'',url);}catch{}",'address bar update');
-source+=`\nfunction createOfflineAutosave({onStatus}){let pending=false;const status=()=>onStatus({message:pending?'Offline changes: export workspace to keep a backup.':'Offline edition: data is included in this file. No cloud connection.',kind:'offline'});return{load:async()=>{status();return false;},schedule:()=>{pending=true;status();document.getElementById('sessionStatus').textContent='Changes are in this tab only. Export workspace before closing.';},flush:async()=>{},retry:async()=>status(),resolveRecovery:async()=>false,isSignedIn:()=>false,hasUnsaved:()=>pending};}\n`;
+// The offline save state (changes not exported, export started) lives in public/offline-save.mjs.
+source+=`\nimport {createOfflineAutosave} from './offline-save.mjs';\n`;
 const result=await build({stdin:{contents:source,resolveDir:pub,sourcefile:'offline-app.js',loader:'js'},bundle:true,write:false,format:'esm',target:'es2022',minify:true});
 let markup=await readFile(path.join(pub,'index.html'),'utf8');
 // Insert the banner before CSS and scripts are embedded, so '<main' can only match the page's own element.

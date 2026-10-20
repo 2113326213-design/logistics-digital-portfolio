@@ -6,6 +6,7 @@ import {cleanCostScore} from './costs.mjs';
 import {opportunityEligibility} from './scope.mjs';
 import {capCode} from './codes.mjs';
 import {OTHER_DEPARTMENT_CODE} from './xlsx.mjs';
+import {keepThreshold} from './score-settings.mjs';
 // Capability catalogue changes by code: renamed (same code, new name; a code merely written another way,
 // such as B.06.2.02 for B.06.2.2, is not a rename), added and removed codes.
 export function capabilityCatalogueChanges(currentRows,nextRows){
@@ -49,7 +50,7 @@ export function mergeInventoryEvidence(currentApps,incomingApps){
 }
 // raw: the data as read, before workspaceData applies owner decisions (defaults to incoming).
 export function previewImport(current,incoming,raw=incoming){
- const next=workspaceData(incoming);buildModel(next);
+ const next=keepThreshold(current,workspaceData(incoming));buildModel(next);
  const before=new Map(current.apps.map(a=>[String(a.ID).trim(),a])),after=new Map(next.apps.map(a=>[String(a.ID).trim(),a]));
  const added=[],removed=[],updated=[];
  for(const [id,a] of after)if(!before.has(id))added.push(a);else if(JSON.stringify(a)!==JSON.stringify(before.get(id)))updated.push(a);
@@ -58,7 +59,7 @@ export function previewImport(current,incoming,raw=incoming){
  const beforeActivity=reviewAuditEvents(current),afterActivity=reviewAuditEvents(next),retained=new Set(afterActivity.map(e=>e.id));
  const taxonomyChanged=JSON.stringify([current.capabilityRows,current.processRows])!==JSON.stringify([next.capabilityRows,next.processRows]);
  const pairReviews=pairReviewChanges(current.pairReviews,next.pairReviews);
- const workspaceChanged=pairReviews.total>0||['reviews','corrections','reviewHistory','applicationEvents','importHistory','similarityWeights'].some(key=>JSON.stringify(current[key]??null)!==JSON.stringify(next[key]??null));
+ const workspaceChanged=pairReviews.total>0||['reviews','corrections','reviewHistory','applicationEvents','importHistory','similarityWeights','similarityThreshold'].some(key=>JSON.stringify(current[key]??null)!==JSON.stringify(next[key]??null));
  const costScoresRemoved=updated.filter(app=>cleanCostScore(before.get(String(app.ID).trim())?.operationCostScore)!==null&&cleanCostScore(app.operationCostScore)===null).length;
  const scopeExclusionsRemoved=updated.filter(app=>!opportunityEligibility(before.get(String(app.ID).trim())).eligible&&opportunityEligibility(app).eligible).length;
  // Explicit blank cells in a supplied column replace recorded text; count them for the preview warning.

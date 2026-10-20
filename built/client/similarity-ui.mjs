@@ -1,9 +1,10 @@
 import {compareNatural} from './codes.mjs';
 import {pairResultLabel,pairStatusReason,comparisonLevelText,codeEvidenceScore,formatCodeEvidence,PAIR_STATES,DATA_TO_CONFIRM} from './pair-status.mjs';
-import {renderComparisonRecords} from './comparison-records.mjs';
+import {renderComparisonRecords,renderDeferredEvidence} from './comparison-records.mjs';
 import {displayName,displayCode,displayRecordLabel,annualLabel,opportunityCostLabel,scopeReason} from './display.mjs';
 import {createWeightedSimilarity,cleanWeights,normalizeWeights,DEFAULT_WEIGHTS,WEIGHT_LABELS,portfolioCandidates,portfolioAtThreshold} from './weighted.mjs';
 import {inspectWeightAllocation,weightPercentages} from './weight-controls.mjs';
+import {cleanThreshold,effectiveThreshold,DEFAULT_THRESHOLD} from './score-settings.mjs';
 import {comparisonReadiness} from './similarity-readiness.mjs';
 import {similarityCSV} from './exports.mjs';
 import {english} from './english.mjs';
@@ -30,22 +31,33 @@ export const escapedCodeEvidenceSummary=(label,esc)=>`${esc(label)} · Code evid
 const sharedClassificationAction='Shared business classifications — compare actual uses';
 const sharedClassificationHelp='Read the application descriptions and compare what they do. Shared capability or process registrations are a clue, not proof of duplicate functions. Code evidence points are not a complete similarity score.';
 
+// One count per application, dimension and source record, shared by every record-check entry (V9.15).
+export function readinessRecordSummary(records){
+ const unique=new Map(records.map(record=>[JSON.stringify([record.dimension,record.raw||record.reason]),record]));
+ const labels={name:'name',description:'description',cap:'capability',process:'process'};
+ return Object.entries(labels).map(([dimension,label])=>{
+  const count=[...unique.values()].filter(record=>record.dimension===dimension).length;
+  return count?`${count} ${label} ${count===1?'record':'records'}`:'';
+ }).filter(Boolean).join(' + ')+' to check';
+}
+
 export function renderComparisonReadiness(readiness,esc){
  if(!readiness.pairCount)return '';
- const recordSummary=records=>{
-  const unique=new Map(records.map(record=>[JSON.stringify([record.dimension,record.raw||record.reason]),record]));
-  const labels={name:'name',description:'description',cap:'capability',process:'process'};
-  return Object.entries(labels).map(([dimension,label])=>{
-   const count=[...unique.values()].filter(record=>record.dimension===dimension).length;
-   return count?`${count} ${label} ${count===1?'record':'records'}`:'';
-  }).filter(Boolean).join(' + ')+' to check';
- };
+ const recordSummary=readinessRecordSummary;
  const rows=readiness.apps.map(row=>`<button class="readiness-app-action" data-readiness-app="${esc(row.app.id)}"><span><strong>${esc(row.app.Name)}</strong><small>${esc(recordSummary(row.records))} · affects ${row.pairCount} ${row.pairCount===1?'comparison':'comparisons'}</small></span><span>View details →</span></button>`).join('');
  const fallback=readiness.unattributedPairCount?`<details class="comparison-specific-checks"><summary>Check comparison details · ${readiness.unattributedPairCount} ${readiness.unattributedPairCount===1?'pair':'pairs'}</summary><p>These checks cannot yet be assigned to one application. Open the comparison to inspect its catalogue evidence.</p>${(readiness.unattributedPairs||[]).map(pair=>`<button class="compare-pair-row" data-open-similarity-target="${esc(pair.target.app.id)}" data-open-similarity-peer="${esc(pair.peer.app.id)}"><span>${esc(pair.target.app.Name)} ↔ ${esc(pair.peer.app.Name)}</span><span>View comparison →</span></button>`).join('')}</details>`:'';
  return `<section class="comparison-record-actions" aria-label="Application records to check"><h4>Check application records${readiness.apps.length?' · '+readiness.apps.length+' '+(readiness.apps.length===1?'application':'applications'):''}</h4><p>Confirm the records in View details before relying on these comparisons. Each application is listed once; ${readiness.pairCount} ${readiness.pairCount===1?'comparison is':'comparisons are'} affected.</p>${rows}${fallback}</section>`;
 }
 
-export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn=()=>false,onStateChange=()=>{},onWeightsChange=()=>{},onPairReview=()=>{}}){
+// The single-pair comparison names each application with records to check once, using the attribution and counts of
+// the multi-application comparison (V9.15). Different applications stay on separate rows, Application A first.
+export function renderPairReadiness(readiness,esc,order=[]){
+ if(!readiness.apps.length)return '';
+ const rank=row=>{const index=order.indexOf(row.app.id);return index<0?order.length:index;};
+ return `<div class="comparison-record-actions pair-record-actions" role="group" aria-label="Application records to check">${readiness.apps.toSorted((a,b)=>rank(a)-rank(b)).map(row=>`<button class="readiness-app-action" data-readiness-app="${esc(row.app.id)}" data-readiness-scope="pair"><span><strong>${esc(row.app.Name)}</strong> · ${esc(readinessRecordSummary(row.records))}</span><span>View details →</span></button>`).join('')}</div>`;
+}
+
+export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn=()=>false,onStateChange=()=>{},onWeightsChange=()=>{},onThresholdChange=()=>{},onPairReview=()=>{}}){
  const el=id=>document.getElementById(id),dialog=el('compareDialog'),review=el('similarityReview');
  let lastModel,indexes={},pool=[],selected=new Set(),dimension='weighted',context='All applications',cell=null;
  let lastProvisional=null,weights={...DEFAULT_WEIGHTS},similarityThreshold=50,focusAppId=null,focusPeerId=null,peerSearch='',portfolioRows=[],mode='portfolio',choosingApp=false;
@@ -205,18 +217,22 @@ export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn
   const cap=indexes.cap.compare(focusAppId,id),capBack=indexes.cap.compare(id,focusAppId),process=indexes.process.compare(focusAppId,id),processBack=indexes.process.compare(id,focusAppId);
   const direction=(reverse.coverage??reverse.knownPoints)<(forward.coverage??forward.knownPoints)?reverse:forward;
   const records=isSignedIn()?`<details class="similarity-secondary" id="focusSources" ${opened.has('focusSources')?'open':''}><summary>Source records</summary><div class="focus-source-grid">${sourceFields(source,'Application A')}${sourceFields(peer,'Application B')}</div></details>`:'';
-  const evidence=`<details class="similarity-secondary" id="focusEvidence" ${opened.has('focusEvidence')?'open':''}><summary>How the score is calculated</summary>${contributionTable(direction,active)}<details class="similarity-secondary" id="focusDirections" ${opened.has('focusDirections')?'open':''}><summary>Full calculation and code evidence</summary>${calculationDetails(forward)}${calculationDetails(reverse)}${branchEvidence(cap,'Capability · '+source.Name,false)}${branchEvidence(capBack,'Capability · '+peer.Name,false)}${branchEvidence(process,'Process · '+source.Name,false)}${branchEvidence(processBack,'Process · '+peer.Name,false)}</details></details>`;
+  const evidence=`<details class="similarity-secondary" id="focusEvidence" ${opened.has('focusEvidence')?'open':''}><summary>How the score is calculated</summary>${contributionTable(direction,active)}${renderDeferredEvidence({model:getModel(),cap,capBack,process,processBack,opened,escape:esc})}<details class="similarity-secondary" id="focusDirections" ${opened.has('focusDirections')?'open':''}><summary>Full calculation and code evidence</summary>${calculationDetails(forward)}${calculationDetails(reverse)}${branchEvidence(cap,'Capability · '+source.Name,false)}${branchEvidence(capBack,'Capability · '+peer.Name,false)}${branchEvidence(process,'Process · '+source.Name,false)}${branchEvidence(processBack,'Process · '+peer.Name,false)}</details></details>`;
   const costs=`<details class="similarity-secondary" id="focusCosts" ${opened.has('focusCosts')?'open':''}><summary>Annual costs</summary><div class="pair-costs"><p><span>${esc(source.Name)}</span><strong>${esc(opportunityCostLabel(source))}</strong></p><p><span>${esc(peer.Name)}</span><strong>${esc(opportunityCostLabel(peer))}</strong></p></div></details>`;
   const descriptionComponent=direction.components.find(c=>c.key==='description');
   const sharedDescriptionWords=descriptionComponent?.weight>0?descriptionComponent.text?.shared||[]:[];
   const originalDescriptions=`<section class="purpose-comparison"><h4>Original descriptions</h4>${sharedDescriptionWords.length?'<p class="description-match-key"><mark class="description-shared-word">Highlighted words</mark> show text overlap, not proof of the same function. Repeated words count once.</p>':''}<div class="purpose-grid">${purposeCard(source,sharedDescriptionWords)}${purposeCard(peer,sharedDescriptionWords)}</div></section>`;
+  // One display per record problem (V9.15): the "records to check" row replaces the status note and the repeated
+  // Records not yet confirmed entries for the same application, dimension and source record.
+  const pairReadiness=comparisonReadiness([active],similarityThreshold),pairCovered=new Set(pairReadiness.apps.flatMap(row=>row.records.map(record=>`${row.app.id}|${record.dimension}|${record.raw}`)));
   const detail=`<section class="focus-panel focus-detail readable-comparison" tabindex="-1">
    <div class="comparison-overview"><div><h3>Compare applications</h3></div><div class="comparison-score"><span>Score</span><strong>${active.status==='confirmed'?`${scoreNumber(active.coverage)}<small> / 100</small>`:'Unavailable'}</strong><em class="comparison-status">${esc(pairStatus(active))}</em>${codeEvidenceScore(active)===null?'':`<small class="comparison-code-evidence">Code evidence ${formatCodeEvidence(codeEvidenceScore(active))}</small>`}</div></div>
    ${comparisonIdentities(source,peer,esc)}
    <p class="comparison-guidance">${esc(statusHelp(active))}</p>
-   ${active.status!=='confirmed'&&pairHint(active)?`<p class="comparison-note">${esc(pairHint(active))}</p>`:''}
+   ${active.status!=='confirmed'&&pairHint(active)&&!pairReadiness.apps.length?`<p class="comparison-note">${esc(pairHint(active))}</p>`:''}
+   ${renderPairReadiness(pairReadiness,esc,[focusAppId,id])}
    ${`<details class="similarity-secondary" id="focusOriginalDescriptions" ${opened.has('focusOriginalDescriptions')?'open':''}><summary>Original descriptions and shared words</summary>${originalDescriptions}</details>`}
-   ${renderComparisonRecords({model:getModel(),cap,capBack,process,processBack,opened,escape:esc})}
+   ${renderComparisonRecords({model:getModel(),cap,capBack,process,processBack,opened,escape:esc,covered:pairCovered})}
    ${records}${evidence}${costs}
   </section>`;
   el('focusResult').innerHTML=`<details class="similarity-secondary" id="focusCandidates" ${opened.has('focusCandidates')?'open':''}><summary>Change comparison application</summary>${sourceIdentity}${ranking}</details>${detail}`;
@@ -227,6 +243,8 @@ export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn
  function refresh(){
   const model=getModel();if(!model)return;
   el('exportSelection').hidden=!isSignedIn();el('portfolioProvisional').hidden=!isSignedIn();el('portfolioOther').hidden=!isSignedIn();weightsPanel.querySelector('[data-weight-save]').textContent=isSignedIn()?'':'Not saved – resets on reload';
+  // New workspace data (load or import): its own minimum score applies; without one the current setting stays.
+  if(model!==lastModel)similarityThreshold=cleanThreshold(getData()?.similarityThreshold)??similarityThreshold;
   if(model!==lastModel){lastModel=model;weights=cleanWeights(getData().similarityWeights);indexes={cap:createSimilarity(model,'cap'),process:createSimilarity(model,'process'),weighted:createWeightedSimilarity(model,weights)};portfolioRows=portfolioCandidates(indexes.weighted);syncWeights();pool=model.apps.map(a=>a.id);selected=new Set();context='All applications';cell=null;el('focusApp').innerHTML='';}
   if(!review.hidden)renderReview();
   if(dialog.open){renderChoices();renderMatrix();}
@@ -298,8 +316,10 @@ export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn
   const outOfScope=[...new Set([scopeReason(a.target.app),scopeReason(a.peer.app)].filter(Boolean))];
   el('comparisonEvidence').innerHTML=`<section class="selected-evidence"><div class="pair-summary">${appCard(a.target.app,'Row target')}${appCard(a.peer.app,'Column application')}</div>${outOfScope.length?`<p class="scope-banner">Out of scope · Not in similarity check – ${esc(outOfScope.join('; '))}</p>`:''}<div class="coverage-grid">${card(a,'Row target covered by column')}${card(b,'Column covered by row target')}</div>${quick}${branchEvidence(a,'Row target',true)}${branchEvidence(b,'Column application',false)}</section>`;
  }
+ // Same deferred evidence as the single-pair view; it stays closed each time a pair is chosen.
+ function multiDeferredEvidence(pair){const a=pair.target.app.id,b=pair.peer.app.id;return renderDeferredEvidence({model:getModel(),cap:indexes.cap.compare(a,b),capBack:indexes.cap.compare(b,a),process:indexes.process.compare(a,b),processBack:indexes.process.compare(b,a),id:"comparisonDeferred",escape:esc});}
  function renderWeightedEvidence(pair){
-  el('comparisonEvidence').innerHTML=`<section class="selected-evidence"><h3>3. View comparison evidence</h3><h4>${esc(pair.target.app.Name)} ↔ ${esc(pair.peer.app.Name)}</h4><div class="total-result"><span>${pairStatus(pair)}</span>${pair.status==='confirmed'?`<strong>${scoreMarkup(pair.coverage)}</strong>`:''}<p>${esc(statusHelp(pair))}</p>${pairHint(pair)?`<p>${esc(pairHint(pair))}</p>`:''}</div><p>${esc(pair.target.app.Name)} ${esc(opportunityCostLabel(pair.target.app))} · ${esc(pair.peer.app.Name)} ${esc(opportunityCostLabel(pair.peer.app))}</p><button data-open-similarity-target="${esc(pair.target.app.id)}" data-open-similarity-peer="${esc(pair.peer.app.id)}">View comparison</button><details><summary>How is this calculated?</summary>${calculationDetails(pair.forward)}${calculationDetails(pair.reverse)}</details></section>`;
+  el('comparisonEvidence').innerHTML=`<section class="selected-evidence"><h3>3. View comparison evidence</h3><h4>${esc(pair.target.app.Name)} ↔ ${esc(pair.peer.app.Name)}</h4><div class="total-result"><span>${pairStatus(pair)}</span>${pair.status==='confirmed'?`<strong>${scoreMarkup(pair.coverage)}</strong>`:''}<p>${esc(statusHelp(pair))}</p>${pairHint(pair)?`<p>${esc(pairHint(pair))}</p>`:''}</div><p>${esc(pair.target.app.Name)} ${esc(opportunityCostLabel(pair.target.app))} · ${esc(pair.peer.app.Name)} ${esc(opportunityCostLabel(pair.peer.app))}</p><button data-open-similarity-target="${esc(pair.target.app.id)}" data-open-similarity-peer="${esc(pair.peer.app.id)}">View comparison</button><details><summary>How is this calculated?</summary>${calculationDetails(pair.forward)}${calculationDetails(pair.reverse)}${multiDeferredEvidence(pair)}</details></section>`;
  }
 
  function exportRows(rows,dim,name){
@@ -310,10 +330,33 @@ export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn
  function revealResult(){const panel=el('focusAnalyzer');panel.scrollIntoView({block:'start',behavior:'smooth'});}
  function startReview(){if(!focusAppId&&!choosingApp){portfolioPosition=pagePosition();returnTo=null;}choosingApp=true;focusAppId=null;focusPeerId=null;peerSearch='';peerListScroll=0;el('focusResult').innerHTML='';showReview();revealResult();}
  function backToResults(){const destination=returnTo;returnTo=null;choosingApp=false;focusAppId=null;focusPeerId=null;peerSearch='';peerListScroll=0;el('focusResult').innerHTML='';showPortfolio();if(destination?.kind==='multi'){restorePagePosition(destination.page);restoreMultiPosition(destination.state);}else restorePagePosition(portfolioPosition);onStateChange();}
- el('similarityTab').onclick=()=>{returnTo=null;backToResults();};el('backToPairs').onclick=backToResults;el('changeFocusApp').onclick=startReview;el('browseApplications').onclick=startReview;
+ // V9.15: switching to Overview or Application landscape and back keeps the current comparison. leave() records the
+ // Similarity check position before another page is shown and resume() shows it again; only Back to results resets it.
+ const tabLists=['.customer-pairs','.focus-app-list','.diagnostic-pairs','.readiness-app-list'];
+ let tabPosition=null;
+ function leave(){
+  if(review.hidden)return;
+  const peerList=el('focusResult').querySelector('.focus-rank-list');
+  if(focusAppId&&peerList&&(!focusPeerId||el('focusCandidates')?.open))peerListScroll=peerList.scrollTop||0;
+  const lists=tabLists.flatMap(selector=>[...review.querySelectorAll(selector)].map((node,index)=>({selector,index,scrollTop:node.scrollTop||0})));
+  tabPosition={scrollY:globalThis.scrollY||0,overview:detailState(el('similarityOverview')),focus:detailState(el('focusResult')),lists,multi:dialog.open?multiPosition():null};
+  if(dialog.open)dialog.close();
+ }
+ function resume(){
+  if(!review.hidden){activateTab('similarityTab');onStateChange();return;}
+  const saved=tabPosition;tabPosition=null;
+  showSimilarity();
+  if(!saved)return;
+  for(const [root,state] of [[el('similarityOverview'),saved.overview],[el('focusResult'),saved.focus]])if(root.querySelectorAll('details').length===state.length)restoreDetails(root,state);
+  if(saved.multi)restoreMultiPosition(saved.multi);
+  afterPaint(()=>{for(const item of saved.lists){const node=[...review.querySelectorAll(item.selector)][item.index];if(node)node.scrollTop=item.scrollTop;}globalThis.scrollTo?.({top:saved.scrollY,behavior:'instant'});});
+ }
+ el('similarityTab').onclick=resume;el('backToPairs').onclick=backToResults;el('changeFocusApp').onclick=startReview;el('browseApplications').onclick=startReview;
  el('compareMultipleApplications').onclick=()=>{open();el('compareSelection').open=true;onStateChange();};
 
- el('portfolioThresholdForm').onsubmit=e=>{e.preventDefault();try{similarityThreshold=Number(el('portfolioThreshold').value);renderReview();onStateChange();}catch(error){el('portfolioStats').textContent=error.message;}};
+ // The minimum score belongs to the workspace (with the weights), so Export workspace carries it (V9.15).
+ function applyThreshold(value){const next=cleanThreshold(value);if(next===null)throw Error('Enter a minimum score from 0 to 100.');similarityThreshold=next;renderReview();onThresholdChange(next);onStateChange();}
+ el('portfolioThresholdForm').onsubmit=e=>{e.preventDefault();try{applyThreshold(el('portfolioThreshold').value);}catch(error){el('portfolioStats').textContent=error.message;}};
  el('focusAppSearch').oninput=()=>{if(focusAppId)syncFocusOptions(getModel());else renderFocus();};
  el('focusApp').onchange=e=>{focusAppId=e.target.value||null;focusPeerId=null;peerSearch='';peerListScroll=0;el('focusResult').innerHTML='';renderFocus();onStateChange();};
  review.addEventListener('input',e=>{if(e.target.id!=='focusPeerSearch')return;peerSearch=e.target.value;peerListScroll=0;const caret=e.target.selectionStart;renderFocus();const search=el('focusPeerSearch');search.focus({preventScroll:true});search.setSelectionRange(caret,caret);});
@@ -334,15 +377,27 @@ export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn
   if(b.hasAttribute('data-reset-weights'))updateWeights(DEFAULT_WEIGHTS);
  });
 
+ // View details opens the application details at the records that the clicked entry counts (V9.15): the selected pair,
+ // the multi-application selection or the whole portfolio. The comparison state itself is not touched.
+ function recordFocus(id,button,host){
+  const ids=button.dataset.readinessScope==='pair'?[focusAppId,focusPeerId]:host===dialog?[...selected]:null;
+  const valid=ids&&ids.filter(appId=>indexes.weighted?.scopes.has(appId));
+  const pairs=valid?valid.flatMap((a,i)=>valid.slice(i+1).map(b=>indexes.weighted.pair(a,b))):portfolioRows.pairs||[];
+  const row=comparisonReadiness(pairs.filter(pair=>pair?.target?.app?.id===id||pair?.peer?.app?.id===id),similarityThreshold).apps.find(item=>item.app.id===id);
+  const records=(row?.records||[]).map(({dimension,kind,raw})=>({dimension,kind,raw}));
+  const first=records.find(record=>record.dimension==='cap'||record.dimension==='process')||records[0];
+  return first?[{dimension:first.dimension,record:first.raw,kind:first.kind,records}]:[];
+ }
+
  for(const host of [review,dialog])host.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
-  if(b.hasAttribute('data-reset-threshold')){similarityThreshold=50;renderReview();onStateChange();}
+  if(b.hasAttribute('data-reset-threshold'))applyThreshold(DEFAULT_THRESHOLD);
   if(b.hasAttribute('data-clear-app-search')){el('focusAppSearch').value='';renderFocus();}
   if(b.hasAttribute('data-clear-peer-search')){peerSearch='';peerListScroll=0;renderFocus();}
   if(b.hasAttribute('data-clear-selection-search')||b.hasAttribute('data-show-all-applications')){el('selectionSearch').value='';showSelectedOnly=false;renderChoices();onStateChange();}
   if(b.dataset.removeSelected){selected.delete(b.dataset.removeSelected);if(!selected.size)showSelectedOnly=false;renderChoices();renderMatrix();onStateChange();}
   // Closing the application details returns keyboard focus to the entry that opened them (V9.14).
-  if(b.dataset.readinessApp){const id=b.dataset.readinessApp;onApp(id);document.getElementById('detail')?.addEventListener?.('close',()=>{const entry=[...host.querySelectorAll('[data-readiness-app]')].find(item=>item.dataset.readinessApp===id)||b;entry.focus?.({preventScroll:true});},{once:true});}
+  if(b.dataset.readinessApp){const id=b.dataset.readinessApp;onApp(id,...recordFocus(id,b,host));document.getElementById('detail')?.addEventListener?.('close',()=>{const entry=[...host.querySelectorAll('[data-readiness-app]')].find(item=>item.dataset.readinessApp===id&&item.dataset.readinessScope===b.dataset.readinessScope)||b;entry.focus?.({preventScroll:true});},{once:true});}
   if(b.dataset.startApp){choosingApp=false;el('focusResult').innerHTML='';focusAppId=b.dataset.startApp;focusPeerId=null;peerSearch='';peerListScroll=0;showReview();revealResult();}
   if(b.dataset.portfolioApp){portfolioPosition=pagePosition();returnTo=null;choosingApp=false;el('focusResult').innerHTML='';focusAppId=b.dataset.portfolioApp;focusPeerId=b.dataset.portfolioPeer;peerSearch='';peerListScroll=0;el('focusAppSearch').value='';showReview();revealResult();}
   if(b.dataset.matrixDim){dimension=b.dataset.matrixDim;renderMatrix();onStateChange();}
@@ -355,7 +410,7 @@ export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn
  function restoreState(state){
   if(!state||typeof state!=='object')return;
   refresh();
-  similarityThreshold=state.customerViewVersion===1&&typeof state.similarityThreshold==='number'&&Number.isFinite(state.similarityThreshold)&&state.similarityThreshold>=0&&state.similarityThreshold<=100?state.similarityThreshold:50;
+  similarityThreshold=effectiveThreshold(getData(),state.customerViewVersion===1&&typeof state.similarityThreshold==='number'?state.similarityThreshold:null);
   dimension=['weighted','cap','process'].includes(state.dimension)?state.dimension:'weighted';
   focusAppId=indexes.weighted.scopes.has(state.focusAppId)?state.focusAppId:null;
   focusPeerId=indexes.weighted.scopes.has(state.focusPeerId)?state.focusPeerId:null;
@@ -373,5 +428,5 @@ export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn
   if(!review.hidden)renderReview();
   if(dialog.open){renderChoices();renderMatrix();}
  }
- return {open,refresh,showPortfolio,showReview,getState,restoreState};
+ return {open,refresh,showPortfolio,showReview,getState,restoreState,leave,resume};
 }

@@ -92,10 +92,17 @@ export function pairStateNote(pair,threshold=50,scopeReason=()=>''){
  return `There is no complete score until the data is confirmed: ${pairStatusReason(pair,threshold,scopeReason)}`;
 }
 
+// Only the levels actually scored, each named once ("Compared at Level 2 / Level 3" when branches differ). The comparison
+// records box shows this alone since V9.15; the deferred part of comparisonLevelText is in How the score is calculated.
+export function comparedLevelText(result){
+ const levels=result?.comparisonLevels;
+ return levels?.length?`Compared at ${levels.map(level=>'Level '+level).join(' / ')}`:'';
+}
+
 export function comparisonLevelText(result){
  const levels=result?.comparisonLevels;
  if(!levels?.length)return '';
- const compared=`Compared at ${levels.map(level=>'Level '+level).join(' / ')}`;
+ const compared=comparedLevelText(result);
  const deferred=result.deferredLevels||[];
  return compared+(deferred.length?`; ${deferred.some(level=>levels.includes(level))?'Some ':''}${deferred.map(level=>'Level '+level).join(' / ')} detail deferred`:'');
 }

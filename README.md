@@ -1,8 +1,8 @@
 <p align="center"><img src="docs/images/banner.svg" alt="Logistics Digital Portfolio — 物流数字化应用组合工具" width="1000"></p>
 
 <p align="center">
-  <img src="docs/images/badge-version.svg" alt="version V9.14">&nbsp;
-  <img src="docs/images/badge-tests.svg" alt="tests 409 passed">&nbsp;
+  <img src="docs/images/badge-version.svg" alt="version V9.15">&nbsp;
+  <img src="docs/images/badge-tests.svg" alt="tests 442 passed">&nbsp;
   <img src="docs/images/badge-offline.svg" alt="offline single HTML, no install">&nbsp;
   <img src="docs/images/badge-data.svg" alt="data 76 apps, 10 plants">&nbsp;
   <img src="docs/images/badge-private.svg" alt="visibility private">
@@ -10,7 +10,7 @@
 
 <p align="center">
   一个 HTML 文件，装下整个物流应用组合：<b>哪些应用登记不全</b> · <b>谁在做什么</b> · <b>哪些可能重复</b><br>
-  <sub>当前版本 V9.14（2026-10-20） · 不需要安装、不需要联网 · 用 Chrome 打开即用</sub>
+  <sub>当前版本 V9.15（2026-10-20） · 不需要安装、不需要联网 · 用 Chrome 打开即用</sub>
 </p>
 
 <p align="center">
@@ -32,7 +32,7 @@
     <td align="center" width="25%"><h3>76</h3><sub>应用 · 10 个工厂 · 5 个业务部门</sub></td>
     <td align="center" width="25%"><h3>2,850</h3><sub>组两两比较 · 7 组得分 ≥ 50</sub></td>
     <td align="center" width="25%"><h3>24 / 38</h3><sub>Process / Capability 待处理应用</sub></td>
-    <td align="center" width="25%"><h3>409</h3><sub>项自动测试，全部通过</sub></td>
+    <td align="center" width="25%"><h3>442</h3><sub>项自动测试，全部通过</sub></td>
   </tr>
 </table>
 
@@ -85,8 +85,8 @@ flowchart LR
 
 ## 快速开始
 
-1. 到 [Releases](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest) 下载 `logistics-offline-20261020-v9.14.zip`（仓库里的 [`offline/`](offline/) 也有同一个文件）。
-2. 解压，用 Chrome 打开 `物流工具_最新版_离线单文件_20261020_v9.14.html`。页面顶部会显示 V9.14。
+1. 到 [Releases](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest) 下载 `logistics-offline-20261020-v9.15.zip`（仓库里的 [`offline/`](offline/) 也有同一个文件）。
+2. 解压，用 Chrome 打开 `物流工具_最新版_离线单文件_20261020_v9.15.html`。页面顶部会显示 V9.15。
 3. 页面里的修改只保存在当前标签页：用 **Export workspace** 导出备份，下次用 **Import data** 恢复。
 
 想改程序：`program/` 是源码（原生 ES 模块，没有框架）。`npm ci` → `npm test` → `npm run build` → `npm run export:offline`，需要 Node 22.13 或更新版本。接手前先读 [`00_Claude先读.md`](00_Claude先读.md)（中文，按日期记录每次改动和用户决定），再读 [`program/README.md`](program/README.md)（英文，"Current state" 一节是当前状态）。
@@ -108,6 +108,7 @@ flowchart LR
 
 | 版本 | 主要变化 |
 |---|---|
+| [V9.15](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v9.15-20261020) | 单对比较按应用列出待核对记录并直达详情；切换页面保留比较；Deferred detail 移入计算说明；阈值随备份导出、导入，导出提示分状态 |
 | [V9.14](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v9.14-20261020) | 已隐藏的其他比较结果不再在页面里生成（页面更轻）；关闭应用详情后焦点回到原入口 |
 | [V9.13](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v9.13-20261020) | 单应用比较第二步改为按名称排列的 Choose another application |
 | [V9.12](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v9.12-20261020) | 多应用比较给出下一步（Compare actual uses）；待核对资料按应用去重 |
@@ -145,16 +146,16 @@ flowchart LR
 | 数据模型：读入应用、匹配能力和流程 | `program/public/model.mjs`、`program/public/codes.mjs` |
 | 页面入口和整体渲染 | `program/public/index.html`、`program/public/app.js` |
 | Overview：各层级统计、To review、上级由三级确认的规则 | `program/public/overview.mjs`、`program/public/review-issues.mjs`（`capabilityLevel2Coverage`、`processAncestorCoverage`） |
-| 应用详情：问题列表、源记录 | `program/public/process-issues.mjs`、`program/public/source-records.mjs`、`program/public/app.js` |
+| 应用详情：问题列表、源记录 | `program/public/process-issues.mjs`（`focusApplicationIssue` 定位问题）、`program/public/source-records.mjs`、`program/public/app.js` |
 | Application landscape：分类列、逐级展开、Excel 编号、Category 下拉（按层级排序） | `program/public/landscape.mjs`（`categoryOptions`）、`program/public/model.mjs`（`columns`） |
 | Similarity check：评分 | `program/public/weighted.mjs`、`program/public/similarity.mjs`、`program/public/score-values.mjs` |
 | Similarity check：页面、状态、证据 | `program/public/similarity-ui.mjs`、`program/public/similarity-readiness.mjs`（按应用归并待检查记录）、`program/public/pair-status.mjs`、`program/public/comparison-records.mjs`、`program/public/weight-controls.mjs` |
 | 已保存的组合评审数据 | `program/public/similarity-guide.mjs`（`cleanPairReviews`）、`program/public/workspace.mjs` |
 | ROI 回本时间、年度成本 | `program/public/roi.mjs`、`program/public/costs.mjs` |
-| 导入 / 导出（Excel、工作区、CSV） | `program/public/xlsx.mjs`、`program/public/import-review.mjs`、`program/public/workspace.mjs`、`program/public/exports.mjs` |
+| 导入 / 导出（Excel、工作区、CSV） | `program/public/xlsx.mjs`、`program/public/import-review.mjs`、`program/public/workspace.mjs`、`program/public/exports.mjs`、`program/public/score-settings.mjs`（阈值随备份）、`program/public/offline-save.mjs`（离线导出提示） |
 | 样式 | `program/public/*.css` |
 | 构建和离线单文件 | `program/scripts/build.mjs`、`program/scripts/export-offline.mjs` |
-| 测试（`npm test`，当前 409 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v9.14-test-results.txt` |
+| 测试（`npm test`，当前 442 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v9.15-test-results.txt` |
 | 离线单文件版 | `offline/` |
 | README 横幅、徽章和截图 | `docs/images/` |
 | 构建输出、文件校验清单 | `built/`、`MANIFEST.sha256` |

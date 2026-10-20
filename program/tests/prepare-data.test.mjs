@@ -300,18 +300,20 @@ test('writing reports the changes and a second run is identical',async()=>{
 test('an exported workspace (version 6) works as --preserve-workspace',async()=>{
  const workspace=workspaceData(data);
  workspace.similarityWeights={name:.25,description:.25,cap:.25,process:.25};
+ workspace.similarityThreshold=40;
  workspace.source='renamed in the browser.xlsx';
  const exported=exportWorkspace(workspace),file=path.join(base.dir,'workspace-v6.json'),output=path.join(base.dir,'from-workspace.json');
  assert.equal(JSON.parse(exported).version,6);writeFileSync(file,exported);
  const result=await run([...sources(base),'--preserve-workspace',file,'--output',output]);
  assert.equal(result.code,0,result.stderr);
- assert.match(result.stdout,/\(workspace export, version 6\): corrections, reviews, reviewHistory, applicationEvents, importHistory, similarityWeights, similarityWeightsVersion\./);
+ assert.match(result.stdout,/\(workspace export, version 6\): corrections, reviews, reviewHistory, applicationEvents, importHistory, similarityWeights, similarityWeightsVersion, similarityThreshold\./);
  const rebuilt=JSON.parse(readFileSync(output,'utf8')),document=JSON.parse(exported);
  assert.deepEqual(Object.keys(rebuilt),['apps','capabilityRows','processRows','source','taxonomySource',...PRESERVED_KEYS]);
  assert.equal(rebuilt.source,data.source,'source names the inventory file, not the workspace');
  assert.deepEqual(rebuilt.apps,data.apps);assert.deepEqual(rebuilt.processRows,data.processRows);
  for(const key of PRESERVED_KEYS)assert.deepEqual(rebuilt[key],document.data[key],key);
  assert.deepEqual(rebuilt.similarityWeights,{name:.25,description:.25,cap:.25,process:.25});
+ assert.equal(rebuilt.similarityThreshold,40,'the minimum score is carried with the weights');
  assert.equal(correctionStates(rebuilt).filter(c=>c.state==='Applied').length,12);
  assert.doesNotThrow(()=>importWorkspace(exportWorkspace(rebuilt)),'the result loads like any workspace');
  // Older exports are accepted as well.

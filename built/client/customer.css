@@ -178,8 +178,6 @@ body.portfolio-fullscreen #workspaceNav{display:none}body.portfolio-fullscreen .
 @media(max-width:700px){.readable-comparison .pending-record-columns{grid-template-columns:1fr}.readable-comparison .pending-record-columns>section+section{padding-left:0;border-left:0}}
 
 .readable-comparison .comparison-level-note{padding:10px 12px;background:#edf5fa;border-left:3px solid #78abc6;border-radius:4px;color:#31586f}
-.readable-comparison .comparison-deferred{margin:12px 0 18px;color:#526d7f;font-size:13px}
-.readable-comparison .comparison-deferred>summary{cursor:pointer;color:#386c86}
 
 /* Score settings is a primary entry above the result list, including on narrow screens. */
 #similarityOverview #similaritySettings{margin:0 0 18px;border:1px solid #86b8d2;border-left:4px solid #0071a8;border-radius:9px;padding:0;background:#edf6fb;overflow:hidden}
@@ -236,4 +234,11 @@ body.portfolio-fullscreen #workspaceNav{display:none}body.portfolio-fullscreen .
 .readiness-app-action strong{font-size:14px;overflow-wrap:anywhere}
 .readiness-app-action small{display:block;font-size:12px;color:#60798a;margin-top:5px;line-height:1.5}
 .readiness-app-action>span:last-child{flex-shrink:0;font-size:13px;color:#0071a8}
+/* Single-pair record checks (V9.15): one row per application, no repeated heading. */
+.pair-record-actions{padding:9px 11px}.pair-record-actions .readiness-app-action:first-child{margin-top:0}.pair-record-actions .readiness-app-action>span:first-child{font-size:13px;color:#3d5a6c;overflow-wrap:anywhere}
 @media(max-width:480px){.comparison-record-actions{padding:11px}.readiness-app-action{gap:9px;padding:11px}.readiness-app-action>span:last-child{font-size:12px}}
+
+/* Deferred detail inside How the score is calculated (V9.15): the same small type as the other calculation notes. */
+.comparison-deferred-evidence p{margin:8px 0;font-size:13px;line-height:1.55;color:#526d7f}
+.comparison-deferred-evidence h5{margin:12px 0 4px;font-size:13px;color:#244b61}
+.comparison-deferred-evidence p strong{font-size:13px;color:#35586d}

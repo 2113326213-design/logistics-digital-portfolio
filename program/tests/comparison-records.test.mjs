@@ -3,7 +3,7 @@ import {test} from 'node:test';
 import {readFileSync} from 'node:fs';
 import {buildModel} from '../public/model.mjs';
 import {createSimilarity} from '../public/similarity.mjs';
-import {comparisonRecordEvidence,renderComparisonRecords} from '../public/comparison-records.mjs';
+import {comparisonRecordEvidence,renderComparisonRecords,renderDeferredEvidence} from '../public/comparison-records.mjs';
 
 const data=JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url)));
 const model=buildModel(data);
@@ -29,9 +29,11 @@ test('exact shared codes stay distinct from a parent-level match and do not inve
  const broad=comparisonRecordEvidence(model,parent.cap,parent.capBack);
  assert.equal(broad.exact.length,0);assert.equal(broad.broader[0].node.id,'B.06.5');
  assert(broad.broader[0].details.some(node=>node.id==='B.06.5.1'));
- assert.match(renderComparisonRecords(parent),/Compared at Level 2; Level 3 detail deferred/);
+ assert.match(renderComparisonRecords(parent),/<p class="comparison-level-note">Compared at Level 2<\/p>/);
  assert.match(renderComparisonRecords(parent),/Application B recorded/);
- assert.match(renderComparisonRecords(parent),/Deferred detail · not used in the score/);
+ // V9.15: the deferred detail is listed in How the score is calculated, not in the records box.
+ assert.doesNotMatch(renderComparisonRecords(parent),/Deferred detail|detail deferred|not scored yet/);
+ assert.match(renderDeferredEvidence(parent),/Deferred detail · not used in the score \(1\)[\s\S]*Capability · Compared at Level 2; Level 3 detail deferred/);
  assert.equal(broad.gaps.length,0);
 });
 
