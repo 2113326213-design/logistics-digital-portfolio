@@ -1,10 +1,12 @@
 # Logistics Digital Portfolio
 
-物流工具（Logistics Digital Portfolio）交接包，当前版本 **V9.10（2026-10-20）**。本仓库包含真实的应用清单数据，请保持私有。
+物流工具（Logistics Digital Portfolio）交接包，当前版本 **V9.11（2026-10-20）**。本仓库包含真实的应用清单数据，请保持私有。
 
-- **直接使用**：下载 [V9.10 离线包](offline/logistics-offline-20261020-v9.10.zip)，或到本仓库 Releases 下载同名文件，解压后用 Chrome 打开 `物流工具_最新版_离线单文件_20261020_v9.10.html`，不需要联网。页面顶部会明确显示 V9.10。
+- **直接使用**：下载 [V9.11 离线包](offline/logistics-offline-20261020-v9.11.zip)，或到本仓库 Releases 下载同名文件，解压后用 Chrome 打开 `物流工具_最新版_离线单文件_20261020_v9.11.html`，不需要联网。页面顶部会明确显示 V9.11。
 - **交接说明**：先读 `00_Claude先读.md`（中文，按日期记录每次改动和用户决定），再读 `program/README.md`（英文，"Current state" 一节是当前状态）。
 - **程序源码**：`program/`（`npm ci`、`npm test`、`npm run build`、`npm run export:offline`，需要 Node 22.13 或更新版本）。
+
+V9.11 按用户要求直接隐藏 View other comparison results and screening reasons 整个入口及内容。候选比较、应用资料检查和单独比较功能保留。
 
 V9.10 将其他比较结果收进默认折叠的 View other comparison results and screening reasons；四类配对数及总组合计数按需展开。应用资料检查入口直接显示在候选列表之后，View details 和比较返回逻辑保持可用。
 
@@ -26,7 +28,7 @@ V9.2 让 Process 的二级检查也采用 V9.1 的规则（三级流程都已确
 
 V9.1 更新 Capability 的二级检查：三级登记完整匹配、无待确认事项且能确认标准二级父项时，二级未单独登记不再算问题。To review、应用详情与 Level 2 合规统计使用同一规则；“filled”仍仅统计直接填写的记录。
 
-保留 V9 的 Similarity check 操作顺序、候选展示、多选和返回位置。V8 已删除的比较摘要与人工评审表单保持删除。当前说明和验证边界见 `00_Claude先读.md` 顶部 V9.10 章节。
+保留 V9 的 Similarity check 操作顺序、候选展示、多选和返回位置。V8 已删除的比较摘要与人工评审表单保持删除。当前说明和验证边界见 `00_Claude先读.md` 顶部 V9.11 章节。
 
 ## 文件地图（给 AI 助手和新接手的人）
 
@@ -49,7 +51,7 @@ V9.1 更新 Capability 的二级检查：三级登记完整匹配、无待确认
 | 导入 / 导出（Excel、工作区、CSV） | `program/public/xlsx.mjs`、`program/public/import-review.mjs`、`program/public/workspace.mjs`、`program/public/exports.mjs` |
 | 样式 | `program/public/*.css` |
 | 构建和离线单文件 | `program/scripts/build.mjs`、`program/scripts/export-offline.mjs` |
-| 测试（`npm test`，当前 396 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v9.9-test-results.txt`；V9.10 的22项针对性检查在 `verification/v9.10-test-results.txt` |
+| 测试（`npm test`，当前 396 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v9.9-test-results.txt`；V9.11 的11项针对性检查在 `verification/v9.11-test-results.txt` |
 | 离线单文件版 | `offline/` |
 | 构建输出、文件校验清单 | `built/`、`MANIFEST.sha256` |
 

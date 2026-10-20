@@ -1,0 +1,19 @@
+✔ threshold counts each application once and each unordered eligible pair once (7.831852ms)
+✔ real portfolio counts and displayed rows use only fully evidenced in-scope pairs (1212.74722ms)
+✔ choosing an application stops at candidates; choosing a peer preserves the search (1239.224494ms)
+✔ selected chips remain visible across searches, can be filtered and individually removed (517.023646ms)
+✔ switching dimensions keeps the selected pair and reopens its weighted status group (434.779104ms)
+✔ returning from a pair restores the multi-selection search, dimension, pair, expanded details and scroll (484.132452ms)
+✔ returning from a portfolio pair restores its original page position and expanded results (482.651333ms)
+✔ legacy or damaged return state cannot select an invalid dimension or pair (861.954656ms)
+✔ no code evidence is claimed when both code weights are zero (574.325424ms)
+✔ weighted pair highlighting is symmetric while capability and process highlighting stays directional (566.599093ms)
+✔ candidate groups show three first to leave other evidence groups discoverable; search reveals all matches (396.687722ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6038.925806

@@ -1,6 +1,13 @@
 # 物流工具：Claude 接手说明
 
-## V9.10 当前状态（2026-10-20，优先于所有历史段落）
+## V9.11 当前状态（2026-10-20，优先于所有历史段落）
+
+- 用户决定：直接隐藏 `View other comparison results and screening reasons` 入口。
+- 在总览的 `portfolioOtherOutcomes` 整块添加 hidden，入口、分隔线和其中的分类均不可见，也不进入键盘和辅助技术导航。重新渲染时保持隐藏。
+- 候选比较、Check application records、View details、Compare an application / multiple applications 保留；评分、分类、源数据和业务映射未改。
+- 当前离线包：`offline/logistics-offline-20261020-v9.11.zip`。验证见 `verification/v9.11-verification.md`。
+
+## V9.10 历史状态（2026-10-20，受顶部 V9.11 更新）
 
 - 用户确认：将 Other comparison outcomes 默认收起，作为次要的筛选原因查询入口。
 - 默认页面先显示候选比较，再显示 Check application records（默认数据19个应用）；应用清单和受影响比较仍按需展开，问题只在 View details 中查看。
