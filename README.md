@@ -1,10 +1,12 @@
 # Logistics Digital Portfolio
 
-物流工具（Logistics Digital Portfolio）交接包，当前版本 **V9.13（2026-10-20）**。本仓库包含真实的应用清单数据，请保持私有。
+物流工具（Logistics Digital Portfolio）交接包，当前版本 **V9.14（2026-10-20）**。本仓库包含真实的应用清单数据，请保持私有。
 
-- **直接使用**：下载 [V9.13 离线包](offline/logistics-offline-20261020-v9.13.zip)，或到本仓库 Releases 下载同名文件，解压后用 Chrome 打开 `物流工具_最新版_离线单文件_20261020_v9.13.html`，不需要联网。页面顶部会明确显示 V9.13。
+- **直接使用**：下载 [V9.14 离线包](offline/logistics-offline-20261020-v9.14.zip)，或到本仓库 Releases 下载同名文件，解压后用 Chrome 打开 `物流工具_最新版_离线单文件_20261020_v9.14.html`，不需要联网。页面顶部会明确显示 V9.13。
 - **交接说明**：先读 `00_Claude先读.md`（中文，按日期记录每次改动和用户决定），再读 `program/README.md`（英文，"Current state" 一节是当前状态）。
 - **程序源码**：`program/`（`npm ci`、`npm test`、`npm run build`、`npm run export:offline`，需要 Node 22.13 或更新版本）。
+
+V9.14 修正两个小问题：已隐藏的其他比较结果不再在页面里生成（少 1,684 个隐藏按钮，页面更轻）；从 Check application records 打开应用详情、关闭后，焦点回到原来的应用入口。
 
 V9.13 将单应用第二步简化为 Choose another application：按名称排列全部其他应用，只显示名称、工厂和业务部门；支持搜索并直接选择，评分、状态分组和 Show more 移出选择列表。点击后查看原有完整对比结果。评分及源数据不变。
 
@@ -32,7 +34,7 @@ V9.2 让 Process 的二级检查也采用 V9.1 的规则（三级流程都已确
 
 V9.1 更新 Capability 的二级检查：三级登记完整匹配、无待确认事项且能确认标准二级父项时，二级未单独登记不再算问题。To review、应用详情与 Level 2 合规统计使用同一规则；“filled”仍仅统计直接填写的记录。
 
-保留 V9 的 Similarity check 操作顺序、候选展示、多选和返回位置。V8 已删除的比较摘要与人工评审表单保持删除。当前说明和验证边界见 `00_Claude先读.md` 顶部 V9.13 章节。
+保留 V9 的 Similarity check 操作顺序、候选展示、多选和返回位置。V8 已删除的比较摘要与人工评审表单保持删除。当前说明和验证边界见 `00_Claude先读.md` 顶部 V9.14 章节。
 
 ## 文件地图（给 AI 助手和新接手的人）
 
@@ -55,7 +57,7 @@ V9.1 更新 Capability 的二级检查：三级登记完整匹配、无待确认
 | 导入 / 导出（Excel、工作区、CSV） | `program/public/xlsx.mjs`、`program/public/import-review.mjs`、`program/public/workspace.mjs`、`program/public/exports.mjs` |
 | 样式 | `program/public/*.css` |
 | 构建和离线单文件 | `program/scripts/build.mjs`、`program/scripts/export-offline.mjs` |
-| 测试（`npm test`，当前 406 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v9.13-test-results.txt` |
+| 测试（`npm test`，当前 409 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v9.14-test-results.txt` |
 | 离线单文件版 | `offline/` |
 | 构建输出、文件校验清单 | `built/`、`MANIFEST.sha256` |
 

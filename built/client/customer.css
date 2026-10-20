@@ -201,9 +201,7 @@ body.portfolio-fullscreen #workspaceNav{display:none}body.portfolio-fullscreen .
 @media(max-width:480px){#similarityOverview #similaritySettings>summary{padding:15px 12px;gap:10px}#similaritySettings .score-settings-action{padding:9px;font-size:12px}#similaritySettings .score-settings-label strong{font-size:17px}#similaritySettings .score-settings-label small{font-size:12px}}
 
 /* Pair outcomes and application-level record checks use distinct presentation. */
-#portfolioProvisional .result-count-guide{padding:14px 16px;background:#edf5fa;border-radius:7px;color:#32586f;margin-bottom:18px}
 #portfolioProvisional p{font-size:13px;line-height:1.6;color:#526d7e}
-#portfolioProvisional .result-count-guide p{margin:5px 0 0}
 #portfolioProvisional h3{font-size:17px;margin:0 0 8px;color:#244b61}
 #portfolioProvisional .record-readiness{padding:18px;border:1px solid #ddc9a1;border-radius:9px;background:#fffaf0;margin-bottom:22px}
 #portfolioProvisional .record-readiness>p{margin:0 0 14px}
@@ -224,10 +222,8 @@ body.portfolio-fullscreen #workspaceNav{display:none}body.portfolio-fullscreen .
 #portfolioProvisional .diagnostic-pairs{padding:0 12px 12px}
 @media(max-width:480px){#portfolioProvisional .record-readiness{padding:13px}#portfolioProvisional .readiness-app-list button{gap:9px;padding:11px}}
 
-/* Keep record checks visible; screening diagnostics are opened only on demand. */
+/* Keep record checks visible. */
 #similarityOverview #portfolioOther{margin-top:24px}
-#portfolioOtherOutcomes .other-comparison-body{padding:4px 0 0}
-#portfolioOtherOutcomes>summary:focus-visible{outline:2px solid #0071a8;outline-offset:3px}
 
 /* Comparison actions: compare actual uses, or check each application's records once. */
 .comparison-action-help{font-size:13px;line-height:1.6;color:#526d7e;padding:0 13px;margin:10px 0 14px}

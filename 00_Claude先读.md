@@ -1,6 +1,14 @@
 # 物流工具：Claude 接手说明
 
-## V9.13 当前状态（2026-10-20，优先于所有历史段落）
+## V9.14 当前状态（2026-10-20，优先于所有历史段落）
+
+- 基线：V9.13（提交 c97e391），用户要求修改复查时发现的两个小问题（“小问题修改一下”），其余规则、评分和数据不变。
+- **不再生成已隐藏的结果区**：V9.11 按用户要求隐藏的 “View other comparison results and screening reasons”（Below threshold、No shared registrations、No complete score、Out of scope 四组）此前仍在页面里生成 1,684 个隐藏按钮。现在不再生成；Other results 区域的按钮从 2,862 个降到 1,178 个（19 个应用入口 + 1,159 个受影响比较）。页面看到的内容不变。
+- **关闭详情后焦点回到原入口**：从 “Check application records” 打开应用详情（主页面或多应用比较中），关闭后键盘焦点回到刚才点的那个应用入口，而不是跳回页面顶部；列表重新生成时找同一应用的新入口。
+- 测试随之调整：handoff-rules 中两项原来检查隐藏区内容的测试，改为检查标签和 CSV 原因本身，并确认隐藏区不再生成；新增 `tests/similarity-v914.test.mjs`（3 项）。
+- 当前离线包：`offline/logistics-offline-20261020-v9.14.zip`；HTML 文件名及页面标识均为 V9.14。验证见 `verification/v9.14-verification.md`。
+
+## V9.13 历史状态（2026-10-20，受顶部 V9.14 更新）
 
 - 用户决定：单应用第二步只要 Choose another application 的应用选择数据，不要截图里的评分、状态和分组。
 - 选择列表按名称自然排序，当前应用排除；普通源应用可选择其余全部75个应用。每行只显示名称、工厂和业务部门，按这三个字段搜索；不按评分或状态筛选，包含待确认和范围外的其他应用。
