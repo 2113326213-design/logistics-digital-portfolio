@@ -199,3 +199,27 @@ body.portfolio-fullscreen #workspaceNav{display:none}body.portfolio-fullscreen .
 #similaritySettings>.weight-panel{margin:0 18px 16px}
 #similaritySettings>#portfolioThresholdForm{margin:0 18px}
 @media(max-width:480px){#similarityOverview #similaritySettings>summary{padding:15px 12px;gap:10px}#similaritySettings .score-settings-action{padding:9px;font-size:12px}#similaritySettings .score-settings-label strong{font-size:17px}#similaritySettings .score-settings-label small{font-size:12px}}
+
+/* Pair outcomes and application-level record checks use distinct presentation. */
+#portfolioProvisional .result-count-guide{padding:14px 16px;background:#edf5fa;border-radius:7px;color:#32586f;margin-bottom:18px}
+#portfolioProvisional p{font-size:13px;line-height:1.6;color:#526d7e}
+#portfolioProvisional .result-count-guide p{margin:5px 0 0}
+#portfolioProvisional h3{font-size:17px;margin:0 0 8px;color:#244b61}
+#portfolioProvisional .record-readiness{padding:18px;border:1px solid #ddc9a1;border-radius:9px;background:#fffaf0;margin-bottom:22px}
+#portfolioProvisional .record-readiness>p{margin:0 0 14px}
+#portfolioProvisional .readiness-apps>summary{padding:12px 14px;border:1px solid #adc8d7;border-radius:6px;background:#fff;color:#006b9c;font-size:14px;font-weight:650;cursor:pointer}
+#portfolioProvisional .readiness-app-list{max-height:340px;overflow:auto;margin-top:8px}
+#portfolioProvisional .readiness-app-list button{display:flex;align-items:center;justify-content:space-between;gap:15px;width:100%;text-align:left;padding:13px;margin:5px 0;background:#fff;border-color:#dae4eb}
+#portfolioProvisional .readiness-app-list button>span:first-child{min-width:0}
+#portfolioProvisional .readiness-app-list strong{font-size:14px;overflow-wrap:anywhere}
+#portfolioProvisional .readiness-app-list small{display:block;font-size:12px;color:#60798a;margin-top:5px}
+#portfolioProvisional .readiness-app-list button>span:last-child{flex-shrink:0;color:#0071a8;font-size:12px}
+#portfolioProvisional .readiness-pairs{margin-top:15px}
+#portfolioProvisional .readiness-pairs>summary{font-size:13px;color:#6c725f;cursor:pointer;padding:9px 0}
+#portfolioProvisional .result-category{margin:9px 0;border:1px solid #d8e3eb;border-radius:7px;background:#f7fafc}
+#portfolioProvisional .result-category>summary{padding:13px 15px;color:#35586d;font-size:14px;font-weight:600;cursor:pointer}
+#portfolioProvisional .result-category.attention{border-color:#ddcca9;background:#fffcf6}
+#portfolioProvisional .result-category.attention>summary{color:#73572e}
+#portfolioProvisional .result-category-note{margin:0;padding:0 15px 12px}
+#portfolioProvisional .diagnostic-pairs{padding:0 12px 12px}
+@media(max-width:480px){#portfolioProvisional .record-readiness{padding:13px}#portfolioProvisional .readiness-app-list button{gap:9px;padding:11px}}

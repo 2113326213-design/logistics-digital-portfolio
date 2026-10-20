@@ -1,9 +1,10 @@
 import {compareNatural} from './codes.mjs';
-import {pairResultLabel,pairStatusReason,comparisonLevelText,codeEvidenceScore,formatCodeEvidence} from './pair-status.mjs';
+import {pairResultLabel,pairStatusReason,comparisonLevelText,codeEvidenceScore,formatCodeEvidence,PAIR_STATES,DATA_TO_CONFIRM} from './pair-status.mjs';
 import {renderComparisonRecords} from './comparison-records.mjs';
 import {displayName,displayCode,displayRecordLabel,annualLabel,opportunityCostLabel,scopeReason} from './display.mjs';
-import {createWeightedSimilarity,cleanWeights,normalizeWeights,DEFAULT_WEIGHTS,WEIGHT_LABELS,portfolioCandidates,portfolioAtThreshold,belowThresholdConfirmedPairs} from './weighted.mjs';
+import {createWeightedSimilarity,cleanWeights,normalizeWeights,DEFAULT_WEIGHTS,WEIGHT_LABELS,portfolioCandidates,portfolioAtThreshold} from './weighted.mjs';
 import {inspectWeightAllocation,weightPercentages} from './weight-controls.mjs';
+import {comparisonReadiness} from './similarity-readiness.mjs';
 import {similarityCSV} from './exports.mjs';
 import {english} from './english.mjs';
 import {createSimilarity} from './similarity.mjs';
@@ -152,7 +153,23 @@ export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn
   const provisionalKey=[portfolioRows,similarityThreshold,isSignedIn()];
   if(lastProvisional&&provisionalKey.every((value,i)=>value===lastProvisional[i]))return;
   lastProvisional=provisionalKey;
-  el('portfolioProvisional').innerHTML=isSignedIn()?['Below threshold','No complete score','No shared registrations','Data missing','Needs confirmation','More detail needed','Out of scope'].map(status=>{const below=status==='Below threshold'?new Set(belowThresholdConfirmedPairs(portfolioRows.pairs,similarityThreshold).map(p=>p.key)):new Set();const pairs=portfolioRows.pairs.filter(p=>below.has(p.key)||p.status!=='confirmed'&&pairStatus(p)===status);return `<details><summary>${status} · ${pairs.length} ${pairs.length===1?'pair':'pairs'}</summary><div class="diagnostic-pairs">${pairs.map(p=>`<button data-portfolio-app="${esc(p.target.app.id)}" data-portfolio-peer="${esc(p.peer.app.id)}">${esc(p.target.app.Name)} ↔ ${esc(p.peer.app.Name)}<small>${esc(pairHint(p))}</small></button>`).join('')}</div></details>`;}).join(''):'';
+  if(!isSignedIn()){el('portfolioProvisional').innerHTML='';return;}
+  const groups=new Map(PAIR_STATES.map(status=>[status,[]]));
+  for(const pair of portfolioRows.pairs)groups.get(pairStatus(pair)).push(pair);
+  const readiness=comparisonReadiness(portfolioRows.pairs,similarityThreshold);
+  const explanations={
+   'Below threshold':'A complete score is below the selected minimum. No data correction is implied.',
+   'No complete score':'The weighted names and descriptions share no words. Code evidence may still be available; compare the functions if relevant. This is not a missing-data task.',
+   'No shared registrations':'No shared words or confirmed registrations were found in the weighted fields. This is a comparison result, not a data error.',
+   'Out of scope':'The source inventory excludes at least one application from similarity screening.',
+   'Needs confirmation':'At least one application has a record or catalogue relationship that needs confirmation.',
+   'More detail needed':'At least one application is registered too broadly for a functional comparison.',
+   'Data missing':'At least one weighted field is missing or has no recorded comparison data.'
+  };
+  const pairGroup=(status,attention=false)=>{const pairs=groups.get(status);return pairs.length?`<details class="result-category${attention?' attention':''}"><summary>${esc(status)} · ${pairs.length} ${pairs.length===1?'pair':'pairs'}</summary><p class="result-category-note">${esc(explanations[status])}</p><div class="diagnostic-pairs">${pairs.map(p=>`<button data-portfolio-app="${esc(p.target.app.id)}" data-portfolio-peer="${esc(p.peer.app.id)}">${esc(p.target.app.Name)} ↔ ${esc(p.peer.app.Name)}<small>${esc(pairHint(p))}</small></button>`).join('')}</div></details>`:'';};
+  const appCount=portfolioRows.apps.length;
+  el('portfolioProvisional').innerHTML=`<div class="result-count-guide"><strong>${appCount} applications · ${portfolioRows.pairs.length.toLocaleString('en-US')} unique comparison pairs</strong><p>Pair counts describe comparisons, not separate issues. One application can affect many pairs.</p></div>${readiness.pairCount?`<section class="record-readiness"><h3>Check application records · ${readiness.apps.length} ${readiness.apps.length===1?'application':'applications'}</h3><p>Start with each application once. These records affect ${readiness.pairCount.toLocaleString('en-US')} pairs; you do not need to fix each pair separately.</p>${readiness.apps.length?`<details class="readiness-apps"><summary>View ${readiness.apps.length} applications</summary><div class="readiness-app-list">${readiness.apps.map(({app})=>`<button data-readiness-app="${esc(app.id)}"><span><strong>${esc(app.Name)}</strong><small>${esc(app.Entity||'Plant not recorded')} · ${esc(app.Division||'Business unit not recorded')}</small></span><span>View details →</span></button>`).join('')}</div></details>`:''}${readiness.unattributedPairCount?`<p>${readiness.unattributedPairCount} pairs also require comparison-specific catalogue checks; see the affected comparisons below.</p>`:''}<details class="readiness-pairs"><summary>View affected comparisons · ${readiness.pairCount.toLocaleString('en-US')} pairs</summary>${DATA_TO_CONFIRM.map(status=>pairGroup(status,true)).join('')}</details></section>`:''}<section class="other-comparison-outcomes"><h3>Other comparison outcomes</h3><p>These categories describe the comparison or its scope. They are not a list of records to correct.</p>${['Below threshold','No shared registrations','No complete score','Out of scope'].map(status=>pairGroup(status)).join('')}</section>`;
+
  }
  function renderFocus(){
   const model=getModel();if(!model?.apps?.length)return;
@@ -305,6 +322,7 @@ export function createComparisonUI({getModel,getData,escape:esc,onApp,isSignedIn
   if(b.hasAttribute('data-clear-peer-search')){peerSearch='';renderFocus();}
   if(b.hasAttribute('data-clear-selection-search')||b.hasAttribute('data-show-all-applications')){el('selectionSearch').value='';showSelectedOnly=false;renderChoices();onStateChange();}
   if(b.dataset.removeSelected){selected.delete(b.dataset.removeSelected);if(!selected.size)showSelectedOnly=false;renderChoices();renderMatrix();onStateChange();}
+  if(b.dataset.readinessApp)onApp(b.dataset.readinessApp);
   if(b.dataset.startApp){choosingApp=false;el('focusResult').innerHTML='';focusAppId=b.dataset.startApp;focusPeerId=null;peerSearch='';showReview();revealResult();}
   if(b.dataset.portfolioApp){portfolioPosition=pagePosition();returnTo=null;choosingApp=false;el('focusResult').innerHTML='';focusAppId=b.dataset.portfolioApp;focusPeerId=b.dataset.portfolioPeer;peerSearch='';el('focusAppSearch').value='';showReview();revealResult();}
   if(b.dataset.matrixDim){dimension=b.dataset.matrixDim;renderMatrix();onStateChange();}
