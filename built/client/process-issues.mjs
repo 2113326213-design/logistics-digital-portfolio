@@ -26,7 +26,7 @@ export const processIssues=(model,app)=>applicationIssues(model,app,'process');
 export const capabilityIssues=(model,app)=>applicationIssues(model,app,'cap');
 
 function renderIssues(title,issues,esc){
- if(!issues.length)return `<h4>${title}</h4><p class="profile-empty profile-no-issues">No ${title.toLowerCase()} detected.</p>`;
+ if(!issues.length)return '';
  return `<h4>${title} · <span>${issues.length}</span></h4><div class="profile-processes">${issues.map(({raw,label,findings})=>`<div class="profile-unlisted"><span class="profile-source-label">${esc(raw||label)}</span>${findings.map(text=>`<small class="profile-catalogue-note">${esc(text)}</small>`).join('')}</div>`).join('')}</div>`;
 }
 export const renderProcessIssues=(issues,esc)=>renderIssues('Process issues',issues,esc);

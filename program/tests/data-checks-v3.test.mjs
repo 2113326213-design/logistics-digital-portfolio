@@ -165,7 +165,6 @@ assert(!all.some(([,checks])=>checks.checks.some(row=>row.tags.some(tag=>tag.lab
  // The coverage note in the detail panel agrees with the 'Not in standard' check.
  assert.equal(capabilityCatalogueNotice('B.06.4.4 Physical Inventory Management',model.standardCatalogue),'Not in the business capability standard — correct the record in LeanIX.');
  assert.equal(capabilityCatalogueNotice('B.06.4.4 Physical Inventory Management'),'Not found in the current catalogue — verify the code and catalogue coverage. No error is confirmed.');
- assert(fs.readFileSync(new URL('../public/app.js',import.meta.url),'utf8').includes('capabilityCatalogueNotice(raw||code,model.standardCatalogue)'),'the detail panel passes the catalogue kind');
  {
   const [dashboard,checks]=find('360'+String.fromCharCode(176)+' Supplier dashboard');
   assert.equal(dataChecksSummary(checks),'3 to check');

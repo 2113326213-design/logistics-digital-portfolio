@@ -112,8 +112,8 @@ test('profile rendering: title with the issue count, one line per issue, escapin
  assert.match(html,/<h4>Process issues · <span>2<\/span><\/h4>/);
  assert.match(html,/<span class="profile-source-label">Level 2 missing<\/span><small class="profile-catalogue-note">No Level 2 process recorded\.<\/small>/);
  assert.match(html,/&lt;b&gt;X&lt;\/b&gt; L3/);assert.doesNotMatch(html,/<b>X/);
- assert.equal(renderProcessIssues([],esc),'<h4>Process issues</h4><p class="profile-empty profile-no-issues">No process issues detected.</p>');
- assert.match(renderCapabilityIssues([],esc),/No capability issues detected\./);
+ assert.equal(renderProcessIssues([],esc),'');
+ assert.equal(renderCapabilityIssues([],esc),'');
  for(const text of Object.values(REVIEW_TEXT))assert(!/\berror\b/i.test(text)||/no error is confirmed/i.test(text),text);
  const app=readFileSync(new URL('../public/app.js',import.meta.url),'utf8');
  assert(app.includes('const processIssueList=processIssues(model,a),capabilityIssueList=capabilityIssues(model,a);'));
