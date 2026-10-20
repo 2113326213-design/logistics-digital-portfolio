@@ -33,10 +33,17 @@ export function comparisonRecordEvidence(model,forward,reverse){
   }):[];
   return {app:scope.app,label:labels[side],unconfirmed,excluded,empty:!scope.known.length&&!scope.pending.length&&!scope.outside.length&&!excluded.length};
  });
- const gaps=[forward,reverse].flatMap((result,side)=>result.branches.filter(branch=>branch.coverage===null).map(branch=>({side,items:branch.items,reason:english(branch.reason),peerItems:result.peer.known.filter(node=>branch.items.some(item=>item.id===node.id||item.id.startsWith(node.id+'.')||node.id.startsWith(item.id+'.')))})));
+ // When the other application of a direction records capabilities only outside B.06, none of this side's branches can
+ // be compared. That is the outside-scope reason of the pair status, not missing detail (2026-10-20): such branches are
+ // listed as not compared, with the outside records named, instead of 'Peer records are not detailed enough'. A branch held
+ // back by this side's own registration (e.g. only the B.06 root) keeps its own reason.
+ const outsideOnly=result=>dimension==='cap'&&!result.peer.known.length&&!result.peer.pending.length&&result.peer.outside?.length>0;
+ const outsideReason=side=>{const other=sides[1-side];return `${other.app.Name} records capabilities only outside the B.06 comparison scope (${other.excluded.map(record=>record.raw).join('; ')}). This does not mean the code is incorrect.`;};
+ const allGaps=[forward,reverse].flatMap((result,side)=>result.branches.filter(branch=>branch.coverage===null).map(branch=>{const outside=outsideOnly(result)&&branch.reason==='对方登记深度不足。';return {side,items:branch.items,outside,reason:outside?outsideReason(side):english(branch.reason),peerItems:result.peer.known.filter(node=>branch.items.some(item=>item.id===node.id||item.id.startsWith(node.id+'.')||node.id.startsWith(item.id+'.')))};}));
+ const gaps=allGaps.filter(gap=>!gap.outside),notCompared=allGaps.filter(gap=>gap.outside);
  // Describe the levels scored in either direction; unscored root-only evidence adds none.
  const levels=key=>[...new Set([...(forward[key]||[]),...(reverse[key]||[])])].sort((a,b)=>a-b);
- return {dimension,map,exact,shared,broader,sides,gaps,levelText:comparisonLevelText({comparisonLevels:levels('comparisonLevels'),deferredLevels:levels('deferredLevels')}),deferred:[forward.deferredTarget||[],forward.deferredPeer||[]],projectionIssues:forward.projectionIssues||[],diff:quickDifference(forward,reverse)};
+ return {dimension,map,exact,shared,broader,sides,gaps,notCompared,levelText:comparisonLevelText({comparisonLevels:levels('comparisonLevels'),deferredLevels:levels('deferredLevels')}),deferred:[forward.deferredTarget||[],forward.deferredPeer||[]],projectionIssues:forward.projectionIssues||[],diff:quickDifference(forward,reverse)};
 }
 
 export function renderComparisonRecords({model,cap,capBack,process,processBack,opened=new Set(),escape:esc}){
@@ -46,13 +53,14 @@ export function renderComparisonRecords({model,cap,capBack,process,processBack,o
  const disclosure=(id,label,body,classes='')=>`<details class="comparison-record-disclosure ${classes}" id="${id}" ${opened.has(id)?'open':''}><summary>${label}</summary>${body}</details>`;
  const rawList=records=>`<ul class="unconfirmed-record-list">${records.map(record=>`<li><span class="record-evidence-label">Original record</span><p class="record-original">${esc(record.raw)}</p><p class="record-reason"><strong>Reason:</strong> ${esc(record.reason)}</p>${record.candidates?.length?`<p class="record-reason"><strong>Possible standard codes:</strong> ${record.candidates.map(node=>`<code>${esc(displayCode(node.id))}</code> ${esc(node.label)}`).join('; ')}</p>`:''}</li>`).join('')}</ul>`;
  const content=groups.map(group=>{
-  const {label,map,shared,sides,gaps,deferred}=group,prefix=`focusRecords${label}`;
+  const {label,map,shared,sides,gaps,notCompared,deferred}=group,prefix=`focusRecords${label}`;
   const pendingSides=sides.filter(side=>side.unconfirmed.length),pending=pendingSides.reduce((sum,side)=>sum+side.unconfirmed.length,0);
   // An empty source and a fully confirmed source are different states. Only actual
   // pending records get a disclosure; missing registrations remain visible outside it.
   const missing=sides.filter(side=>side.empty).map(side=>`<p class="comparison-missing-records"><strong>${side.label} · ${esc(side.app.Name)}:</strong> No ${group.dimension==='cap'?'business capability':'process'} records supplied. This comparison has missing data.</p>`).join('');
   const unresolved=pending?disclosure(`${prefix}Pending`,`Records not yet confirmed (${pending}) <span class="comparison-disclosure-hint">· Open original records and reasons</span>`,`<div class="record-columns pending-record-columns${pendingSides.length===1?' has-one-side':''}">${pendingSides.map(side=>`<section><h6>${side.label} · ${esc(side.app.Name)} (${side.unconfirmed.length})</h6>${rawList(side.unconfirmed)}</section>`).join('')}</div>`,'unconfirmed-records'):'';
   const depth=gaps.length?disclosure(`${prefix}Depth`,`More detail needed for this comparison (${gaps.length})`,gaps.map(gap=>`<div class="comparison-depth-gap"><p><strong>Application ${gap.side===0?'A':'B'} records</strong></p>${list(gap.items,map)}<p><strong>Application ${gap.side===0?'B':'A'} records in this branch</strong></p>${gap.peerItems.length?list(gap.peerItems,map):'<p>No confirmed codes recorded in this branch.</p>'}<p class="record-reason"><strong>Reason:</strong> ${esc(gap.reason)}</p></div>`).join(''),'comparison-depth-gaps'):'';
+  const outside=notCompared.length?disclosure(`${prefix}NotCompared`,`Not compared · outside the B.06 scope (${notCompared.length})`,notCompared.map(gap=>`<div class="comparison-depth-gap"><p><strong>Application ${gap.side===0?'A':'B'} records</strong></p>${list(gap.items,map)}<p class="record-reason"><strong>Reason:</strong> ${esc(gap.reason)}</p></div>`).join(''),'comparison-not-compared'):'';
   const excludedCount=sides.reduce((sum,side)=>sum+side.excluded.length,0);
   const excluded=excludedCount?disclosure(`${prefix}Excluded`,`Records outside this comparison (${excludedCount})`,sides.filter(side=>side.excluded.length).map(side=>`<p><strong>${side.label} · ${esc(side.app.Name)}</strong></p>${rawList(side.excluded)}`).join(''),'comparison-excluded'):'';
   const deferredCount=deferred.reduce((sum,items)=>sum+items.length,0);
@@ -62,7 +70,7 @@ export function renderComparisonRecords({model,cap,capBack,process,processBack,o
   // Keep the first shared registrations visible without removing any evidence.
   const visibleShared=shared.slice(0,5),remainingShared=shared.slice(5);
   const sharedList=shared.length?`<ul class="comparison-code-list">${visibleShared.map(sharedItem).join('')}</ul>${remainingShared.length?disclosure(`${prefix}MoreShared`,`Show ${remainingShared.length} more shared ${remainingShared.length===1?'code':'codes'}`,`<ul class="comparison-code-list">${remainingShared.map(sharedItem).join('')}</ul>`,'comparison-record-more'):''}`:'<p>No shared confirmed codes at the compared levels.</p>';
-  return `<section class="comparison-record-group"><h5>${label}</h5>${group.levelText?`<p class="comparison-level-note">${esc(group.levelText)}. ${deferredCount?'The score uses the common level; deeper detail is not scored yet.':''}</p>`:''}<h6>Shared codes at compared level (${shared.length})</h6>${sharedList}${missing}${unresolved}${deferredDetails}${depth}${projection}${excluded}</section>`;
+  return `<section class="comparison-record-group"><h5>${label}</h5>${group.levelText?`<p class="comparison-level-note">${esc(group.levelText)}. ${deferredCount?'The score uses the common level; deeper detail is not scored yet.':''}</p>`:''}<h6>Shared codes at compared level (${shared.length})</h6>${sharedList}${missing}${unresolved}${deferredDetails}${depth}${outside}${projection}${excluded}</section>`;
  }).join('');
  const uniqueGroups=groups.filter(group=>group.diff.targetOnly.length||group.diff.peerOnly.length);
  const uniqueCount=uniqueGroups.reduce((sum,group)=>sum+group.diff.targetOnly.length+group.diff.peerOnly.length,0);

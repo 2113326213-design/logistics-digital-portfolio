@@ -1,6 +1,14 @@
 # 物流工具：Claude 接手说明
 
-## V9.3 当前状态（2026-10-20，优先于所有历史段落）
+## V9.4 当前状态（2026-10-20，优先于所有历史段落）
+
+- 基线：V9.3（提交 9735e67），其余规则不变。
+- **比较页记录框修正**：能力全部在 B.06 之外的应用（当前数据只有 RBCD LOM Scrap Management Platform，仅登记 B.14.09.1 Waste Management），和其他应用比较时，记录框原来在 70 组比较里都显示 “More detail needed for this comparison” 和 “Peer records are not detailed enough”，与比较状态里“能力全部在 B.06 范围外”的原因不一致。现在这些分支改列在 “Not compared · outside the B.06 scope (n)” 下，原因写明该应用和它的 B.14.09.1 记录，与比较状态一致。
+- 对方自己只登记到 B.06 根级（如 RBCW Auto Warehouse Management System、ShzP_Pad system、Szh5_ASRS_WCS_WMS）时，仍按原规则显示 “More detail needed”，原因是对方自己的登记；有待确认记录的对方（如 VMCN_Digital Dynamic Supermarket）比较状态仍先给“需要确认”。
+- 只改记录框的展示（public/comparison-records.mjs）；分数、标签、CSV 和数据都不变。
+- 当前离线包：`offline/logistics-offline-20261020-v9.4.zip`；HTML 文件名及页面标识均为 V9.4。验证记录见 `verification/v9.4-verification.md`。
+
+## V9.3 历史状态（2026-10-20，受顶部 V9.4 更新）
 
 - 基线：V9.2（提交 49d9cc7），其余规则不变。
 - **Category 按层级排序**（用户：“category要给我有level 0 level 1 2 3 的顺序”）：Application landscape 的 Category 下拉按 Level 0、Level 1、Level 2、Level 3 分组显示（下拉中的分组标题），同一层级内按原始 Excel 编号排序（如 M.I2D.010 在 M.I2D.020 前）。Process 现在列出有应用的 L0–L3 全部分类（9 / 16 / 49 / 106，共 180 个，原来只列 L0、L1 共 25 个）；Capability 列出 L1–L3（1 / 9 / 23，共 33 个，分类不变，只改顺序）。“All categories” 仍在最前；选项文字仍是“编号 + 名称”；每个分类的筛选结果与之前一致。
