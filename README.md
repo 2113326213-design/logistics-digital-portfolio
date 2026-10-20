@@ -1,10 +1,34 @@
 # Logistics Digital Portfolio
 
-物流工具（Logistics Digital Portfolio）交接包，版本 v5（2026-10-20）。
+物流工具（Logistics Digital Portfolio）交接包，当前版本 v8（2026-10-20）。本仓库包含真实的应用清单数据，请保持私有。
 
-- **直接使用**：到本仓库的 Releases 下载 `logistics-offline-20261020.zip`，解压后双击里面的 HTML，用 Chrome 打开即可，不需要联网。
-- **交接说明**：先读 `00_Claude先读.md`（中文），再读 `program/README.md`（英文，"Current state" 一节是当前状态）。
+- **直接使用**：到本仓库的 Releases 下载最新的 `logistics-offline-20261020-v8.zip`，解压后双击里面的 HTML，用 Chrome 打开即可，不需要联网。
+- **交接说明**：先读 `00_Claude先读.md`（中文，按日期记录每次改动和用户决定），再读 `program/README.md`（英文，"Current state" 一节是当前状态）。
 - **程序源码**：`program/`（`npm ci`、`npm test`、`npm run build`、`npm run export:offline`，需要 Node 22.13 或更新版本）。
-- **其他**：`offline/` 是离线单文件版，`built/` 是构建输出，`verification/` 是测试记录，`MANIFEST.sha256` 是文件校验清单。
 
-本仓库包含真实的应用清单数据，请保持私有。
+## 文件地图（给 AI 助手和新接手的人）
+
+所有路径都相对于仓库根目录，在 GitHub 上的地址是 `https://github.com/2113326213-design/logistics-digital-portfolio/blob/main/<路径>`。程序是不需要框架的 ES 模块，页面逻辑都在 `program/public/`。
+
+| 想找什么 | 在哪里 |
+|---|---|
+| 当前状态、改动记录、用户决定 | `00_Claude先读.md`、`program/README.md` |
+| 内置数据（76 个应用、能力和流程目录） | `program/public/data.json`；由 `program/scripts/prepare-data.mjs` 从原始 Excel 重建 |
+| LeanIX 流程导出（2026-10-20，26 条） | `program/public/leanix-process-export.mjs`（原样数据）、`program/public/leanix-processes.mjs`（按编号合并、名称差异、来源） |
+| 数据模型：读入应用、匹配能力和流程 | `program/public/model.mjs`、`program/public/codes.mjs` |
+| 页面入口和整体渲染 | `program/public/index.html`、`program/public/app.js` |
+| Overview：各层级统计、To review | `program/public/overview.mjs`、`program/public/review-issues.mjs` |
+| 应用详情：问题列表、流程匹配来源、源记录 | `program/public/process-issues.mjs`、`program/public/source-records.mjs`、`program/public/app.js` |
+| Application landscape：分类列、逐级展开、Excel 编号 | `program/public/landscape.mjs`、`program/public/model.mjs`（`columns`） |
+| Similarity check：评分 | `program/public/weighted.mjs`、`program/public/similarity.mjs`、`program/public/score-values.mjs` |
+| Similarity check：页面、状态、证据 | `program/public/similarity-ui.mjs`、`program/public/pair-status.mjs`、`program/public/comparison-records.mjs`、`program/public/weight-controls.mjs` |
+| 已保存的组合评审数据 | `program/public/similarity-guide.mjs`（`cleanPairReviews`）、`program/public/workspace.mjs` |
+| ROI 回本时间、年度成本 | `program/public/roi.mjs`、`program/public/costs.mjs` |
+| 导入 / 导出（Excel、工作区、CSV） | `program/public/xlsx.mjs`、`program/public/import-review.mjs`、`program/public/workspace.mjs`、`program/public/exports.mjs` |
+| 样式 | `program/public/*.css` |
+| 构建和离线单文件 | `program/scripts/build.mjs`、`program/scripts/export-offline.mjs` |
+| 测试（`npm test`，当前 356 项） | `program/tests/*.test.mjs`；最近一次结果在 `verification/test-results.txt` |
+| 离线单文件版 | `offline/` |
+| 构建输出、文件校验清单 | `built/`、`MANIFEST.sha256` |
+
+规则提示：程序不会自动修改原始记录或业务数据；相似度分数只是线索，不代表确认重复。
