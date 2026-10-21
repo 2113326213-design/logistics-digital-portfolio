@@ -10,6 +10,7 @@
     "build": "node scripts/build.mjs",
     "test": "node --test \"tests/*.test.mjs\"",
     "export:offline": "node scripts/export-offline.mjs",
+    "release:files": "node scripts/release-files.mjs",
     "prepare:data": "node scripts/prepare-data.mjs"
   },
   "devDependencies": {

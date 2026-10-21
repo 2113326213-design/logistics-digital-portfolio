@@ -2,6 +2,7 @@ import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import path from 'node:path';
 import {build} from 'esbuild';
 import {RELEASE_DATE,RELEASE_VERSION,OFFLINE_FILE_NAME} from './release.mjs';
+import {writeDeployFiles} from './deploy-script.mjs';
 const root=process.cwd(),pub=path.join(root,'public');
 function replaceRequired(text,pattern,replacement,label){
  const matches=typeof pattern==='string'?text.split(pattern).length-1:[...text.matchAll(new RegExp(pattern.source,'g'))].length;
@@ -44,3 +45,5 @@ await mkdir(path.join(root,'outputs'),{recursive:true});
 const output=path.join(root,'outputs',OFFLINE_FILE_NAME);
 await writeFile(output,markup);
 console.log(output);console.log(`${(Buffer.byteLength(markup)/1024).toFixed(0)} KB`);
+// The IIS deploy script follows every export automatically (owner request 2026-10-21).
+for(const file of writeDeployFiles(path.join(root,'outputs'),Buffer.from(markup)))console.log(file);

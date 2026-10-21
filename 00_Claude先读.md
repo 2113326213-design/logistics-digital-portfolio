@@ -10,7 +10,9 @@
 - **保留之前的映射决定**：5 条已应用的映射（AUTO-RACK、RBHP_LOG AGV Performance Tracking System ×2、RBCC LOG Control Tower V2、VMCN_Digital Dynamic Supermarket）只因为应用的其他字段变了而变成“需复核”，其本身的记录未变，因此撤销旧条目并以 “Owner decision carried over · import 2026-10-21” 重新创建，全部仍为 Applied。在浏览器里用 Import data 导入同一文件时不会自动这样做，预览会显示 “5 need review”，需要人工再确认。
 - 结果：Capability To review 38 → 40（新增 Control Tower、D-sample tracking system、Dolly call off program、Physical Logistics Management System；移出 VMCN_CONNEX、VMCN_Digital Dynamic Supermarket）；Process To review 24 → 23（移出 VMCN_CONNEX）。相似度分数随登记变化，例如 Control Tower ↔ Physical Logistics Management System 71.6 → 41.6，CGQB_Logistic_monitoring ↔ Physical Logistics Management System 41.7 → 71.7。评分规则不变。
 - 仍需核对：导出的筛选范围（那 5 个应用是否仍有效）；RBCW 的 Transport Material Intra Plant L3；AUTO-RACK 的 Putaway to Automated Warehouse L3V 仍待确认；导出里 11 个单元格的分类名称中间带换行，程序按编号匹配不受影响。
-- 当前离线包：`offline/logistics-offline-20261021-v9.16.zip`；HTML 文件名及页面标识均为 V9.16，日期 2026-10-21。验证记录见 `verification/v9.16-verification.md`。
+- **IIS 部署脚本自动更新**（用户：“之后每一次改的时候脚本都要自动更新”）：部署脚本改为模板 `program/scripts/deploy-iis.template.bat`（就是在服务器上测过的 V9.15 脚本，只把版本、zip 名、SHA-256 换成占位符）。`npm run export:offline` 每次导出离线 HTML 时，同时按 `scripts/release.mjs` 的版本和这份 HTML 的 SHA-256 生成 `outputs/deploy-iis.bat` 和 `outputs/deploy-iis-script.zip`；`npm run release:files` 把 HTML、发布 zip（`logistics-offline-<日期>-<版本>.zip`）和部署脚本一起放进 `offline/`。文件名固定为 `deploy-iis.bat`，README 链接不用再改。`tests/deploy-script.test.mjs` 会在 `offline/` 里有当前版本的 HTML、却没有对应脚本时失败。
+- **以后每次发布的固定步骤**：改 `scripts/release.mjs` 的版本和日期 → `npm test` → `npm run build` → `npm run export:offline` → `npm run release:files` → `npm test`（再跑一次，确认部署脚本已对应）→ 更新文档、`node .github/scripts/check-manifest.mjs --write`、提交、发 Release（附发布 zip 和 `offline/deploy-iis-script.zip`）。
+- 当前离线包：`offline/logistics-offline-20261021-v9.16.zip`；HTML 文件名及页面标识均为 V9.16，日期 2026-10-21。部署脚本：`offline/deploy-iis.bat`（V9.16）。验证记录见 `verification/v9.16-verification.md`。
 
 ## V9.15 历史状态（2026-10-20，受顶部 V9.16 更新）
 
