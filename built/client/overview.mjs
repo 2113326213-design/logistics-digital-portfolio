@@ -26,7 +26,7 @@ export function overviewStats(model,filters={}){
   const issues=a=>model.issues.filter(i=>i.appId===a.id&&i.type.startsWith(isCap?'业务能力':'流程'));
   const recognized=a=>a[dim].filter(id=>isCap?!!map.get(id)?.reference:!!map.get(id)&&!map.get(id).ambiguous);
   const registered=apps.filter(a=>isCap?a[raw].length||a[dim].length:a.rawProcess.length||a.process.length);
-  const matched=registered.filter(a=>recognized(a).length===a[dim].length&&a[dim].length>0&&!issues(a).length);
+  const matched=registered.filter(a=>recognized(a).length===a[dim].length&&a[dim].length>0&&!issues(a).length&&!(a.accepted||[]).some(d=>d.dimension===dim));
   const pending=registered.filter(a=>!matched.includes(a)),missing=apps.filter(a=>!registered.includes(a));
   const scoped=a=>recognized(a).filter(id=>!isCap||inB06(id));
   const deepest=a=>scoped(a).length?Math.max(...scoped(a).map(id=>map.get(id).level)):null;
@@ -60,8 +60,10 @@ export function maintenanceReport(model,filters={},dimension='cap'){
    const mapped=corrections.find(c=>c.raw===raw),id=mapped?.targetId||(isCap?capCode(raw):null);
    const issue=model.issues.find(i=>i.appId===a.id&&i.value===raw&&i.type.startsWith(isCap?'业务能力':'流程'));
    const level=mapped?map.get(id)?.level:isCap?(id?id.split('.').length-1:null):PROCESS_LEVEL.exec(raw)?.[1];
-   const valid=!!mapped||(isCap?!!id&&!!map.get(id)?.reference:level!==undefined&&level!==null&&!issue);
-   return {raw,level:level===undefined||level===null?null:Number(level),valid,reason:issue?.type||(!valid?'Not matched to the current taxonomy':'')};
+   // A record the owner confirmed as recorded is not an issue, but it has no catalogue code: it never matches the standard.
+   const accepted=!mapped&&(a.accepted||[]).find(d=>d.dimension===dimension&&d.raw===raw)||null;
+   const valid=!accepted&&(!!mapped||(isCap?!!id&&!!map.get(id)?.reference:level!==undefined&&level!==null&&!issue));
+   return {raw,level:level===undefined||level===null?null:Number(level),valid,accepted,reason:accepted?'Confirmed by owner as recorded':issue?.type||(!valid?'Not matched to the current taxonomy':'')};
   })];
  }));
  const level2Coverage=new Map(apps.map(a=>[a.id,coverageAtLevel2(model,{records,dimension},a)]));
@@ -102,14 +104,18 @@ export function maintenanceGapReasons(report,group,app,onlyLevels=null){
   if(l.valid.some(a=>a.id===app.id))return [];
   if(l.missing.some(a=>a.id===app.id))return [`L${l.level} · No explicit registration`];
   if(!l.invalid.some(a=>a.id===app.id))return [];
-  const raw=report.records.get(app.id)?.filter(r=>r.level===l.level&&!r.valid).map(r=>r.raw).filter(Boolean)||[];
-  return [`L${l.level} · Unrecognized registration${raw.length?': '+raw.join(' / '):''}`];
+  const failing=report.records.get(app.id)?.filter(r=>r.level===l.level&&!r.valid)||[],raw=failing.filter(r=>!r.accepted).map(r=>r.raw).filter(Boolean),confirmed=failing.filter(r=>r.accepted).map(r=>r.raw);
+  return [...(raw.length||!confirmed.length?[`L${l.level} · Unrecognized registration${raw.length?': '+raw.join(' / '):''}`]:[]),...(confirmed.length?[`L${l.level} · Confirmed by owner as recorded (not in the catalogue): ${confirmed.join(' / ')}`]:[])];
  });
 }
 
 export function l3MaintenanceMetrics(report){
  const level=report.levels.find(l=>l.level===3);
- return {complete:level.filled,quality:level.valid,notPassing:applicationsNotPassingLevelQuality(report,level),missing:level.missing};
+ // Applications whose only Level 3 records outside the standard were confirmed by the owner as recorded (V9.18) are
+ // not 'to review'; they still do not match the standard.
+ const failing=app=>(report.records.get(app.id)||[]).filter(r=>r.level===3&&!r.valid);
+ const confirmed=level.invalid.filter(app=>failing(app).length&&failing(app).every(r=>r.accepted));
+ return {complete:level.filled,quality:level.valid,notPassing:applicationsNotPassingLevelQuality(report,level).filter(app=>!confirmed.includes(app)),confirmed,missing:level.missing};
 }
 
 export function createOverviewUI({getModel,escape:esc,onApp,onStateChange=()=>{}}){
@@ -156,7 +162,7 @@ export function createOverviewUI({getModel,escape:esc,onApp,onStateChange=()=>{}
  }
  function summaryCards(){
   const total=report.apps.length,l3=l3MaintenanceMetrics(report);
-  return `<div class="overview-summary-cards"><section class="overview-card summary-card summary-inventory"><h3>Applications</h3><button class="summary-value" ${drill('all','Applications',report.apps)} aria-label="View all ${total} applications">${total}</button><p>${report.plants.length} ${report.plants.length===1?'plant':'plants'}</p></section><section class="overview-card summary-card summary-rate is-quality"><div class="customer-quality"><div><h3>Level 3 matches standard</h3><button class="summary-value" ${drill('l3quality','Level 3 matches standard',l3.quality)} aria-label="View ${l3.quality.length} applications matching the standard">${percent(l3.quality.length,total)}</button><p>${l3.quality.length} of ${total} applications</p></div><span class="summary-ring" style="--rate:${width(l3.quality.length,total)}%" aria-hidden="true"></span></div><div class="customer-kpi-actions"><button class="summary-status is-attention" ${drill('l3notpassing','Level 3 · To review',l3.notPassing,'Check Level 3 records and catalogue coverage; add missing details or update confirmed errors.',true,{group:report,levels:[3]})}>${l3.notPassing.length} Level 3 to review →</button><button class="filled-link" ${drill('l3complete','Level 3 filled',l3.complete)} title="${percent(l3.complete.length,total)}">${l3.complete.length} of ${total} filled</button></div></section></div>`;
+  return `<div class="overview-summary-cards"><section class="overview-card summary-card summary-inventory"><h3>Applications</h3><button class="summary-value" ${drill('all','Applications',report.apps)} aria-label="View all ${total} applications">${total}</button><p>${report.plants.length} ${report.plants.length===1?'plant':'plants'}</p></section><section class="overview-card summary-card summary-rate is-quality"><div class="customer-quality"><div><h3>Level 3 matches standard</h3><button class="summary-value" ${drill('l3quality','Level 3 matches standard',l3.quality)} aria-label="View ${l3.quality.length} applications matching the standard">${percent(l3.quality.length,total)}</button><p>${l3.quality.length} of ${total} applications</p></div><span class="summary-ring" style="--rate:${width(l3.quality.length,total)}%" aria-hidden="true"></span></div><div class="customer-kpi-actions"><button class="summary-status is-attention" ${drill('l3notpassing','Level 3 · To review',l3.notPassing,'Check Level 3 records and catalogue coverage; add missing details or update confirmed errors.',true,{group:report,levels:[3]})}>${l3.notPassing.length} Level 3 to review →${l3.confirmed.length?` <small>· ${l3.confirmed.length} confirmed as recorded</small>`:''}</button><button class="filled-link" ${drill('l3complete','Level 3 filled',l3.complete)} title="${percent(l3.complete.length,total)}">${l3.complete.length} of ${total} filled</button></div></section></div>`;
  }
  function refresh(){
   const model=getModel();if(!model)return;

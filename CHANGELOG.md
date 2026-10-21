@@ -2,6 +2,12 @@
 
 每个版本的离线包在 [Releases](https://github.com/2113326213-design/logistics-digital-portfolio/releases)；详细的修改说明和用户决定在 [`00_Claude先读.md`](00_Claude先读.md)，验证记录在 [`verification/`](verification/)。
 
+## [V9.18](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v9.18-20261022) · 2026-10-22
+
+- 负责人确认（2026-10-22）：RBCW Auto Warehouse Management System 的 “BBM PM I2D Transport Material Intra Plant L3” 和 AUTO-RACK 的 “BBM PM I2D Putaway to Automated Warehouse L3V” 按原样登记有效。流程目录里没有这两个流程，所以没有标准编号。
+- 新的“负责人确认按原样登记”记录（`data.acceptedRecords`）：被确认的记录不再列为待处理（To review、应用详情的问题、数据检查、相似度的待核对资料），应用详情和历史里写明确认人、日期和原因；仍不算“匹配标准”。只要应用的登记原文不变就一直有效，原文一改就重新检查。
+- Process To review 23 → 22（AUTO-RACK 移出）；Overview 的 Level 3 卡片显示 “18 Level 3 to review · 2 confirmed as recorded”；Level 3 匹配标准不变（55 / 75）。
+
 ## [V9.17](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v9.17-20261021) · 2026-10-21
 
 - 并入 2026-10-21 的自有工作簿（Logistic Apps_1021，新增 Status in Oct）：Status 不是 still active 的 3 个应用和 no score 的 5 个一样不计入成本、ROI 和相似度检查；CGQB_Logistic_system_Q 不在新清单里，已移出；14 个成本分、9 个 ROI 分按新的 Parameter Score 更新；ROI 继续按公式显示回本时间；计入 67 个应用，年成本 ¥2,890,000；Capability To review 40 → 39

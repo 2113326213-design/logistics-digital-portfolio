@@ -11240,7 +11240,26 @@
     "reviews": {},
     "reviewHistory": [],
     "pairReviews": {},
-    "applicationEvents": [],
+    "applicationEvents": [
+      {
+        "id": "owner-accepted-20261022-269d5f6c",
+        "appId": "269d5f6c-041a-4c7d-b895-1f52f57a7396",
+        "kind": "note",
+        "happenedAt": "2026-10-22T00:00:00.000Z",
+        "recordedAt": "2026-10-21T14:51:09.885Z",
+        "recorder": "Owner decision",
+        "details": "Owner confirmed on 2026-10-22 that the process record \"BBM PM I2D Transport Material Intra Plant L3\" is registered correctly as recorded. It is in neither the process snapshot of 21.02.2025 nor the LeanIX process export of 2026-10-20, so it has no standard code. It is no longer listed for review and does not count as matching the standard."
+      },
+      {
+        "id": "owner-accepted-20261022-b97561de",
+        "appId": "b97561de-87df-46ec-a86c-477fe0e431f9",
+        "kind": "note",
+        "happenedAt": "2026-10-22T00:00:00.000Z",
+        "recordedAt": "2026-10-21T14:51:09.885Z",
+        "recorder": "Owner decision",
+        "details": "Owner confirmed on 2026-10-22 that the process record \"BBM PM I2D Putaway to Automated Warehouse L3V\" is registered correctly as recorded. It is in neither the process snapshot of 21.02.2025 nor the LeanIX process export of 2026-10-20, so it has no standard code. It is no longer listed for review and does not count as matching the standard."
+      }
+    ],
     "importHistory": [
       {
         "id": "ce90e8c4ae64485e55d1f6052dc9d039",
@@ -12883,6 +12902,24 @@
         "reason": "Carried over from the mapping by Taxonomy audit (Unique exact L3 name and process-chain match in Business Capability + Process(2).xlsx). The Processes record is unchanged in the owner workbook 20261021_logistic_inventory.xlsx (Logistic Apps_1021); the mapping needed re-confirmation only because other fields of this application changed.",
         "createdAt": "2026-10-21T07:54:32.614Z",
         "revokedAt": ""
+      }
+    ],
+    "acceptedRecords": [
+      {
+        "appId": "269d5f6c-041a-4c7d-b895-1f52f57a7396",
+        "dimension": "process",
+        "raw": "BBM PM I2D Transport Material Intra Plant L3",
+        "reviewer": "Owner decision",
+        "reason": "It is in neither the process snapshot of 21.02.2025 nor the LeanIX process export of 2026-10-20, so it has no standard code.",
+        "acceptedAt": "2026-10-22"
+      },
+      {
+        "appId": "b97561de-87df-46ec-a86c-477fe0e431f9",
+        "dimension": "process",
+        "raw": "BBM PM I2D Putaway to Automated Warehouse L3V",
+        "reviewer": "Owner decision",
+        "reason": "It is in neither the process snapshot of 21.02.2025 nor the LeanIX process export of 2026-10-20, so it has no standard code.",
+        "acceptedAt": "2026-10-22"
       }
     ]
   }

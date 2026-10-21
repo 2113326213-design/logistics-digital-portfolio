@@ -6,6 +6,7 @@ import {maintenanceGapReasons,maintenanceReport} from './overview.mjs';
 import {displayMaintenanceGapReason} from './maintenance-labels.mjs';
 import {semanticConcerns} from './semantic-review.mjs';
 import {nameDifferenceRows} from './name-differences.mjs';
+import {acceptedText} from './accepted-records.mjs';
 export {nameDifferenceRows};
 
 const applied=(model,appId,dimension,raw)=>model.correctionLog.some(c=>c.state==='Applied'&&c.appId===appId&&c.dimension===dimension&&c.raw===raw);
@@ -56,6 +57,8 @@ function sourceRows(model,app){
  }
  for(const raw of app.rawProcess){
   if(applied(model,appId,'process',raw))continue;
+  const decision=(app.accepted||[]).find(d=>d.dimension==='process'&&d.raw===raw);
+  if(decision){addTag(addRow(rows,'process',raw),'Confirmed by owner as recorded',acceptedText(decision));continue;}
   const issue=model.issues.find(item=>item.appId===appId&&item.value===raw&&item.type.startsWith('流程'));
   if(!issue)continue;
   const row=addRow(rows,'process',raw);

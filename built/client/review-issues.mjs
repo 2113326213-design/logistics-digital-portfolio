@@ -15,7 +15,8 @@ import {STANDARD_SNAPSHOT,matchSource} from './leanix-processes.mjs';
 //    even when another record at that level passes.
 // Open questions that are not tied to a level are added: records without a level or with an unreadable code, and,
 // for capabilities, names that differ from the standard (standard catalogue only) and meanings to confirm.
-// Records resolved by an applied mapping and names already accepted as equivalent are not issues. A record that the
+// Records resolved by an applied mapping, records the owner confirmed as recorded (accepted-records.mjs, V9.18) and
+// names already accepted as equivalent are not issues. A record that the
 // catalogue does not contain is a question to confirm, not a confirmed error, unless the owner decided otherwise.
 export const REVIEW_TEXT=Object.freeze({
  notMatched:'No confirmed match in the current process catalogue.',
@@ -135,9 +136,9 @@ export function reviewIssues(model,report,app){
    issues.push({dimension,level,kind:'missing',record:'',label:`Level ${level} missing`,text:traced?`No Level ${level} process recorded directly. A Level ${level} parent can be traced: ${codeName(model,traced.parent)}, from the recorded ${codeName(model,traced.from.id)}. It is not counted as filled and is not a hierarchy error.`:missingText(dimension,level),...(isCap?{}:{traced:!!traced,detail:`Checked against: ${checkedAgainst(model)} · Next: ${traced?`Confirm whether a direct Level ${level} record is required.`:`Add the Level ${level} process if it applies.`}`})});
    continue;
   }
-  for(const r of atLevel)if(!r.valid)issues.push({dimension,level,kind:'match',record:r.raw,label:`Level ${level} match needs review`,text:textFor(r.raw),...(isCap?{}:{detail:processDetail(model,app,r.raw)})});
+  for(const r of atLevel)if(!r.valid&&!r.accepted)issues.push({dimension,level,kind:'match',record:r.raw,label:`Level ${level} match needs review`,text:textFor(r.raw),...(isCap?{}:{detail:processDetail(model,app,r.raw)})});
  }
- for(const r of records)if(r.level===null&&!r.valid)issues.push({dimension,level:null,kind:'record',record:r.raw,label:isCap?'Capability needs review':'Process level not specified',text:textFor(r.raw),...(isCap?{}:{detail:processDetail(model,app,r.raw)})});
+ for(const r of records)if(r.level===null&&!r.valid&&!r.accepted)issues.push({dimension,level:null,kind:'record',record:r.raw,label:isCap?'Capability needs review':'Process level not specified',text:textFor(r.raw),...(isCap?{}:{detail:processDetail(model,app,r.raw)})});
  // A matched code whose latest LeanIX name has a different meaning from the snapshot name: kept for business
  // confirmation (a catalogue question; 'and' / '&' spellings are equivalent and are not issues).
  if(!isCap){const seen=new Set();for(const m of app.processMatches||[]){const n=model.procs.get(m.id);if(n?.nameStatus!=='differs'||seen.has(m.raw))continue;seen.add(m.raw);issues.push({dimension,level:n.level,kind:'catalogue',record:m.raw,label:'Process name differs between sources',text:`${n.id} (Level ${n.level}): the latest LeanIX name "${n.leanix.name}" differs from the standard snapshot name "${n.snapshotName}". Confirm which name or business scope applies.`,detail:`Matched by ${matchSource(model,m.id,m.via).sources.join(' and ')} · Next: Confirm the applicable name; neither name is treated as wrong.`});}}

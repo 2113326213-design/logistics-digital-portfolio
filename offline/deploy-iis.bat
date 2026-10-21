@@ -1,7 +1,7 @@
 @echo off
 setlocal EnableExtensions
 rem ======================================================================
-rem  Logistics Tool V9.17 - one-click IIS deploy (static single HTML file)
+rem  Logistics Tool V9.18 - one-click IIS deploy (static single HTML file)
 rem  Generated for this release by program/scripts/deploy-script.mjs from deploy-iis.template.bat. Do not edit by hand.
 rem
 rem  Run as Administrator on the IIS server (Windows Server 2016+).
@@ -26,15 +26,15 @@ set "TARGET=D:\logistics-tool"
 if not "%~1"=="" set "PORT=%~1"
 if not "%~2"=="" set "TARGET=%~2"
 
-set "ZIPNAME=logistics-offline-20261021-v9.17.zip"
-set "EXPECT_SHA256=d75cce59a4bb14fab08f7ed94c8632ba7c1c194edf946c417abbaadb9215f1e6"
+set "ZIPNAME=logistics-offline-20261022-v9.18.zip"
+set "EXPECT_SHA256=a394e63876dc67d3aaf8b45be24090b41a8605482e33ff463b2181c0707c759e"
 set "INETSRV=%windir%\system32\inetsrv"
 set "APPCMD=%INETSRV%\appcmd.exe"
-set "TMPX=%TEMP%\logistics-v9.17-extract"
+set "TMPX=%TEMP%\logistics-v9.18-extract"
 set "BACKUP=%TARGET%_backup"
 
 echo.
-echo === Logistics Tool V9.17 : IIS deploy ===
+echo === Logistics Tool V9.18 : IIS deploy ===
 echo Site: %SITE%   Port: %PORT%
 echo Dir : %TARGET%
 echo.
@@ -42,14 +42,14 @@ echo.
 rem ---- [1/6] pre-checks -------------------------------------------------
 rem The deploy always continues in a window that stays open (cmd /k), so every message can be read, also when this
 rem script was started as Administrator. Explorer deletes files opened from inside a zip once this window exits, so
-rem the new window runs a stable copy in Downloads (where the V9.17 zip also lives).
+rem the new window runs a stable copy in Downloads (where the V9.18 zip also lives).
 if /i "%~3"=="ELEVATED" goto :inwindow
 set "SELF=%USERPROFILE%\Downloads\deploy-iis.bat"
 if /i not "%~f0"=="%SELF%" copy /y "%~f0" "%SELF%" >nul
 if not exist "%SELF%" set "SELF=%~f0"
 fltmc >nul 2>&1
 if errorlevel 1 goto :elevate
-start "Logistics Tool V9.17 : IIS deploy" cmd.exe /k call "%SELF%" %PORT% "%TARGET%" ELEVATED
+start "Logistics Tool V9.18 : IIS deploy" cmd.exe /k call "%SELF%" %PORT% "%TARGET%" ELEVATED
 exit /b 0
 :elevate
 echo Not elevated - asking Windows for Administrator rights ^(click Yes on the UAC prompt^)...
@@ -116,7 +116,7 @@ if not defined SRC (
 )
 powershell -NoProfile -ExecutionPolicy Bypass -Command "if ((Get-FileHash -Algorithm SHA256 -LiteralPath $env:SRC).Hash -ne $env:EXPECT_SHA256) { exit 1 }"
 if errorlevel 1 (
-  echo [X] SHA-256 mismatch - the zip is not the expected V9.17 build ^(logistics-offline-20261021-v9.17.zip^). Download the zip and the script of the same release. Stopping.
+  echo [X] SHA-256 mismatch - the zip is not the expected V9.18 build ^(logistics-offline-20261022-v9.18.zip^). Download the zip and the script of the same release. Stopping.
   goto :fail
 )
 echo [2/6] OK  extracted and SHA-256 verified

@@ -12,7 +12,17 @@
 6. **只改模板** `program/scripts/deploy-iis.template.bat`（LF 换行，生成时转为 CRLF）；`tests/deploy-script.test.mjs` 检查以上规则。
 7. **发布前在本机模拟一遍**：`npm run release:files` 之后运行 `npm run deploy:sim`（仅 Windows；不弹 UAC、不碰 IIS），5 种情况（未提权并同意 UAC、UAC 被取消、已是管理员、关闭当前目录查找的新站点、带网页服务的重新部署）都要 PASS 才能发布。
 
-## V9.17 当前状态（2026-10-21，优先于所有历史段落）
+## V9.18 当前状态（2026-10-22，优先于所有历史段落）
+
+- 基线：V9.17（仓库 24ff893，含部署脚本修复和 README 改版）。用户确认（2026-10-22）：“确定就是这样登记的”，指两条——RBCW Auto Warehouse Management System 的 `BBM PM I2D Transport Material Intra Plant L3` 和 AUTO-RACK 的 `BBM PM I2D Putaway to Automated Warehouse L3V`；显示方式选“不再列为待处理”。这两个流程在流程目录（21.02.2025 快照 + 2026-10-20 LeanIX 流程导出）里都没有，所以没有标准编号。
+- **新机制“负责人确认按原样登记”**（`program/public/accepted-records.mjs`，数据字段 `data.acceptedRecords`：appId、dimension、raw、reviewer、reason、acceptedAt）：buildModel 遇到被确认的记录时不再生成 issue，而是记在应用的 `accepted` 上。效果：不进 To review、应用详情的问题、数据检查（显示 “Confirmed by owner as recorded”）、审核清单和相似度的待核对资料；maintenanceReport 里该记录 `valid=false`、`accepted` 有值，所以“Level 3 matches standard”不变；l3MaintenanceMetrics 新增 `confirmed`，`notPassing` 不含只因被确认记录而不通过的应用，Overview 卡片显示 “· N confirmed as recorded”；应用详情显示确认说明。确认只对完全相同的登记原文有效，原文一变就重新检查。workspaceData / 导出导入 / mergeBundledCorrections / 导入预览 / prepare-data PRESERVED_KEYS 都带上这个字段。
+- **内置数据**：`acceptedRecords` 两条（reviewer “Owner decision”，2026-10-22），两个应用各加一条历史备注（applicationEvents，kind note）。
+- **结果**：Process To review 23 → 22（AUTO-RACK 移出；RBCW Auto Warehouse Management System 仍有可追溯的 Level 0 / Level 1 提示）；Process “Level 3 to review” 20 → 18，另有 2 个 “confirmed as recorded”；Level 3 matches standard 不变（55 / 75）。Capability 不变（39）。
+- **测试**：新增 `tests/v918-accepted-records.test.mjs`（5 项）；`to-review` 按新数字更新；`similarity-actions` 的五应用示例用 AUTO-RACK 的这条记录演示“待核对”，示例里去掉这条确认（写明原因），断言不变。
+- **发布固定步骤**（同 V9.17 段落）：改 `scripts/release.mjs` → `npm test` → `npm run build` → `npm run export:offline` → `npm run release:files` → `npm test` → `npm run deploy:sim` → 文档和测试日志 → `npm run readme:art` → 截图有变化时重拍 `docs/images/screen-*.png` → manifest → 提交、发 Release（附发布 zip 和 `offline/deploy-iis-script.zip`）。
+- 当前离线包：`offline/logistics-offline-20261022-v9.18.zip`；HTML 文件名及页面标识均为 V9.18，日期 2026-10-22。部署脚本 `offline/deploy-iis.bat`（V9.18，本机模拟 5/5 通过）。验证记录见 `verification/v9.18-verification.md`。
+
+## V9.17 历史状态（2026-10-21，受顶部 V9.18 更新）
 
 - 基线：V9.16（仓库 c03dab3）。用户（2026-10-21）发来 `20261021_logistic_inventory.xlsx` 并说：“有没有导进去ROI年份的，你记得把公式套入进去。然后no score的部分不要算进去。status in OCT 里面不是still active的也不要。”
 - **新附件**是用户自己的工作簿（不是 LeanIX 导出）：`Logistic Apps_1021`（75 个应用；新增 C 列 `Status in Oct`；范围列改名 `with score or not`，在 D 列；J 列标题为空且无内容）、`Logistic Apps_0825`（8 月原清单，内容未改）、`Parameter Score`（71 个应用；18 个应用共 43 个单元格改了，其中程序用的 App operation cost 14 个、ROI 9 个）、`Dimension score`（随之重算，程序不读）。表里**没有 ROI 年份列，也没有公式**。

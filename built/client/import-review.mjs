@@ -72,7 +72,7 @@ export function previewImport(current,incoming,raw=incoming){
  const beforeActivity=reviewAuditEvents(current),afterActivity=reviewAuditEvents(next),retained=new Set(afterActivity.map(e=>e.id));
  const taxonomyChanged=JSON.stringify([current.capabilityRows,current.processRows])!==JSON.stringify([next.capabilityRows,next.processRows]);
  const pairReviews=pairReviewChanges(current.pairReviews,next.pairReviews);
- const workspaceChanged=pairReviews.total>0||['reviews','corrections','reviewHistory','applicationEvents','importHistory','similarityWeights','similarityThreshold','inventoryExport'].some(key=>JSON.stringify(current[key]??null)!==JSON.stringify(next[key]??null));
+ const workspaceChanged=pairReviews.total>0||['reviews','corrections','reviewHistory','applicationEvents','importHistory','similarityWeights','similarityThreshold','inventoryExport','acceptedRecords'].some(key=>JSON.stringify(current[key]??null)!==JSON.stringify(next[key]??null));
  const costScoresRemoved=updated.filter(app=>cleanCostScore(before.get(String(app.ID).trim())?.operationCostScore)!==null&&cleanCostScore(app.operationCostScore)===null).length;
  const scopeExclusionsRemoved=updated.filter(app=>!opportunityEligibility(before.get(String(app.ID).trim())).eligible&&opportunityEligibility(app).eligible).length;
  // Applications this import leaves out of cost totals, ROI and the similarity check (no score, or not still active).

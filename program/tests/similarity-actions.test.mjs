@@ -9,7 +9,10 @@ import {comparisonReadiness} from '../public/similarity-readiness.mjs';
 
 const bundled=workspaceData(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url))));
 const chosenNames=['AR Stock Taking','AUTO-RACK','Control Tower','Dolly call off program','Physical Logistics Management System'];
-const chosen={...bundled,apps:bundled.apps.filter(app=>chosenNames.includes(app.Name))};
+// AUTO-RACK's "BBM PM I2D Putaway to Automated Warehouse L3V" is this walkthrough's record-check example. The owner confirmed it
+// as recorded on 2026-10-22 (V9.18, data.acceptedRecords); the walkthrough leaves that confirmation out so the record stays open.
+// tests/v918-accepted-records.test.mjs checks the confirmed state.
+const chosen={...bundled,acceptedRecords:[],apps:bundled.apps.filter(app=>chosenNames.includes(app.Name))};
 assert.equal(chosen.apps.length,5,'the walkthrough uses five real applications from the source inventory');
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 

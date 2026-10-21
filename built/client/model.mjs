@@ -2,6 +2,7 @@ import {split,norm,capCode,PROCESS_LEVEL,compareNatural} from './codes.mjs';
 export {split,norm,capCode} from './codes.mjs';
 import {correctionStates,recordKey} from './corrections.mjs';
 import {applyLeanixExport} from './leanix-processes.mjs';
+import {cleanAcceptedRecords,acceptedKey} from './accepted-records.mjs';
 const level=id=>id.split('.').length-1;
 export function buildModel(data){
  const caps=new Map(),procs=new Map(),capVersions=new Map(),taxonomyIssues=[];
@@ -16,16 +17,19 @@ export function buildModel(data){
  const correctionLog=correctionStates(data),mappings=new Map(correctionLog.filter(c=>c.state==='Applied').map(c=>[recordKey(c),c.targetId]));
  const mapped=(appId,dimension,raw)=>mappings.get(recordKey({appId,dimension,raw}));
  const issues=[];const ids=new Set();
+ // Records the owner confirmed as recorded (accepted-records.mjs) are kept on the application instead of becoming issues.
+ const accepted=new Map(cleanAcceptedRecords(data.acceptedRecords).map(d=>[acceptedKey(d),d]));
+ const flag=(a,dimension,issue)=>{const decision=accepted.get(acceptedKey({appId:a.id,dimension,raw:issue.value}));if(decision)a.accepted.push(decision);else issues.push(issue);};
  // Applications the latest LeanIX export did not list (kept by applyInventory): the profile shows a note.
  const missingFromExport=new Set(data.inventoryExport?.missingIds||[]);
  const apps=data.apps.map((raw,i)=>{
   const id=String(raw.ID??'').trim();if(!id||!String(raw.Name??'').trim())throw Error(`第 ${i+2} 行缺少 ID 或 Name`);if(ids.has(id))throw Error(`应用 ID 重复：${id}`);ids.add(id);
-  const a={...raw,id,cap:[],process:[],unmatched:[],processMatches:[],notInExport:missingFromExport.has(id)?data.inventoryExport:null,rawCap:split(raw['Business Capabilities']),rawProcess:split(raw.Processes)};
-  for(const s of a.rawCap){const corrected=mapped(id,'cap',s);if(corrected){a.cap.push(corrected);continue;}const code=capCode(s);if(code){ensureCap(code,s);a.cap.push(code);}else{a.unmatched.push(s);issues.push({appId:a.id,app:a.Name,type:'业务能力无法识别',value:s});}}
+  const a={...raw,id,cap:[],process:[],unmatched:[],processMatches:[],accepted:[],notInExport:missingFromExport.has(id)?data.inventoryExport:null,rawCap:split(raw['Business Capabilities']),rawProcess:split(raw.Processes)};
+  for(const s of a.rawCap){const corrected=mapped(id,'cap',s);if(corrected){a.cap.push(corrected);continue;}const code=capCode(s);if(code){ensureCap(code,s);a.cap.push(code);}else{a.unmatched.push(s);flag(a,'cap',{appId:a.id,app:a.Name,type:'业务能力无法识别',value:s});}}
   // L3V is Level 3 (owner decision 2026-10-19): matched by name and counted exactly like L3.
   // A record with a full business process code is matched by that code first; otherwise by chain, level and
   // name (case, spacing and 'and' / '&' are equivalent). A name that fits several codes is never resolved by order.
-  for(const s of a.rawProcess){const corrected=mapped(id,'process',s);if(corrected){a.process.push(corrected);a.processMatches.push({raw:s,id:corrected,via:'mapping'});continue;}const code=s.match(/\bM\.[A-Z0-9]+(?:\.\d+)+(?=\s|$)/)?.[0];if(code&&procs.has(code)&&!procs.get(code).ambiguous){a.process.push(code);a.processMatches.push({raw:s,id:code,via:'code'});continue;}const m=s.match(PROCESS_LEVEL);if(!m){a.unmatched.push(s);issues.push({appId:a.id,app:a.Name,type:'流程未标注标准层级',value:s});continue;}const l=+m[1],name=s.replace(/^BBM\s+PM\s+[A-Z0-9]+\s+/i,'').replace(/\s+L[0-3]V?\s*$/i,'');const snapshotNames=nameIndex.get(l+'|'+norm(name))||[],leanixNames=(leanixIndex.get(l+'|'+norm(name))||[]).filter(n=>!snapshotNames.includes(n)),byName=[...snapshotNames,...leanixNames];let choices=byName;const chain=s.match(/^BBM\s+PM\s+([A-Z0-9]+)/i)?.[1];if(chain)choices=choices.filter(n=>n.id.split('.')[1]===chain);if(choices.length===1){a.process.push(choices[0].id);a.processMatches.push({raw:s,id:choices[0].id,via:leanixNames.includes(choices[0])?'leanix-name':'name'});}else{a.unmatched.push(s);issues.push({appId:a.id,app:a.Name,type:choices.length?'流程名称对应多个编号':byName.length?'流程链编号存在差异':'流程未匹配层级表',value:s,candidates:(choices.length?choices:byName).map(n=>({id:n.id,label:n.label}))});}}
+  for(const s of a.rawProcess){const corrected=mapped(id,'process',s);if(corrected){a.process.push(corrected);a.processMatches.push({raw:s,id:corrected,via:'mapping'});continue;}const code=s.match(/\bM\.[A-Z0-9]+(?:\.\d+)+(?=\s|$)/)?.[0];if(code&&procs.has(code)&&!procs.get(code).ambiguous){a.process.push(code);a.processMatches.push({raw:s,id:code,via:'code'});continue;}const m=s.match(PROCESS_LEVEL);if(!m){a.unmatched.push(s);flag(a,'process',{appId:a.id,app:a.Name,type:'流程未标注标准层级',value:s});continue;}const l=+m[1],name=s.replace(/^BBM\s+PM\s+[A-Z0-9]+\s+/i,'').replace(/\s+L[0-3]V?\s*$/i,'');const snapshotNames=nameIndex.get(l+'|'+norm(name))||[],leanixNames=(leanixIndex.get(l+'|'+norm(name))||[]).filter(n=>!snapshotNames.includes(n)),byName=[...snapshotNames,...leanixNames];let choices=byName;const chain=s.match(/^BBM\s+PM\s+([A-Z0-9]+)/i)?.[1];if(chain)choices=choices.filter(n=>n.id.split('.')[1]===chain);if(choices.length===1){a.process.push(choices[0].id);a.processMatches.push({raw:s,id:choices[0].id,via:leanixNames.includes(choices[0])?'leanix-name':'name'});}else{a.unmatched.push(s);flag(a,'process',{appId:a.id,app:a.Name,type:choices.length?'流程名称对应多个编号':byName.length?'流程链编号存在差异':'流程未匹配层级表',value:s,candidates:(choices.length?choices:byName).map(n=>({id:n.id,label:n.label}))});}}
   if(!a.rawCap.length&&mapped(id,'cap',''))a.cap.push(mapped(id,'cap',''));
   if(!a.rawProcess.length&&mapped(id,'process',''))a.process.push(mapped(id,'process',''));
   a.cap=[...new Set(a.cap)];a.process=[...new Set(a.process)];return a;
@@ -42,7 +46,7 @@ export function buildModel(data){
  for(const n of caps.values())if(n.reference){n.label=n.reference;n.nameSource='reference';}
  // The capability list is the business capability standard when taxonomySource names it (see xlsx.mjs taxonomySourceName).
  const standardCatalogue=/^.+? \(capabilities\); /.test(String(data.taxonomySource??''));
- return {apps,caps,procs,issues,conflicts,taxonomyIssues,ancestor,correctionLog,standardCatalogue,leanix};
+ return {apps,caps,procs,issues,conflicts,taxonomyIssues,ancestor,correctionLog,standardCatalogue,leanix,accepted:apps.flatMap(a=>a.accepted.map(d=>({...d,app:a.Name})))};
 }
 export function columns(model,view,expanded,focus=''){
  const map=view==='cap'?model.caps:model.procs,leaf=view+'Leaf';const match=id=>model.apps.filter(a=>a[leaf].some(x=>model.ancestor(id,x)));

@@ -72,11 +72,11 @@ var labels = new Map(Object.entries({
   "\u672A\u627E\u5230\u6B64\u529F\u80FD": "Endpoint not found."
 }));
 function english(value2) {
-  const text = String(value2 ?? "");
+  const text2 = String(value2 ?? "");
   const legacySuffix = " \xB7 \u4EC5\u586B\u5230\u6B64\u5C42";
-  if (text.endsWith(legacySuffix)) return english(text.slice(0, -legacySuffix.length)) + " \xB7 recorded at this level";
-  if (labels.has(text)) return labels.get(text);
-  return text.replace(/^第 (\d+) 行缺少 ID 或 Name$/, "Row $1 is missing ID or Name.").replace(/^应用 ID 重复：(.+)$/, "Duplicate application ID: $1").replace(/^Excel 中缺少 (.+)$/, "Missing Excel entry: $1").replace(/^应用清单缺少列：(.+)$/, "Missing inventory column: $1").replace(/^层级表缺少 (.+)$/, "Missing taxonomy column: $1").replace(/ 名称存在差异（(\d+) 种）$/, " \u2014 $1 name variants");
+  if (text2.endsWith(legacySuffix)) return english(text2.slice(0, -legacySuffix.length)) + " \xB7 recorded at this level";
+  if (labels.has(text2)) return labels.get(text2);
+  return text2.replace(/^第 (\d+) 行缺少 ID 或 Name$/, "Row $1 is missing ID or Name.").replace(/^应用 ID 重复：(.+)$/, "Duplicate application ID: $1").replace(/^Excel 中缺少 (.+)$/, "Missing Excel entry: $1").replace(/^应用清单缺少列：(.+)$/, "Missing inventory column: $1").replace(/^层级表缺少 (.+)$/, "Missing taxonomy column: $1").replace(/ 名称存在差异（(\d+) 种）$/, " \u2014 $1 name variants");
 }
 
 // public/annual-benefit.mjs
@@ -238,8 +238,8 @@ var STANDARD_SNAPSHOT = Object.freeze({
   label: "Standard snapshot (Business Capability + Process.xlsx, 21.02.2025)"
 });
 var PROCESS_CODE = /^(M\.[A-Z0-9]+(?:\.\d+)*)(?=\s|$)/;
-var processCode = (text) => String(text ?? "").trim().match(PROCESS_CODE)?.[1] ?? null;
-var withoutCode = (text) => String(text ?? "").trim().replace(PROCESS_CODE, "").trim();
+var processCode = (text2) => String(text2 ?? "").trim().match(PROCESS_CODE)?.[1] ?? null;
+var withoutCode = (text2) => String(text2 ?? "").trim().replace(PROCESS_CODE, "").trim();
 var EXPORTED_AT = /created at:\s*(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) GMT/i;
 var beijing = (gmt) => {
   const t = Date.parse(gmt.replace(" ", "T") + "Z");
@@ -303,6 +303,21 @@ var EXPORT_STATUS_TEXT = Object.freeze({
   "level-not-covered": "This LeanIX export has no records at this level; the standard snapshot is the only source."
 });
 
+// public/accepted-records.mjs
+var acceptedKey = ({ appId, dimension, raw }) => JSON.stringify([String(appId ?? "").trim(), dimension, String(raw ?? "")]);
+var text = (value2, max) => String(value2 ?? "").slice(0, max);
+function cleanAcceptedRecords(value2) {
+  if (!Array.isArray(value2)) return [];
+  const seen = /* @__PURE__ */ new Set();
+  return value2.flatMap((entry) => {
+    if (!entry || typeof entry !== "object") return [];
+    const record = { appId: text(entry.appId, 200).trim(), dimension: entry.dimension === "cap" ? "cap" : entry.dimension === "process" ? "process" : "", raw: text(entry.raw, 2e3), reviewer: text(entry.reviewer, 200).trim(), reason: text(entry.reason, 2e3).trim(), acceptedAt: text(entry.acceptedAt, 40).trim() };
+    if (!record.appId || !record.dimension || !record.raw.trim() || !record.reviewer || !record.reason || !record.acceptedAt || seen.has(acceptedKey(record))) return [];
+    seen.add(acceptedKey(record));
+    return [record];
+  });
+}
+
 // public/model.mjs
 var level = (id) => id.split(".").length - 1;
 function buildModel(data) {
@@ -356,13 +371,19 @@ function buildModel(data) {
   const mapped = (appId, dimension, raw) => mappings.get(recordKey({ appId, dimension, raw }));
   const issues = [];
   const ids = /* @__PURE__ */ new Set();
+  const accepted = new Map(cleanAcceptedRecords(data.acceptedRecords).map((d) => [acceptedKey(d), d]));
+  const flag = (a, dimension, issue) => {
+    const decision = accepted.get(acceptedKey({ appId: a.id, dimension, raw: issue.value }));
+    if (decision) a.accepted.push(decision);
+    else issues.push(issue);
+  };
   const missingFromExport = new Set(data.inventoryExport?.missingIds || []);
   const apps = data.apps.map((raw, i) => {
     const id = String(raw.ID ?? "").trim();
     if (!id || !String(raw.Name ?? "").trim()) throw Error(`\u7B2C ${i + 2} \u884C\u7F3A\u5C11 ID \u6216 Name`);
     if (ids.has(id)) throw Error(`\u5E94\u7528 ID \u91CD\u590D\uFF1A${id}`);
     ids.add(id);
-    const a = { ...raw, id, cap: [], process: [], unmatched: [], processMatches: [], notInExport: missingFromExport.has(id) ? data.inventoryExport : null, rawCap: split(raw["Business Capabilities"]), rawProcess: split(raw.Processes) };
+    const a = { ...raw, id, cap: [], process: [], unmatched: [], processMatches: [], accepted: [], notInExport: missingFromExport.has(id) ? data.inventoryExport : null, rawCap: split(raw["Business Capabilities"]), rawProcess: split(raw.Processes) };
     for (const s of a.rawCap) {
       const corrected = mapped(id, "cap", s);
       if (corrected) {
@@ -375,7 +396,7 @@ function buildModel(data) {
         a.cap.push(code);
       } else {
         a.unmatched.push(s);
-        issues.push({ appId: a.id, app: a.Name, type: "\u4E1A\u52A1\u80FD\u529B\u65E0\u6CD5\u8BC6\u522B", value: s });
+        flag(a, "cap", { appId: a.id, app: a.Name, type: "\u4E1A\u52A1\u80FD\u529B\u65E0\u6CD5\u8BC6\u522B", value: s });
       }
     }
     for (const s of a.rawProcess) {
@@ -394,7 +415,7 @@ function buildModel(data) {
       const m = s.match(PROCESS_LEVEL);
       if (!m) {
         a.unmatched.push(s);
-        issues.push({ appId: a.id, app: a.Name, type: "\u6D41\u7A0B\u672A\u6807\u6CE8\u6807\u51C6\u5C42\u7EA7", value: s });
+        flag(a, "process", { appId: a.id, app: a.Name, type: "\u6D41\u7A0B\u672A\u6807\u6CE8\u6807\u51C6\u5C42\u7EA7", value: s });
         continue;
       }
       const l = +m[1], name = s.replace(/^BBM\s+PM\s+[A-Z0-9]+\s+/i, "").replace(/\s+L[0-3]V?\s*$/i, "");
@@ -407,7 +428,7 @@ function buildModel(data) {
         a.processMatches.push({ raw: s, id: choices[0].id, via: leanixNames.includes(choices[0]) ? "leanix-name" : "name" });
       } else {
         a.unmatched.push(s);
-        issues.push({ appId: a.id, app: a.Name, type: choices.length ? "\u6D41\u7A0B\u540D\u79F0\u5BF9\u5E94\u591A\u4E2A\u7F16\u53F7" : byName.length ? "\u6D41\u7A0B\u94FE\u7F16\u53F7\u5B58\u5728\u5DEE\u5F02" : "\u6D41\u7A0B\u672A\u5339\u914D\u5C42\u7EA7\u8868", value: s, candidates: (choices.length ? choices : byName).map((n) => ({ id: n.id, label: n.label })) });
+        flag(a, "process", { appId: a.id, app: a.Name, type: choices.length ? "\u6D41\u7A0B\u540D\u79F0\u5BF9\u5E94\u591A\u4E2A\u7F16\u53F7" : byName.length ? "\u6D41\u7A0B\u94FE\u7F16\u53F7\u5B58\u5728\u5DEE\u5F02" : "\u6D41\u7A0B\u672A\u5339\u914D\u5C42\u7EA7\u8868", value: s, candidates: (choices.length ? choices : byName).map((n) => ({ id: n.id, label: n.label })) });
       }
     }
     if (!a.rawCap.length && mapped(id, "cap", "")) a.cap.push(mapped(id, "cap", ""));
@@ -440,7 +461,7 @@ function buildModel(data) {
     n.nameSource = "reference";
   }
   const standardCatalogue = /^.+? \(capabilities\); /.test(String(data.taxonomySource ?? ""));
-  return { apps, caps, procs, issues, conflicts, taxonomyIssues, ancestor, correctionLog, standardCatalogue, leanix };
+  return { apps, caps, procs, issues, conflicts, taxonomyIssues, ancestor, correctionLog, standardCatalogue, leanix, accepted: apps.flatMap((a) => a.accepted.map((d) => ({ ...d, app: a.Name }))) };
 }
 
 // public/reviews.mjs
@@ -559,7 +580,7 @@ function workspaceData(data) {
     }
     if (needsManufacturingRemoval(app)) app.Processes = manufacturingDecision;
     return app;
-  }), capabilityRows: data.capabilityRows.map((r) => r.map((v) => String(v ?? ""))), processRows: data.processRows.map((r) => r.map((v) => String(v ?? ""))), reviews: cleanReviews(data.reviews), reviewHistory: cleanReviewHistory(data.reviewHistory), pairReviews: cleanPairReviews(data.pairReviews), applicationEvents: cleanApplicationEvents(data.applicationEvents), importHistory: cleanImportHistory(data.importHistory), corrections: cleanCorrections(data.corrections) };
+  }), capabilityRows: data.capabilityRows.map((r) => r.map((v) => String(v ?? ""))), processRows: data.processRows.map((r) => r.map((v) => String(v ?? ""))), reviews: cleanReviews(data.reviews), reviewHistory: cleanReviewHistory(data.reviewHistory), pairReviews: cleanPairReviews(data.pairReviews), applicationEvents: cleanApplicationEvents(data.applicationEvents), importHistory: cleanImportHistory(data.importHistory), corrections: cleanCorrections(data.corrections), acceptedRecords: cleanAcceptedRecords(data.acceptedRecords) };
 }
 
 // public/autosave.mjs

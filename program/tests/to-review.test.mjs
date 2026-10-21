@@ -98,8 +98,13 @@ test('bundled data: To review counts and the profile shows exactly the same issu
  // Process 24 → 23 (VMCN_CONNEX gained a confirmed L3). Level 3 metrics move with the same applications: 37 → 39, 21 → 20.
  // V9.17 (owner workbook 2026-10-21): 360° Supplier dashboard now records the standard names B.06.8 / B.06.8.1 / B.06.8.2, so its three
  // capability issues (Level 2 missing, two names differing from the standard) are gone: Capability 40 → 39. Processes are unchanged.
- assert.deepEqual([cap.needsReview.length,process.needsReview.length],[39,23],'V9.17: Capability −1 (360° Supplier dashboard); Process unchanged');
- assert.deepEqual([l3MaintenanceMetrics(cap).notPassing.length,l3MaintenanceMetrics(process).notPassing.length],[39,20],'Level 3 metrics follow the same applications');
+ // V9.18 (owner decision 2026-10-22): AUTO-RACK's L3V record and RBCW Auto Warehouse Management System's Transport Material Intra
+ // Plant L3 are confirmed as recorded. AUTO-RACK had no other process issue and leaves Process To review (23 → 22); RBCW Auto
+ // Warehouse Management System keeps its traceable Level 0 / Level 1 entries. Both leave 'Level 3 to review' (20 → 18) and are
+ // counted as confirmed; they still do not match the standard (Level 3 matches standard unchanged).
+ assert.deepEqual([cap.needsReview.length,process.needsReview.length],[39,22],'V9.17: Capability −1 (360° Supplier dashboard); V9.18: Process −1 (AUTO-RACK confirmed)');
+ assert.deepEqual([l3MaintenanceMetrics(cap).notPassing.length,l3MaintenanceMetrics(process).notPassing.length],[39,18],'Level 3 metrics follow the same applications');
+ assert.deepEqual(l3MaintenanceMetrics(process).confirmed.map(a=>a.Name).sort(),['AUTO-RACK','RBCW Auto Warehouse Management System']);
  for(const a of model.apps){
   assert.deepEqual(capabilityIssues(model,a).map(i=>[i.raw||i.label,i.findings[0]]),cap.issues.get(a.id).map(i=>[i.record||i.label,i.text]),a.Name);
   assert.deepEqual(processIssues(model,a).map(i=>[i.raw||i.label,i.findings[0]]),process.issues.get(a.id).map(i=>[i.record||i.label,i.text]),a.Name);
