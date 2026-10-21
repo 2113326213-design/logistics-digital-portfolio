@@ -8,7 +8,7 @@
 - **结果页精简**：主区域只写实际比较层级（如 “Compared at Level 2”，不同层级如实列出）。Deferred detail 移到 How the score is calculated。
 - **备份包含阈值**：Minimum score 随工作区导出、导入；0 和 100 有效；旧备份保持当前设置，没有时用 50。离线导出提示区分“修改未导出”和“已发起导出”，不声称已保存。
 - 当前离线包：`offline/logistics-offline-20261020-v9.15.zip`；验证见 `verification/v9.15-verification.md`。
-- **IIS 一键部署**：`offline/deploy-iis-v9.15.bat`（管理员运行，默认端口 8083、目录 `D:\wwwroot\logistics-tool`，可传参改）。会校验 HTML 的 SHA-256、备份旧 index.html、按 SID 授权 IIS_IUSRS/IUSR（域控上按名字找不到该组）、只新建自己的 `LogisticsTool` 站点，不改防火墙和其他站点。
+- **IIS 一键部署**：`offline/deploy-iis-v9.15.bat`（管理员运行，默认端口 8083、目录 `D:\logistics-tool`，可传参改）。会校验 HTML 的 SHA-256、备份旧 index.html、按 SID 授权 IIS_IUSRS/IUSR（域控上按名字找不到该组）、只新建自己的 `LogisticsTool` 站点，不改防火墙和其他站点。
 
 ## V9.14 历史状态（2026-10-20，受顶部 V9.15 更新）
 

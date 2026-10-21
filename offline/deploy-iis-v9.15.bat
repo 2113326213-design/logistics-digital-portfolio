@@ -7,7 +7,7 @@ rem  Run as Administrator on the IIS server (Windows Server 2016+).
 rem  The zip must be next to this script, or in %USERPROFILE%\Downloads.
 rem
 rem  Usage:   deploy-iis-v9.15.bat [PORT] [TARGET_DIR]
-rem  Default: PORT=8083  TARGET_DIR=D:\wwwroot\logistics-tool
+rem  Default: PORT=8083  TARGET_DIR=D:\logistics-tool
 rem
 rem  What it does (and nothing else):
 rem    1. checks admin rights, IIS, the zip, and that the port is free
@@ -21,7 +21,7 @@ rem ======================================================================
 
 set "SITE=LogisticsTool"
 set "PORT=8083"
-set "TARGET=D:\wwwroot\logistics-tool"
+set "TARGET=D:\logistics-tool"
 if not "%~1"=="" set "PORT=%~1"
 if not "%~2"=="" set "TARGET=%~2"
 
