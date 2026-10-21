@@ -45,7 +45,11 @@ if /i "%~3"=="ELEVATED" (
   goto :fail
 )
 echo Not elevated - asking Windows for Administrator rights ^(click Yes on the UAC prompt^)...
-set "SELF=%~f0"
+rem Explorer deletes files opened from inside a zip once this window exits,
+rem so elevate a stable copy in Downloads (where the V9.15 zip also lives).
+set "SELF=%USERPROFILE%\Downloads\deploy-iis-v9.15.bat"
+if /i not "%~f0"=="%SELF%" copy /y "%~f0" "%SELF%" >nul
+if not exist "%SELF%" set "SELF=%~f0"
 powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process -FilePath cmd.exe -Verb RunAs -ArgumentList ('/k call \"' + $env:SELF + '\" ' + $env:PORT + ' \"' + $env:TARGET + '\" ELEVATED')"
 exit /b 0
 :isadmin
