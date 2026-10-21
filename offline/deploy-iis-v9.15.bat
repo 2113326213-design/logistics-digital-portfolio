@@ -38,11 +38,16 @@ echo Dir : %TARGET%
 echo.
 
 rem ---- [1/6] pre-checks -------------------------------------------------
-net session >nul 2>&1
-if errorlevel 1 (
-  echo [X] Not running as Administrator. Right-click this file ^> Run as administrator.
+fltmc >nul 2>&1
+if not errorlevel 1 goto :isadmin
+if /i "%~3"=="ELEVATED" (
+  echo [X] Still not Administrator after the UAC prompt. Ask the server owner to run it, or use IIS Manager manually.
   goto :fail
 )
+echo Not elevated - asking Windows for Administrator rights ^(click Yes on the UAC prompt^)...
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process -FilePath '%~f0' -ArgumentList '%PORT% \"%TARGET%\" ELEVATED' -Verb RunAs"
+exit /b 0
+:isadmin
 if not exist "%INETSRV%\appcmd.exe" (
   echo [X] IIS not found: %INETSRV%\appcmd.exe
   goto :fail
