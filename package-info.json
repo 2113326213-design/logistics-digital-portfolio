@@ -3,7 +3,7 @@
   "snapshot": "20261021_v9.17",
   "applications": 75,
   "tests": {
-    "passed": 458,
+    "passed": 459,
     "failed": 0,
     "log": "verification/v9.17-test-results.txt"
   },
@@ -16,5 +16,6 @@
   "nodeModulesIncluded": false,
   "workspaceFormatVersion": 6,
   "nodeVerified": "v24.22.0",
-  "inventory": "20261021_logistic_inventory.xlsx (owner workbook, sheet Logistic Apps_1021 with Status in Oct; merged through Import data)"
+  "inventory": "20261021_logistic_inventory.xlsx (owner workbook, sheet Logistic Apps_1021 with Status in Oct; merged through Import data)",
+  "deployScriptFixed": "2026-10-22 (appcmd by full path, cmd /k window in every case; npm run deploy:sim)"
 }

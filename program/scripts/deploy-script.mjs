@@ -2,6 +2,10 @@
 // automatically). It is generated from deploy-iis.template.bat, the script tested on the IIS server for V9.15, with the
 // release version, the release ZIP name and the SHA-256 of the offline HTML filled in. npm run export:offline writes it
 // next to the offline HTML in outputs/; npm run release:files puts it into the package's offline/ folder.
+// Rules for the template (owner request 2026-10-22, after the window closed on the IIS server): system programs by full
+// path ("%APPCMD%"), "call" before a quoted program inside for /f, the deploy always in a cmd /k window (UAC or start),
+// every other end prints the reason and pauses. tests/deploy-script.test.mjs checks them; npm run deploy:sim
+// (scripts/deploy-sim.mjs) runs the script in five situations on this PC before a release.
 import {readFileSync,writeFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {crc32,inflateRawSync} from 'node:zlib';

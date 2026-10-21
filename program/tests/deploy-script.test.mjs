@@ -11,14 +11,41 @@ import {RELEASE_VERSION,OFFLINE_FILE_NAME,RELEASE_ZIP_NAME,DEPLOY_SCRIPT_NAME,DE
 const packageFile=name=>fileURLToPath(new URL(`../../offline/${name}`,import.meta.url));
 const GENERATED_NOTE=/^rem  Generated for this release by program\/scripts\/deploy-script\.mjs .*\r\n/m;
 
-test('the template reproduces the V9.15 script tested on the server, apart from the generated note and the clearer mismatch message',()=>{
+// Steps [2/6] to the end are the V9.15 script tested on the server, with appcmd called by its full path (fix 2026-10-22).
+const fromStep2=text=>text.slice(text.indexOf('rem ---- [2/6]'));
+const fullPathAppcmd=text=>text.replace(/^(\s*(?:if errorlevel 1 )?)appcmd /gm,'$1"%APPCMD%" ').replace(`in ('appcmd list site`,`in ('call "%APPCMD%" list site`);
+
+test('steps 2 to 6 are the V9.15 script tested on the server, with appcmd by full path and the clearer mismatch message',()=>{
  const handWritten=packageFile('deploy-iis-v9.15.bat'),html=packageFile('物流工具_最新版_离线单文件_20261020_v9.15.html');
  if(!existsSync(handWritten)||!existsSync(html))return;// a bare program/ checkout has no package folder
  const expected=readFileSync(handWritten,'utf8');
  const generated=deployScript({html:readFileSync(html),version:'v9.15',zipName:'logistics-offline-20261020-v9.15.zip',scriptName:'deploy-iis-v9.15.bat'});
  assert.equal(sha256(readFileSync(html)),'a1af36d4e87b6eb3cea4673cef29a9f1ba129241e4e9e296320242ee2b6a6658','the hash the V9.15 script checks');
  const clearer='echo [X] SHA-256 mismatch - the zip is not the expected V9.15 build ^(logistics-offline-20261020-v9.15.zip^). Download the zip and the script of the same release. Stopping.';
- assert.equal(generated.replace(GENERATED_NOTE,'').replace(clearer,'echo [X] SHA-256 mismatch - the zip is not the expected V9.15 build. Stopping.'),expected);
+ assert.equal(fromStep2(generated).replace(clearer,'echo [X] SHA-256 mismatch - the zip is not the expected V9.15 build. Stopping.'),fullPathAppcmd(fromStep2(expected)));
+ // The settings block and the header are unchanged apart from the generated note and APPCMD.
+ const head=text=>text.slice(0,text.indexOf('rem ---- [1/6]'));
+ assert.equal(head(generated).replace(GENERATED_NOTE,'').replace('set "APPCMD=%INETSRV%\\appcmd.exe"\r\n',''),head(expected));
+});
+
+test('owner report 2026-10-22 (the window closed on the server): every run stays in a window that waits, and appcmd never depends on the current directory',()=>{
+ const script=deployScript({html:Buffer.from('<html>test</html>'),version:'v1.2',zipName:'logistics-offline-20300101-v1.2.zip',scriptName:'deploy-iis.bat'});
+ // With current-directory lookup disabled (NoDefaultCurrentDirectoryInExePath), a bare "appcmd" is not found and cmd
+ // ended the script right after "[1/6] OK zip" without a message (reproduced 2026-10-22).
+ assert.match(script,/^set "APPCMD=%INETSRV%\\appcmd\.exe"\r$/m);
+ assert.doesNotMatch(script,/^\s*(?:if [^\r\n]*?\s)?appcmd\s/m,'no bare appcmd call');
+ assert.equal(script.match(/"%APPCMD%" /g).length,8);
+ // Not Administrator: UAC opens a cmd /k window; a cancelled or blocked request is reported and waits for a key.
+ assert.match(script,/Start-Process -FilePath cmd\.exe -Verb RunAs -ErrorAction Stop -ArgumentList \('\/k call \\"' \+ \$env:SELF/);
+ assert.match(script,/if not errorlevel 1 exit \/b 0\r\necho \[X\] Windows did not open the Administrator window[^\r]*\r\necho [^\r]*Run as administrator[^\r]*\r\necho Press any key to close this window\.\.\.\r\npause >nul\r\nexit \/b 1\r\n/);
+ // Already Administrator (Run as administrator): the deploy also continues in a cmd /k window.
+ assert.match(script,/fltmc >nul 2>&1\r\nif errorlevel 1 goto :elevate\r\nstart "Logistics Tool V1\.2 : IIS deploy" cmd\.exe \/k call "%SELF%" %PORT% "%TARGET%" ELEVATED\r\nexit \/b 0\r\n/);
+ // The window that runs the deploy checks the rights again before doing anything.
+ assert.match(script,/:inwindow\r\nfltmc >nul 2>&1\r\nif not errorlevel 1 goto :isadmin\r\necho \[X\] Still not Administrator[^\r]*\r\ngoto :fail\r\n:isadmin\r\n/);
+ // Every other end of the script waits for a key first.
+ const lines=script.split('\r\n');
+ lines.forEach((line,i)=>{if(/^exit \/b 1$/.test(line))assert(lines.slice(i-2,i).includes('pause >nul'),`line ${i+1}`);});
+ assert.deepEqual(lines.flatMap((line,i)=>/^exit \/b 0$/.test(line)?[lines[i-1].split(' ').slice(0,2).join(' ')]:[]),['start "Logistics','endlocal']);
 });
 
 test('every placeholder is filled with the release values, and the script uses CRLF only',()=>{

@@ -29,6 +29,7 @@ if not "%~2"=="" set "TARGET=%~2"
 set "ZIPNAME=logistics-offline-20261021-v9.17.zip"
 set "EXPECT_SHA256=d75cce59a4bb14fab08f7ed94c8632ba7c1c194edf946c417abbaadb9215f1e6"
 set "INETSRV=%windir%\system32\inetsrv"
+set "APPCMD=%INETSRV%\appcmd.exe"
 set "TMPX=%TEMP%\logistics-v9.17-extract"
 set "BACKUP=%TARGET%_backup"
 
@@ -39,20 +40,31 @@ echo Dir : %TARGET%
 echo.
 
 rem ---- [1/6] pre-checks -------------------------------------------------
-fltmc >nul 2>&1
-if not errorlevel 1 goto :isadmin
-if /i "%~3"=="ELEVATED" (
-  echo [X] Still not Administrator after the UAC prompt. Ask the server owner to run it, or use IIS Manager manually.
-  goto :fail
-)
-echo Not elevated - asking Windows for Administrator rights ^(click Yes on the UAC prompt^)...
-rem Explorer deletes files opened from inside a zip once this window exits,
-rem so elevate a stable copy in Downloads (where the V9.17 zip also lives).
+rem The deploy always continues in a window that stays open (cmd /k), so every message can be read, also when this
+rem script was started as Administrator. Explorer deletes files opened from inside a zip once this window exits, so
+rem the new window runs a stable copy in Downloads (where the V9.17 zip also lives).
+if /i "%~3"=="ELEVATED" goto :inwindow
 set "SELF=%USERPROFILE%\Downloads\deploy-iis.bat"
 if /i not "%~f0"=="%SELF%" copy /y "%~f0" "%SELF%" >nul
 if not exist "%SELF%" set "SELF=%~f0"
-powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process -FilePath cmd.exe -Verb RunAs -ArgumentList ('/k call \"' + $env:SELF + '\" ' + $env:PORT + ' \"' + $env:TARGET + '\" ELEVATED')"
+fltmc >nul 2>&1
+if errorlevel 1 goto :elevate
+start "Logistics Tool V9.17 : IIS deploy" cmd.exe /k call "%SELF%" %PORT% "%TARGET%" ELEVATED
 exit /b 0
+:elevate
+echo Not elevated - asking Windows for Administrator rights ^(click Yes on the UAC prompt^)...
+powershell -NoProfile -ExecutionPolicy Bypass -Command "try { Start-Process -FilePath cmd.exe -Verb RunAs -ErrorAction Stop -ArgumentList ('/k call \"' + $env:SELF + '\" ' + $env:PORT + ' \"' + $env:TARGET + '\" ELEVATED') } catch { Write-Host ('[X] ' + $_.Exception.Message); exit 1 }"
+if not errorlevel 1 exit /b 0
+echo [X] Windows did not open the Administrator window ^(UAC cancelled or blocked^).
+echo     Right-click deploy-iis.bat and choose "Run as administrator", or ask the server owner.
+echo Press any key to close this window...
+pause >nul
+exit /b 1
+:inwindow
+fltmc >nul 2>&1
+if not errorlevel 1 goto :isadmin
+echo [X] Still not Administrator after the UAC prompt. Ask the server owner to run it, or use IIS Manager manually.
+goto :fail
 :isadmin
 if not exist "%INETSRV%\appcmd.exe" (
   echo [X] IIS not found: %INETSRV%\appcmd.exe
@@ -70,7 +82,7 @@ if not defined ZIP (
 echo [1/6] OK  zip: %ZIP%
 
 set "SITE_EXISTS=0"
-appcmd list site /name:"%SITE%" >nul 2>&1
+"%APPCMD%" list site /name:"%SITE%" >nul 2>&1
 if not errorlevel 1 set "SITE_EXISTS=1"
 
 if "%SITE_EXISTS%"=="0" (
@@ -79,7 +91,7 @@ if "%SITE_EXISTS%"=="0" (
     echo [X] Port %PORT% is already listening. Pick another port: %~nx0 8084
     goto :fail
   )
-  appcmd list site | findstr /C:":%PORT%:" >nul
+  "%APPCMD%" list site | findstr /C:":%PORT%:" >nul
   if not errorlevel 1 (
     echo [X] Port %PORT% is already bound by another IIS site ^(maybe a stopped one^). Pick another port.
     goto :fail
@@ -135,22 +147,22 @@ echo [4/6] OK  read permission granted to IIS_IUSRS and IUSR
 
 rem ---- [5/6] IIS app pool + site ---------------------------------------
 if "%SITE_EXISTS%"=="0" (
-  appcmd list apppool /name:"%SITE%" >nul 2>&1
-  if errorlevel 1 appcmd add apppool /name:"%SITE%" /managedRuntimeVersion:"" >nul
-  appcmd add site /name:"%SITE%" /bindings:http/*:%PORT%: /physicalPath:"%TARGET%"
+  "%APPCMD%" list apppool /name:"%SITE%" >nul 2>&1
+  if errorlevel 1 "%APPCMD%" add apppool /name:"%SITE%" /managedRuntimeVersion:"" >nul
+  "%APPCMD%" add site /name:"%SITE%" /bindings:http/*:%PORT%: /physicalPath:"%TARGET%"
   if errorlevel 1 (
     echo [X] appcmd add site failed. Nothing else was changed.
     goto :fail
   )
-  appcmd set app "%SITE%/" /applicationPool:"%SITE%" >nul
+  "%APPCMD%" set app "%SITE%/" /applicationPool:"%SITE%" >nul
 )
-appcmd start site /name:"%SITE%" >nul 2>&1
+"%APPCMD%" start site /name:"%SITE%" >nul 2>&1
 echo [5/6] OK  IIS site %SITE% is configured
 
 rem ---- [6/6] smoke test --------------------------------------------------
 set "PORT_FOR_TEST=%PORT%"
 if "%SITE_EXISTS%"=="1" (
-  for /f "tokens=2 delims=:" %%P in ('appcmd list site /name:"%SITE%" /text:bindings 2^>nul') do set "PORT_FOR_TEST=%%P"
+  for /f "tokens=2 delims=:" %%P in ('call "%APPCMD%" list site /name:"%SITE%" /text:bindings 2^>nul') do set "PORT_FOR_TEST=%%P"
 )
 powershell -NoProfile -ExecutionPolicy Bypass -Command "try { $r = Invoke-WebRequest -UseBasicParsing -Uri ('http://localhost:' + $env:PORT_FOR_TEST + '/') -TimeoutSec 20; Write-Host ('       HTTP ' + $r.StatusCode + ', ' + $r.RawContentLength + ' bytes') } catch { Write-Host ('       FAILED: ' + $_.Exception.Message); exit 1 }"
 if errorlevel 1 (

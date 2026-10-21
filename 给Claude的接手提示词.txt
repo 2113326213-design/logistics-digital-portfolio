@@ -3,3 +3,4 @@
 数据说明：内置数据是 2026-08-25 的应用清单工作簿加 2026-10-20 的 LeanIX 应用导出按 ID 合并的结果；导出未包含的 5 个应用保留并记在 data.inventoryExport，不能据此判定它们已停用。Import data 现在接受 LeanIX 应用导出格式。
 
 V9.17 数据说明：内置数据来自用户 2026-10-21 的工作簿 Logistic Apps_1021；Status in Oct 不是 still active 的应用和 no score 的应用一样不计入成本、ROI 和相似度检查（记录保留）；ROI 按 1 → > 2 years、3 → > 1 year、5 → < 1 year 显示回本时间。
+IIS 部署脚本：改之前先读 00_Claude先读.md 顶部的“部署脚本编写规则”（系统程序写完整路径、部署窗口用 cmd /k、任何结束先写原因并 pause、发布前运行 npm run deploy:sim 且 5 项都 PASS）。

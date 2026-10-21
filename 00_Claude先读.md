@@ -1,5 +1,17 @@
 # 物流工具：Claude 接手说明
 
+## 部署脚本编写规则（2026-10-22 起长期有效，所有版本都要遵守）
+
+起因：用户在 IIS 服务器上运行 V9.17 的 `deploy-iis.bat`，黑框直接消失。本机复现：脚本只写了 `appcmd`，靠当前目录查找程序；当系统关闭了这种查找（环境变量 NoDefaultCurrentDirectoryInExePath）时，cmd 在 “[1/6] OK zip” 之后不给任何提示就结束脚本；直接以管理员身份运行时窗口随之关闭。另外，UAC 被取消或拦截时，第一个窗口也会一闪而过。用户要求：这一点写进 GitHub，之后都按这个逻辑写脚本。
+
+1. **系统程序一律写完整路径**：`set "APPCMD=%INETSRV%\appcmd.exe"`，调用写 `"%APPCMD%" …`；不得依赖当前目录或 pushd 来找程序。
+2. **`for /f ('…')` 里调用带引号路径的程序，前面加 `call`**（否则 cmd 会去掉首尾引号）。
+3. **真正部署的窗口一律用 `cmd /k` 打开**：未提权时经 UAC（`Start-Process … -Verb RunAs -ErrorAction Stop`），已是管理员时用 `start "…" cmd.exe /k call …`；新窗口先再次确认管理员权限。
+4. **任何结束都要先给出原因并 `pause`**：UAC 被取消或拦截时写明原因并提示“右键 → Run as administrator”；只有把工作交给新窗口时才不暂停直接退出。
+5. **从 zip 里双击运行时，先把脚本复制到 Downloads**，新窗口运行这份副本（资源管理器会在窗口关闭后删除 zip 里临时解出的文件）。
+6. **只改模板** `program/scripts/deploy-iis.template.bat`（LF 换行，生成时转为 CRLF）；`tests/deploy-script.test.mjs` 检查以上规则。
+7. **发布前在本机模拟一遍**：`npm run release:files` 之后运行 `npm run deploy:sim`（仅 Windows；不弹 UAC、不碰 IIS），5 种情况（未提权并同意 UAC、UAC 被取消、已是管理员、关闭当前目录查找的新站点、带网页服务的重新部署）都要 PASS 才能发布。
+
 ## V9.17 当前状态（2026-10-21，优先于所有历史段落）
 
 - 基线：V9.16（仓库 c03dab3）。用户（2026-10-21）发来 `20261021_logistic_inventory.xlsx` 并说：“有没有导进去ROI年份的，你记得把公式套入进去。然后no score的部分不要算进去。status in OCT 里面不是still active的也不要。”
@@ -11,8 +23,9 @@
 - **结果**：不计入 8 个（no score 5 个 + 不是 still active 3 个：360° Supplier dashboard owner changed to central、RBCW LOM Dashboard phaseout、VM/LOG-Szh2_DAVIS endoflife）；计入 67 个，年成本合计 ¥4,140,000 → ¥2,890,000（约 ¥1,020,000 来自重新打分，主要是 7 个应用成本分 1 → 5；¥220,000 来自 3 个不再计入的应用；¥10,000 来自移出的 CGQB_Logistic_system_Q）。Capability To review 40 → 39（360° 名称对上标准），Process 23 不变。
 - **测试**：新增 `tests/v917-owner-workbook.test.mjs`（7 项）。基于 V9.16 数据手算或用户确认过的历史测试改读冻结副本 `tests/data-v9.16.json`（`tests/records-v916.mjs`，与 GitHub 上 V9.16 的 data.json 逐字节相同），断言不改；描述当前数据的 4 个测试（costs、roi-payback、scope、to-review）按新数据更新并写明推导。prepare-data 的重建测试现在针对 V9.16 记录：prepare-data 只能重建 8 月格式（`Logistic Apps` + 无标题 C 列），不读 Status 列；V9.17 数据来自 Import data 路径。
 - **用户确认（2026-10-21，V9.17 发布后）**：新分数里 1 和 5 对调的（如 CDR_EM 成本 1 → 5、RBCC PESS 5 → 1、PMS ROI 5 → 1）没有问题，以新分数为准；CGQB_Logistic_system_Q 没写原因也没关系，按移出处理；导入时把最新的 `Logistic Apps_<日期>` 排在旧表前面，这个做法确认；IIS 服务器上的部署由用户后续自己更新。之前遗留的 RBCW Transport Material Intra Plant L3、AUTO-RACK Putaway to Automated Warehouse L3V 仍待确认。
-- **以后每次发布的固定步骤**：改 `scripts/release.mjs` 的版本和日期 → `npm test` → `npm run build` → `npm run export:offline` → `npm run release:files` → `npm test`（再跑一次，确认部署脚本已对应）→ 更新文档、`node .github/scripts/check-manifest.mjs --write`、提交、发 Release（附发布 zip 和 `offline/deploy-iis-script.zip`）。
-- 当前离线包：`offline/logistics-offline-20261021-v9.17.zip`；HTML 文件名及页面标识均为 V9.17，日期 2026-10-21。部署脚本：`offline/deploy-iis.bat`（V9.17，自动生成）。验证记录见 `verification/v9.17-verification.md`。
+- **以后每次发布的固定步骤**：改 `scripts/release.mjs` 的版本和日期 → `npm test` → `npm run build` → `npm run export:offline` → `npm run release:files` → `npm test`（再跑一次，确认部署脚本已对应）→ `npm run deploy:sim`（本机模拟部署，5 项都要 PASS）→ 更新文档、`node .github/scripts/check-manifest.mjs --write`、提交、发 Release（附发布 zip 和 `offline/deploy-iis-script.zip`）。
+- **IIS 部署脚本修复（2026-10-22）**：按上面的“部署脚本编写规则”修改模板并重新生成 V9.17 的 `deploy-iis.bat` / `deploy-iis-script.zip`（HTML 和发布 zip 不变，版本仍是 V9.17）；Release 里的 `deploy-iis-script.zip` 已替换。新增 `npm run deploy:sim`（`program/scripts/deploy-sim.mjs`）。
+- 当前离线包：`offline/logistics-offline-20261021-v9.17.zip`；HTML 文件名及页面标识均为 V9.17，日期 2026-10-21。部署脚本：`offline/deploy-iis.bat`（V9.17，自动生成，2026-10-22 修复）。验证记录见 `verification/v9.17-verification.md`。
 
 ## V9.16 历史状态（2026-10-21，受顶部 V9.17 更新）
 

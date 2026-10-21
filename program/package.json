@@ -11,6 +11,7 @@
     "test": "node --test \"tests/*.test.mjs\"",
     "export:offline": "node scripts/export-offline.mjs",
     "release:files": "node scripts/release-files.mjs",
+    "deploy:sim": "node scripts/deploy-sim.mjs",
     "prepare:data": "node scripts/prepare-data.mjs"
   },
   "devDependencies": {
