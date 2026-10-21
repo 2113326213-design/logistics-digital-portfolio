@@ -9,50 +9,72 @@
 </p>
 
 <p align="center">
-  一个 HTML 文件，装下整个物流应用组合：<b>哪些应用登记不全</b> · <b>谁在做什么</b> · <b>哪些可能重复</b><br>
-  <sub>当前版本 V9.15（2026-10-20） · 不需要安装、不需要联网 · 用 Chrome 打开即用</sub>
+  一个页面看清整个物流应用组合：<b>哪些应用登记不全</b> · <b>谁在做什么</b> · <b>哪些可能重复</b><br>
+  <sub>当前版本 V9.15（2026-10-20） · 不需要安装 · 用 Chrome 打开即用</sub>
 </p>
 
 <p align="center">
-  <a href="https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest"><b>⬇&nbsp; 下载最新版</b></a>
-  &nbsp;&nbsp;·&nbsp;&nbsp; <a href="#三个页面">三个页面</a>
-  &nbsp;&nbsp;·&nbsp;&nbsp; <a href="#数据从哪里来">数据流</a>
+  <a href="#打开工具"><b>▶&nbsp; 打开工具</b></a>
+  &nbsp;&nbsp;·&nbsp;&nbsp; <a href="#我想">我想……</a>
+  &nbsp;&nbsp;·&nbsp;&nbsp; <a href="#常见问题">常见问题</a>
   &nbsp;&nbsp;·&nbsp;&nbsp; <a href="#版本记录">版本记录</a>
-  &nbsp;&nbsp;·&nbsp;&nbsp; <a href="00_Claude先读.md">接手说明</a>
-  &nbsp;&nbsp;·&nbsp;&nbsp; <a href="#文件地图给-ai-助手和新接手的人">文件地图</a>
+  &nbsp;&nbsp;·&nbsp;&nbsp; <a href="#给维护者">给维护者</a>
 </p>
 
 > [!IMPORTANT]
-> 本仓库包含真实的应用清单数据，请保持**私有**，不要把下载链接转发给外部人员。
+> 本仓库包含真实的应用清单数据，请保持**私有**，不要把链接或文件转发给 Bosch 以外的人。
 
-<br>
+## 打开工具
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+### 🌐 在线版（推荐）
+
+在 Bosch 内网用 Chrome 直接打开：
+
+**<http://wx-web-td02.apac.bosch.com:8083>**
+
+- 用 **http**，不是 https。
+- `td02` 里是数字 **0**，不是字母 o。
+- 打不开时试 `http://10.8.186.214:8083`；仍打不开就用右边的离线版，并告诉维护人。
+
+</td>
+<td width="50%" valign="top">
+
+### 💾 离线版
+
+不在内网，或想自己保留一份时用：
+
+1. 下载 [**logistics-offline-20261020-v9.15.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest)。
+2. 右键 → **Extract all**。
+3. 用 Chrome 打开里面的 HTML。
+
+页面顶部显示 **V9.15** 就对了。
+
+</td>
+</tr>
+</table>
 
 <table align="center">
   <tr>
     <td align="center" width="25%"><h3>76</h3><sub>应用 · 10 个工厂 · 5 个业务部门</sub></td>
     <td align="center" width="25%"><h3>2,850</h3><sub>组两两比较 · 7 组得分 ≥ 50</sub></td>
     <td align="center" width="25%"><h3>24 / 38</h3><sub>Process / Capability 待处理应用</sub></td>
-    <td align="center" width="25%"><h3>442</h3><sub>项自动测试，全部通过</sub></td>
+    <td align="center" width="25%"><h3>V9.15</h3><sub>2026-10-20 · 442 项测试通过</sub></td>
   </tr>
 </table>
 
-<br>
+## 三个页面
 
 <p align="center"><img src="docs/images/overview.jpg" alt="Overview：应用维护质量总览" width="900"></p>
 
-## 三个页面
-
-### 📊 Overview — 谁登记得不完整
-
-按工厂查看 Business Capability 和 Process 各层级的**填写率**和**标准匹配率**。**To review** 列出需要处理的应用；点 **View details** 看具体是哪条记录、对照的是哪个版本的目录、下一步要确认什么。Level 3 已正确登记、能找到标准上级时，上级未单独登记不再算问题。
-
-### 🗺️ Application landscape — 谁在做什么
-
-按业务能力或流程分类排列全部应用，分类旁的 **+** 一层一层展开，**Category** 下拉按 Level 0–3 分组、编号与原始 Excel 一致。一眼看出哪个分类下挤了很多应用、哪个分类是空的。
-
-### 🔍 Similarity check — 哪些可能重复
-
-按名称、描述、能力、流程四项加权打分，找出可能重叠的应用组合。顶部 **Score settings** 调整权重和最低分；资料不全、无法比较的应用在 **Check application records** 中按应用列出，而不是让你逐对去看。分数只是线索，不代表确认重复。
+| 页面 | 回答什么问题 | 怎么用 |
+|---|---|---|
+| 📊 **Overview** | 哪些应用登记得不完整？ | 按工厂看 Business Capability 和 Process 各层级的**填写率**、**标准匹配率**。**To review** 列出要处理的应用，点 **View details** 看是哪条记录、下一步确认什么。 |
+| 🗺️ **Application landscape** | 谁在做什么？ | 全部应用按业务能力或流程分类排列。分类旁的 **+** 逐级展开，**Category** 下拉按 Level 0–3 分组，编号与原始 Excel 一致。 |
+| 🔍 **Similarity check** | 哪些应用可能重复？ | 按名称、描述、能力、流程四项加权打分。顶部 **Score settings** 调权重和最低分；资料不全的应用在 **Check application records** 里按应用列出。 |
 
 <table>
 <tr>
@@ -61,43 +83,61 @@
 </tr>
 </table>
 
-## 数据从哪里来
+## 我想……
 
-```mermaid
-flowchart LR
-  inv["LeanIX 应用清单<br/>20260825_logistic_inventory.xlsx"] --> prep
-  std["流程标准快照<br/>Business Capability + Process.xlsx · 21.02.2025"] --> prep
-  cap["能力标准<br/>standard+name.xlsx"] --> prep
-  prep["prepare-data.mjs<br/>从原始 Excel 重建"] --> data[("data.json<br/>内置数据")]
-  lx["LeanIX 流程导出 2026-10-20<br/>26 条 M.I2D 流程"] -. 按编号增量合并 .-> model
-  data --> model["model.mjs<br/>匹配能力与流程"]
-  model --> ov["Overview"]
-  model --> ls["Application landscape"]
-  model --> sim["Similarity check"]
-  ov & ls & sim --> html["离线单文件 HTML<br/>offline/"]
-  classDef src fill:#e8f3fa,stroke:#0071a8,color:#173f58
-  classDef out fill:#e6f7ef,stroke:#2e9e5b,color:#14532d
-  class inv,std,cap,lx src
-  class html out
-```
+| 我想 | 去哪里 | 点什么 |
+|---|---|---|
+| 看我们工厂哪些应用要补登记 | **Overview** | 选工厂 → **To review** → 应用的 **View details** |
+| 知道某条记录具体错在哪、该怎么改 | 应用详情 | **View details** 里每个问题都写了来源记录、对照的目录版本和下一步 |
+| 看某个业务能力或流程下有哪些应用 | **Application landscape** | **Category** 下拉选层级，点分类旁的 **+** 展开 |
+| 找可能重复的应用 | **Similarity check** | 看候选列表，点一组进入完整比较 |
+| 拿一个应用和其他应用比 | **Similarity check** | **Compare an application** → 选第一个应用 → **Choose another application** |
+| 一次比较多个应用 | **Similarity check** | **Compare multiple applications**，勾选要比的应用 |
+| 调整打分标准 | **Similarity check** 顶部 | **Score settings** → **Edit settings**，改权重和 **Minimum score** |
+| 保存我的调整，下次接着用 | 任意页面 | **Export workspace** 导出备份；下次用 **Import data** 恢复 |
 
-原始记录只读，程序不会自动改动 LeanIX 或业务数据；所有修正都要人工确认后在 LeanIX 里改。
+## 常见问题
 
-## 快速开始
+<details>
+<summary><b>我在页面里改的东西会保存吗？</b></summary>
+<br>
+只保存在当前浏览器标签页里，关掉就没了。要保留，请用 <b>Export workspace</b> 导出备份文件，下次用 <b>Import data</b> 导入；备份里包含 Score settings 的权重和最低分。在线版也一样：修改只在你自己的浏览器里，别人看不到，也不会改到服务器上的内容。
+</details>
 
-1. 到 [Releases](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest) 下载 `logistics-offline-20261020-v9.15.zip`（仓库里的 [`offline/`](offline/) 也有同一个文件）。
-2. 解压，用 Chrome 打开 `物流工具_最新版_离线单文件_20261020_v9.15.html`。页面顶部会显示 V9.15。
-3. 页面里的修改只保存在当前标签页：用 **Export workspace** 导出备份，下次用 **Import data** 恢复。
+<details>
+<summary><b>相似度分数高，是不是就代表两个应用重复？</b></summary>
+<br>
+不是。分数只来自文字和分类编号的重合，用来找线索。要对照两个应用的描述和实际用途，并和负责人确认，才能判断是否真的重复。
+</details>
 
-### 部署到 Bosch 内网 IIS（Windows Server）
+<details>
+<summary><b>发现数据错了，在工具里改吗？</b></summary>
+<br>
+不在工具里改。工具只读原始记录，不会改动 LeanIX 或任何业务数据。请确认后在 LeanIX 里修改，下一版工具会带上新数据。
+</details>
 
-1. 在服务器的 Chrome 里（已登录 GitHub）点这个链接直接下载：[**⬇ deploy-iis-v9.15-script.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/raw/main/offline/deploy-iis-v9.15-script.zip)，右键 Extract all。
-2. 把 `logistics-offline-20261020-v9.15.zip` 放在同一个文件夹或 `Downloads`，右键 `deploy-iis-v9.15.bat` → **Run as administrator**。
-3. 默认部署到 `D:\logistics-tool`、端口 `8083`；要换就在 cmd 里带参数：`deploy-iis-v9.15.bat 8084 D:\其他目录`。
+<details>
+<summary><b>数据有多新？</b></summary>
+<br>
+应用清单来自 LeanIX 导出（<code>20260825_logistic_inventory.xlsx</code>，2026-08-25）；流程标准以 2025-02-21 的快照为准，并按编号合并了 2026-10-20 的 LeanIX 流程导出（新旧名称并列保留，有差异的标为待确认）。
+</details>
 
-脚本会校验 HTML 的 SHA-256、备份旧 `index.html`、按 SID 授予 IIS_IUSRS/IUSR 读取权限，只新建自己的 `LogisticsTool` 站点，**不改防火墙和其他站点**。源文件：[`offline/deploy-iis-v9.15.bat`](offline/deploy-iis-v9.15.bat)。
+<details>
+<summary><b>在线版打不开怎么办？</b></summary>
+<br>
+<ol>
+<li>确认地址是 <code>http://</code>（不是 https），<code>td02</code> 里是数字 0。浏览器自动改成 https 时，手动删掉 s 再回车。</li>
+<li>换成 IP 试：<code>http://10.8.186.214:8083</code>。</li>
+<li>提示找不到地址（<code>ERR_NAME_NOT_RESOLVED</code>）多半是拼写错误；一直转圈后超时（<code>ERR_CONNECTION_TIMED_OUT</code>）多半是网络或防火墙，请告诉维护人。</li>
+<li>先用离线版继续工作。</li>
+</ol>
+</details>
 
-想改程序：`program/` 是源码（原生 ES 模块，没有框架）。`npm ci` → `npm test` → `npm run build` → `npm run export:offline`，需要 Node 22.13 或更新版本。接手前先读 [`00_Claude先读.md`](00_Claude先读.md)（中文，按日期记录每次改动和用户决定），再读 [`program/README.md`](program/README.md)（英文，"Current state" 一节是当前状态）。
+<details>
+<summary><b>页面打开了，但不是 V9.15，或者显示不全？</b></summary>
+<br>
+按 <b>Ctrl + F5</b> 强制刷新（浏览器可能缓存了旧版本）。工具在 Chrome 上测试过，请优先用 Chrome。
+</details>
 
 ## 主要规则
 
@@ -105,13 +145,15 @@ flowchart LR
 |---|---|
 | **不自动改数据** | 程序只读原始记录；LeanIX 和业务数据的修改都要人工确认。 |
 | **层级覆盖** | Level 3 已正确登记、能找到标准上级时，上级未单独登记不再算问题（Capability Level 2；Process Level 0–2）。"filled" 仍只统计直接登记。 |
-| **相似度只是线索** | 分数来自文字和分类编号的重合，不代表业务功能确认重复；要对照描述并和负责人确认。 |
+| **相似度只是线索** | 分数来自文字和分类编号的重合，不代表业务功能确认重复。 |
 | **流程来源可追溯** | 流程标准以 21.02.2025 的快照为准，2026-10-20 的 LeanIX 导出按编号合并进来，新旧名称并列保留，差异标为待确认。 |
 
 ## 版本记录
 
-<details open>
-<summary><b>V9 系列（2026-10-20）</b> — 点击收起</summary>
+**V9.15（当前，2026-10-20）**：单对比较按应用列出待核对记录并直达详情；切换页面时保留比较结果；阈值随备份导出、导入。
+
+<details>
+<summary><b>V9 系列全部版本</b></summary>
 <br>
 
 | 版本 | 主要变化 |
@@ -134,17 +176,77 @@ flowchart LR
 | [V9](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v9-20261020) | Similarity check 按步骤比较，返回时保留位置 |
 | [V8](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v8-20261020) | 并入 LeanIX 流程导出；删除比较说明和 Your review 区域 |
 
-</details>
-
 更早的版本和每次改动的详细说明见 [`00_Claude先读.md`](00_Claude先读.md)；每个版本的验证记录在 [`verification/`](verification/)。
 
-## 文件地图（给 AI 助手和新接手的人）
+</details>
+
+---
+
+## 给维护者
+
+以下内容给部署、更新和修改程序的人；使用工具不需要看。
 
 <details>
-<summary><b>展开文件地图</b> — 所有路径都相对于仓库根目录，页面逻辑都在 <code>program/public/</code></summary>
+<summary><b>🚀 部署 / 更新内网版（IIS，WX-WEB-TD02）</b></summary>
 <br>
 
-在 GitHub 上的地址是 `https://github.com/2113326213-design/logistics-digital-portfolio/blob/main/<路径>`。
+1. 在服务器的 Chrome 里（已登录 GitHub）下载 [**deploy-iis-v9.15-script.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/raw/main/offline/deploy-iis-v9.15-script.zip) 和 [**logistics-offline-20261020-v9.15.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest)，都放在 `Downloads`。
+2. 打开脚本 zip，双击 `deploy-iis-v9.15.bat` → Security Warning 点 **Run** → UAC 点 **Yes**（脚本会自己申请管理员权限）。
+3. 新窗口显示 `[6/6] OK` 和 `=== DONE ===` 即完成；窗口不会自动关闭，出错时会写明原因。
+
+默认部署到 `D:\logistics-tool`、端口 `8083`、站点 `LogisticsTool`；换端口或目录：`deploy-iis-v9.15.bat 8084 D:\其他目录`。站点已存在时只更新文件。
+
+脚本会校验 HTML 的 SHA-256，把旧 `index.html` 备份到 `D:\logistics-tool_backup\`，按 SID 授予 IIS_IUSRS/IUSR 读取权限（这台服务器是域控，按名字找不到 IIS_IUSRS），只新建自己的站点，**不改防火墙和其他站点**。其他电脑访问不了时需要放行 8083 入站，须先经服务器负责人同意。源文件：[`offline/deploy-iis-v9.15.bat`](offline/deploy-iis-v9.15.bat)。
+
+**回滚**：把 `D:\logistics-tool_backup\` 里的旧文件复制回 `D:\logistics-tool\index.html`。
+
+</details>
+
+<details>
+<summary><b>🛠️ 修改程序</b></summary>
+<br>
+
+`program/` 是源码（原生 ES 模块，没有框架），需要 Node 22.13 或更新版本：
+
+```
+npm ci → npm test → npm run build → npm run export:offline
+```
+
+接手前先读 [`00_Claude先读.md`](00_Claude先读.md)（中文，按日期记录每次改动和用户决定），再读 [`program/README.md`](program/README.md)（英文，"Current state" 一节是当前状态）。
+
+</details>
+
+<details>
+<summary><b>🔄 数据从哪里来</b></summary>
+<br>
+
+```mermaid
+flowchart LR
+  inv["LeanIX 应用清单<br/>20260825_logistic_inventory.xlsx"] --> prep
+  std["流程标准快照<br/>Business Capability + Process.xlsx · 21.02.2025"] --> prep
+  cap["能力标准<br/>standard+name.xlsx"] --> prep
+  prep["prepare-data.mjs<br/>从原始 Excel 重建"] --> data[("data.json<br/>内置数据")]
+  lx["LeanIX 流程导出 2026-10-20<br/>26 条 M.I2D 流程"] -. 按编号增量合并 .-> model
+  data --> model["model.mjs<br/>匹配能力与流程"]
+  model --> ov["Overview"]
+  model --> ls["Application landscape"]
+  model --> sim["Similarity check"]
+  ov & ls & sim --> html["离线单文件 HTML<br/>offline/"]
+  classDef src fill:#e8f3fa,stroke:#0071a8,color:#173f58
+  classDef out fill:#e6f7ef,stroke:#2e9e5b,color:#14532d
+  class inv,std,cap,lx src
+  class html out
+```
+
+原始记录只读，程序不会自动改动 LeanIX 或业务数据；所有修正都要人工确认后在 LeanIX 里改。
+
+</details>
+
+<details>
+<summary><b>🗂️ 文件地图（给 AI 助手和新接手的人）</b></summary>
+<br>
+
+所有路径都相对于仓库根目录，页面逻辑都在 `program/public/`。在 GitHub 上的地址是 `https://github.com/2113326213-design/logistics-digital-portfolio/blob/main/<路径>`。
 
 | 想找什么 | 在哪里 |
 |---|---|
@@ -165,6 +267,7 @@ flowchart LR
 | 构建和离线单文件 | `program/scripts/build.mjs`、`program/scripts/export-offline.mjs` |
 | 测试（`npm test`，当前 442 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v9.15-test-results.txt` |
 | 离线单文件版 | `offline/` |
+| IIS 部署脚本 | `offline/deploy-iis-v9.15.bat`（打包下载版 `offline/deploy-iis-v9.15-script.zip`） |
 | README 横幅、徽章和截图 | `docs/images/` |
 | 构建输出、文件校验清单 | `built/`、`MANIFEST.sha256` |
 
