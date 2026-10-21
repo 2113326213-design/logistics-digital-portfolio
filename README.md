@@ -1,26 +1,31 @@
 <p align="center"><img src="docs/images/banner.svg" alt="Logistics Digital Portfolio — 物流数字化应用组合工具" width="1000"></p>
 
 <p align="center">
-  <img src="docs/images/badge-version.svg" alt="version V9.17">&nbsp;
-  <img src="docs/images/badge-tests.svg" alt="tests 459 passed">&nbsp;
+  <a href="https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest"><img src="docs/images/button-download.svg" alt="下载离线版 DOWNLOAD"></a>
+  <a href="http://wx-web-td02.apac.bosch.com:8083"><img src="docs/images/button-online.svg" alt="打开在线版 ONLINE"></a>
+  <a href="#我想"><img src="docs/images/button-guide.svg" alt="使用说明 GUIDE"></a>
+  <a href="CHANGELOG.md"><img src="docs/images/button-changelog.svg" alt="更新日志 CHANGELOG"></a>
+  <a href="https://github.com/2113326213-design/logistics-digital-portfolio/issues/new/choose"><img src="docs/images/button-feedback.svg" alt="反馈问题 FEEDBACK"></a>
+</p>
+
+<h3 align="center">一个页面看清整个物流应用组合</h3>
+
+<p align="center">
+  <b>哪些应用登记不全</b> &nbsp;·&nbsp; <b>谁在做什么</b> &nbsp;·&nbsp; <b>哪些可能重复</b><br>
+  <sub>离线单文件 · 不需要安装 · 用 Chrome 打开即用 · 页面界面为英文</sub>
+</p>
+
+<p align="center">
+  <img src="docs/images/badge-version.svg" alt="version">&nbsp;
+  <img src="docs/images/badge-tests.svg" alt="tests passed">&nbsp;
+  <img src="docs/images/badge-data.svg" alt="data">&nbsp;
   <img src="docs/images/badge-offline.svg" alt="offline single HTML, no install">&nbsp;
-  <img src="docs/images/badge-data.svg" alt="data 75 apps, 10 plants">&nbsp;
   <img src="docs/images/badge-private.svg" alt="visibility private">
 </p>
 
-<p align="center">
-  一个页面看清整个物流应用组合：<b>哪些应用登记不全</b> · <b>谁在做什么</b> · <b>哪些可能重复</b><br>
-  <sub>当前版本 V9.17（2026-10-21） · 不需要安装 · 用 Chrome 打开即用</sub>
-</p>
+<hr>
 
-<p align="center">
-  <a href="#打开工具"><b>▶&nbsp; 打开工具</b></a>
-  &nbsp;&nbsp;·&nbsp;&nbsp; <a href="#我想">我想……</a>
-  &nbsp;&nbsp;·&nbsp;&nbsp; <a href="#常见问题">常见问题</a>
-  &nbsp;&nbsp;·&nbsp;&nbsp; <a href="#版本记录">版本记录</a>
-  &nbsp;&nbsp;·&nbsp;&nbsp; <a href="#给维护者">给维护者</a>
-  &nbsp;&nbsp;·&nbsp;&nbsp; <a href="https://github.com/2113326213-design/logistics-digital-portfolio/issues/new/choose">反馈问题 / 提需求</a>
-</p>
+<p align="center"><img src="docs/images/screen-overview.png" alt="Overview：按工厂看应用维护质量" width="1000"></p>
 
 > [!IMPORTANT]
 > 本仓库包含真实的应用清单数据，请保持**私有**，不要把链接或文件转发给 Bosch 以外的人。
@@ -60,16 +65,14 @@
 
 <table align="center">
   <tr>
-    <td align="center" width="25%"><h3>76</h3><sub>应用 · 10 个工厂 · 5 个业务部门</sub></td>
-    <td align="center" width="25%"><h3>2,850</h3><sub>组两两比较 · 7 组得分 ≥ 50</sub></td>
+    <td align="center" width="25%"><h3>75</h3><sub>应用 · 10 个工厂 · 5 个业务部门</sub></td>
+    <td align="center" width="25%"><h3>2,775</h3><sub>组两两比较 · 9 组得分 ≥ 50</sub></td>
     <td align="center" width="25%"><h3>23 / 39</h3><sub>Process / Capability 待处理应用</sub></td>
     <td align="center" width="25%"><h3>V9.17</h3><sub>2026-10-21 · 459 项测试通过</sub></td>
   </tr>
 </table>
 
 ## 三个页面
-
-<p align="center"><img src="docs/images/overview.jpg" alt="Overview：应用维护质量总览" width="900"></p>
 
 | 页面 | 回答什么问题 | 怎么用 |
 |---|---|---|
@@ -79,8 +82,8 @@
 
 <table>
 <tr>
-<td width="50%"><img src="docs/images/landscape.jpg" alt="Application landscape"><p align="center"><sub>Application landscape · 逐级展开</sub></p></td>
-<td width="50%"><img src="docs/images/similarity.jpg" alt="Similarity check"><p align="center"><sub>Similarity check · 潜在重叠列表</sub></p></td>
+<td width="50%"><img src="docs/images/screen-landscape.png" alt="Application landscape"><p align="center"><sub>Application landscape · 逐级展开</sub></p></td>
+<td width="50%"><img src="docs/images/screen-similarity.png" alt="Similarity check"><p align="center"><sub>Similarity check · 潜在重叠列表</sub></p></td>
 </tr>
 </table>
 
@@ -120,7 +123,7 @@
 <details>
 <summary><b>数据有多新？</b></summary>
 <br>
-应用清单来自 LeanIX 导出（<code>20260825_logistic_inventory.xlsx</code>，2026-08-25）；流程标准以 2025-02-21 的快照为准，并按编号合并了 2026-10-20 的 LeanIX 流程导出（新旧名称并列保留，有差异的标为待确认）。
+应用清单来自 2026-10-21 的自有工作簿（<code>20261021_logistic_inventory.xlsx</code> 的 Logistic Apps_1021，含 Status in Oct；不是 still active 的应用和 no score 的应用不计入成本、ROI 和相似度检查），此前依次并入了 2026-08-25 的清单和 2026-10-20 的 LeanIX 应用导出；流程标准以 2025-02-21 的快照为准，并按编号合并了 2026-10-20 的 LeanIX 流程导出（新旧名称并列保留，有差异的标为待确认）。
 </details>
 
 <details>
@@ -156,6 +159,8 @@
 | **流程来源可追溯** | 流程标准以 21.02.2025 的快照为准，2026-10-20 的 LeanIX 导出按编号合并进来，新旧名称并列保留，差异标为待确认。 |
 
 ## 版本记录
+
+完整更新日志见 [`CHANGELOG.md`](CHANGELOG.md)。
 
 **V9.17（当前，2026-10-21）**：并入 2026-10-21 的自有工作簿（Logistic Apps_1021，新增 Status in Oct）：Status 不是 still active 的 3 个应用和 no score 的 5 个一样不计入成本、ROI 和相似度检查；CGQB_Logistic_system_Q 不在新清单里，已移出；14 个成本分、9 个 ROI 分按新的 Parameter Score 更新；ROI 继续按公式显示回本时间。
 
@@ -285,11 +290,12 @@ flowchart LR
 | 测试（`npm test`，当前 459 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v9.17-test-results.txt` |
 | 离线单文件版 | `offline/` |
 | IIS 部署脚本（每次发布自动生成） | `offline/deploy-iis.bat`（打包下载版 `offline/deploy-iis-script.zip`）；生成器 `program/scripts/deploy-script.mjs`，模板 `program/scripts/deploy-iis.template.bat`，发布打包 `program/scripts/release-files.mjs`（`npm run release:files`），检查 `program/tests/deploy-script.test.mjs`，本机模拟 `program/scripts/deploy-sim.mjs`（`npm run deploy:sim`） |
-| README 横幅、徽章和截图 | `docs/images/` |
 | 构建输出、文件校验清单 | `built/`、`MANIFEST.sha256` |
+| README 横幅、按钮、徽章和截图 | `docs/images/`；按钮 `button-*.svg` 和徽章 `badge-*.svg` 由 `program/scripts/readme-art.mjs`（`npm run readme:art`）按测试日志和内置数据生成；截图 `screen-*.png` 是离线页面 1440×900 的实拍 |
+| 更新日志、许可、安全说明 | [`CHANGELOG.md`](CHANGELOG.md)、[`LICENSE`](LICENSE)（内部使用）、[`SECURITY.md`](SECURITY.md) |
 
 </details>
 
 <br>
 
-<p align="center"><sub>Logistics Digital Portfolio · 2026 · 离线、只读、可追溯</sub></p>
+<p align="center"><sub>Logistics Digital Portfolio · 2026 · 离线、只读、可追溯<br><a href="CHANGELOG.md">更新日志</a> · <a href="SECURITY.md">安全说明</a> · <a href="LICENSE">内部使用许可</a> · <a href="https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest">下载最新版</a></sub></p>

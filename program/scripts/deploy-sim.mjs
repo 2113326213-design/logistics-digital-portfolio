@@ -43,10 +43,10 @@ const run=(file,args=[],env={})=>new Promise(resolve=>{
  let out='';child.stdout.on('data',d=>out+=d.toString('latin1'));child.stderr.on('data',d=>out+=d.toString('latin1'));child.stdin.end();
  child.on('close',code=>resolve({code,out}));
 });
-const results=[];
+const results=[],report=[];
 const check=(name,{code,out},expected,exitCode)=>{
  const missing=expected.filter(text=>!out.includes(text)),ok=!missing.length&&code===exitCode;
- results.push(ok);console.log(`${ok?'PASS':'FAIL'}  ${name}${ok?'':`\n      exit ${code} (expected ${exitCode}); missing: ${missing.join(' | ')}\n${out.split(/\r?\n/).filter(Boolean).slice(-12).map(l=>'      > '+l).join('\n')}`}`);
+ results.push(ok);report.push(`${ok?'PASS':'FAIL'}  ${name}`);console.log(`${ok?'PASS':'FAIL'}  ${name}${ok?'':`\n      exit ${code} (expected ${exitCode}); missing: ${missing.join(' | ')}\n${out.split(/\r?\n/).filter(Boolean).slice(-12).map(l=>'      > '+l).join('\n')}`}`);
 };
 const ELEVATED=`/k call "${path.join(home,'Downloads',DEPLOY_SCRIPT_NAME)}" 8083 "D:\\logistics-tool" ELEVATED`;
 try{
@@ -64,6 +64,8 @@ try{
  finally{server.close();}
 }catch(error){results.push(false);console.error(error.message);}
 finally{rmSync(dir,{recursive:true,force:true});}
-const failed=results.filter(ok=>!ok).length;
-console.log(failed?`${failed} of ${results.length} checks failed.`:`All ${results.length} checks passed for ${DEPLOY_SCRIPT_NAME} (${VERSION}).`);
+const failed=results.filter(ok=>!ok).length,summary=failed?`${failed} of ${results.length} checks failed.`:`All ${results.length} checks passed for ${DEPLOY_SCRIPT_NAME} (${VERSION}).`;
+console.log(summary);
+// The result is kept for the README seals and certificate (npm run readme:art).
+writeFileSync(path.resolve(process.cwd(),'..','verification','deploy-sim-results.txt'),[`npm run deploy:sim · ${new Date().toLocaleDateString('sv-SE')} · ${DEPLOY_SCRIPT_NAME} ${VERSION}`,...report,summary,''].join('\n'));
 process.exit(failed?1:0);

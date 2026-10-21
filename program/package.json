@@ -12,6 +12,7 @@
     "export:offline": "node scripts/export-offline.mjs",
     "release:files": "node scripts/release-files.mjs",
     "deploy:sim": "node scripts/deploy-sim.mjs",
+    "readme:art": "node scripts/readme-art.mjs",
     "prepare:data": "node scripts/prepare-data.mjs"
   },
   "devDependencies": {

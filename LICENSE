@@ -1,0 +1,19 @@
+Logistics Digital Portfolio — Internal Use License
+
+Copyright (c) 2026 the maintainers of Logistics Digital Portfolio. All rights reserved.
+
+This repository and everything in it — the program, the offline HTML releases, the bundled application inventory
+data, the deployment scripts and the documentation — is provided for internal use by the logistics digital team and
+the colleagues they give access to.
+
+1. Use. You may open, run and deploy the tool for internal work, and change it to maintain it.
+2. No redistribution. No licence is granted to copy, publish, distribute, sublicense or sell any part of this
+   repository outside Bosch, or to make the repository or its files public.
+3. Data. The bundled data comes from real application inventories. Keep the repository private, and do not forward
+   the files, screenshots of the data or links to people outside Bosch.
+4. No warranty. The software is provided "as is", without warranty of any kind, express or implied. The maintainers
+   are not liable for any claim, damage or other liability arising from its use. Similarity scores and data checks are
+   leads for review, not decisions.
+
+内部使用许可（中文说明）：本仓库的程序、离线版、内置数据、部署脚本和文档仅供内部使用；不得在 Bosch 以外复制、发布或转发，
+也不得公开仓库。内置数据来自真实的应用清单，请保持仓库私有。软件按“现状”提供，相似度分数和数据检查结果只是复核线索，不是结论。
