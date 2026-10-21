@@ -1,0 +1,47 @@
+name: 提需求 / 修改建议
+description: 希望工具新增或调整某个功能、显示或规则
+title: "[需求] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        谢谢！请尽量写清楚“现在是什么样、希望变成什么样”。页面和按钮名称照工具里的英文写即可（例如 Overview、Similarity check、View details）。
+        本仓库是私有的；如需附截图，请只截工作需要的部分。
+  - type: dropdown
+    id: page
+    attributes:
+      label: 涉及哪个页面
+      options:
+        - Overview
+        - Application landscape
+        - Similarity check
+        - 应用详情（View details）
+        - 导入 / 导出（Import data、Export workspace）
+        - 其他 / 不确定
+    validations:
+      required: true
+  - type: textarea
+    id: now
+    attributes:
+      label: 现在是什么样
+      description: 可以写操作步骤，例如“选 AR Stock Taking ↔ AUTO-RACK 后，页面显示……”
+    validations:
+      required: true
+  - type: textarea
+    id: wanted
+    attributes:
+      label: 希望变成什么样
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: 为什么需要（可选）
+      description: 例如谁在用、多久用一次、不改会怎样
+  - type: input
+    id: version
+    attributes:
+      label: 使用的版本
+      description: 页面顶部 Offline edition 后面的版本号，例如 V9.15；在线版写“在线版”
+      placeholder: V9.15

@@ -1,0 +1,53 @@
+name: 报告问题
+description: 结果不对、报错、打不开或显示异常
+title: "[问题] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        请写下能重现问题的步骤。工具不会自动修改原始记录；如果是数据本身登记有误，请写明是哪个应用、哪条记录。
+  - type: dropdown
+    id: page
+    attributes:
+      label: 在哪个页面
+      options:
+        - Overview
+        - Application landscape
+        - Similarity check
+        - 应用详情（View details）
+        - 导入 / 导出（Import data、Export workspace）
+        - 打开文件 / 加载
+        - 其他 / 不确定
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 操作步骤
+      placeholder: |
+        1. 打开 Similarity check
+        2. 点 Compare an application，选 ……
+        3. 看到 ……
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 应该看到什么
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 实际看到什么
+      description: 有报错文字请原样贴上；可以附截图
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: 版本和打开方式
+      description: 例如“V9.15 离线版，Chrome”或“在线版”
+    validations:
+      required: true

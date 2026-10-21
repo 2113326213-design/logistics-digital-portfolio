@@ -19,6 +19,7 @@
   &nbsp;&nbsp;·&nbsp;&nbsp; <a href="#常见问题">常见问题</a>
   &nbsp;&nbsp;·&nbsp;&nbsp; <a href="#版本记录">版本记录</a>
   &nbsp;&nbsp;·&nbsp;&nbsp; <a href="#给维护者">给维护者</a>
+  &nbsp;&nbsp;·&nbsp;&nbsp; <a href="https://github.com/2113326213-design/logistics-digital-portfolio/issues/new/choose">反馈问题 / 提需求</a>
 </p>
 
 > [!IMPORTANT]
@@ -139,6 +140,12 @@
 按 <b>Ctrl + F5</b> 强制刷新（浏览器可能缓存了旧版本）。工具在 Chrome 上测试过，请优先用 Chrome。
 </details>
 
+<details>
+<summary><b>发现问题或想提需求，找谁？</b></summary>
+<br>
+在本仓库 <a href="https://github.com/2113326213-design/logistics-digital-portfolio/issues/new/choose">新建 Issue</a>，选“提需求 / 修改建议”或“报告问题”，按表格填写页面、步骤和期望结果即可。
+</details>
+
 ## 主要规则
 
 | 规则 | 含义 |
@@ -211,6 +218,8 @@
 ```
 npm ci → npm test → npm run build → npm run export:offline
 ```
+
+改完文件后用 `node .github/scripts/check-manifest.mjs --write` 重新生成 `MANIFEST.sha256`，用 `node .github/scripts/check-manifest.mjs` 核对。
 
 接手前先读 [`00_Claude先读.md`](00_Claude先读.md)（中文，按日期记录每次改动和用户决定），再读 [`program/README.md`](program/README.md)（英文，"Current state" 一节是当前状态）。
 
