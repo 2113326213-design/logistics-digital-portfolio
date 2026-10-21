@@ -1,6 +1,7 @@
 // V9.15 part 1 (owner request 2026-10-20): in the single-pair comparison each record problem is shown once, attributed to
 // the application that has to be checked, with View details leading to that application's issue. A branch held back by
 // the other application's unconfirmed records is not "More detail needed"; a real too-coarse registration still is.
+import {RECORDS_V916} from './records-v916.mjs';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -14,7 +15,7 @@ import {processIssues,capabilityIssues,renderProcessIssues,renderCapabilityIssue
 import {buildModel} from '../public/model.mjs';
 import {workspaceData} from '../public/workspace.mjs';
 
-const data=workspaceData(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url))));
+const data=workspaceData(JSON.parse(readFileSync(RECORDS_V916)));
 const model=buildModel(data),app=name=>model.apps.find(item=>item.Name===name);
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const cap=createSimilarity(model,'cap'),process=createSimilarity(model,'process'),weighted=createWeightedSimilarity(model,DEFAULT_WEIGHTS);

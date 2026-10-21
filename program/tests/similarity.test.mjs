@@ -1,10 +1,11 @@
+import {RECORDS_V916} from './records-v916.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {buildModel} from '../public/model.mjs';
 import {createSimilarity} from '../public/similarity.mjs';
 import {explainResult} from '../public/explanations.mjs';
 
-const data=JSON.parse(fs.readFileSync(new URL('../public/data.json',import.meta.url)));
+const data=JSON.parse(fs.readFileSync(RECORDS_V916));
 const model=buildModel(data),indexes={cap:createSimilarity(model,'cap'),process:createSimilarity(model,'process')};
 // Four shared codes out of six targets count as 4/6, regardless of branch sizes.
 const capRows=[['B.06 Logistics','B.06.1 Strategy','B.06.2 Planning'],...['B.06.1.1','B.06.1.2','B.06.2.1','B.06.2.2','B.06.2.3','B.06.2.4'].map(id=>[id+' Detail'])];

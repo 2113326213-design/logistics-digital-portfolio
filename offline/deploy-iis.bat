@@ -1,7 +1,7 @@
 @echo off
 setlocal EnableExtensions
 rem ======================================================================
-rem  Logistics Tool V9.16 - one-click IIS deploy (static single HTML file)
+rem  Logistics Tool V9.17 - one-click IIS deploy (static single HTML file)
 rem  Generated for this release by program/scripts/deploy-script.mjs from deploy-iis.template.bat. Do not edit by hand.
 rem
 rem  Run as Administrator on the IIS server (Windows Server 2016+).
@@ -26,14 +26,14 @@ set "TARGET=D:\logistics-tool"
 if not "%~1"=="" set "PORT=%~1"
 if not "%~2"=="" set "TARGET=%~2"
 
-set "ZIPNAME=logistics-offline-20261021-v9.16.zip"
-set "EXPECT_SHA256=ba067bc3cf700317add1e9e0727d6de764c5e1741d810e343b00ca13ea04be3f"
+set "ZIPNAME=logistics-offline-20261021-v9.17.zip"
+set "EXPECT_SHA256=d75cce59a4bb14fab08f7ed94c8632ba7c1c194edf946c417abbaadb9215f1e6"
 set "INETSRV=%windir%\system32\inetsrv"
-set "TMPX=%TEMP%\logistics-v9.16-extract"
+set "TMPX=%TEMP%\logistics-v9.17-extract"
 set "BACKUP=%TARGET%_backup"
 
 echo.
-echo === Logistics Tool V9.16 : IIS deploy ===
+echo === Logistics Tool V9.17 : IIS deploy ===
 echo Site: %SITE%   Port: %PORT%
 echo Dir : %TARGET%
 echo.
@@ -47,7 +47,7 @@ if /i "%~3"=="ELEVATED" (
 )
 echo Not elevated - asking Windows for Administrator rights ^(click Yes on the UAC prompt^)...
 rem Explorer deletes files opened from inside a zip once this window exits,
-rem so elevate a stable copy in Downloads (where the V9.16 zip also lives).
+rem so elevate a stable copy in Downloads (where the V9.17 zip also lives).
 set "SELF=%USERPROFILE%\Downloads\deploy-iis.bat"
 if /i not "%~f0"=="%SELF%" copy /y "%~f0" "%SELF%" >nul
 if not exist "%SELF%" set "SELF=%~f0"
@@ -104,7 +104,7 @@ if not defined SRC (
 )
 powershell -NoProfile -ExecutionPolicy Bypass -Command "if ((Get-FileHash -Algorithm SHA256 -LiteralPath $env:SRC).Hash -ne $env:EXPECT_SHA256) { exit 1 }"
 if errorlevel 1 (
-  echo [X] SHA-256 mismatch - the zip is not the expected V9.16 build ^(logistics-offline-20261021-v9.16.zip^). Download the zip and the script of the same release. Stopping.
+  echo [X] SHA-256 mismatch - the zip is not the expected V9.17 build ^(logistics-offline-20261021-v9.17.zip^). Download the zip and the script of the same release. Stopping.
   goto :fail
 )
 echo [2/6] OK  extracted and SHA-256 verified

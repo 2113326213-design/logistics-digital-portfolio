@@ -1,3 +1,4 @@
+import {RECORDS_V916} from './records-v916.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -7,7 +8,7 @@ import {workspaceData} from '../public/workspace.mjs';
 import {costSummary} from '../public/costs.mjs';
 import {opportunityEligibility} from '../public/scope.mjs';
 import {recordImport,applicationTimeline} from '../public/application-history.mjs';
-const data=workspaceData(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url))));
+const data=workspaceData(JSON.parse(readFileSync(RECORDS_V916)));
 const columns=['ID','Name','Division','Entity','Description','Business Capabilities','Processes','Lifecycle: Current Lifecycle','Lifecycle: Active'];
 const sheets={'Logistic Apps':[columns,...data.apps.map(app=>columns.map(key=>app[key]))]};
 

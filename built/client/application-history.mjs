@@ -5,7 +5,7 @@ import {english} from './english.mjs';
 import {historyFieldLabel,historyFieldValue} from './history-view.mjs';
 
 const kinds=['created','issue','fixed','updated','uploaded','note'];
-const fields=['Name','Division','Entity','Description','Main Business Capability','Business Capabilities','Processes','Lifecycle: Current Lifecycle','Lifecycle: Active','operationCostScore','roiScore','annualBenefitCNY','annualBenefitSource','scopeNote'];
+const fields=['Name','Division','Entity','Description','Main Business Capability','Business Capabilities','Processes','Lifecycle: Current Lifecycle','Lifecycle: Active','operationCostScore','roiScore','annualBenefitCNY','annualBenefitSource','scopeNote','statusNote'];
 // Annual benefit changes stay in stored history for retention but are never displayed.
 const hiddenFields=new Set(['annualBenefitCNY','annualBenefitSource']);
 const value=(v,max=6000)=>String(v??'').slice(0,max);

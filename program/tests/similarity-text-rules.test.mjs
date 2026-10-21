@@ -1,3 +1,4 @@
+import {RECORDS_V916} from './records-v916.mjs';
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import fs from 'node:fs';
@@ -539,7 +540,7 @@ test('(b) round 3: the bundled names and descriptions contain no combining mark,
  // Data fact (same before round 3): after NFKC, and after lower-casing, no bundled name or description has a character
  // of category M. Round 3 changes only how marks are handled, so no bundled word, score or count changes
  // (588 confirmed, 644 incomplete, 1,253 investigation, 365 excluded, as before round 3).
- const data=JSON.parse(fs.readFileSync(new URL('../public/data.json',import.meta.url)));
+ const data=JSON.parse(fs.readFileSync(RECORDS_V916));
  const marked=data.apps.filter(a=>[a.Name,a.Description].some(text=>/\p{M}/u.test(String(text??'').normalize('NFKC'))||/\p{M}/u.test(String(text??'').normalize('NFKC').toLowerCase())));
  assert.deepEqual(marked.map(a=>a.Name),[]);
  assert.equal(data.apps.length,76);
@@ -719,7 +720,7 @@ test('(b) round 5: a description URL written with full-width characters is remov
 test('(b) round 5: NFKC changes no bundled name or description and none holds a selector, so no bundled word changes',()=>{
  // A text that NFKC leaves as it is and that holds no selector reads the same words whether selectors are removed before
  // or after NFKC and whether URLs are stripped before or after it.
- const data=JSON.parse(fs.readFileSync(new URL('../public/data.json',import.meta.url)));
+ const data=JSON.parse(fs.readFileSync(RECORDS_V916));
  assert.deepEqual(data.apps.filter(a=>[a.Name,a.Description].some(text=>{const s=String(text??'');return s.normalize('NFKC')!==s||/\p{Variation_Selector}/u.test(s);})).map(a=>a.Name),[]);
  // Four bundled descriptions hold a URL; none of their compared words is a URL scheme.
  const linked=data.apps.filter(a=>/(?:https?:\/\/|www\.)\S/i.test(String(a.Description??'')));
@@ -802,7 +803,7 @@ test('(b) source names stay exactly as recorded after buildModel and comparison'
 });
 
 test('(b) bundled data: recovered names and plant-code names compare on their real words',()=>{
- const data=JSON.parse(fs.readFileSync(new URL('../public/data.json',import.meta.url))),before=JSON.stringify(data);
+ const data=JSON.parse(fs.readFileSync(RECORDS_V916)),before=JSON.stringify(data);
  const model=buildModel(data),index=createWeightedSimilarity(model);
  const find=name=>{const found=model.apps.find(a=>a.Name===name);assert.ok(found,name);return found;};
  const pairFor=(a,b)=>index.pair(find(a).id,find(b).id);
@@ -935,7 +936,7 @@ test('bundled data: the gate column says Yes on 204 of the 365 Out of scope rows
  // "no score, ..." (CngP/MSE-Nbo Supplier SCM, RBAC_ME_Szh5 Intralogistics control system, RBCE Auto Warehouse
  // Management System, VMCN_CONNEX, Wuj HK AGV (recovered ...)) make 5 x 71 + 10 = 365 excluded pairs; every one has
  // comparable names and descriptions on both sides, and 204 of them share no name word and no description word.
- const data=JSON.parse(fs.readFileSync(new URL('../public/data.json',import.meta.url)));
+ const data=JSON.parse(fs.readFileSync(RECORDS_V916));
  const model=buildModel(data),index=createWeightedSimilarity(model),apps=model.apps;
  const excluded=[];
  for(let i=0;i<apps.length;i++)for(let j=i+1;j<apps.length;j++){const pair=index.pair(apps[i].id,apps[j].id);if(pair.status==='excluded')excluded.push(pair);}

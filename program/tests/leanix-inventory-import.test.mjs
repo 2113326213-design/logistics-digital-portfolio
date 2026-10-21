@@ -1,6 +1,7 @@
 // V9.16 (owner decision 2026-10-21): Import data accepts a LeanIX application export (display-name header, Type column,
 // no Division / Entity, no cost sheet, a ReadMe sheet). Fields the export lacks are kept by ID; applications it does
 // not list are kept and recorded in data.inventoryExport, shown in the profile and the import preview.
+import {RECORDS_V916} from './records-v916.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -13,7 +14,7 @@ import {correctionStates} from '../public/corrections.mjs';
 import {createWeightedSimilarity,portfolioCandidates,DEFAULT_WEIGHTS} from '../public/weighted.mjs';
 import {PRESERVED_KEYS} from '../scripts/prepare-data.mjs';
 
-const bundled=()=>workspaceData(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url))));
+const bundled=()=>workspaceData(JSON.parse(readFileSync(RECORDS_V916)));
 // The header row of the real export of 2026-10-20 (20261020_083736_UKj4Y_inventory.xlsx).
 const HEADER=['ID','Type','Name','Display Name','Description','Lifecycle: Current Lifecycle','Lifecycle: Active','Lifecycle: End of Life','IT Owner of the Application','Application Manager Organization','Responsible: Application Manager(IT)','Main Business Capability','Business Capabilities','Processes','User Groups','Provided Interfaces','Consumed Interfaces','Application Basis','Business Criticality','Design Scope Level','IT Components','Open Source Software (OSS) - Relevance','Open Source Software (OSS) - Status','Third-Party Software - Relevance','Third-Party Software - Status'];
 const row=(app,overrides={})=>{const r=Object.fromEntries(HEADER.map(h=>[h,'']));Object.assign(r,{ID:app.ID,Type:'Application',Name:app.Name,'Display Name':app.Name,Description:app.Description,'Lifecycle: Current Lifecycle':app['Lifecycle: Current Lifecycle'],'Lifecycle: Active':44228,'Main Business Capability':app['Main Business Capability'],'Business Capabilities':app['Business Capabilities'],Processes:app.Processes},overrides);return HEADER.map(h=>r[h]);};

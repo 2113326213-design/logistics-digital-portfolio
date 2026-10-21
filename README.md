@@ -1,16 +1,16 @@
 <p align="center"><img src="docs/images/banner.svg" alt="Logistics Digital Portfolio — 物流数字化应用组合工具" width="1000"></p>
 
 <p align="center">
-  <img src="docs/images/badge-version.svg" alt="version V9.16">&nbsp;
-  <img src="docs/images/badge-tests.svg" alt="tests 451 passed">&nbsp;
+  <img src="docs/images/badge-version.svg" alt="version V9.17">&nbsp;
+  <img src="docs/images/badge-tests.svg" alt="tests 458 passed">&nbsp;
   <img src="docs/images/badge-offline.svg" alt="offline single HTML, no install">&nbsp;
-  <img src="docs/images/badge-data.svg" alt="data 76 apps, 10 plants">&nbsp;
+  <img src="docs/images/badge-data.svg" alt="data 75 apps, 10 plants">&nbsp;
   <img src="docs/images/badge-private.svg" alt="visibility private">
 </p>
 
 <p align="center">
   一个页面看清整个物流应用组合：<b>哪些应用登记不全</b> · <b>谁在做什么</b> · <b>哪些可能重复</b><br>
-  <sub>当前版本 V9.16（2026-10-21） · 不需要安装 · 用 Chrome 打开即用</sub>
+  <sub>当前版本 V9.17（2026-10-21） · 不需要安装 · 用 Chrome 打开即用</sub>
 </p>
 
 <p align="center">
@@ -48,11 +48,11 @@
 
 不在内网，或想自己保留一份时用：
 
-1. 下载 [**logistics-offline-20261021-v9.16.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest)。
+1. 下载 [**logistics-offline-20261021-v9.17.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest)。
 2. 右键 → **Extract all**。
 3. 用 Chrome 打开里面的 HTML。
 
-页面顶部显示 **V9.16** 就对了。
+页面顶部显示 **V9.17** 就对了。
 
 </td>
 </tr>
@@ -62,8 +62,8 @@
   <tr>
     <td align="center" width="25%"><h3>76</h3><sub>应用 · 10 个工厂 · 5 个业务部门</sub></td>
     <td align="center" width="25%"><h3>2,850</h3><sub>组两两比较 · 7 组得分 ≥ 50</sub></td>
-    <td align="center" width="25%"><h3>23 / 40</h3><sub>Process / Capability 待处理应用</sub></td>
-    <td align="center" width="25%"><h3>V9.16</h3><sub>2026-10-21 · 451 项测试通过</sub></td>
+    <td align="center" width="25%"><h3>23 / 39</h3><sub>Process / Capability 待处理应用</sub></td>
+    <td align="center" width="25%"><h3>V9.17</h3><sub>2026-10-21 · 458 项测试通过</sub></td>
   </tr>
 </table>
 
@@ -135,7 +135,7 @@
 </details>
 
 <details>
-<summary><b>页面打开了，但不是 V9.16，或者显示不全？</b></summary>
+<summary><b>页面打开了，但不是 V9.17，或者显示不全？</b></summary>
 <br>
 按 <b>Ctrl + F5</b> 强制刷新（浏览器可能缓存了旧版本）。工具在 Chrome 上测试过，请优先用 Chrome。
 </details>
@@ -157,7 +157,9 @@
 
 ## 版本记录
 
-**V9.16（当前，2026-10-21）**：并入 2026-10-20 的 LeanIX 应用导出（71 个应用，按 ID 更新 35 个；导出未包含的 5 个保留并在详情里标注）；Import data 可以直接读取 LeanIX 导出。
+**V9.17（当前，2026-10-21）**：并入 2026-10-21 的自有工作簿（Logistic Apps_1021，新增 Status in Oct）：Status 不是 still active 的 3 个应用和 no score 的 5 个一样不计入成本、ROI 和相似度检查；CGQB_Logistic_system_Q 不在新清单里，已移出；14 个成本分、9 个 ROI 分按新的 Parameter Score 更新；ROI 继续按公式显示回本时间。
+
+**V9.16（2026-10-21）**：并入 2026-10-20 的 LeanIX 应用导出（71 个应用，按 ID 更新 35 个；导出未包含的 5 个保留并在详情里标注）；Import data 可以直接读取 LeanIX 导出。
 
 **V9.15（2026-10-20）**：单对比较按应用列出待核对记录并直达详情；切换页面时保留比较结果；阈值随备份导出、导入。
 
@@ -167,6 +169,7 @@
 
 | 版本 | 主要变化 |
 |---|---|
+| [V9.17](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v9.17-20261021) | 并入 2026-10-21 的自有工作簿（Logistic Apps_1021，新增 Status in Oct）：Status 不是 still active 的 3 个应用和 no score 的 5 个一样不计入成本、ROI 和相似度检查；CGQB_Logistic_system_Q 不在新清单里，已移出；14 个成本分、9 个 ROI 分按新的 Parameter Score 更新；ROI 继续按公式显示回本时间；计入 67 个应用，年成本 ¥2,890,000；Capability To review 40 → 39 |
 | [V9.16](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v9.16-20261021) | 并入 2026-10-20 的 LeanIX 应用导出（按 ID 更新 35 个应用；未包含的 5 个保留并标注）；Import data 接受 LeanIX 导出格式；Process To review 24 → 23，Capability 38 → 40 |
 | [V9.15](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v9.15-20261020) | 单对比较按应用列出待核对记录并直达详情；切换页面保留比较；Deferred detail 移入计算说明；阈值随备份导出、导入，导出提示分状态 |
 | [V9.14](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v9.14-20261020) | 已隐藏的其他比较结果不再在页面里生成（页面更轻）；关闭应用详情后焦点回到原入口 |
@@ -234,7 +237,7 @@ npm ci → npm test → npm run build → npm run export:offline
 
 ```mermaid
 flowchart LR
-  inv["LeanIX 应用清单<br/>20260825 工作簿 + 20261020 导出，按 ID 合并"] --> prep
+  inv["应用清单<br/>20261021 工作簿（含 Status in Oct）"] --> prep
   std["流程标准快照<br/>Business Capability + Process.xlsx · 21.02.2025"] --> prep
   cap["能力标准<br/>standard+name.xlsx"] --> prep
   prep["prepare-data.mjs<br/>从原始 Excel 重建"] --> data[("data.json<br/>内置数据")]
@@ -263,7 +266,7 @@ flowchart LR
 | 想找什么 | 在哪里 |
 |---|---|
 | 当前状态、改动记录、用户决定 | `00_Claude先读.md`、`program/README.md` |
-| 内置数据（76 个应用、能力和流程目录） | `program/public/data.json`（2026-08-25 工作簿 + 2026-10-20 LeanIX 导出，按 ID 合并；`inventoryExport` 记录导出未包含的应用）；`program/scripts/prepare-data.mjs` 可从原始 Excel 重建 |
+| 内置数据（75 个应用、能力和流程目录） | `program/public/data.json`（2026-10-21 自有工作簿 Logistic Apps_1021，经 Import data 同一路径合并；`statusNote` 记录 Status in Oct）；`program/scripts/prepare-data.mjs` 只能重建 8 月格式的工作簿（不读 Status 列），可从原始 Excel 重建 |
 | LeanIX 流程导出（2026-10-20，26 条） | `program/public/leanix-process-export.mjs`（原样数据）、`program/public/leanix-processes.mjs`（按编号合并、名称差异、来源） |
 | 数据模型：读入应用、匹配能力和流程 | `program/public/model.mjs`、`program/public/codes.mjs` |
 | 页面入口和整体渲染 | `program/public/index.html`、`program/public/app.js` |
@@ -277,7 +280,7 @@ flowchart LR
 | 导入 / 导出（Excel、工作区、CSV） | `program/public/xlsx.mjs`、`program/public/import-review.mjs`、`program/public/workspace.mjs`、`program/public/exports.mjs`、`program/public/score-settings.mjs`（阈值随备份）、`program/public/offline-save.mjs`（离线导出提示） |
 | 样式 | `program/public/*.css` |
 | 构建和离线单文件 | `program/scripts/build.mjs`、`program/scripts/export-offline.mjs` |
-| 测试（`npm test`，当前 451 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v9.16-test-results.txt` |
+| 测试（`npm test`，当前 458 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v9.17-test-results.txt` |
 | 离线单文件版 | `offline/` |
 | IIS 部署脚本（每次发布自动生成） | `offline/deploy-iis.bat`（打包下载版 `offline/deploy-iis-script.zip`）；生成器 `program/scripts/deploy-script.mjs`，模板 `program/scripts/deploy-iis.template.bat`，发布打包 `program/scripts/release-files.mjs`（`npm run release:files`），检查 `program/tests/deploy-script.test.mjs` |
 | README 横幅、徽章和截图 | `docs/images/` |

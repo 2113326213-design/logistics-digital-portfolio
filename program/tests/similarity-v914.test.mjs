@@ -1,5 +1,6 @@
 // V9.14 (owner request 2026-10-20, "小问题修改一下"): the screening outcomes hidden in V9.11 are no longer built, and
 // closing application details opened from "Check application records" returns focus to the entry that opened them.
+import {RECORDS_V916} from './records-v916.mjs';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -7,7 +8,7 @@ import {createComparisonUI} from '../public/similarity-ui.mjs';
 import {buildModel} from '../public/model.mjs';
 import {workspaceData} from '../public/workspace.mjs';
 
-const data=workspaceData(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url))));
+const data=workspaceData(JSON.parse(readFileSync(RECORDS_V916)));
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 
 // A small DOM double; unlike the shared one, close() dispatches 'close' as a native dialog does.

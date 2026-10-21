@@ -1,3 +1,4 @@
+import {RECORDS_V916} from './records-v916.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {buildModel} from '../public/model.mjs';
@@ -5,7 +6,7 @@ import {createSimilarity} from '../public/similarity.mjs';
 const compareMaintained=(m,a,b,dimension)=>{const index=createSimilarity(m,dimension),forward=index.compare(a,b),reverse=index.compare(b,a);return {coverageA:forward.coverage,coverageB:reverse.coverage,forward,reverse};};
 import {acceptanceSample,exportWorkspace,importWorkspace} from '../public/workspace.mjs';
 import {inventoryFromSheets} from '../public/xlsx.mjs';
-const original=JSON.parse(fs.readFileSync(new URL('../public/data.json',import.meta.url)));
+const original=JSON.parse(fs.readFileSync(RECORDS_V916));
 const sample=acceptanceSample(original),model=buildModel(sample);
 const compare=(m,dimension='cap')=>compareMaintained(m,m.apps[0].id,m.apps[1].id,dimension);
 let r=compare(model);

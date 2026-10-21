@@ -1,3 +1,4 @@
+import {RECORDS_V916} from './records-v916.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -5,7 +6,7 @@ import {buildModel} from '../public/model.mjs';
 import {semanticConcerns,SEMANTIC_CASES} from '../public/semantic-review.mjs';
 import {labelDifferenceRows} from '../public/label-differences.mjs';
 
-const data=JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url)));
+const data=JSON.parse(readFileSync(RECORDS_V916));
 // The seven cases were flagged against the catalogue in use until 2026-10-16; the fixture keeps that rule covered with its real names.
 const old=JSON.parse(readFileSync(new URL('./capability-rows-2026-10-15.json',import.meta.url)));
 const {importHistory,applicationEvents,...previous}=data;

@@ -1,3 +1,4 @@
+import {RECORDS_V916} from './records-v916.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {DatabaseSync} from 'node:sqlite';
@@ -12,7 +13,7 @@ import {correctionStates} from '../public/corrections.mjs';
 import {previewImport} from '../public/import-review.mjs';
 import {applicationTimeline,applicationTimelineCSV,recordImport,cleanApplicationEvents} from '../public/application-history.mjs';
 import {excelDate} from '../public/xlsx.mjs';
-const initial=workspaceData(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url)))),model=buildModel(initial),items=reviewItems(model);
+const initial=workspaceData(JSON.parse(readFileSync(RECORDS_V916))),model=buildModel(initial),items=reviewItems(model);
 const oldWorkspace=structuredClone(initial),manufacturing=oldWorkspace.apps.find(a=>a.ID==='a103918e-63a2-4b26-ae5b-a5b1b7af8fd1');
 manufacturing.Processes+=';Manufacturing';
 const migrated=mergeBundledCorrections(oldWorkspace,initial);

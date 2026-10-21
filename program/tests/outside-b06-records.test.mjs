@@ -3,6 +3,7 @@
 // 2026-10-21: the LeanIX export of 2026-10-20 (V9.16) added B.06.5 to the Scrap platform and replaced every B.06-root-only
 // registration by B.06.5, so the bundled data has neither an outside-only application nor a real depth gap any more. The
 // fixture below is the current data with those two pre-export registrations restored; every other record is current.
+import {RECORDS_V916} from './records-v916.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -14,7 +15,7 @@ import {comparisonRecordEvidence,renderComparisonRecords} from '../public/compar
 import {pairResultLabel,pairStatusReason} from '../public/pair-status.mjs';
 import {scopeReason} from '../public/display.mjs';
 
-const bundled=workspaceData(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url))));
+const bundled=workspaceData(JSON.parse(readFileSync(RECORDS_V916)));
 // Re-derived 2026-10-21 from the current data: the Scrap platform records only its outside capability again and
 // ShzP_Pad system only the B.06 root (both as registered before the 2026-10-20 export), so the rules keep a subject.
 const restored={'RBCD LOM Scrap Management Platform':'B.14.09.1 Waste Management','ShzP_Pad system':'B.06 Logistics Management'};

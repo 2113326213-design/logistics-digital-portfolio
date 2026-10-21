@@ -1,3 +1,4 @@
+import {RECORDS_V916} from './records-v916.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {test} from 'node:test';
@@ -10,7 +11,7 @@ import {displayMaintenanceGapReason} from '../public/maintenance-labels.mjs';
 import {dataChecksForApp,dataChecksSummary,renderDataChecks,nameDifferenceRows} from '../public/data-checks.mjs';
 import {capabilityCatalogueNotice} from '../public/display.mjs';
 
-const data=JSON.parse(fs.readFileSync(new URL('../public/data.json',import.meta.url)));
+const data=JSON.parse(fs.readFileSync(RECORDS_V916));
 // Legacy catalogue (before 2026-10-16) with outdated and truncated names: keeps the meaning, missing-code and name-difference checks covered with real legacy names.
 const old=JSON.parse(fs.readFileSync(new URL('./capability-rows-2026-10-15.json',import.meta.url)));
 const checked=source=>{const model=buildModel(source),reports={cap:maintenanceReport(model,{},'cap'),process:maintenanceReport(model,{},'process')},all=model.apps.map(app=>[app,dataChecksForApp(model,app,reports)]);return {model,reports,all,find:name=>all.find(([app])=>app.Name.startsWith(name))};};

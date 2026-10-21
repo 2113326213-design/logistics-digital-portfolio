@@ -1,9 +1,10 @@
+import {RECORDS_V916} from './records-v916.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {buildModel} from '../public/model.mjs';
 import {labelDifferenceRows} from '../public/label-differences.mjs';
-const data=JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url)));
+const data=JSON.parse(readFileSync(RECORDS_V916));
 // Catalogue in use until 2026-10-16: its outdated names keep the scope and application identity covered.
 const old=JSON.parse(readFileSync(new URL('./capability-rows-2026-10-15.json',import.meta.url)));
 const {importHistory,applicationEvents,...previous}=data;

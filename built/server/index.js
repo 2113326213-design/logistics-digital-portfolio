@@ -479,7 +479,7 @@ function cleanReviewHistory(value2) {
 
 // public/application-history.mjs
 var kinds = ["created", "issue", "fixed", "updated", "uploaded", "note"];
-var fields = ["Name", "Division", "Entity", "Description", "Main Business Capability", "Business Capabilities", "Processes", "Lifecycle: Current Lifecycle", "Lifecycle: Active", "operationCostScore", "roiScore", "annualBenefitCNY", "annualBenefitSource", "scopeNote"];
+var fields = ["Name", "Division", "Entity", "Description", "Main Business Capability", "Business Capabilities", "Processes", "Lifecycle: Current Lifecycle", "Lifecycle: Active", "operationCostScore", "roiScore", "annualBenefitCNY", "annualBenefitSource", "scopeNote", "statusNote"];
 var value = (v, max = 6e3) => String(v ?? "").slice(0, max);
 function cleanApplicationEvents(events) {
   if (!Array.isArray(events)) return [];
@@ -540,6 +540,10 @@ function workspaceData(data) {
     if (Object.hasOwn(a, "scopeNote")) {
       app.scopeNote = String(a.scopeNote ?? "");
       app.scopeSource = String(a.scopeSource ?? "");
+    }
+    if (Object.hasOwn(a, "statusNote")) {
+      app.statusNote = String(a.statusNote ?? "");
+      app.statusSource = String(a.statusSource ?? "");
     }
     if (Object.hasOwn(a, "operationCostScore")) {
       app.operationCostScore = cleanCostScore(a.operationCostScore);

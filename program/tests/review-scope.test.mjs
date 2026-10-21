@@ -1,3 +1,4 @@
+import {RECORDS_V916} from './records-v916.mjs';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -7,7 +8,7 @@ import {correctionStates,createCorrection,revokeCorrection} from '../public/corr
 import {semanticConcerns} from '../public/semantic-review.mjs';
 import {viewForDatasetRestore,readView,writeView} from '../public/autosave.mjs';
 import {maintenanceReport} from '../public/overview.mjs';
-const data=JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url)));
+const data=JSON.parse(readFileSync(RECORDS_V916));
 // Workspace as it was before the 2026-10-16 switch to the business capability standard (no import history).
 const old=JSON.parse(readFileSync(new URL('./capability-rows-2026-10-15.json',import.meta.url)));
 const {importHistory,applicationEvents,...previous}=data,legacy={...previous,capabilityRows:old.capabilityRows,taxonomySource:old.taxonomySource};

@@ -1,6 +1,20 @@
 # 物流工具：Claude 接手说明
 
-## V9.16 当前状态（2026-10-21，优先于所有历史段落）
+## V9.17 当前状态（2026-10-21，优先于所有历史段落）
+
+- 基线：V9.16（仓库 c03dab3）。用户（2026-10-21）发来 `20261021_logistic_inventory.xlsx` 并说：“有没有导进去ROI年份的，你记得把公式套入进去。然后no score的部分不要算进去。status in OCT 里面不是still active的也不要。”
+- **新附件**是用户自己的工作簿（不是 LeanIX 导出）：`Logistic Apps_1021`（75 个应用；新增 C 列 `Status in Oct`；范围列改名 `with score or not`，在 D 列；J 列标题为空且无内容）、`Logistic Apps_0825`（8 月原清单，内容未改）、`Parameter Score`（71 个应用；18 个应用共 43 个单元格改了，其中程序用的 App operation cost 14 个、ROI 9 个）、`Dimension score`（随之重算，程序不读）。表里**没有 ROI 年份列，也没有公式**。
+- **ROI 年份**：程序按 2026-10-20 定的公式显示回本时间（1 → > 2 years，3 → > 1 year，5 → < 1 year），新分数导入后自动换算；计入的 67 个应用全部有回本时间：> 2 years 11、> 1 year 33、< 1 year 23，没有需要确认的分数。
+- **不计入规则**（public/scope.mjs opportunityEligibility）：`Status in Oct` 不是 still active（不分大小写和空格）的应用，与 no score 的应用一样，不计入成本合计、ROI（显示 Not scored）和相似度检查；记录仍在清单里，详情显示 “Not in similarity check – Not still active (phaseout)”，Source records 多一行 “Status in source inventory”。Status 为空或没有这一列不排除。no score 的原因优先显示。
+- **导入器**：xlsx.mjs 按表头找 `with score or not` 和 `Status in <月份>`（写入 statusNote / statusSource，来源含工作表名和单元格，如 `Logistic Apps_1021!C52 (Status in Oct)`）；没有名为 `Logistic Apps` 的表时读**第一张**带 ID 和 Name 的表，所以 `Logistic Apps_1021` 要排在 `_0825` 前面。mergeInventoryEvidence 在缺这一列时按 ID 保留原状态；workspaceData、mergeBundledCorrections、导入历史（字段 statusNote，标签 “Status in source inventory”）都已支持；导入预览会列出这次“不再计入”的应用。
+- **内置数据**（经程序自己的导入路径 inventoryFromSheets → applyInventory → previewImport → recordImport 合并）：Added 0 · Updated 75（每个应用都多了 Status）· Removed 1（**CGQB_Logistic_system_Q**，不在 1021 清单里；它与 CGQB_Logistic_system 的 85.2 分相似度对随之消失）。字段变化：Status 75、成本分 14、ROI 9、Business Capabilities 3（360° Supplier dashboard 改为标准名称 B.06.8 / B.06.8.1 / B.06.8.2；RBCW LOM Dashboard 和 RMM System 去掉顶层 B.06）、生命周期 2（RBCW LOM Dashboard → phaseOut，VM/LOG-Szh2_DAVIS → endOfLife）、名称 1（DAVIS 加 “(recovered 2026-09-21 09:32:15)”）。BMLP 的 Manufacturing 决定再次应用。RBCW LOM Dashboard 的 1 条流程映射只因其他字段变化需复核、流程记录未变，按 V9.16 的做法以 “Owner decision carried over · import 2026-10-21” 重建为 Applied。完整工作簿清除 V9.16 的 inventoryExport 记录。
+- **结果**：不计入 8 个（no score 5 个 + 不是 still active 3 个：360° Supplier dashboard owner changed to central、RBCW LOM Dashboard phaseout、VM/LOG-Szh2_DAVIS endoflife）；计入 67 个，年成本合计 ¥4,140,000 → ¥2,890,000（约 ¥1,020,000 来自重新打分，主要是 7 个应用成本分 1 → 5；¥220,000 来自 3 个不再计入的应用；¥10,000 来自移出的 CGQB_Logistic_system_Q）。Capability To review 40 → 39（360° 名称对上标准），Process 23 不变。
+- **测试**：新增 `tests/v917-owner-workbook.test.mjs`（7 项）。基于 V9.16 数据手算或用户确认过的历史测试改读冻结副本 `tests/data-v9.16.json`（`tests/records-v916.mjs`，与 GitHub 上 V9.16 的 data.json 逐字节相同），断言不改；描述当前数据的 4 个测试（costs、roi-payback、scope、to-review）按新数据更新并写明推导。prepare-data 的重建测试现在针对 V9.16 记录：prepare-data 只能重建 8 月格式（`Logistic Apps` + 无标题 C 列），不读 Status 列；V9.17 数据来自 Import data 路径。
+- **仍需确认**：很多新分数正好是 1 和 5 对调（如 CDR_EM 成本 1 → 5、RBCC PESS 5 → 1、PMS ROI 5 → 1），请和打分的人确认方向；CGQB_Logistic_system_Q 只是从清单中去掉，没有状态说明。之前遗留的 RBCW Transport Material Intra Plant L3、AUTO-RACK Putaway to Automated Warehouse L3V 仍待确认。
+- **以后每次发布的固定步骤**：改 `scripts/release.mjs` 的版本和日期 → `npm test` → `npm run build` → `npm run export:offline` → `npm run release:files` → `npm test`（再跑一次，确认部署脚本已对应）→ 更新文档、`node .github/scripts/check-manifest.mjs --write`、提交、发 Release（附发布 zip 和 `offline/deploy-iis-script.zip`）。
+- 当前离线包：`offline/logistics-offline-20261021-v9.17.zip`；HTML 文件名及页面标识均为 V9.17，日期 2026-10-21。部署脚本：`offline/deploy-iis.bat`（V9.17，自动生成）。验证记录见 `verification/v9.17-verification.md`。
+
+## V9.16 历史状态（2026-10-21，受顶部 V9.17 更新）
 
 - 基线：V9.15（仓库 72cc439，含 Galvin 的 IIS 部署脚本和 README 使用指南）。用户决定（2026-10-21）：把 2026-10-20 的 LeanIX 应用导出按应用 ID 并入程序，更新它提供的字段，保留导出没有的 5 个应用、成本、ROI、工厂和业务部门，保留之前的决定，并让 Import data 接受这种格式。
 - **新附件** `20261020_083736_UKj4Y_inventory.xlsx`（导出时间 2026-10-20 08:37:37 GMT）：LeanIX 原始应用导出，第 1 行是显示名称表头，有 Type 列，没有 Division / Entity 列，没有成本 / ROI 表，另有 ReadMe 表。71 个应用，全部能按 ID 对应到现有应用；没有新增。

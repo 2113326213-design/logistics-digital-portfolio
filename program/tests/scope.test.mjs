@@ -7,15 +7,21 @@ import {workspaceData,exportWorkspace,importWorkspace,mergeBundledCorrections} f
 
 const bundled=workspaceData(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url))));
 
-test('source C markers exclude only the five explicit out-of-scope applications from opportunities',()=>{
- assert.equal(bundled.apps.length,76);
- assert(bundled.apps.every(app=>app['Main Business Capability']&&/^Logistic Apps!C\d+$/.test(app.scopeSource)));
- assert.equal(bundled.apps.filter(app=>opportunityEligibility(app).eligible).length,71);
+test('the scope and status columns exclude only the five no-score and the three not still active applications',()=>{
+ // V9.17 (owner workbook 20261021_logistic_inventory.xlsx): the scope column is 'with score or not' (column D of Logistic Apps_1021)
+ // and 'Status in Oct' (column C) marks three applications that are not still active (owner decision 2026-10-21: not counted).
+ assert.equal(bundled.apps.length,75);
+ assert(bundled.apps.every(app=>app['Main Business Capability']&&/^Logistic Apps_1021!D\d+$/.test(app.scopeSource)&&/^Logistic Apps_1021!C\d+ \(Status in Oct\)$/.test(app.statusSource)));
+ assert.equal(bundled.apps.filter(app=>opportunityEligibility(app).eligible).length,67);
  const excluded=bundled.apps.filter(app=>!opportunityEligibility(app).eligible);
- assert.deepEqual(excluded.map(app=>app.scopeNote).sort(),[
+ assert.deepEqual(excluded.filter(app=>app.scopeNote!=='with score').map(app=>app.scopeNote).sort(),[
   'no score, not go-live','no score, not go-live','no score,not BBM',
   'no score,not an application','no score,not an application'
  ].sort());
+ assert.deepEqual(excluded.filter(app=>app.scopeNote==='with score').map(app=>[app.Name,app.statusNote]).sort(),[
+  ['360° Supplier dashboard','owner changed to central'],['RBCW LOM Dashboard','phaseout'],['VM/LOG-Szh2_DAVIS (recovered 2026-09-21 09:32:15)','endoflife']
+ ]);
+ assert(excluded.filter(app=>app.scopeNote!=='with score').every(app=>app.statusNote==='still active'),'the no-score applications are excluded by their scope note');
  assert.equal(opportunityEligibility({scopeNote:'Unverified note'}).eligible,true);
 });
 

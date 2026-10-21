@@ -1,3 +1,4 @@
+import {RECORDS_V916} from './records-v916.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -5,7 +6,7 @@ import {buildModel} from '../public/model.mjs';
 import {workspaceData} from '../public/workspace.mjs';
 import {maintenanceReport} from '../public/overview.mjs';
 import {processAncestorCoverage,reviewIssues} from '../public/review-issues.mjs';
-const setup=()=>{const data=workspaceData(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url))));const model=buildModel(data),report=maintenanceReport(model,{},'process'),app=model.apps.find(a=>a.Name==='CGQB_Logistic_system');return {data,model,report,app};};
+const setup=()=>{const data=workspaceData(JSON.parse(readFileSync(RECORDS_V916)));const model=buildModel(data),report=maintenanceReport(model,{},'process'),app=model.apps.find(a=>a.Name==='CGQB_Logistic_system');return {data,model,report,app};};
 test('V9.5: confirmed L3 covers missing L0/L1 without filling or changing source data',()=>{
  const {data,model,report,app}=setup(),before=JSON.stringify(data);
  assert.deepEqual(report.issues.get(app.id),[]);

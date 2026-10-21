@@ -1,7 +1,8 @@
+import {RECORDS_V916} from './records-v916.mjs';
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {buildModel,columns} from '../public/model.mjs';
-const data=JSON.parse(fs.readFileSync(new URL('../public/data.json',import.meta.url)));
+const data=JSON.parse(fs.readFileSync(RECORDS_V916));
 const m=buildModel(data);
 assert.equal(m.apps.length,76);
 for(const view of ['cap','process'])for(const expanded of [new Set(),new Set((view==='cap'?m.caps:m.procs).keys())]){

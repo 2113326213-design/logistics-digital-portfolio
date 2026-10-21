@@ -1,5 +1,6 @@
 // V9.2 (owner decisions 2026-10-20): pair reviews in the import preview, one status rule, and Process Level 2 covered by
 // confirmed Level 3 records exactly as Capability Level 2.
+import {RECORDS_V916} from './records-v916.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -10,7 +11,7 @@ import {processLevel2Coverage} from '../public/review-issues.mjs';
 import {previewImport,importAppliedStatus} from '../public/import-review.mjs';
 import {PAIR_STATES} from '../public/pair-status.mjs';
 
-const bundled=()=>workspaceData(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url))));
+const bundled=()=>workspaceData(JSON.parse(readFileSync(RECORDS_V916)));
 
 test('every preview field the import dialog reads exists, including pair reviews (v8 and V9.1 lacked it)',()=>{
  const current=bundled(),incoming={...bundled(),pairReviews:{'a::b':{status:'Complementary',reason:'r',reviewer:'',date:'2026-10-20'}}};

@@ -42,12 +42,20 @@ export function inventoryFromSheets(sheets){
  const keys=['ID','Division','Entity','Name','Description','Business Capabilities','Processes','Lifecycle: Current Lifecycle','Lifecycle: Active'].filter(k=>headers.includes(k));
  if(headers.includes('Main Business Capability'))keys.push('Main Business Capability');
  const hasScopeColumn=rows===sheets['Logistic Apps']&&!String(headers[2]??'').trim();
+ // The owner workbook of 2026-10-21 names the scope column 'with score or not' and adds 'Status in Oct'. Both are found
+ // by header (the month in the status header may change). Owner decision 2026-10-21: an application whose status is not
+ // "still active" is not counted, like one without a score (scope.mjs).
+ const sheetName=String(entry[0]),cell=index=>(index>=26?String.fromCharCode(64+Math.floor(index/26)):'')+String.fromCharCode(65+index%26);
+ const scopeColumn=hasScopeColumn?-1:headers.findIndex(x=>/^with score or not$/i.test(String(x??'').trim()));
+ const statusColumn=headers.findIndex(x=>/^status in \S+$/i.test(String(x??'').trim()));
  const apps=rows.flatMap((r,index)=>{
   if(index<=h||!r||!r.some(x=>String(x??'').trim()))return [];
   if(leanix&&String(r[headers.indexOf('Type')]??'').trim()&&String(r[headers.indexOf('Type')]).trim()!=='Application')return [];
   const app=Object.fromEntries(keys.map(k=>[k,k==='Lifecycle: Active'?excelDate(r[headers.indexOf(k)],sheets.date1904):r[headers.indexOf(k)]??'']));
   if(headers.includes('Annual benefit (CNY/year)')){try{app.annualBenefitCNY=cleanAnnualBenefit(r[headers.indexOf('Annual benefit (CNY/year)')]);}catch(error){throw Error(`Row ${index+1}, application ID ${String(r[headers.indexOf('ID')]??'').trim()||'not provided'}: ${error.message}`);}app.annualBenefitSource=`Inventory · Annual benefit (CNY/year) · row ${index+1}`;}
   if(hasScopeColumn){app.scopeNote=String(r[2]??'').trim();app.scopeSource=`Logistic Apps!C${index+1}`;}
+  if(scopeColumn>=0){app.scopeNote=String(r[scopeColumn]??'').trim();app.scopeSource=`${sheetName}!${cell(scopeColumn)}${index+1}`;}
+  if(statusColumn>=0){app.statusNote=String(r[statusColumn]??'').trim();app.statusSource=`${sheetName}!${cell(statusColumn)}${index+1} (${String(headers[statusColumn]).trim()})`;}
   return [app];
  });
  if(!apps.length)throw Error('应用清单没有数据。');

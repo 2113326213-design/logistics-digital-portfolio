@@ -38,9 +38,11 @@ test('the source score stays in the data; only the display changes',()=>{
  const again=importWorkspace(exportWorkspace(data));
  assert.deepEqual(again.apps.map(a=>a.roiScore),before);
  assert.deepEqual(buildModel(data).apps.map(a=>a.roiScore),before);
- // Bundled data: 15 × 1, 34 × 3, 22 × 5 and 5 applications outside scoring.
+ // Bundled data V9.17 (owner workbook 2026-10-21): 9 ROI scores changed (six 1 → 5 or 3, three 5 → 1), giving 12 × 1, 35 × 3, 24 × 5 for the
+ // 71 applications of V9.16 that are scored. CGQB_Logistic_system_Q (5) left the list; RBCW LOM Dashboard (3), 360° Supplier dashboard (3)
+ // and VM/LOG-Szh2_DAVIS (1) are not still active and show Not scored, with the five applications outside scoring: 11 / 33 / 23 / 8.
  const shown={};for(const a of data.apps){const t=formatROIPayback(a);shown[t]=(shown[t]||0)+1;}
- assert.deepEqual(shown,{'> 2 years':15,'> 1 year':34,'< 1 year':22,'Not scored':5});
+ assert.deepEqual(shown,{'> 2 years':11,'> 1 year':33,'< 1 year':23,'Not scored':8});
 });
 
 test('every ROI display uses the payback period: details, cost table, source records, history',()=>{

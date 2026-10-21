@@ -1,3 +1,4 @@
+import {RECORDS_V916} from './records-v916.mjs';
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {readFileSync} from 'node:fs';
@@ -22,7 +23,7 @@ const names=result=>result.apps.map(row=>row.app.Name);
 // (none joined; RBCW AWMS stays because its new "Transport Material Intra Plant L3" record needs confirmation).
 // 17 queued applications × 70 affected pairs − C(17,2) shared pairs = 1054 (was 19 × 70 − C(19,2) = 1159).
 test('bundled portfolio: 1054 affected pairs reduce to 17 source applications with no unexplained pair',()=>{
- const data=workspaceData(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url))));
+ const data=workspaceData(JSON.parse(readFileSync(RECORDS_V916)));
  const model=buildModel(data),pairs=createWeightedSimilarity(model,data.similarityWeights).pairs();
  const before=JSON.stringify({apps:data.apps,labels:pairs.map(pair=>[pair.status,pair.coverage])});
  const result=comparisonReadiness(pairs);

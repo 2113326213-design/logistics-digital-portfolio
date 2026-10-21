@@ -13,6 +13,7 @@
 // are all complete with zero common codes is No shared registrations (was Not similar). The CSV code evidence column
 // is renamed 'No complete score: code evidence (out of 100)'; a pair without a complete score shows "—" instead of
 // Unavailable in the score box. Code evidence values are unchanged.
+import {RECORDS_V916} from './records-v916.mjs';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -211,7 +212,7 @@ test('the weighted CSV Method column states the round-2 pair-score, code-evidenc
 });
 
 // ---- Bundled data ----
-const data=workspaceData(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url))));
+const data=workspaceData(JSON.parse(readFileSync(RECORDS_V916)));
 const model=buildModel(data),index=createWeightedSimilarity(model),cap=createSimilarity(model,'cap'),processSimilarity=createSimilarity(model,'process');
 const app=name=>{const found=model.apps.find(a=>a.Name===name);assert(found,`bundled data includes ${name}`);return found;};
 const coverage=(similarity,a,b)=>{const r=similarity.compare(a.id,b.id);return [r.commonCount,r.targetCount];};

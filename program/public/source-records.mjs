@@ -4,6 +4,7 @@ export function renderSourceRecords(app,esc){
  const notes=String(app.Description??'').split(/\r?\n/).filter(line=>/^oneIDM name is\b/i.test(line.trim()));
  const fields=[
   {name:'ROI (payback period)',values:[formatROIPayback(app)],note:`Source ROI score: ${roiPayback(app).score??'not provided'}${roiPayback(app).score!==null?' / 5':''} · ${app.roiSource||'No ROI source recorded'} · Shown as a payback period: ${ROI_PAYBACK_RULE}.`},
+  ...(String(app.statusNote??'').trim()?[{name:'Status in source inventory',values:[String(app.statusNote).trim()],note:`${app.statusSource||'No source recorded'}${String(app.statusNote).trim().toLowerCase().replace(/\s+/g,' ')==='still active'?'':' · Not still active: not counted in cost totals, ROI or the similarity check.'}`}]:[]),
   {name:'Business Capabilities',values:entries(app['Business Capabilities'])},
   {name:'Processes',values:entries(app.Processes)},
   ...(notes.length?[{name:'Description',values:notes,note:'Source notes from Description'}]:[])

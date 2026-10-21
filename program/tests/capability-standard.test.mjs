@@ -3,6 +3,7 @@
 // taxonomy source, catalogue change counts in the import preview, and the recorded switch in public/data.json.
 // Owner decision 2026-10-19 ("HC 去除，这不属于我们部门的"): HC capabilities belong to another department, so the
 // standard's HC entries are left out of the catalogue (recorded as a second taxonomy event); applications keep their HC records.
+import {RECORDS_V916} from './records-v916.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -30,7 +31,7 @@ installDOMParser();
 // V9.16 (2026-10-21) the file also holds the LeanIX application export of 2026-10-20 (new application records and a third
 // import event), so the history checks below run on the records before that export, restored from its import event;
 // the last test checks that the export changed only application records and added exactly that one event.
-const current=JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url),'utf8'));
+const current=JSON.parse(readFileSync(RECORDS_V916,'utf8'));
 const raw=recordsBefore20261020(current),data=workspaceData(raw);
 const old=JSON.parse(readFileSync(new URL('./capability-rows-2026-10-15.json',import.meta.url),'utf8'));
 const appSource=readFileSync(new URL('../public/app.js',import.meta.url),'utf8');

@@ -12,11 +12,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2021-02-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C2",
+      "scopeSource": "Logistic Apps_1021!D3",
       "operationCostScore": 4,
       "operationCostSource": "Parameter Score · App operation cost · row 2",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 2"
+      "roiSource": "Parameter Score · ROI · row 2",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C3 (Status in Oct)"
     },
     {
       "ID": "07901df9-4f80-47df-9119-4c86b773d5cc",
@@ -30,11 +32,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2021-07-18",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C3",
+      "scopeSource": "Logistic Apps_1021!D4",
       "operationCostScore": 4,
       "operationCostSource": "Parameter Score · App operation cost · row 3",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 3"
+      "roiSource": "Parameter Score · ROI · row 3",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C4 (Status in Oct)"
     },
     {
       "ID": "a968f639-7afd-4fed-ad47-a1fff4e081d9",
@@ -48,11 +52,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2019-08-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C4",
-      "operationCostScore": 5,
+      "scopeSource": "Logistic Apps_1021!D5",
+      "operationCostScore": 4,
       "operationCostSource": "Parameter Score · App operation cost · row 25",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 25"
+      "roiSource": "Parameter Score · ROI · row 25",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C5 (Status in Oct)"
     },
     {
       "ID": "0bd00479-d233-43f3-84b2-478e7ae90dcb",
@@ -66,11 +72,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2021-11-29",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C5",
+      "scopeSource": "Logistic Apps_1021!D6",
       "operationCostScore": 5,
       "operationCostSource": "Parameter Score · App operation cost · row 4",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 4"
+      "roiSource": "Parameter Score · ROI · row 4",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C6 (Status in Oct)"
     },
     {
       "ID": "b97561de-87df-46ec-a86c-477fe0e431f9",
@@ -84,11 +92,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2020-12-21",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C6",
+      "scopeSource": "Logistic Apps_1021!D7",
       "operationCostScore": 4,
       "operationCostSource": "Parameter Score · App operation cost · row 5",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 5"
+      "roiSource": "Parameter Score · ROI · row 5",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C7 (Status in Oct)"
     },
     {
       "ID": "a103918e-63a2-4b26-ae5b-a5b1b7af8fd1",
@@ -102,11 +112,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2023-05-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C7",
+      "scopeSource": "Logistic Apps_1021!D8",
       "operationCostScore": 3,
       "operationCostSource": "Parameter Score · App operation cost · row 22",
       "roiScore": 5,
-      "roiSource": "Parameter Score · ROI · row 22"
+      "roiSource": "Parameter Score · ROI · row 22",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C8 (Status in Oct)"
     },
     {
       "ID": "33b19059-2d78-4752-9aa8-b08e1613a27a",
@@ -120,11 +132,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2019-02-11",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C8",
-      "operationCostScore": 1,
+      "scopeSource": "Logistic Apps_1021!D9",
+      "operationCostScore": 5,
       "operationCostSource": "Parameter Score · App operation cost · row 23",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 23"
+      "roiSource": "Parameter Score · ROI · row 23",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C9 (Status in Oct)"
     },
     {
       "ID": "cf227366-6b40-4b94-bfc2-3e0225b7adb3",
@@ -138,11 +152,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2023-08-05",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C9",
+      "scopeSource": "Logistic Apps_1021!D10",
       "operationCostScore": 5,
       "operationCostSource": "Parameter Score · App operation cost · row 47",
       "roiScore": 5,
-      "roiSource": "Parameter Score · ROI · row 47"
+      "roiSource": "Parameter Score · ROI · row 47",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C10 (Status in Oct)"
     },
     {
       "ID": "69fc3b20-172c-477a-bcbb-58a159be720b",
@@ -156,29 +172,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2023-08-05",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C10",
+      "scopeSource": "Logistic Apps_1021!D11",
       "operationCostScore": 5,
       "operationCostSource": "Parameter Score · App operation cost · row 48",
       "roiScore": 5,
-      "roiSource": "Parameter Score · ROI · row 48"
-    },
-    {
-      "ID": "fab13598-0672-4301-97ca-67583a04806b",
-      "Division": "PS",
-      "Entity": "RBHP",
-      "Name": "CGQB_Logistic_system_Q",
-      "Description": "CGQB_Logistic_system_Q is a testing system of CGQB_Logistic_system.It is a platform that tests new functions .When in the test process ,it can manage AGV operations and integrates with the WMS and IES.",
-      "Main Business Capability": "B.06 Logistics Management",
-      "Business Capabilities": "B.06 Logistics Management;B.06.4 Inventory Management;B.06.4.1 Commercial Inventory Management;B.06.4.2 Physical Inventory;B.06.5 Material Flow Orchestration;B.06.5.1 Inbound Management and Receiving;B.06.5.2 Material Flow and Storage Management;B.06.5.3 Production Logistics",
-      "Processes": "BBM PM I2D Manage Internal Transport L3",
-      "Lifecycle: Current Lifecycle": "active",
-      "Lifecycle: Active": "2023-08-05",
-      "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C11",
-      "operationCostScore": 5,
-      "operationCostSource": "Parameter Score · App operation cost · row 49",
-      "roiScore": 5,
-      "roiSource": "Parameter Score · ROI · row 49"
+      "roiSource": "Parameter Score · ROI · row 48",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C11 (Status in Oct)"
     },
     {
       "ID": "e354d01b-6ae7-4fe2-8dc3-301980b2f508",
@@ -192,11 +192,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2017-01-01",
       "scopeNote": "no score,not BBM",
-      "scopeSource": "Logistic Apps!C12",
+      "scopeSource": "Logistic Apps_1021!D12",
       "operationCostScore": null,
       "operationCostSource": "",
       "roiScore": null,
-      "roiSource": ""
+      "roiSource": "",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C12 (Status in Oct)"
     },
     {
       "ID": "10ddca54-501c-4f09-9663-e5970e365c7b",
@@ -210,11 +212,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2020-12-31",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C13",
+      "scopeSource": "Logistic Apps_1021!D13",
       "operationCostScore": 4,
       "operationCostSource": "Parameter Score · App operation cost · row 6",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 6"
+      "roiSource": "Parameter Score · ROI · row 6",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C13 (Status in Oct)"
     },
     {
       "ID": "4035f956-1dc8-4468-94db-0ffe603e29a2",
@@ -228,11 +232,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2022-05-07",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C14",
+      "scopeSource": "Logistic Apps_1021!D14",
       "operationCostScore": 5,
       "operationCostSource": "Parameter Score · App operation cost · row 7",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 7"
+      "roiSource": "Parameter Score · ROI · row 7",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C14 (Status in Oct)"
     },
     {
       "ID": "a9f9cb71-6ac1-4da8-b374-2c6f675508d4",
@@ -246,11 +252,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2022-06-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C15",
+      "scopeSource": "Logistic Apps_1021!D15",
       "operationCostScore": 5,
       "operationCostSource": "Parameter Score · App operation cost · row 57",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 57"
+      "roiSource": "Parameter Score · ROI · row 57",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C15 (Status in Oct)"
     },
     {
       "ID": "b517de7b-eefe-4486-8c96-5abeeb16d8ec",
@@ -264,11 +272,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2023-02-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C16",
+      "scopeSource": "Logistic Apps_1021!D16",
       "operationCostScore": 5,
       "operationCostSource": "Parameter Score · App operation cost · row 58",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 58"
+      "roiSource": "Parameter Score · ROI · row 58",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C16 (Status in Oct)"
     },
     {
       "ID": "530143c3-4d5b-4afc-a38b-6b250aeb49dd",
@@ -282,11 +292,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2021-01-04",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C17",
+      "scopeSource": "Logistic Apps_1021!D17",
       "operationCostScore": 4,
       "operationCostSource": "Parameter Score · App operation cost · row 8",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 8"
+      "roiSource": "Parameter Score · ROI · row 8",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C17 (Status in Oct)"
     },
     {
       "ID": "df1f431f-c395-4bec-bf2f-7cf0b0bce105",
@@ -300,11 +312,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2019-09-13",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C18",
-      "operationCostScore": 3,
+      "scopeSource": "Logistic Apps_1021!D18",
+      "operationCostScore": 5,
       "operationCostSource": "Parameter Score · App operation cost · row 35",
-      "roiScore": 1,
-      "roiSource": "Parameter Score · ROI · row 35"
+      "roiScore": 5,
+      "roiSource": "Parameter Score · ROI · row 35",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C18 (Status in Oct)"
     },
     {
       "ID": "92d00cf1-e5c5-49d0-b142-96747cb836bf",
@@ -318,11 +332,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2020-04-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C19",
-      "operationCostScore": 4,
+      "scopeSource": "Logistic Apps_1021!D19",
+      "operationCostScore": 2,
       "operationCostSource": "Parameter Score · App operation cost · row 26",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 26"
+      "roiSource": "Parameter Score · ROI · row 26",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C19 (Status in Oct)"
     },
     {
       "ID": "9acec7d1-a4b3-4cd0-b6b2-b49cc115dcab",
@@ -336,11 +352,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2021-11-29",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C20",
+      "scopeSource": "Logistic Apps_1021!D20",
       "operationCostScore": 5,
       "operationCostSource": "Parameter Score · App operation cost · row 9",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 9"
+      "roiSource": "Parameter Score · ROI · row 9",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C20 (Status in Oct)"
     },
     {
       "ID": "e63e283d-69e0-4cf2-88f6-8732786791af",
@@ -354,11 +372,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2022-06-30",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C21",
+      "scopeSource": "Logistic Apps_1021!D21",
       "operationCostScore": 5,
       "operationCostSource": "Parameter Score · App operation cost · row 10",
       "roiScore": 5,
-      "roiSource": "Parameter Score · ROI · row 10"
+      "roiSource": "Parameter Score · ROI · row 10",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C21 (Status in Oct)"
     },
     {
       "ID": "56de5b25-adb2-46cf-99b4-9a8379029e2f",
@@ -372,11 +392,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2025-03-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C22",
+      "scopeSource": "Logistic Apps_1021!D22",
       "operationCostScore": 2,
       "operationCostSource": "Parameter Score · App operation cost · row 11",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 11"
+      "roiSource": "Parameter Score · ROI · row 11",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C22 (Status in Oct)"
     },
     {
       "ID": "92035830-bcce-4565-bd22-f9e617c560a1",
@@ -390,11 +412,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2021-11-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C23",
+      "scopeSource": "Logistic Apps_1021!D23",
       "operationCostScore": 3,
       "operationCostSource": "Parameter Score · App operation cost · row 24",
-      "roiScore": 5,
-      "roiSource": "Parameter Score · ROI · row 24"
+      "roiScore": 1,
+      "roiSource": "Parameter Score · ROI · row 24",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C23 (Status in Oct)"
     },
     {
       "ID": "5983762a-5662-49a8-bafb-ea91b3262180",
@@ -408,11 +432,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2022-11-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C24",
+      "scopeSource": "Logistic Apps_1021!D24",
       "operationCostScore": 5,
       "operationCostSource": "Parameter Score · App operation cost · row 12",
       "roiScore": 5,
-      "roiSource": "Parameter Score · ROI · row 12"
+      "roiSource": "Parameter Score · ROI · row 12",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C24 (Status in Oct)"
     },
     {
       "ID": "809b28f2-77e8-44a2-bf87-52be13b5bab0",
@@ -426,11 +452,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2019-09-19",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C25",
+      "scopeSource": "Logistic Apps_1021!D25",
       "operationCostScore": 1,
       "operationCostSource": "Parameter Score · App operation cost · row 68",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 68"
+      "roiSource": "Parameter Score · ROI · row 68",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C25 (Status in Oct)"
     },
     {
       "ID": "6b5a70a7-c8f4-4509-b687-16b50825612c",
@@ -444,11 +472,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2025-10-31",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C26",
+      "scopeSource": "Logistic Apps_1021!D26",
       "operationCostScore": 4,
       "operationCostSource": "Parameter Score · App operation cost · row 69",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 69"
+      "roiSource": "Parameter Score · ROI · row 69",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C26 (Status in Oct)"
     },
     {
       "ID": "42e63efb-b4da-4ba9-9dca-d25cd58bfb2b",
@@ -462,11 +492,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2015-09-29",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C27",
+      "scopeSource": "Logistic Apps_1021!D27",
       "operationCostScore": 5,
       "operationCostSource": "Parameter Score · App operation cost · row 70",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 70"
+      "roiSource": "Parameter Score · ROI · row 70",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C27 (Status in Oct)"
     },
     {
       "ID": "6631772d-f6a7-4684-a904-d4b1364add5c",
@@ -480,11 +512,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2025-06-25",
       "scopeNote": "no score,not an application",
-      "scopeSource": "Logistic Apps!C28",
+      "scopeSource": "Logistic Apps_1021!D28",
       "operationCostScore": null,
       "operationCostSource": "",
       "roiScore": null,
-      "roiSource": ""
+      "roiSource": "",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C28 (Status in Oct)"
     },
     {
       "ID": "93b4213f-b93d-48de-a6ea-fce24d4ab9e7",
@@ -498,11 +532,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2018-04-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C29",
+      "scopeSource": "Logistic Apps_1021!D29",
       "operationCostScore": 3,
       "operationCostSource": "Parameter Score · App operation cost · row 36",
-      "roiScore": 5,
-      "roiSource": "Parameter Score · ROI · row 36"
+      "roiScore": 1,
+      "roiSource": "Parameter Score · ROI · row 36",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C29 (Status in Oct)"
     },
     {
       "ID": "5595ff60-8afa-4eac-acf8-1d9ed1a2769d",
@@ -516,11 +552,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2024-04-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C30",
-      "operationCostScore": 1,
+      "scopeSource": "Logistic Apps_1021!D30",
+      "operationCostScore": 5,
       "operationCostSource": "Parameter Score · App operation cost · row 28",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 28"
+      "roiSource": "Parameter Score · ROI · row 28",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C30 (Status in Oct)"
     },
     {
       "ID": "c13d36d9-2b58-4b81-b45b-0e829dd9a157",
@@ -534,11 +572,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2017-01-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C31",
-      "operationCostScore": 5,
+      "scopeSource": "Logistic Apps_1021!D31",
+      "operationCostScore": 1,
       "operationCostSource": "Parameter Score · App operation cost · row 27",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 27"
+      "roiSource": "Parameter Score · ROI · row 27",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C31 (Status in Oct)"
     },
     {
       "ID": "1dd3d164-c823-4e5e-a7c0-134e15ac32b6",
@@ -552,11 +592,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2025-02-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C32",
-      "operationCostScore": 3,
+      "scopeSource": "Logistic Apps_1021!D32",
+      "operationCostScore": 5,
       "operationCostSource": "Parameter Score · App operation cost · row 29",
-      "roiScore": 1,
-      "roiSource": "Parameter Score · ROI · row 29"
+      "roiScore": 5,
+      "roiSource": "Parameter Score · ROI · row 29",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C32 (Status in Oct)"
     },
     {
       "ID": "27c39dea-6c97-497c-8487-7f5495bb183d",
@@ -570,11 +612,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2019-09-27",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C33",
-      "operationCostScore": 5,
+      "scopeSource": "Logistic Apps_1021!D33",
+      "operationCostScore": 1,
       "operationCostSource": "Parameter Score · App operation cost · row 30",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 30"
+      "roiSource": "Parameter Score · ROI · row 30",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C33 (Status in Oct)"
     },
     {
       "ID": "751f82b8-32c1-430a-9e33-efba92ee55ca",
@@ -588,11 +632,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2025-01-10",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C34",
-      "operationCostScore": 1,
+      "scopeSource": "Logistic Apps_1021!D34",
+      "operationCostScore": 5,
       "operationCostSource": "Parameter Score · App operation cost · row 34",
-      "roiScore": 1,
-      "roiSource": "Parameter Score · ROI · row 34"
+      "roiScore": 5,
+      "roiSource": "Parameter Score · ROI · row 34",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C34 (Status in Oct)"
     },
     {
       "ID": "6dacdae3-8add-42dc-82e5-ecc40fdbe194",
@@ -606,11 +652,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2025-05-12",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C35",
+      "scopeSource": "Logistic Apps_1021!D35",
       "operationCostScore": 3,
       "operationCostSource": "Parameter Score · App operation cost · row 31",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 31"
+      "roiSource": "Parameter Score · ROI · row 31",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C35 (Status in Oct)"
     },
     {
       "ID": "37ff84ff-1c5b-472a-8bff-466871657649",
@@ -624,11 +672,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2023-02-17",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C36",
-      "operationCostScore": 1,
+      "scopeSource": "Logistic Apps_1021!D36",
+      "operationCostScore": 5,
       "operationCostSource": "Parameter Score · App operation cost · row 32",
-      "roiScore": 1,
-      "roiSource": "Parameter Score · ROI · row 32"
+      "roiScore": 5,
+      "roiSource": "Parameter Score · ROI · row 32",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C36 (Status in Oct)"
     },
     {
       "ID": "649d1547-ea4f-4f09-a681-ad1e9e316d68",
@@ -642,11 +692,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2021-12-30",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C37",
-      "operationCostScore": 1,
+      "scopeSource": "Logistic Apps_1021!D37",
+      "operationCostScore": 5,
       "operationCostSource": "Parameter Score · App operation cost · row 37",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 37"
+      "roiSource": "Parameter Score · ROI · row 37",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C37 (Status in Oct)"
     },
     {
       "ID": "8bbd60cd-83f3-4051-af64-0141b8c1d4a7",
@@ -660,11 +712,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2018-04-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C38",
-      "operationCostScore": 2,
+      "scopeSource": "Logistic Apps_1021!D38",
+      "operationCostScore": 4,
       "operationCostSource": "Parameter Score · App operation cost · row 38",
-      "roiScore": 5,
-      "roiSource": "Parameter Score · ROI · row 38"
+      "roiScore": 1,
+      "roiSource": "Parameter Score · ROI · row 38",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C38 (Status in Oct)"
     },
     {
       "ID": "1dd68a89-660c-45ad-9b42-f3856fce0dd7",
@@ -678,11 +732,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2021-07-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C39",
+      "scopeSource": "Logistic Apps_1021!D39",
       "operationCostScore": 5,
       "operationCostSource": "Parameter Score · App operation cost · row 13",
       "roiScore": 5,
-      "roiSource": "Parameter Score · ROI · row 13"
+      "roiSource": "Parameter Score · ROI · row 13",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C39 (Status in Oct)"
     },
     {
       "ID": "bd361d21-3886-4c1c-a570-fa66f8dfc6a1",
@@ -696,11 +752,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2024-09-30",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C40",
+      "scopeSource": "Logistic Apps_1021!D40",
       "operationCostScore": 4,
       "operationCostSource": "Parameter Score · App operation cost · row 14",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 14"
+      "roiSource": "Parameter Score · ROI · row 14",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C40 (Status in Oct)"
     },
     {
       "ID": "79a83169-bae4-4512-87bb-bf64ceee4569",
@@ -714,11 +772,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2019-01-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C41",
+      "scopeSource": "Logistic Apps_1021!D41",
       "operationCostScore": 5,
       "operationCostSource": "Parameter Score · App operation cost · row 15",
       "roiScore": 5,
-      "roiSource": "Parameter Score · ROI · row 15"
+      "roiSource": "Parameter Score · ROI · row 15",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C41 (Status in Oct)"
     },
     {
       "ID": "f5a1644f-ecc5-46ca-aca4-0cad0c844bb9",
@@ -732,11 +792,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2025-04-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C42",
+      "scopeSource": "Logistic Apps_1021!D42",
       "operationCostScore": 3,
       "operationCostSource": "Parameter Score · App operation cost · row 16",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 16"
+      "roiSource": "Parameter Score · ROI · row 16",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C42 (Status in Oct)"
     },
     {
       "ID": "dbc9d3d1-531d-4a1e-9d36-46135de8345b",
@@ -750,11 +812,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2025-06-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C43",
+      "scopeSource": "Logistic Apps_1021!D43",
       "operationCostScore": 3,
       "operationCostSource": "Parameter Score · App operation cost · row 72",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 72"
+      "roiSource": "Parameter Score · ROI · row 72",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C43 (Status in Oct)"
     },
     {
       "ID": "223de1a7-83f4-4d57-9a48-ea6d7a7564ee",
@@ -768,11 +832,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2024-08-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C44",
+      "scopeSource": "Logistic Apps_1021!D44",
       "operationCostScore": 3,
       "operationCostSource": "Parameter Score · App operation cost · row 18",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 18"
+      "roiSource": "Parameter Score · ROI · row 18",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C44 (Status in Oct)"
     },
     {
       "ID": "6a541a4a-a100-463c-8301-8facd86d5e46",
@@ -786,11 +852,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2021-11-29",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C45",
+      "scopeSource": "Logistic Apps_1021!D45",
       "operationCostScore": 4,
       "operationCostSource": "Parameter Score · App operation cost · row 19",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 19"
+      "roiSource": "Parameter Score · ROI · row 19",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C45 (Status in Oct)"
     },
     {
       "ID": "bdfd379a-767a-423b-ba86-3336b57ca863",
@@ -804,11 +872,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2024-04-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C46",
+      "scopeSource": "Logistic Apps_1021!D46",
       "operationCostScore": 5,
       "operationCostSource": "Parameter Score · App operation cost · row 20",
       "roiScore": 5,
-      "roiSource": "Parameter Score · ROI · row 20"
+      "roiSource": "Parameter Score · ROI · row 20",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C46 (Status in Oct)"
     },
     {
       "ID": "5bde649c-2738-49fd-a00c-ffda8d67382a",
@@ -822,11 +892,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2022-04-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C47",
+      "scopeSource": "Logistic Apps_1021!D47",
       "operationCostScore": 5,
       "operationCostSource": "Parameter Score · App operation cost · row 21",
       "roiScore": 5,
-      "roiSource": "Parameter Score · ROI · row 21"
+      "roiSource": "Parameter Score · ROI · row 21",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C47 (Status in Oct)"
     },
     {
       "ID": "e94c1657-4165-4b0f-a6be-399dcd8ed9bc",
@@ -840,11 +912,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2025-06-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C48",
+      "scopeSource": "Logistic Apps_1021!D48",
       "operationCostScore": 3,
       "operationCostSource": "Parameter Score · App operation cost · row 17",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 17"
+      "roiSource": "Parameter Score · ROI · row 17",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C48 (Status in Oct)"
     },
     {
       "ID": "523a5b92-1f35-41f8-82e3-df5b80ae4f6b",
@@ -858,11 +932,13 @@
       "Lifecycle: Current Lifecycle": "phaseIn",
       "Lifecycle: Active": "2026-11-01",
       "scopeNote": "no score, not go-live",
-      "scopeSource": "Logistic Apps!C49",
+      "scopeSource": "Logistic Apps_1021!D49",
       "operationCostScore": null,
       "operationCostSource": "",
       "roiScore": null,
-      "roiSource": ""
+      "roiSource": "",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C49 (Status in Oct)"
     },
     {
       "ID": "269d5f6c-041a-4c7d-b895-1f52f57a7396",
@@ -876,11 +952,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2025-12-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C50",
+      "scopeSource": "Logistic Apps_1021!D50",
       "operationCostScore": 5,
       "operationCostSource": "Parameter Score · App operation cost · row 50",
       "roiScore": 5,
-      "roiSource": "Parameter Score · ROI · row 50"
+      "roiSource": "Parameter Score · ROI · row 50",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C50 (Status in Oct)"
     },
     {
       "ID": "3fbe3989-8217-4f2e-9ae5-086cbe17f6e6",
@@ -894,11 +972,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2018-04-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C51",
-      "operationCostScore": 1,
+      "scopeSource": "Logistic Apps_1021!D51",
+      "operationCostScore": 5,
       "operationCostSource": "Parameter Score · App operation cost · row 52",
-      "roiScore": 1,
-      "roiSource": "Parameter Score · ROI · row 52"
+      "roiScore": 3,
+      "roiSource": "Parameter Score · ROI · row 52",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C51 (Status in Oct)"
     },
     {
       "ID": "88f9245b-a883-4a29-add6-43e8efca840c",
@@ -907,16 +987,18 @@
       "Name": "RBCW LOM Dashboard",
       "Description": "Warehouse operation dashboard and repacking visualization",
       "Main Business Capability": "B.06 Logistics Management",
-      "Business Capabilities": "B.06 Logistics Management;B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.8.1 Supply Chain (Logistics) Standard Reporting;B.06.8.2 Supply Chain (Logistics) Monitoring and Dashboarding;B.06.8.3 Supply Chain (Logistics) Analytics",
+      "Business Capabilities": "B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.8.1 Supply Chain (Logistics) Standard Reporting;B.06.8.2 Supply Chain (Logistics) Monitoring and Dashboarding;B.06.8.3 Supply Chain (Logistics) Analytics",
       "Processes": "BBM PM I2D Execute Standard Report using BI / Power BI / Dali (OE) L3V;BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Reporting L2;BBM PM I2D Warehouse to Consume L1",
-      "Lifecycle: Current Lifecycle": "active",
+      "Lifecycle: Current Lifecycle": "phaseOut",
       "Lifecycle: Active": "2022-06-17",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C52",
+      "scopeSource": "Logistic Apps_1021!D52",
       "operationCostScore": 5,
       "operationCostSource": "Parameter Score · App operation cost · row 55",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 55"
+      "roiSource": "Parameter Score · ROI · row 55",
+      "statusNote": "phaseout",
+      "statusSource": "Logistic Apps_1021!C52 (Status in Oct)"
     },
     {
       "ID": "9dfee743-fe9b-40c6-8dd0-98c0ce8c69e3",
@@ -930,11 +1012,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2025-03-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C53",
+      "scopeSource": "Logistic Apps_1021!D53",
       "operationCostScore": 5,
       "operationCostSource": "Parameter Score · App operation cost · row 56",
       "roiScore": 5,
-      "roiSource": "Parameter Score · ROI · row 56"
+      "roiSource": "Parameter Score · ROI · row 56",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C53 (Status in Oct)"
     },
     {
       "ID": "e1f6056d-a173-4e52-a186-91dabec5ba33",
@@ -948,11 +1032,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2024-07-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C54",
+      "scopeSource": "Logistic Apps_1021!D54",
       "operationCostScore": 2,
       "operationCostSource": "Parameter Score · App operation cost · row 46",
       "roiScore": 5,
-      "roiSource": "Parameter Score · ROI · row 46"
+      "roiSource": "Parameter Score · ROI · row 46",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C54 (Status in Oct)"
     },
     {
       "ID": "9a639b2d-30be-4ab0-830b-5bb66e75d8e8",
@@ -966,11 +1052,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2024-09-02",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C55",
+      "scopeSource": "Logistic Apps_1021!D55",
       "operationCostScore": 2,
       "operationCostSource": "Parameter Score · App operation cost · row 43",
       "roiScore": 5,
-      "roiSource": "Parameter Score · ROI · row 43"
+      "roiSource": "Parameter Score · ROI · row 43",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C55 (Status in Oct)"
     },
     {
       "ID": "996143e3-b7d5-402a-a358-3e745f700391",
@@ -984,11 +1072,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2024-07-31",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C56",
+      "scopeSource": "Logistic Apps_1021!D56",
       "operationCostScore": 2,
       "operationCostSource": "Parameter Score · App operation cost · row 42",
       "roiScore": 5,
-      "roiSource": "Parameter Score · ROI · row 42"
+      "roiSource": "Parameter Score · ROI · row 42",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C56 (Status in Oct)"
     },
     {
       "ID": "030326f7-8a54-4fc3-888c-bed9dca08cbb",
@@ -1002,11 +1092,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2025-04-20",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C57",
+      "scopeSource": "Logistic Apps_1021!D57",
       "operationCostScore": 2,
       "operationCostSource": "Parameter Score · App operation cost · row 45",
       "roiScore": 5,
-      "roiSource": "Parameter Score · ROI · row 45"
+      "roiSource": "Parameter Score · ROI · row 45",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C57 (Status in Oct)"
     },
     {
       "ID": "c64a1851-242b-4cca-a1d6-45ef72bcc6bb",
@@ -1020,11 +1112,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2024-12-20",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C58",
+      "scopeSource": "Logistic Apps_1021!D58",
       "operationCostScore": 2,
       "operationCostSource": "Parameter Score · App operation cost · row 44",
       "roiScore": 5,
-      "roiSource": "Parameter Score · ROI · row 44"
+      "roiSource": "Parameter Score · ROI · row 44",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C58 (Status in Oct)"
     },
     {
       "ID": "47d69572-ffee-410c-a1e5-97aaf6bcf712",
@@ -1038,11 +1132,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2023-04-14",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C59",
-      "operationCostScore": 1,
+      "scopeSource": "Logistic Apps_1021!D59",
+      "operationCostScore": 5,
       "operationCostSource": "Parameter Score · App operation cost · row 33",
-      "roiScore": 1,
-      "roiSource": "Parameter Score · ROI · row 33"
+      "roiScore": 5,
+      "roiSource": "Parameter Score · ROI · row 33",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C59 (Status in Oct)"
     },
     {
       "ID": "28b2d4fc-337d-4e39-8e7e-9539c723f141",
@@ -1051,16 +1147,18 @@
       "Name": "RMM System (recovered 2025-12-19 10:03:58)",
       "Description": "Subcontractor raw material management",
       "Main Business Capability": "B.06 Logistics Management",
-      "Business Capabilities": "B.06 Logistics Management;B.06.2 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.2.6 Procurement Planning",
+      "Business Capabilities": "B.06.2 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.2.6 Procurement Planning",
       "Processes": "BBM PM S2P Manage Vendor Performance Evaluation L3",
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2022-06-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C60",
+      "scopeSource": "Logistic Apps_1021!D60",
       "operationCostScore": 5,
       "operationCostSource": "Parameter Score · App operation cost · row 51",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 51"
+      "roiSource": "Parameter Score · ROI · row 51",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C60 (Status in Oct)"
     },
     {
       "ID": "6baa068e-d834-4009-a47b-9efe1633c1bc",
@@ -1074,11 +1172,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2022-06-17",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C61",
+      "scopeSource": "Logistic Apps_1021!D61",
       "operationCostScore": 5,
       "operationCostSource": "Parameter Score · App operation cost · row 54",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 54"
+      "roiSource": "Parameter Score · ROI · row 54",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C61 (Status in Oct)"
     },
     {
       "ID": "87cbdb25-29b7-433f-8c4c-72fe713a3779",
@@ -1092,11 +1192,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2023-06-05",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C62",
+      "scopeSource": "Logistic Apps_1021!D62",
       "operationCostScore": 3,
       "operationCostSource": "Parameter Score · App operation cost · row 39",
       "roiScore": 1,
-      "roiSource": "Parameter Score · ROI · row 39"
+      "roiSource": "Parameter Score · ROI · row 39",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C62 (Status in Oct)"
     },
     {
       "ID": "6030f219-4b53-4513-a861-f12d5824ee15",
@@ -1110,11 +1212,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2024-11-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C63",
+      "scopeSource": "Logistic Apps_1021!D63",
       "operationCostScore": 3,
       "operationCostSource": "Parameter Score · App operation cost · row 40",
       "roiScore": 1,
-      "roiSource": "Parameter Score · ROI · row 40"
+      "roiSource": "Parameter Score · ROI · row 40",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C63 (Status in Oct)"
     },
     {
       "ID": "9ae4e147-43c8-4bcb-9aa8-6bea810d6556",
@@ -1128,11 +1232,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2023-09-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C64",
+      "scopeSource": "Logistic Apps_1021!D64",
       "operationCostScore": 3,
       "operationCostSource": "Parameter Score · App operation cost · row 41",
       "roiScore": 1,
-      "roiSource": "Parameter Score · ROI · row 41"
+      "roiSource": "Parameter Score · ROI · row 41",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C64 (Status in Oct)"
     },
     {
       "ID": "942751cc-40d6-4538-a369-93f0cfa5a55c",
@@ -1146,11 +1252,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2022-10-17",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C65",
+      "scopeSource": "Logistic Apps_1021!D65",
       "operationCostScore": 3,
       "operationCostSource": "Parameter Score · App operation cost · row 71",
       "roiScore": 1,
-      "roiSource": "Parameter Score · ROI · row 71"
+      "roiSource": "Parameter Score · ROI · row 71",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C65 (Status in Oct)"
     },
     {
       "ID": "48579920-a761-404b-abe2-86068060c58b",
@@ -1164,11 +1272,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2022-11-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C66",
+      "scopeSource": "Logistic Apps_1021!D66",
       "operationCostScore": 4,
       "operationCostSource": "Parameter Score · App operation cost · row 53",
       "roiScore": 5,
-      "roiSource": "Parameter Score · ROI · row 53"
+      "roiSource": "Parameter Score · ROI · row 53",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C66 (Status in Oct)"
     },
     {
       "ID": "b40b60a2-2111-42b4-bdfc-2c46dc73e6dc",
@@ -1182,11 +1292,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2026-02-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C67",
+      "scopeSource": "Logistic Apps_1021!D67",
       "operationCostScore": 2,
       "operationCostSource": "Parameter Score · App operation cost · row 60",
       "roiScore": 1,
-      "roiSource": "Parameter Score · ROI · row 60"
+      "roiSource": "Parameter Score · ROI · row 60",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C67 (Status in Oct)"
     },
     {
       "ID": "a1ead9e6-7d92-4aea-abd9-748c0a0b8177",
@@ -1200,11 +1312,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2022-06-18",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C68",
+      "scopeSource": "Logistic Apps_1021!D68",
       "operationCostScore": 3,
       "operationCostSource": "Parameter Score · App operation cost · row 61",
       "roiScore": 1,
-      "roiSource": "Parameter Score · ROI · row 61"
+      "roiSource": "Parameter Score · ROI · row 61",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C68 (Status in Oct)"
     },
     {
       "ID": "712d13a7-d96a-40c1-bbba-2b792b294068",
@@ -1218,29 +1332,33 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2025-01-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C69",
+      "scopeSource": "Logistic Apps_1021!D69",
       "operationCostScore": 1,
       "operationCostSource": "Parameter Score · App operation cost · row 62",
       "roiScore": 1,
-      "roiSource": "Parameter Score · ROI · row 62"
+      "roiSource": "Parameter Score · ROI · row 62",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C69 (Status in Oct)"
     },
     {
       "ID": "4d48feff-c805-47c2-a69b-95f781777f51",
       "Division": "VM",
       "Entity": "VM-CN",
-      "Name": "VM/LOG-Szh2_DAVIS",
+      "Name": "VM/LOG-Szh2_DAVIS (recovered 2026-09-21 09:32:15)",
       "Description": "Daily shipping plan and shipping process status visualization ",
       "Main Business Capability": "B.06 Logistics Management",
       "Business Capabilities": "B.06.3 Transport Management;B.06.4 Inventory Management;B.06.5 Material Flow Orchestration;B.06.8.2 Supply Chain (Logistics) Monitoring and Dashboarding",
       "Processes": "BBM PM I2D Consolidate Materials L3;BBM PM I2D Execute Label Validation L3;BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Load and Execute Load Control L3;BBM PM I2D Load Truck L3;BBM PM I2D Loading L2;BBM PM I2D Manage Automated Shipment Picking L3;BBM PM I2D Manage Changes in Outbound Delivery Order L3;BBM PM I2D Manage Container Shipment Picking L3;BBM PM I2D Manage Delivery Release to Warehouse L3;BBM PM I2D Manage Outbound Delivery Order L3;BBM PM I2D Manage Picking with IM Location L3;BBM PM I2D Packing for Outbound L2;BBM PM I2D Packing L3;BBM PM I2D Pick from Shelf (Man to Goods) L3;BBM PM I2D Pick via Picking Area (Goods to Man) L3;BBM PM I2D Picking for Outbound L2;BBM PM I2D Process and Release Outbound Delivery Order L2;BBM PM I2D Stage Packaging Kits L3;BBM PM I2D Stage Packed Goods L3;BBM PM I2D Staging L2;BBM PM I2D Store to Ship L1;BBM PM I2D Warehouse to Consume L1;BBM PM O2C Delivery to Customer L1",
-      "Lifecycle: Current Lifecycle": "active",
+      "Lifecycle: Current Lifecycle": "endOfLife",
       "Lifecycle: Active": "2020-04-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C70",
+      "scopeSource": "Logistic Apps_1021!D70",
       "operationCostScore": 1,
       "operationCostSource": "Parameter Score · App operation cost · row 63",
       "roiScore": 1,
-      "roiSource": "Parameter Score · ROI · row 63"
+      "roiSource": "Parameter Score · ROI · row 63",
+      "statusNote": "endoflife",
+      "statusSource": "Logistic Apps_1021!C70 (Status in Oct)"
     },
     {
       "ID": "8aa81a3c-259e-400e-9eb4-1a792cb12d08",
@@ -1254,11 +1372,13 @@
       "Lifecycle: Current Lifecycle": "phaseIn",
       "Lifecycle: Active": "2026-10-31",
       "scopeNote": "no score, not go-live",
-      "scopeSource": "Logistic Apps!C71",
+      "scopeSource": "Logistic Apps_1021!D71",
       "operationCostScore": null,
       "operationCostSource": "",
       "roiScore": null,
-      "roiSource": ""
+      "roiSource": "",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C71 (Status in Oct)"
     },
     {
       "ID": "d1c48c78-b4ff-45b8-84aa-ef15629dde06",
@@ -1272,11 +1392,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2017-12-30",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C72",
+      "scopeSource": "Logistic Apps_1021!D72",
       "operationCostScore": 4,
       "operationCostSource": "Parameter Score · App operation cost · row 59",
       "roiScore": 1,
-      "roiSource": "Parameter Score · ROI · row 59"
+      "roiSource": "Parameter Score · ROI · row 59",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C72 (Status in Oct)"
     },
     {
       "ID": "14388434-6679-4f88-8e80-6d3a60eae484",
@@ -1290,11 +1412,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2022-04-30",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C73",
+      "scopeSource": "Logistic Apps_1021!D73",
       "operationCostScore": 2,
       "operationCostSource": "Parameter Score · App operation cost · row 64",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 64"
+      "roiSource": "Parameter Score · ROI · row 64",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C73 (Status in Oct)"
     },
     {
       "ID": "8794cd2e-71f8-43c8-b734-8fc56ec5ed89",
@@ -1308,11 +1432,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2025-07-01",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C74",
+      "scopeSource": "Logistic Apps_1021!D74",
       "operationCostScore": 4,
       "operationCostSource": "Parameter Score · App operation cost · row 65",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 65"
+      "roiSource": "Parameter Score · ROI · row 65",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C74 (Status in Oct)"
     },
     {
       "ID": "8307f735-cee7-43c3-8c67-9329047dbdec",
@@ -1326,11 +1452,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2025-12-31",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C75",
+      "scopeSource": "Logistic Apps_1021!D75",
       "operationCostScore": 5,
       "operationCostSource": "Parameter Score · App operation cost · row 66",
       "roiScore": 5,
-      "roiSource": "Parameter Score · ROI · row 66"
+      "roiSource": "Parameter Score · ROI · row 66",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C75 (Status in Oct)"
     },
     {
       "ID": "2be34702-a301-49bd-b00c-0d235639253d",
@@ -1344,11 +1472,13 @@
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2025-04-01",
       "scopeNote": "no score,not an application",
-      "scopeSource": "Logistic Apps!C76",
+      "scopeSource": "Logistic Apps_1021!D76",
       "operationCostScore": null,
       "operationCostSource": "",
       "roiScore": null,
-      "roiSource": ""
+      "roiSource": "",
+      "statusNote": "still active",
+      "statusSource": "Logistic Apps_1021!C76 (Status in Oct)"
     },
     {
       "ID": "41999b96-cf85-4804-ad13-099ac9c91e70",
@@ -1357,16 +1487,18 @@
       "Name": "360° Supplier dashboard",
       "Description": "The 360 Supplier Dashboard aims to support the ME LOS, LKA and plants in their strategic supplier management processes. The current published status (version 1.1) is mainly based on version 1 developed by AnP. Further versions will be developed with the ME wide user community together and published in successive update waves. Before developing new functions, the target is to have aligned standardized processes and a clear data structure supporting a new tool function",
       "Main Business Capability": "B.06 Logistics Management",
-      "Business Capabilities": "B.06.8.1 Supply Chain (Logistics) Standard Reporting Mgmt.;B.06.8.2 Supply Chain (Logistics) Visualization and Tracking Mgmt.",
+      "Business Capabilities": "B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.8.1 Supply Chain (Logistics) Standard Reporting;B.06.8.2 Supply Chain (Logistics) Monitoring and Dashboarding",
       "Processes": "BBM PM I2D Intralogistics to Demand L0",
       "Lifecycle: Current Lifecycle": "active",
       "Lifecycle: Active": "2022-08-31",
       "scopeNote": "with score",
-      "scopeSource": "Logistic Apps!C77",
+      "scopeSource": "Logistic Apps_1021!D2",
       "operationCostScore": 5,
       "operationCostSource": "Parameter Score · App operation cost · row 67",
       "roiScore": 3,
-      "roiSource": "Parameter Score · ROI · row 67"
+      "roiSource": "Parameter Score · ROI · row 67",
+      "statusNote": "owner changed to central",
+      "statusSource": "Logistic Apps_1021!C2 (Status in Oct)"
     }
   ],
   "capabilityRows": [
@@ -11092,7 +11224,7 @@
       "Manage Inter Company Contracts"
     ]
   ],
-  "source": "20261020_083736_UKj4Y_inventory.xlsx",
+  "source": "20261021_logistic_inventory.xlsx",
   "taxonomySource": "standard+name.xlsx (capabilities); Business Capability + Process.xlsx (processes)",
   "corrections": [
     {
@@ -11135,7 +11267,7 @@
       "reviewer": "Taxonomy audit",
       "reason": "Unique exact L3 name and process-chain match in Business Capability + Process(2).xlsx",
       "createdAt": "2026-09-23T00:00:00.000Z",
-      "revokedAt": ""
+      "revokedAt": "2026-10-21T07:54:32.611Z"
     },
     {
       "id": "l3v-72e8086df8fcd8f0a0b97ba8",
@@ -11331,6 +11463,20 @@
       "reviewer": "Owner decision carried over · import 2026-10-21",
       "reason": "Carried over from the mapping by Taxonomy audit (Same M2S chain and L3 meaning; source feasibility corrects the typo feasabiltiy in the unique standard label.). The Processes record is unchanged in the LeanIX export of 2026-10-20; the mapping needed re-confirmation only because other fields of this application changed.",
       "createdAt": "2026-10-21T03:51:37.565Z",
+      "revokedAt": ""
+    },
+    {
+      "id": "0c33476a09c0396d5f7944db76c2a493",
+      "appId": "88f9245b-a883-4a29-add6-43e8efca840c",
+      "dimension": "process",
+      "raw": "BBM PM I2D Execute Standard Report using BI / Power BI / Dali (OE) L3V",
+      "targetId": "M.I2D.020.110.030",
+      "appSnapshot": "[\"88f9245b-a883-4a29-add6-43e8efca840c\",\"RBCW LOM Dashboard\",\"PS\",\"RBCW\",\"Warehouse operation dashboard and repacking visualization\",\"B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.8.1 Supply Chain (Logistics) Standard Reporting;B.06.8.2 Supply Chain (Logistics) Monitoring and Dashboarding;B.06.8.3 Supply Chain (Logistics) Analytics\",\"BBM PM I2D Execute Standard Report using BI / Power BI / Dali (OE) L3V;BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Reporting L2;BBM PM I2D Warehouse to Consume L1\",\"phaseOut\"]",
+      "taxonomySnapshot": "[{\"id\":\"M.I2D\",\"label\":\"Intralogistics to Demand\",\"level\":\"L0\",\"chain\":\"Intralogistics to Demand (I2D)\",\"ambiguous\":false},{\"id\":\"M.I2D.020\",\"label\":\"Warehouse to Consume\",\"level\":\"L1\",\"chain\":\"Intralogistics to Demand (I2D)\",\"ambiguous\":false},{\"id\":\"M.I2D.020.110\",\"label\":\"Reporting\",\"level\":\"L2\",\"chain\":\"Intralogistics to Demand (I2D)\",\"ambiguous\":false},{\"id\":\"M.I2D.020.110.030\",\"label\":\"Execute Standard Report Using BI / Power BI / Dali (OE)\",\"level\":\"L3\",\"chain\":\"Intralogistics to Demand (I2D)\",\"ambiguous\":false}]",
+      "reviewKey": "[\"流程匹配\",[\"88f9245b-a883-4a29-add6-43e8efca840c\"],\"\",\"BBM PM I2D Execute Standard Report using BI / Power BI / Dali (OE) L3V\",\"M.I2D.020.110.030 Execute Standard Report Using BI / Power BI / Dali (OE)\"]",
+      "reviewer": "Owner decision carried over · import 2026-10-21",
+      "reason": "Carried over from the mapping by Taxonomy audit (Unique exact L3 name and process-chain match in Business Capability + Process(2).xlsx). The Processes record is unchanged in the owner workbook 20261021_logistic_inventory.xlsx (Logistic Apps_1021); the mapping needed re-confirmation only because other fields of this application changed.",
+      "createdAt": "2026-10-21T07:54:32.614Z",
       "revokedAt": ""
     }
   ],
@@ -11968,18 +12114,761 @@
           "note": "Owner decision applied: removed 'Manufacturing' from BMLP_Nexeed_IAS@WxP processes"
         }
       ]
+    },
+    {
+      "id": "c4d7c787e619e18910cc6b8e49bbe3e8",
+      "at": "2026-10-21T07:54:32.582Z",
+      "kind": "import",
+      "source": "20261021_logistic_inventory.xlsx",
+      "taxonomySource": "standard+name.xlsx (capabilities); Business Capability + Process.xlsx (processes)",
+      "inventoryFile": "20261021_logistic_inventory.xlsx",
+      "taxonomyFile": "",
+      "appIds": [],
+      "appIdsBase": "1dd1ff18cd094bd81281898154bb05c3",
+      "removedIds": [
+        "fab13598-0672-4301-97ca-67583a04806b"
+      ],
+      "addedIds": [],
+      "changes": [
+        {
+          "appId": "830c8445-c34f-463c-bc08-d494e5e18dc9",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "07901df9-4f80-47df-9119-4c86b773d5cc",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "a968f639-7afd-4fed-ad47-a1fff4e081d9",
+          "field": "operationCostScore",
+          "before": "5",
+          "after": "4",
+          "truncated": false
+        },
+        {
+          "appId": "a968f639-7afd-4fed-ad47-a1fff4e081d9",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "0bd00479-d233-43f3-84b2-478e7ae90dcb",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "b97561de-87df-46ec-a86c-477fe0e431f9",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "a103918e-63a2-4b26-ae5b-a5b1b7af8fd1",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "33b19059-2d78-4752-9aa8-b08e1613a27a",
+          "field": "operationCostScore",
+          "before": "1",
+          "after": "5",
+          "truncated": false
+        },
+        {
+          "appId": "33b19059-2d78-4752-9aa8-b08e1613a27a",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "cf227366-6b40-4b94-bfc2-3e0225b7adb3",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "69fc3b20-172c-477a-bcbb-58a159be720b",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "e354d01b-6ae7-4fe2-8dc3-301980b2f508",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "10ddca54-501c-4f09-9663-e5970e365c7b",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "4035f956-1dc8-4468-94db-0ffe603e29a2",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "a9f9cb71-6ac1-4da8-b374-2c6f675508d4",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "b517de7b-eefe-4486-8c96-5abeeb16d8ec",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "530143c3-4d5b-4afc-a38b-6b250aeb49dd",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "df1f431f-c395-4bec-bf2f-7cf0b0bce105",
+          "field": "operationCostScore",
+          "before": "3",
+          "after": "5",
+          "truncated": false
+        },
+        {
+          "appId": "df1f431f-c395-4bec-bf2f-7cf0b0bce105",
+          "field": "roiScore",
+          "before": "1",
+          "after": "5",
+          "truncated": false
+        },
+        {
+          "appId": "df1f431f-c395-4bec-bf2f-7cf0b0bce105",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "92d00cf1-e5c5-49d0-b142-96747cb836bf",
+          "field": "operationCostScore",
+          "before": "4",
+          "after": "2",
+          "truncated": false
+        },
+        {
+          "appId": "92d00cf1-e5c5-49d0-b142-96747cb836bf",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "9acec7d1-a4b3-4cd0-b6b2-b49cc115dcab",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "e63e283d-69e0-4cf2-88f6-8732786791af",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "56de5b25-adb2-46cf-99b4-9a8379029e2f",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "92035830-bcce-4565-bd22-f9e617c560a1",
+          "field": "roiScore",
+          "before": "5",
+          "after": "1",
+          "truncated": false
+        },
+        {
+          "appId": "92035830-bcce-4565-bd22-f9e617c560a1",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "5983762a-5662-49a8-bafb-ea91b3262180",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "809b28f2-77e8-44a2-bf87-52be13b5bab0",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "6b5a70a7-c8f4-4509-b687-16b50825612c",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "42e63efb-b4da-4ba9-9dca-d25cd58bfb2b",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "6631772d-f6a7-4684-a904-d4b1364add5c",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "93b4213f-b93d-48de-a6ea-fce24d4ab9e7",
+          "field": "roiScore",
+          "before": "5",
+          "after": "1",
+          "truncated": false
+        },
+        {
+          "appId": "93b4213f-b93d-48de-a6ea-fce24d4ab9e7",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "5595ff60-8afa-4eac-acf8-1d9ed1a2769d",
+          "field": "operationCostScore",
+          "before": "1",
+          "after": "5",
+          "truncated": false
+        },
+        {
+          "appId": "5595ff60-8afa-4eac-acf8-1d9ed1a2769d",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "c13d36d9-2b58-4b81-b45b-0e829dd9a157",
+          "field": "operationCostScore",
+          "before": "5",
+          "after": "1",
+          "truncated": false
+        },
+        {
+          "appId": "c13d36d9-2b58-4b81-b45b-0e829dd9a157",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "1dd3d164-c823-4e5e-a7c0-134e15ac32b6",
+          "field": "operationCostScore",
+          "before": "3",
+          "after": "5",
+          "truncated": false
+        },
+        {
+          "appId": "1dd3d164-c823-4e5e-a7c0-134e15ac32b6",
+          "field": "roiScore",
+          "before": "1",
+          "after": "5",
+          "truncated": false
+        },
+        {
+          "appId": "1dd3d164-c823-4e5e-a7c0-134e15ac32b6",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "27c39dea-6c97-497c-8487-7f5495bb183d",
+          "field": "operationCostScore",
+          "before": "5",
+          "after": "1",
+          "truncated": false
+        },
+        {
+          "appId": "27c39dea-6c97-497c-8487-7f5495bb183d",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "751f82b8-32c1-430a-9e33-efba92ee55ca",
+          "field": "operationCostScore",
+          "before": "1",
+          "after": "5",
+          "truncated": false
+        },
+        {
+          "appId": "751f82b8-32c1-430a-9e33-efba92ee55ca",
+          "field": "roiScore",
+          "before": "1",
+          "after": "5",
+          "truncated": false
+        },
+        {
+          "appId": "751f82b8-32c1-430a-9e33-efba92ee55ca",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "6dacdae3-8add-42dc-82e5-ecc40fdbe194",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "37ff84ff-1c5b-472a-8bff-466871657649",
+          "field": "operationCostScore",
+          "before": "1",
+          "after": "5",
+          "truncated": false
+        },
+        {
+          "appId": "37ff84ff-1c5b-472a-8bff-466871657649",
+          "field": "roiScore",
+          "before": "1",
+          "after": "5",
+          "truncated": false
+        },
+        {
+          "appId": "37ff84ff-1c5b-472a-8bff-466871657649",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "649d1547-ea4f-4f09-a681-ad1e9e316d68",
+          "field": "operationCostScore",
+          "before": "1",
+          "after": "5",
+          "truncated": false
+        },
+        {
+          "appId": "649d1547-ea4f-4f09-a681-ad1e9e316d68",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "8bbd60cd-83f3-4051-af64-0141b8c1d4a7",
+          "field": "operationCostScore",
+          "before": "2",
+          "after": "4",
+          "truncated": false
+        },
+        {
+          "appId": "8bbd60cd-83f3-4051-af64-0141b8c1d4a7",
+          "field": "roiScore",
+          "before": "5",
+          "after": "1",
+          "truncated": false
+        },
+        {
+          "appId": "8bbd60cd-83f3-4051-af64-0141b8c1d4a7",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "1dd68a89-660c-45ad-9b42-f3856fce0dd7",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "bd361d21-3886-4c1c-a570-fa66f8dfc6a1",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "79a83169-bae4-4512-87bb-bf64ceee4569",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "f5a1644f-ecc5-46ca-aca4-0cad0c844bb9",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "dbc9d3d1-531d-4a1e-9d36-46135de8345b",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "223de1a7-83f4-4d57-9a48-ea6d7a7564ee",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "6a541a4a-a100-463c-8301-8facd86d5e46",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "bdfd379a-767a-423b-ba86-3336b57ca863",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "5bde649c-2738-49fd-a00c-ffda8d67382a",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "e94c1657-4165-4b0f-a6be-399dcd8ed9bc",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "523a5b92-1f35-41f8-82e3-df5b80ae4f6b",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "269d5f6c-041a-4c7d-b895-1f52f57a7396",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "3fbe3989-8217-4f2e-9ae5-086cbe17f6e6",
+          "field": "operationCostScore",
+          "before": "1",
+          "after": "5",
+          "truncated": false
+        },
+        {
+          "appId": "3fbe3989-8217-4f2e-9ae5-086cbe17f6e6",
+          "field": "roiScore",
+          "before": "1",
+          "after": "3",
+          "truncated": false
+        },
+        {
+          "appId": "3fbe3989-8217-4f2e-9ae5-086cbe17f6e6",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "88f9245b-a883-4a29-add6-43e8efca840c",
+          "field": "Business Capabilities",
+          "before": "B.06 Logistics Management;B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.8.1 Supply Chain (Logistics) Standard Reporting;B.06.8.2 Supply Chain (Logistics) Monitoring and Dashboarding;B.06.8.3 Supply Chain (Logistics) Analytics",
+          "after": "B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.8.1 Supply Chain (Logistics) Standard Reporting;B.06.8.2 Supply Chain (Logistics) Monitoring and Dashboarding;B.06.8.3 Supply Chain (Logistics) Analytics",
+          "truncated": false
+        },
+        {
+          "appId": "88f9245b-a883-4a29-add6-43e8efca840c",
+          "field": "Lifecycle: Current Lifecycle",
+          "before": "active",
+          "after": "phaseOut",
+          "truncated": false
+        },
+        {
+          "appId": "88f9245b-a883-4a29-add6-43e8efca840c",
+          "field": "statusNote",
+          "before": "",
+          "after": "phaseout",
+          "truncated": false
+        },
+        {
+          "appId": "9dfee743-fe9b-40c6-8dd0-98c0ce8c69e3",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "e1f6056d-a173-4e52-a186-91dabec5ba33",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "9a639b2d-30be-4ab0-830b-5bb66e75d8e8",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "996143e3-b7d5-402a-a358-3e745f700391",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "030326f7-8a54-4fc3-888c-bed9dca08cbb",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "c64a1851-242b-4cca-a1d6-45ef72bcc6bb",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "47d69572-ffee-410c-a1e5-97aaf6bcf712",
+          "field": "operationCostScore",
+          "before": "1",
+          "after": "5",
+          "truncated": false
+        },
+        {
+          "appId": "47d69572-ffee-410c-a1e5-97aaf6bcf712",
+          "field": "roiScore",
+          "before": "1",
+          "after": "5",
+          "truncated": false
+        },
+        {
+          "appId": "47d69572-ffee-410c-a1e5-97aaf6bcf712",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "28b2d4fc-337d-4e39-8e7e-9539c723f141",
+          "field": "Business Capabilities",
+          "before": "B.06 Logistics Management;B.06.2 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.2.6 Procurement Planning",
+          "after": "B.06.2 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.2.6 Procurement Planning",
+          "truncated": false
+        },
+        {
+          "appId": "28b2d4fc-337d-4e39-8e7e-9539c723f141",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "6baa068e-d834-4009-a47b-9efe1633c1bc",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "87cbdb25-29b7-433f-8c4c-72fe713a3779",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "6030f219-4b53-4513-a861-f12d5824ee15",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "9ae4e147-43c8-4bcb-9aa8-6bea810d6556",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "942751cc-40d6-4538-a369-93f0cfa5a55c",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "48579920-a761-404b-abe2-86068060c58b",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "b40b60a2-2111-42b4-bdfc-2c46dc73e6dc",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "a1ead9e6-7d92-4aea-abd9-748c0a0b8177",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "712d13a7-d96a-40c1-bbba-2b792b294068",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "4d48feff-c805-47c2-a69b-95f781777f51",
+          "field": "Name",
+          "before": "VM/LOG-Szh2_DAVIS",
+          "after": "VM/LOG-Szh2_DAVIS (recovered 2026-09-21 09:32:15)",
+          "truncated": false
+        },
+        {
+          "appId": "4d48feff-c805-47c2-a69b-95f781777f51",
+          "field": "Lifecycle: Current Lifecycle",
+          "before": "active",
+          "after": "endOfLife",
+          "truncated": false
+        },
+        {
+          "appId": "4d48feff-c805-47c2-a69b-95f781777f51",
+          "field": "statusNote",
+          "before": "",
+          "after": "endoflife",
+          "truncated": false
+        },
+        {
+          "appId": "8aa81a3c-259e-400e-9eb4-1a792cb12d08",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "d1c48c78-b4ff-45b8-84aa-ef15629dde06",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "14388434-6679-4f88-8e80-6d3a60eae484",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "8794cd2e-71f8-43c8-b734-8fc56ec5ed89",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "8307f735-cee7-43c3-8c67-9329047dbdec",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "2be34702-a301-49bd-b00c-0d235639253d",
+          "field": "statusNote",
+          "before": "",
+          "after": "still active",
+          "truncated": false
+        },
+        {
+          "appId": "41999b96-cf85-4804-ad13-099ac9c91e70",
+          "field": "Business Capabilities",
+          "before": "B.06.8.1 Supply Chain (Logistics) Standard Reporting Mgmt.;B.06.8.2 Supply Chain (Logistics) Visualization and Tracking Mgmt.",
+          "after": "B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.8.1 Supply Chain (Logistics) Standard Reporting;B.06.8.2 Supply Chain (Logistics) Monitoring and Dashboarding",
+          "truncated": false
+        },
+        {
+          "appId": "41999b96-cf85-4804-ad13-099ac9c91e70",
+          "field": "statusNote",
+          "before": "",
+          "after": "owner changed to central",
+          "truncated": false
+        }
+      ],
+      "issues": [],
+      "decisions": [
+        {
+          "appId": "a103918e-63a2-4b26-ae5b-a5b1b7af8fd1",
+          "field": "Processes",
+          "before": "BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Receive to Store L1;Manufacturing",
+          "after": "BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Receive to Store L1",
+          "note": "Owner decision applied: removed 'Manufacturing' from BMLP_Nexeed_IAS@WxP processes"
+        }
+      ]
     }
-  ],
-  "inventoryExport": {
-    "file": "20261020_083736_UKj4Y_inventory.xlsx",
-    "exportedAt": "2026-10-20 08:37:37 GMT",
-    "sheet": "bbm-cn log (Export 2026-10-20…",
-    "missingIds": [
-      "fab13598-0672-4301-97ca-67583a04806b",
-      "88f9245b-a883-4a29-add6-43e8efca840c",
-      "28b2d4fc-337d-4e39-8e7e-9539c723f141",
-      "4d48feff-c805-47c2-a69b-95f781777f51",
-      "41999b96-cf85-4804-ad13-099ac9c91e70"
-    ]
-  }
+  ]
 }

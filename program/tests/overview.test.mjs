@@ -1,3 +1,4 @@
+import {RECORDS_V916} from './records-v916.mjs';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -134,7 +135,7 @@ test('An empty-field capability mapping remains counted alongside a recorded mai
  assert.equal(data.apps[1]['Business Capabilities'],'','the mapping must not overwrite raw data');
 });
 test('RBCW and portfolio: the Level 3 gap stays Level 3 only; To review covers every level',()=>{
- const data=JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url)));
+ const data=JSON.parse(readFileSync(RECORDS_V916));
  const model=buildModel(data),all=maintenanceReport(model,{},'cap'),report=maintenanceReport(model,{entity:'RBCW'},'cap'),l1=report.levels.find(l=>l.level===1),l3=l3MaintenanceMetrics(report);
  assert.equal(all.levels.find(level=>level.level===1).filled.length,76);
  // Legacy catalogue (before 2026-10-16) with the 2026-08-25 inventory: 38. The standard added B.06.9.x (2 applications pass L3) but has no B.06.4.4 (1 application fails): 37.

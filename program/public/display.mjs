@@ -22,7 +22,7 @@ export function capabilityNameCandidate(node){
 export const capabilitySourceTitle=(node,raw,code)=>node?.reference||raw||displayCode(code);
 export const annualLabel=app=>formatAnnualCost(app)+(formatAnnualCost(app)==='Not recorded'?'':' / year');
 export const opportunityCostLabel=app=>scopeReason(app)?'Out of scope':annualLabel(app);
-export function scopeReason(app){const r=opportunityEligibility(app);return r.eligible?'':r.reason.includes('not an application')?'Not an application':r.reason.includes('not go-live')?'Not live':'Outside BBM scope';}
+export function scopeReason(app){const r=opportunityEligibility(app);return r.eligible?'':r.reason.includes('not still active')?`Not still active (${String(app.statusNote).trim()})`:r.reason.includes('not an application')?'Not an application':r.reason.includes('not go-live')?'Not live':'Outside BBM scope';}
 
 export function capabilityCatalogueNotice(raw,standard=false){
  const code=capCode(raw);

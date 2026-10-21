@@ -6,6 +6,9 @@
 // Since 2026-10-19 (owner decision: HC capabilities belong to another department) the ten HC entries the
 // standard still lists are not taken into the catalogue: the synthetic standard keeps them, as the real file
 // does (71 entries), and the rebuild gives the 61 capability rows of public/data.json.
+// Since V9.17 (2026-10-21) public/data.json comes from the owner workbook 20261021_logistic_inventory.xlsx through the program's
+// own import (sheet Logistic Apps_1021 with 'Status in Oct'), a layout prepare-data does not rebuild; these workbooks are
+// synthesised from the V9.16 records (tests/records-v916.mjs) and the rebuild must give back that file byte for byte.
 import test,{after} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync,writeFileSync,mkdtempSync,mkdirSync,rmSync,existsSync} from 'node:fs';
@@ -18,10 +21,11 @@ import {installDOMParser} from '../scripts/xml-dom.mjs';
 import {readXlsx} from '../public/xlsx.mjs';
 import {workspaceData,exportWorkspace,importWorkspace,acceptanceSample} from '../public/workspace.mjs';
 import {correctionStates} from '../public/corrections.mjs';
+import {RECORDS_V916} from './records-v916.mjs';
 import {inventorySheets,taxonomySheets,standardSheets,STANDARD_HEADER,OTHER_DEPARTMENT_ROWS,xlsxBuffer,EXCLUDED_MARKERS,MANUFACTURING_APP,MANUFACTURING_DECIDED} from './source-workbooks.mjs';
 
 const script=fileURLToPath(new URL('../scripts/prepare-data.mjs',import.meta.url));
-const dataPath=fileURLToPath(new URL('../public/data.json',import.meta.url));
+const dataPath=fileURLToPath(RECORDS_V916),programData=fileURLToPath(new URL('../public/data.json',import.meta.url));
 const dataBytes=readFileSync(dataPath),data=JSON.parse(dataBytes.toString('utf8'));
 // The catalogue public/data.json used until 2026-10-15: what the taxonomy workbook's 'Business Capability' sheet holds.
 const legacy=JSON.parse(readFileSync(new URL('./capability-rows-2026-10-15.json',import.meta.url),'utf8'));
@@ -270,12 +274,13 @@ test('ROI scores and sources survive the rebuild; contact and infrastructure col
  for(const marker of EXCLUDED_MARKERS)assert(!text.includes(marker),`${marker} must not be copied`);
 });
 
-test('--check finds no differences against public/data.json and writes nothing',async()=>{
- const result=await run([...sources(base),'--check']);
+test('--check finds no differences against the V9.16 records and writes nothing',async()=>{
+ // V9.17: public/data.json has the 'Status in Oct' values these August-layout workbooks lack, so the check names the V9.16 records.
+ const result=await run([...sources(base),'--output',dataPath,'--check']);
  assert.equal(result.code,0,result.stderr+result.stdout);
  // 2026-10-21 (V9.16): the inventory is the LeanIX export of 2026-10-20.
  assert.match(result.stdout,/against a rebuild from 20261020_083736_UKj4Y_inventory\.xlsx and Business Capability \+ Process\.xlsx with standard\+name\.xlsx \(nothing is written\)\./);
- assert.match(result.stdout,/Result: no differences\. .*data\.json matches the rebuild byte for byte\./);
+ assert.match(result.stdout,/Result: no differences\. .*data-v9\.16\.json matches the rebuild byte for byte\./);
  assert(readFileSync(dataPath).equals(dataBytes));
 });
 
@@ -547,8 +552,9 @@ test('--check lists added and removed applications and needs an existing file to
 
 test('the default output is this program\'s public/data.json wherever the command runs',()=>{
  const result=cli([...sources(base),'--check']);
- assert.equal(result.status,0,result.stderr+result.stdout);
- assert(result.stdout.includes(`Checking ${dataPath} against a rebuild`),result.stdout);
+ // V9.17: public/data.json carries the 'Status in Oct' values these August-layout workbooks do not have, so --check reports differences.
+ assert.equal(result.status,1,result.stderr+result.stdout);
+ assert(result.stdout.includes(`Checking ${programData} against a rebuild`),result.stdout);
  assert.equal(existsSync(path.join(root,'public')),false,'nothing is looked up or written relative to the current directory');
 });
 

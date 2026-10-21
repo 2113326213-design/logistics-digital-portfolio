@@ -1,5 +1,6 @@
 // Application History presentation (English, no Annual benefit) and lossless compact import
 // history (audit 2026-10-15 items 5, 6, 14).
+import {RECORDS_V916} from './records-v916.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -11,7 +12,7 @@ import {buildModel,columns} from '../public/model.mjs';
 import {english} from '../public/english.mjs';
 import {landscapeHeaderCell} from '../public/landscape.mjs';
 
-const data=workspaceData(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url))));
+const data=workspaceData(JSON.parse(readFileSync(RECORDS_V916)));
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const CJK=/[　-ヿ㐀-鿿豈-﫿＀-￯]/;
 const ids=data.apps.map(app=>app.ID.trim());

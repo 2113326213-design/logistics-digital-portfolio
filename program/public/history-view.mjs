@@ -3,7 +3,7 @@ import {roiScoreText} from './roi.mjs';
 
 const timestamp=value=>value?Date.parse(value):NaN;
 // Internal field keys shown as readable headings in the History panel and its CSV.
-const fieldLabels={Division:'Business unit',Entity:'Plant',operationCostScore:'Operation cost score',roiScore:'ROI (payback period)',scopeNote:'Scope note'};
+const fieldLabels={Division:'Business unit',Entity:'Plant',operationCostScore:'Operation cost score',roiScore:'ROI (payback period)',scopeNote:'Scope note',statusNote:'Status in source inventory'};
 export const historyFieldLabel=field=>Object.hasOwn(fieldLabels,field)?fieldLabels[field]:String(field??'');
 // Values as shown in history: an ROI score appears as its payback period with the score it comes from.
 export const historyFieldValue=(field,value)=>field==='roiScore'?roiScoreText(value):value;

@@ -1,9 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="169" height="24" role="img" aria-label="data: 76 apps · 10 plants">
-<title>data: 76 apps · 10 plants</title>
+<svg xmlns="http://www.w3.org/2000/svg" width="169" height="24" role="img" aria-label="data: 75 apps · 10 plants">
+<title>data: 75 apps · 10 plants</title>
 <defs><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-opacity=".12"/></linearGradient>
 <clipPath id="r"><rect width="169" height="24" rx="6" fill="#fff"/></clipPath></defs>
 <g clip-path="url(#r)"><rect width="42" height="24" fill="#1f2d3d"/><rect x="42" width="127" height="24" fill="#7c5cbf"/><rect width="169" height="24" fill="url(#s)"/></g>
 <g fill="#fff" text-anchor="middle" font-family="'Segoe UI',Verdana,Geneva,DejaVu Sans,'Microsoft YaHei',sans-serif" font-size="12" font-weight="600">
 <text x="21" y="16" fill="#010101" fill-opacity=".3">data</text><text x="21" y="15">data</text>
-<text x="105.5" y="16" fill="#010101" fill-opacity=".3">76 apps · 10 plants</text><text x="105.5" y="15">76 apps · 10 plants</text>
+<text x="105.5" y="16" fill="#010101" fill-opacity=".3">75 apps · 10 plants</text><text x="105.5" y="15">75 apps · 10 plants</text>
 </g></svg>
