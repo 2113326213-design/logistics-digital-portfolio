@@ -159,6 +159,8 @@ echo   %INETSRV%\appcmd.exe delete site "%SITE%"
 echo.
 if exist "%TMPX%" rmdir /s /q "%TMPX%"
 popd 2>nul
+echo Press any key to close this window...
+pause >nul
 endlocal
 exit /b 0
 
@@ -167,5 +169,7 @@ echo.
 echo *** Stopped. See the message above. ***
 if exist "%TMPX%" rmdir /s /q "%TMPX%"
 popd 2>nul
+echo Press any key to close this window...
+pause >nul
 endlocal
 exit /b 1
