@@ -89,6 +89,14 @@ flowchart LR
 2. 解压，用 Chrome 打开 `物流工具_最新版_离线单文件_20261020_v9.15.html`。页面顶部会显示 V9.15。
 3. 页面里的修改只保存在当前标签页：用 **Export workspace** 导出备份，下次用 **Import data** 恢复。
 
+### 部署到 Bosch 内网 IIS（Windows Server）
+
+1. 在服务器的 Chrome 里（已登录 GitHub）点这个链接直接下载：[**⬇ deploy-iis-v9.15-script.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/raw/main/offline/deploy-iis-v9.15-script.zip)，右键 Extract all。
+2. 把 `logistics-offline-20261020-v9.15.zip` 放在同一个文件夹或 `Downloads`，右键 `deploy-iis-v9.15.bat` → **Run as administrator**。
+3. 默认部署到 `D:\logistics-tool`、端口 `8083`；要换就在 cmd 里带参数：`deploy-iis-v9.15.bat 8084 D:\其他目录`。
+
+脚本会校验 HTML 的 SHA-256、备份旧 `index.html`、按 SID 授予 IIS_IUSRS/IUSR 读取权限，只新建自己的 `LogisticsTool` 站点，**不改防火墙和其他站点**。源文件：[`offline/deploy-iis-v9.15.bat`](offline/deploy-iis-v9.15.bat)。
+
 想改程序：`program/` 是源码（原生 ES 模块，没有框架）。`npm ci` → `npm test` → `npm run build` → `npm run export:offline`，需要 Node 22.13 或更新版本。接手前先读 [`00_Claude先读.md`](00_Claude先读.md)（中文，按日期记录每次改动和用户决定），再读 [`program/README.md`](program/README.md)（英文，"Current state" 一节是当前状态）。
 
 ## 主要规则
