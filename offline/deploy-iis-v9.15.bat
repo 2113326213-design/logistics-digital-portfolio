@@ -45,7 +45,8 @@ if /i "%~3"=="ELEVATED" (
   goto :fail
 )
 echo Not elevated - asking Windows for Administrator rights ^(click Yes on the UAC prompt^)...
-powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process -FilePath '%~f0' -ArgumentList '%PORT% \"%TARGET%\" ELEVATED' -Verb RunAs"
+set "SELF=%~f0"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process -FilePath cmd.exe -Verb RunAs -ArgumentList ('/k call \"' + $env:SELF + '\" ' + $env:PORT + ' \"' + $env:TARGET + '\" ELEVATED')"
 exit /b 0
 :isadmin
 if not exist "%INETSRV%\appcmd.exe" (
