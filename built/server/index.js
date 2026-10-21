@@ -356,12 +356,13 @@ function buildModel(data) {
   const mapped = (appId, dimension, raw) => mappings.get(recordKey({ appId, dimension, raw }));
   const issues = [];
   const ids = /* @__PURE__ */ new Set();
+  const missingFromExport = new Set(data.inventoryExport?.missingIds || []);
   const apps = data.apps.map((raw, i) => {
     const id = String(raw.ID ?? "").trim();
     if (!id || !String(raw.Name ?? "").trim()) throw Error(`\u7B2C ${i + 2} \u884C\u7F3A\u5C11 ID \u6216 Name`);
     if (ids.has(id)) throw Error(`\u5E94\u7528 ID \u91CD\u590D\uFF1A${id}`);
     ids.add(id);
-    const a = { ...raw, id, cap: [], process: [], unmatched: [], processMatches: [], rawCap: split(raw["Business Capabilities"]), rawProcess: split(raw.Processes) };
+    const a = { ...raw, id, cap: [], process: [], unmatched: [], processMatches: [], notInExport: missingFromExport.has(id) ? data.inventoryExport : null, rawCap: split(raw["Business Capabilities"]), rawProcess: split(raw.Processes) };
     for (const s of a.rawCap) {
       const corrected = mapped(id, "cap", s);
       if (corrected) {
@@ -525,10 +526,15 @@ function workspaceWeights(data) {
   const shown = weightPercentages(weights);
   return Object.fromEntries(Object.keys(weights).map((key) => [key, shown[key] / 100]));
 }
+function inventoryExportField(value2) {
+  if (!value2 || typeof value2 !== "object" || Array.isArray(value2)) return {};
+  const missingIds = [...new Set((Array.isArray(value2.missingIds) ? value2.missingIds : []).map((v) => String(v ?? "").trim()).filter(Boolean))];
+  return { inventoryExport: { file: String(value2.file ?? ""), exportedAt: String(value2.exportedAt ?? ""), sheet: String(value2.sheet ?? ""), missingIds } };
+}
 function workspaceData(data) {
   if (!data || !Array.isArray(data.apps) || !data.apps.length || !Array.isArray(data.capabilityRows) || !Array.isArray(data.processRows)) throw Error("\u5DE5\u4F5C\u533A\u7F3A\u5C11\u5E94\u7528\u6E05\u5355\u6216\u5206\u7C7B\u8868");
   if (!data.apps.every((a) => a && typeof a === "object" && !Array.isArray(a)) || !data.capabilityRows.every(Array.isArray) || !data.processRows.every(Array.isArray)) throw Error("\u5DE5\u4F5C\u533A\u6570\u636E\u7ED3\u6784\u65E0\u6548");
-  return { similarityWeights: workspaceWeights(data), similarityWeightsVersion: 2, ...thresholdField(data), source: String(data.source || "Imported workspace"), taxonomySource: String(data.taxonomySource || "Workspace taxonomy"), isAcceptanceSample: data.isAcceptanceSample === true, apps: data.apps.map((a) => {
+  return { similarityWeights: workspaceWeights(data), similarityWeightsVersion: 2, ...thresholdField(data), source: String(data.source || "Imported workspace"), taxonomySource: String(data.taxonomySource || "Workspace taxonomy"), ...inventoryExportField(data.inventoryExport), isAcceptanceSample: data.isAcceptanceSample === true, apps: data.apps.map((a) => {
     const app = Object.fromEntries(fields2.map((k) => [k, String(a[k] ?? "")]));
     if (Object.hasOwn(a, mainCapabilityField)) app[mainCapabilityField] = String(a[mainCapabilityField] ?? "");
     if (Object.hasOwn(a, "scopeNote")) {

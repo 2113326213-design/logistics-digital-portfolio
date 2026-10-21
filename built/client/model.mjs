@@ -16,9 +16,11 @@ export function buildModel(data){
  const correctionLog=correctionStates(data),mappings=new Map(correctionLog.filter(c=>c.state==='Applied').map(c=>[recordKey(c),c.targetId]));
  const mapped=(appId,dimension,raw)=>mappings.get(recordKey({appId,dimension,raw}));
  const issues=[];const ids=new Set();
+ // Applications the latest LeanIX export did not list (kept by applyInventory): the profile shows a note.
+ const missingFromExport=new Set(data.inventoryExport?.missingIds||[]);
  const apps=data.apps.map((raw,i)=>{
   const id=String(raw.ID??'').trim();if(!id||!String(raw.Name??'').trim())throw Error(`第 ${i+2} 行缺少 ID 或 Name`);if(ids.has(id))throw Error(`应用 ID 重复：${id}`);ids.add(id);
-  const a={...raw,id,cap:[],process:[],unmatched:[],processMatches:[],rawCap:split(raw['Business Capabilities']),rawProcess:split(raw.Processes)};
+  const a={...raw,id,cap:[],process:[],unmatched:[],processMatches:[],notInExport:missingFromExport.has(id)?data.inventoryExport:null,rawCap:split(raw['Business Capabilities']),rawProcess:split(raw.Processes)};
   for(const s of a.rawCap){const corrected=mapped(id,'cap',s);if(corrected){a.cap.push(corrected);continue;}const code=capCode(s);if(code){ensureCap(code,s);a.cap.push(code);}else{a.unmatched.push(s);issues.push({appId:a.id,app:a.Name,type:'业务能力无法识别',value:s});}}
   // L3V is Level 3 (owner decision 2026-10-19): matched by name and counted exactly like L3.
   // A record with a full business process code is matched by that code first; otherwise by chain, level and

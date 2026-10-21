@@ -39,7 +39,7 @@ export function catalogueNotice(saved,bundled){
 // in a present column/table remain authoritative and are shown in the preview.
 export function mergeInventoryEvidence(currentApps,incomingApps){
  const existing=new Map(currentApps.map(app=>[String(app.ID).trim(),app]));
- const groups=[['Description'],['Lifecycle: Current Lifecycle'],['Lifecycle: Active'],['annualBenefitCNY','annualBenefitSource'],['roiScore','roiSource'],['Main Business Capability'],['scopeNote','scopeSource'],['operationCostScore','operationCostSource']];
+ const groups=[['Division'],['Entity'],['Description'],['Lifecycle: Current Lifecycle'],['Lifecycle: Active'],['annualBenefitCNY','annualBenefitSource'],['roiScore','roiSource'],['Main Business Capability'],['scopeNote','scopeSource'],['operationCostScore','operationCostSource']];
  return incomingApps.map(app=>{
   const previous=existing.get(String(app.ID).trim()),next={...app};
   if(previous)for(const [field,...sources] of groups)if(!Object.hasOwn(app,field)&&Object.hasOwn(previous,field)){
@@ -47,6 +47,19 @@ export function mergeInventoryEvidence(currentApps,incomingApps){
   }
   return next;
  });
+}
+// An inventory file replaces the application list. A LeanIX application export (inventoryFromSheets marks it with
+// leanixExport) can be a filtered view, so the applications it does not list are kept unchanged and recorded in
+// data.inventoryExport (owner decision 2026-10-21): the profile and the import preview say so. A full inventory
+// workbook clears that record. Application order follows the current list; new applications are appended.
+export function applyInventory(base,incomingApps,fileName){
+ const merged=new Map(mergeInventoryEvidence(base.apps,incomingApps).map(app=>[String(app.ID).trim(),app]));
+ const info=incomingApps.leanixExport,kept=[];
+ const apps=base.apps.flatMap(app=>{const id=String(app.ID).trim();if(merged.has(id)){const next=merged.get(id);merged.delete(id);return [next];}if(!info)return [];kept.push(id);return [app];});
+ const next={...base,apps:[...apps,...merged.values()],source:String(fileName||''),isAcceptanceSample:false};
+ delete next.inventoryExport;
+ if(info)next.inventoryExport={file:String(fileName||''),exportedAt:String(info.exportedAt||''),sheet:String(info.sheet||''),missingIds:kept};
+ return next;
 }
 // raw: the data as read, before workspaceData applies owner decisions (defaults to incoming).
 export function previewImport(current,incoming,raw=incoming){
@@ -59,10 +72,10 @@ export function previewImport(current,incoming,raw=incoming){
  const beforeActivity=reviewAuditEvents(current),afterActivity=reviewAuditEvents(next),retained=new Set(afterActivity.map(e=>e.id));
  const taxonomyChanged=JSON.stringify([current.capabilityRows,current.processRows])!==JSON.stringify([next.capabilityRows,next.processRows]);
  const pairReviews=pairReviewChanges(current.pairReviews,next.pairReviews);
- const workspaceChanged=pairReviews.total>0||['reviews','corrections','reviewHistory','applicationEvents','importHistory','similarityWeights','similarityThreshold'].some(key=>JSON.stringify(current[key]??null)!==JSON.stringify(next[key]??null));
+ const workspaceChanged=pairReviews.total>0||['reviews','corrections','reviewHistory','applicationEvents','importHistory','similarityWeights','similarityThreshold','inventoryExport'].some(key=>JSON.stringify(current[key]??null)!==JSON.stringify(next[key]??null));
  const costScoresRemoved=updated.filter(app=>cleanCostScore(before.get(String(app.ID).trim())?.operationCostScore)!==null&&cleanCostScore(app.operationCostScore)===null).length;
  const scopeExclusionsRemoved=updated.filter(app=>!opportunityEligibility(before.get(String(app.ID).trim())).eligible&&opportunityEligibility(app).eligible).length;
  // Explicit blank cells in a supplied column replace recorded text; count them for the preview warning.
  const cleared=field=>updated.filter(app=>String(before.get(String(app.ID).trim())?.[field]??'').trim()&&!String(app[field]??'').trim()).length;
- return {next,added,removed,updated,unchanged:next.apps.length-added.length-updated.length,taxonomyChanged,capabilityChanges:capabilityCatalogueChanges(current.capabilityRows,next.capabilityRows),costScoresRemoved,scopeExclusionsRemoved,descriptionsCleared:cleared('Description'),lifecycleValuesCleared:cleared('Lifecycle: Current Lifecycle')+cleared('Lifecycle: Active'),ownerDecisions:ownerDecisions(raw),hasChanges:!!(added.length||removed.length||updated.length||taxonomyChanged||workspaceChanged),appliedMappings:states.filter(c=>c.state==='Applied').length,staleMappings:states.filter(c=>c.state==='Needs review').length,reviewNotes:Object.keys(next.reviews).length,pairReviews,activityRecords:afterActivity.length,activityRemoved:beforeActivity.filter(e=>!retained.has(e.id)).length};
+ return {next,added,removed,updated,unchanged:next.apps.length-added.length-updated.length,taxonomyChanged,capabilityChanges:capabilityCatalogueChanges(current.capabilityRows,next.capabilityRows),costScoresRemoved,scopeExclusionsRemoved,descriptionsCleared:cleared('Description'),lifecycleValuesCleared:cleared('Lifecycle: Current Lifecycle')+cleared('Lifecycle: Active'),ownerDecisions:ownerDecisions(raw),keptNotInExport:(next.inventoryExport?.missingIds||[]).length,hasChanges:!!(added.length||removed.length||updated.length||taxonomyChanged||workspaceChanged),appliedMappings:states.filter(c=>c.state==='Applied').length,staleMappings:states.filter(c=>c.state==='Needs review').length,reviewNotes:Object.keys(next.reviews).length,pairReviews,activityRecords:afterActivity.length,activityRemoved:beforeActivity.filter(e=>!retained.has(e.id)).length};
 }

@@ -89,10 +89,16 @@ test('a pair compared at different levels per branch states both levels and keep
 test('every deferred record is listed once with its projection, and pairs without deferred detail add nothing',()=>{
  const wacos=app('VM-CN_WACOS_Szh5'),labels=app('VM-CN Auto labeling printing system'),args=pairArgs(wacos.id,labels.id);
  const snapshot=JSON.stringify(args),html=renderDeferredEvidence(args);
- const evidence=comparisonRecordEvidence(model,args.process,args.processBack),items=evidence.deferred.flat();
- assert.equal(items.length,15);
- assert.match(html,/Deferred detail · not used in the score \(15\)/);
- assert.equal((html.match(/<li>/g)||[]).length,15);
+ // Re-derived 2026-10-21 from the V9.16 data (LeanIX export 2026-10-20): VM-CN Auto labeling printing system now registers
+ // B.06.5 + B.06.5.7, so against WACOS (B.06.5, Level 2) one Level 3 capability record is deferred too; the Process branch
+ // still defers WACOS's 15 Level 3 records. The fixture therefore gathers both branches: 1 + 15 = 16.
+ const capEvidence=comparisonRecordEvidence(model,args.cap,args.capBack),evidence=comparisonRecordEvidence(model,args.process,args.processBack);
+ assert.deepEqual(capEvidence.deferred.map(items=>items.map(node=>[node.id,node.comparedId,node.comparedLevel])),[[],[['B.06.5.7','B.06.5',2]]]);
+ assert.deepEqual(evidence.deferred.map(items=>items.length),[15,0]);
+ const items=[...capEvidence.deferred.flat(),...evidence.deferred.flat()];
+ assert.equal(items.length,16);
+ assert.match(html,/Deferred detail · not used in the score \(16\)/);
+ assert.equal((html.match(/<li>/g)||[]).length,16);
  for(const node of items)assert(html.includes(`<code>${displayCode(node.id)}</code>`)&&html.includes(`Compared under <code>${esc(displayCode(node.comparedId))}</code> · Level ${node.comparedLevel}`),node.id);
  assert.equal(JSON.stringify(args),snapshot,'rendering must not change evidence or scores');
  assert.doesNotMatch(renderComparisonRecords(args),/Deferred detail|detail deferred|Compared under/);

@@ -14,7 +14,8 @@ const {importHistory,applicationEvents,...previous}=data,legacy={...previous,cap
 
 test('seven semantic groups remain actionable until each source has a verified mapping',()=>{
  const source=buildModel({...legacy,corrections:[]}),groups=reviewItems(source).filter(i=>i.semantic);
- assert.equal(groups.length,7);assert.equal(groups.reduce((n,i)=>n+i.appIds.length,0),22);
+ // 2026-10-21: re-derived after the 2026-10-20 export — the B.06.4 group now also holds BMLP_Nexeed_IAS@WxP and VMCN_Digital Dynamic Supermarket and no longer Material Requistion Digitalization (22 → 23 source applications).
+ assert.equal(groups.length,7);assert.equal(groups.reduce((n,i)=>n+i.appIds.length,0),23);
  assert(groups.every(i=>reviewResolution(i,correctionStates(legacy))==='action'));
  const group=groups.find(i=>i.code==='B.06.4'),appId=group.appIds[0];
  const mapping=createCorrection(legacy,{appId,dimension:'cap',raw:group.raw,targetId:group.code,reviewKey:group.key,reviewer:'Business owner',reason:'Same business scope verified against the standard definition'});
@@ -32,12 +33,14 @@ test('seven semantic groups remain actionable until each source has a verified m
  assert(groups.every(i=>i.appIds.every(id=>current.apps.find(a=>a.id===id).rawCap.includes(i.raw))),'original records are preserved');
 });
 
-test('with the business capability standard only B.06.4.4 remains an unconfirmed B.06 capability code',()=>{
+test('with the business capability standard no unconfirmed B.06 capability code remains',()=>{
  const items=reviewItems(buildModel({...data,corrections:[]})),history=correctionStates(data);
  const missing=items.filter(i=>i.category==='能力编码缺失'&&/^B\.06(?:\.|$)/.test(i.code));
- assert.deepEqual(missing.map(i=>[i.code,i.apps,i.raw,reviewResolution(i,history)]),[['B.06.4.4',['VMCN_Digital Dynamic Supermarket'],'B.06.4.4 Physical Inventory Management','action']]);
+ // 2026-10-21: the 2026-10-20 export registers VMCN_Digital Dynamic Supermarket under B.06.4 Inventory Management instead of B.06.4.4, so no B.06 code is unconfirmed any more (was [['B.06.4.4',...,'action']]).
+ assert.deepEqual(missing.map(i=>[i.code,i.apps,i.raw,reviewResolution(i,history)]),[]);
  const legacyMissing=reviewItems(buildModel({...legacy,corrections:[]})).filter(i=>i.category==='能力编码缺失'&&/^B\.06(?:\.|$)/.test(i.code));
- assert.deepEqual(legacyMissing.map(i=>[i.code,i.appIds.length]),[['B.06.9',4],['B.06.9.1',3]]);
+ // 2026-10-21: B.06.5.7 Intralogistics Infrastructure came with the export (VM-CN Auto labeling printing system, VMCN_iWPC_AKL_Szh5); the 2026-10-15 rows do not list that code.
+ assert.deepEqual(legacyMissing.map(i=>[i.code,i.appIds.length]),[['B.06.9',4],['B.06.9.1',3],['B.06.5.7',2]]);
 });
 
 test('RBHP review projects shared capability issues onto selected applications and export audit',()=>{
@@ -110,7 +113,8 @@ test('Activity export contains the same plant and dimension events shown on scre
  const model=buildModel(data),items=reviewItems(buildModel({...data,corrections:[]}));
  const events=reviewAuditEvents(data,items),scope={appIds:maintenanceReport(model,{entity:'RBHP'},'process').apps.map(a=>a.id),dimension:'process'};
  const scoped=scopeReviewAuditEvents(events,scope,correctionStates(data),items),csv=reviewAuditCSV(scoped);
- assert.equal(events.length,12);assert.equal(scoped.length,3);
+ // 2026-10-21: the import carried 5 owner mappings over (revoked and re-created, no reviewHistory note), so 17 mapping + 5 revoke events; the RBHP process scope now holds both AGV Performance Tracking System mappings twice plus their two revokes next to the SupplierManager mapping (3 → 7).
+ assert.equal(events.length,22);assert.equal(scoped.length,7);
  assert.equal(csv.split('\r\n').length,scoped.length+1);
  assert.doesNotMatch(csv,/AUTO-RACK/);
  assert.equal(scopeReviewAuditEvents(events,null,correctionStates(data),items).length,events.length);

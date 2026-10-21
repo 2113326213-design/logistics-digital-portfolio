@@ -95,16 +95,19 @@ test('L2 coverage keeps other issues; Process L2 follows the same rule since V9.
  assert.deepEqual(ids(processL2.filled),[],'coverage is not a direct registration');
 });
 
-test('the bundled portfolio keeps direct L2 count 54 and removes only fifteen confirmed-L3 coverage gaps',()=>{
+test('the bundled portfolio keeps direct L2 count 73 and removes only two confirmed-L3 coverage gaps',()=>{
+ // 2026-10-21 V9.16: re-derived from the merged LeanIX export (20261020_083736_UKj4Y_inventory.xlsx). 19 applications gained a direct L2 code (the L2 ancestor of their L3, or an L2 replacing the old L3/L1 registration):
+ // missing 22 -> 3 (RBCD WI management system, VMCN_CONNEX, 360° Supplier dashboard), filled 54 -> 73, directValid 53 -> 72, inferred 15 -> 2, valid 68 -> 74, uncovered 7 -> 1, invalid 1 (ShzP_ALICE).
+ // To review 38 -> 40 (+Control Tower, D-sample tracking system, Dolly call off program, Physical Logistics Management System: direct L2 only, L3 missing; -VMCN_CONNEX, VMCN_Digital Dynamic Supermarket). Not passing L2 quality 8 -> 2 (ShzP_ALICE, 360° Supplier dashboard).
  const data=JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url))),before=JSON.stringify(data.apps),{model,report}=reportFor(data),level=l2(report);
- assert.deepEqual([report.apps.length,level.filled.length,level.directValid.length,level.inferred.length,level.valid.length,level.missing.length,level.uncovered.length,level.invalid.length],[76,54,53,15,68,22,7,1]);
- assert.equal(report.needsReview.length,38);
- assert.equal(applicationsNotPassingLevelQuality(report,level).length,8);
+ assert.deepEqual([report.apps.length,level.filled.length,level.directValid.length,level.inferred.length,level.valid.length,level.missing.length,level.uncovered.length,level.invalid.length],[76,73,72,2,74,3,1,1]);
+ assert.equal(report.needsReview.length,40);
+ assert.equal(applicationsNotPassingLevelQuality(report,level).length,2);
  const agr=model.apps.find(a=>a.Name==='AGR w/ Camera'),dashboard=model.apps.find(a=>a.Name.startsWith('360'));
  assert.deepEqual(report.issues.get(agr.id),[]);
  assert(missingL2(report,dashboard.id),'an open L3 name question does not qualify as correctly filled');
  for(const a of level.inferred){
-  assert(!report.needsReview.includes(a),'these 15 applications previously had only the L2 gap');
+  assert(!report.needsReview.includes(a),'these 2 applications previously had only the L2 gap');
   assert.deepEqual(capabilityIssues(model,a),[]);
   assert.deepEqual(maintenanceGapReasons(report,report,a,[2]),[]);
  }

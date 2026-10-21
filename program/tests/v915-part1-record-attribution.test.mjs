@@ -24,6 +24,23 @@ const evidence=(index,a,b)=>comparisonRecordEvidence(model,index.compare(a.id,b.
 const mainArea=html=>html.split('id="focusEvidence"')[0];
 const capabilityPart=html=>html.split('<h5>Process</h5>')[0],processPart=html=>html.split('<h5>Process</h5>')[1].split('id="focusUnique"')[0];
 const putaway='BBM PM I2D Putaway to Automated Warehouse L3V';
+// The same helpers for another dataset.
+function context(d){
+ const m=buildModel(d),c=createSimilarity(m,'cap'),p=createSimilarity(m,'process');
+ return {data:d,model:m,app:name=>m.apps.find(item=>item.Name===name),cap:c,process:p,weighted:createWeightedSimilarity(m,DEFAULT_WEIGHTS),
+  evidence:(index,a,b)=>comparisonRecordEvidence(m,index.compare(a.id,b.id),index.compare(b.id,a.id)),
+  args:(a,b)=>({model:m,cap:c.compare(a.id,b.id),capBack:c.compare(b.id,a.id),process:p.compare(a.id,b.id),processBack:p.compare(b.id,a.id),escape:esc})};
+}
+// Registrations as recorded before the LeanIX export of 2026-10-20 (V9.16, 2026-10-21). The import event keeps each changed
+// field's previous value. Since that export no bundled application records a capability only at the B.06 root (RBCW Auto
+// Warehouse Management System, ShzP_Pad system and Szh5_ASRS_WCS_WMS now record B.06.5) and none has an empty Processes
+// field (VMCN_CONNEX gained a record), so those cases are checked on these earlier, real records.
+const exportEvent=data.importHistory.find(event=>event.inventoryFile==='20261020_083736_UKj4Y_inventory.xlsx');
+function recordedBefore(fields){
+ const wanted=fields.map(([name,field])=>{const id=app(name).id,change=exportEvent.changes.find(c=>c.appId===id&&c.field===field);assert(change&&!change.truncated,`${name} ${field}`);return change;});
+ return workspaceData({...data,apps:data.apps.map(a=>{let next=a;for(const c of wanted)if(c.appId===String(a.ID).trim())next={...next,[c.field]:c.before};return next;})});
+}
+const earlier=context(recordedBefore([['RBCW Auto Warehouse Management System','Business Capabilities'],['ShzP_Pad system','Business Capabilities'],['Szh5_ASRS_WCS_WMS','Business Capabilities'],['VMCN_CONNEX','Processes']]));
 
 // A small DOM double (as in similarity-v914): close() dispatches 'close' like a native dialog.
 function stubDocument(){
@@ -39,11 +56,11 @@ function stubDocument(){
   showModal(){this.open=true;},close(){this.open=false;this.fire('close',{});}});
  return {body:node(),getElementById(id){if(!nodes.has(id))nodes.set(id,node());return nodes.get(id);}};
 }
-function withUI(run){
+function withUI(run,on={model,data}){
  const previous=globalThis.document,document=stubDocument(),opened=[];
  globalThis.document=document;
  try{
-  const ui=createComparisonUI({getModel:()=>model,getData:()=>data,escape:esc,isSignedIn:()=>true,onApp:(...call)=>{opened.push(call);document.getElementById('detail').showModal();}});
+  const ui=createComparisonUI({getModel:()=>on.model,getData:()=>on.data,escape:esc,isSignedIn:()=>true,onApp:(...call)=>{opened.push(call);document.getElementById('detail').showModal();}});
   ui.showPortfolio();
   const showPair=(a,b,extra={})=>{ui.restoreState({...ui.getState(),focusAppId:a.id,focusPeerId:b.id,...extra});return document.getElementById('focusResult').innerHTML;};
   run({ui,document,opened,showPair});
@@ -78,8 +95,9 @@ test('AR Stock Taking ↔ AUTO-RACK: one AUTO-RACK process record to check, neve
  assert.doesNotMatch(html,/What each application does|Your review|View other comparison results/);
 }));
 
+// The three capability cases use the records from before the 2026-10-20 export (see earlier above).
 test('a real too-coarse registration still says more detail is needed, once per application and record',()=>withUI(({showPair})=>{
- const ar=app('AR Stock Taking');
+ const {app,cap,process,evidence}=earlier,ar=app('AR Stock Taking');
  for(const name of ['RBCW Auto Warehouse Management System','ShzP_Pad system','Szh5_ASRS_WCS_WMS']){
   const coarse=app(name);
   assert.deepEqual(cap.scopes.get(coarse.id).known.map(node=>node.id),['B.06'],name);
@@ -101,16 +119,18 @@ test('a real too-coarse registration still says more detail is needed, once per 
  assert.match(processPart(html),/More detail needed for this comparison \(1\)/);
  assert.deepEqual(pairRows(html),[[dashboard.id,'360° Supplier dashboard','1 process record to check']]);
  assert.match(html,/<em class="comparison-status">More detail needed<\/em>/);
-}));
+},earlier));
 
 test('every too-coarse record that the record check counts keeps its "More detail needed" entry (bundled data)',()=>{
- const coarseApps=['360° Supplier dashboard','CDR_EM','RBCW Auto Warehouse Management System','ShzP_Pad system','Szh5_ASRS_WCS_WMS'].map(app);
+ // The two Level 0 process chains are in the bundled data; the three B.06-root capabilities in the records from before
+ // the 2026-10-20 export (2026-10-21).
+ const real={model,app,cap,process,weighted,evidence};
  let checked=0;
- for(const coarse of coarseApps)for(const peer of model.apps){
+ for(const [on,names] of [[real,['360° Supplier dashboard','CDR_EM']],[earlier,['RBCW Auto Warehouse Management System','ShzP_Pad system','Szh5_ASRS_WCS_WMS']]])for(const coarse of names.map(on.app))for(const peer of on.model.apps){
   if(peer.id===coarse.id)continue;
-  const readiness=comparisonReadiness([weighted.pair(coarse.id,peer.id)],50);
+  const readiness=comparisonReadiness([on.weighted.pair(coarse.id,peer.id)],50);
   for(const row of readiness.apps)for(const record of row.records.filter(item=>item.kind==='More detail needed')){
-   const side=row.app.id===coarse.id?0:1,gaps=evidence(record.dimension==='cap'?cap:process,coarse,peer).gaps;
+   const side=row.app.id===coarse.id?0:1,gaps=on.evidence(record.dimension==='cap'?on.cap:on.process,coarse,peer).gaps;
    assert(gaps.some(gap=>gap.side===side),`${coarse.Name} ↔ ${peer.Name}: ${row.app.Name} ${record.raw}`);
    checked++;
   }
@@ -125,14 +145,16 @@ test('no branch held back by an unconfirmed or missing record is listed as missi
   assert.equal(new Set(keys).size,keys.length,`${a.Name} ↔ ${b.Name}`);
   for(const gap of records.gaps)assert.doesNotMatch(gap.reason,/not yet confirmed/,`${a.Name} ↔ ${b.Name}`);
  }
- // Missing records keep their own message instead of a detail gap.
- const connex=app('VMCN_CONNEX'),ar=app('AR Stock Taking'),records=evidence(process,ar,connex);
+ // Missing records keep their own message instead of a detail gap. VMCN_CONNEX had no process record until the
+ // 2026-10-20 export, so this is checked on the records from before it (2026-10-21).
+ const connex=earlier.app('VMCN_CONNEX'),ar=earlier.app('AR Stock Taking'),records=earlier.evidence(earlier.process,ar,connex);
  assert.deepEqual(records.gaps,[]);assert.equal(records.sides[1].empty,true);
- assert.match(renderComparisonRecords(args(ar,connex)),/<strong>Application B · VMCN_CONNEX:<\/strong> No process records supplied\. This comparison has missing data\./);
+ assert.match(renderComparisonRecords(earlier.args(ar,connex)),/<strong>Application B · VMCN_CONNEX:<\/strong> No process records supplied\. This comparison has missing data\./);
 });
 
+// Szh5_ASRS_WCS_WMS with its capability at the B.06 root, as recorded before the 2026-10-20 export (2026-10-21).
 test('when both applications have problems, each is listed separately, Application A first',()=>withUI(({showPair})=>{
- const szh5=app('Szh5_ASRS_WCS_WMS'),rack=app('AUTO-RACK');
+ const {app,args}=earlier,szh5=app('Szh5_ASRS_WCS_WMS'),rack=app('AUTO-RACK');
  const html=showPair(szh5,rack);
  assert.deepEqual(pairRows(html),[[szh5.id,'Szh5_ASRS_WCS_WMS','1 capability record + 1 process record to check'],[rack.id,'AUTO-RACK','1 process record to check']]);
  // Szh5's root-only capability is still more detail; the process records are unconfirmed on both sides, not detail.
@@ -151,7 +173,7 @@ test('when both applications have problems, each is listed separately, Applicati
  const markup=renderPairReadiness(readiness,esc,['B','A']);
  assert.deepEqual(pairRows(markup),[['B','Warehouse B','1 process record to check'],['A','Warehouse A','1 process record to check']]);
  assert.doesNotMatch(markup,/Unknown (one|two)/,'source details stay in View details');
-}));
+},earlier));
 
 test('the single pair and the multi-application comparison count and word records the same way',()=>{
  const szh5=app('Szh5_ASRS_WCS_WMS'),rack=app('AUTO-RACK'),readiness=comparisonReadiness([weighted.pair(szh5.id,rack.id)],50);
@@ -180,12 +202,20 @@ test('View details calls onApp with the application and the record; closing keep
  assert.equal(document.getElementById('focusResult').innerHTML,html,'the comparison is not re-rendered');
  assert.equal(ui.getState().focusAppId,ar.id);assert.equal(ui.getState().focusPeerId,rack.id);assert.equal(ui.getState().peerSearch,'AUTO');
  assert.deepEqual(log,[[rack.id,'pair',{preventScroll:true}]],'focus returns to the pair entry, not to the hidden portfolio entry');
- // Two applications with problems: each entry opens its own application with its own records.
+ // Two applications with problems: each entry opens its own application with its own records. Szh5_ASRS_WCS_WMS with its
+ // capability at the B.06 root, as recorded before the 2026-10-20 export (2026-10-21).
+ withUI(({document,opened,showPair})=>{
+  const szh5=earlier.app('Szh5_ASRS_WCS_WMS');showPair(szh5,earlier.app('AUTO-RACK'));opened.length=0;
+  click(document.getElementById('similarityReview'),entry({readinessApp:szh5.id,readinessScope:'pair'}));
+  const [[id,focus]]=opened;
+  assert.equal(id,szh5.id);assert.deepEqual([focus.dimension,focus.record,focus.kind],['cap','B.06 Logistics Management','More detail needed']);
+  assert.deepEqual(focus.records.map(record=>[record.dimension,record.raw]),[['cap','B.06 Logistics Management'],['process','BBM PM I2D Pick via Picking Area (Goods to Man)-Automated warehouse L3V']]);
+  document.getElementById('detail').close();
+ },earlier);
+ // And in the bundled data, where Szh5_ASRS_WCS_WMS records B.06.5: only its unconfirmed process record is left.
  const szh5=app('Szh5_ASRS_WCS_WMS');showPair(szh5,rack);opened.length=0;
  click(review,entry({readinessApp:szh5.id,readinessScope:'pair'}));
- const [[id,focus]]=opened;
- assert.equal(id,szh5.id);assert.deepEqual([focus.dimension,focus.record,focus.kind],['cap','B.06 Logistics Management','More detail needed']);
- assert.deepEqual(focus.records.map(record=>[record.dimension,record.raw]),[['cap','B.06 Logistics Management'],['process','BBM PM I2D Pick via Picking Area (Goods to Man)-Automated warehouse L3V']]);
+ assert.deepEqual(opened.map(([id,focus])=>[id,focus.dimension,focus.record,focus.kind,focus.records.length]),[[szh5.id,'process','BBM PM I2D Pick via Picking Area (Goods to Man)-Automated warehouse L3V','Needs confirmation',1]]);
  document.getElementById('detail').close();
  // The portfolio list and the multi-application dialog lead to the same record.
  opened.length=0;click(review,entry({readinessApp:rack.id}));
@@ -197,8 +227,8 @@ test('View details calls onApp with the application and the record; closing keep
 }));
 
 // The application details as the profile renders them, with the attributes the focus helper reads.
-function profileRoot(target){
- const html=renderCapabilityIssues(capabilityIssues(model,target),esc)+renderProcessIssues(processIssues(model,target),esc);
+function profileRoot(target,on=model){
+ const html=renderCapabilityIssues(capabilityIssues(on,target),esc)+renderProcessIssues(processIssues(on,target),esc);
  const unescape=value=>value.replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
  const items=[...html.matchAll(/<div class="profile-unlisted" data-issue-dimension="([^"]*)" data-issue-record="([^"]*)" data-issue-kind="([^"]*)"><span class="profile-source-label">([^<]*)<\/span>/g)].map(match=>({
   dataset:{issueDimension:match[1],issueRecord:unescape(match[2]),issueKind:match[3]},label:unescape(match[4]),marks:[],scrolled:0,
@@ -216,8 +246,9 @@ test('the application details mark the issue for that source record and keep the
   assert.deepEqual(marked.map(item=>item.dataset.issueRecord),[putaway]);
   assert.deepEqual(marked[0].marks,['is-focused-issue']);assert.equal(marked[0].scrolled,1);
   assert.deepEqual(restored,[[0,120]],'the comparison page behind the details does not move');
-  // A root-only capability is listed in the profile as the missing level below it.
-  const rbcw=profileRoot(app('RBCW Auto Warehouse Management System'));
+  // A root-only capability is listed in the profile as the missing level below it (RBCW's capability as recorded before
+  // the 2026-10-20 export; it records B.06.5 since then, 2026-10-21).
+  const rbcw=profileRoot(earlier.app('RBCW Auto Warehouse Management System'),earlier.model);
   assert.deepEqual(focusApplicationIssue(rbcw,{dimension:'cap',record:'B.06 Logistics Management',kind:'More detail needed'}).map(item=>item.label),['Level 2 missing']);
   // Several records of one application are all marked; the first one is brought into view.
   const wacos=profileRoot(app('VM-CN_WACOS_Szh5')),row=comparisonReadiness(weighted.pairPeers(app('VM-CN_WACOS_Szh5').id),50).apps.find(item=>item.app.Name==='VM-CN_WACOS_Szh5');
@@ -232,7 +263,10 @@ test('the application details mark the issue for that source record and keep the
 
 test('every record the record check counts can be found in that application\'s details (bundled data)',()=>{
  const readiness=comparisonReadiness(weighted.pairs(),50);
- assert.equal(readiness.apps.length,19);
+ // 19 → 17 with the LeanIX export of 2026-10-20 (2026-10-21): ShzP_Pad system no longer records its capability only at the
+ // B.06 root, and VMCN_Digital Dynamic Supermarket no longer records the unconfirmed B.06.4.4.
+ assert.equal(readiness.apps.length,17);
+ assert(!readiness.apps.some(row=>['ShzP_Pad system','VMCN_Digital Dynamic Supermarket'].includes(row.app.Name)));
  for(const row of readiness.apps){
   const root=profileRoot(row.app);
   for(const record of row.records){

@@ -52,7 +52,11 @@ test('Annual benefit changes stay in stored history but never reach the History 
 });
 
 test('the Not classified landscape column tooltip is English',()=>{
- const model=buildModel(data),labels=['cap','process'].map(view=>columns(model,view,new Set()).find(column=>column.id==='unmapped')?.label).filter(Boolean);
+ // 2026-10-21 (V9.16): the export moved the four root-only applications (RBCE/RBCW Auto Warehouse Management System, ShzP_Pad system,
+ // Szh5_ASRS_WCS_WMS) from B.06 to B.06.5, so the bundled data no longer has a cap-view Not classified column; one application without
+ // capabilities or processes keeps the column present in both views, so both tooltips are still checked.
+ const unclassified={ID:'UNMAPPED-TEST',Name:'Unclassified test application',Division:'PS',Entity:'TEST','Business Capabilities':'',Processes:''};
+ const model=buildModel({...data,apps:[...data.apps,unclassified]}),labels=['cap','process'].map(view=>columns(model,view,new Set()).find(column=>column.id==='unmapped')?.label).filter(Boolean);
  assert(labels.length);for(const label of labels)assert.doesNotMatch(english(label),CJK);
  // The heading is rendered by landscape.mjs, and its tooltip goes through english().
  for(const view of ['cap','process']){

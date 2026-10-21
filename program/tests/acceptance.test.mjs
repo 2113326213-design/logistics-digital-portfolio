@@ -27,10 +27,12 @@ const real=buildModel(original),a=real.apps.find(a=>a.Name==='AR Stock Taking'),
 // Legacy catalogue (before 2026-10-16) named B.06.4 "Storage Management", so AR Stock Taking's "B.06.4 Inventory Management" waits for business confirmation.
 const old=JSON.parse(fs.readFileSync(new URL('./capability-rows-2026-10-15.json',import.meta.url))),legacy=buildModel({...original,capabilityRows:old.capabilityRows,taxonomySource:old.taxonomySource});
 r=compareMaintained(legacy,a.id,b.id,'cap');assert.equal(r.coverageA,null);assert.equal(r.coverageB,null);assert.match(r.forward.reason,/business confirmation/);assert.equal(r.forward.hasSourceNameDifferences,true);
-// Business capability standard: B.06.4 is "Inventory Management", so no hold. AR Stock Taking {B.06.1.4, B.06.4} vs AUTO-RACK {B.06.1.4}: 1/2 and 1/1.
-r=compareMaintained(real,a.id,b.id,'cap');assert.equal(r.coverageA,.5);assert.equal(r.coverageB,1);assert.equal(r.forward.reason,'');assert.equal(r.forward.hasSourceNameDifferences,false);
-assert.deepEqual(r.forward.target.semanticConcerns,[]);assert.deepEqual(r.forward.branches.flatMap(b=>b.common.map(n=>n.id)),['B.06.1.4']);assert.deepEqual(r.forward.branches.flatMap(b=>b.onlyTarget.map(n=>n.id)),['B.06.4']);
-assert.equal(real.apps.length,76);assert.equal(real.apps.filter(a=>a.cap.some(id=>id==='B.06'||id.startsWith('B.06.'))).length,74);
+// Business capability standard: B.06.4 is "Inventory Management", so no hold. AR Stock Taking {B.06.1.4, B.06.4} vs AUTO-RACK {B.06.1.4, B.06.5}: 1/2 and 1/2.
+// 2026-10-21: re-derived from the LeanIX export 20261020_083736_UKj4Y_inventory.xlsx (V9.16) — AUTO-RACK gained "B.06.5 Material Flow Orchestration" (and the B.06.1 ancestor), so the reverse coverage dropped from 1/1 to 1/2 and B.06.5 is the reverse-only node.
+r=compareMaintained(real,a.id,b.id,'cap');assert.equal(r.coverageA,.5);assert.equal(r.coverageB,.5);assert.equal(r.forward.reason,'');assert.equal(r.forward.hasSourceNameDifferences,false);
+assert.deepEqual(r.forward.target.semanticConcerns,[]);assert.deepEqual(r.forward.branches.flatMap(b=>b.common.map(n=>n.id)),['B.06.1.4']);assert.deepEqual(r.forward.branches.flatMap(b=>b.onlyTarget.map(n=>n.id)),['B.06.4']);assert.deepEqual(r.reverse.branches.flatMap(b=>b.onlyTarget.map(n=>n.id)),['B.06.5']);
+// 2026-10-21: B.06 scope 74 → 76 — the export moved the two applications previously outside B.06 into it: RBCD LOM Scrap Management Platform gained B.06.5, VMCN_CONNEX changed HC.06.01.x to B.06.2.3/B.06.2.6.
+assert.equal(real.apps.length,76);assert.equal(real.apps.filter(a=>a.cap.some(id=>id==='B.06'||id.startsWith('B.06.'))).length,76);
 const processRows=[['TEST','L0','M.TEST','Root'],['TEST','L1','M.TEST.010','Plan'],['TEST','L2','M.TEST.010.010','Manage'],['TEST','L3','M.TEST.010.010.010','Task']];
 const processModel=buildModel({...sample,processRows,apps:sample.apps.map((a,i)=>({...a,Processes:i?'BBM PM TEST Task L3':'BBM PM TEST Plan L1'}))});
 r=compare(processModel,'process');assert.equal(r.coverageA,1);assert.equal(r.coverageB,1);assert.deepEqual(r.forward.comparisonLevels,[1]);
@@ -45,4 +47,4 @@ const parsed=inventoryFromSheets({'Logistic Apps':[headers,...sample.apps.map(a=
 assert.equal(compare(buildModel({...original,apps:parsed})).coverageA,.5);
 assert.throws(()=>inventoryFromSheets({'Logistic Apps':[['ID','Name'],['x','x']]}),/缺少列/);
 assert.equal(original.apps.length,76);assert.equal(original.isAcceptanceSample,undefined);
-console.log('PASS: A/B 50% both ways, exact common/difference IDs, parent deduplication, shared available depths, unknown vs zero, standard names with original labels retained, legacy meaning hold vs standard 1/2, B.06 scope 74/76, process depth, workspace round trip and invalid input.');
+console.log('PASS: A/B 50% both ways, exact common/difference IDs, parent deduplication, shared available depths, unknown vs zero, standard names with original labels retained, legacy meaning hold vs standard 1/2 both ways, B.06 scope 76/76, process depth, workspace round trip and invalid input.');

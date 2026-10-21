@@ -14,11 +14,19 @@ import {formatPoints} from '../public/score-presentation.mjs';
 import {createComparisonUI} from '../public/similarity-ui.mjs';
 import {workspaceData} from '../public/workspace.mjs';
 import {scopeReason} from '../public/display.mjs';
+import {recordsBefore20261020} from './records-before-20261020.mjs';
 
 const data=workspaceData(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url))));
 const model=buildModel(data),index=createWeightedSimilarity(model),cap=createSimilarity(model,'cap'),process=createSimilarity(model,'process');
 const app=name=>{const found=model.apps.find(a=>a.Name===name);assert(found,`bundled data includes ${name}`);return found;};
 const pair=(a,b)=>index.pair(app(a).id,app(b).id);
+// The handoff examples were confirmed on the records before the LeanIX export of 2026-10-20, which changed several of
+// them (RBCW Auto Warehouse Management System, Control Tower, RBCD LOM Scrap Management Platform, VM-CN Auto labeling
+// printing system). Since V9.16 (2026-10-21) those examples run on the earlier records, restored from the import event.
+const before=workspaceData(recordsBefore20261020(data));
+const beforeModel=buildModel(before),beforeIndex=createWeightedSimilarity(beforeModel),beforeCap=createSimilarity(beforeModel,'cap'),beforeProcess=createSimilarity(beforeModel,'process');
+const beforeApp=name=>{const found=beforeModel.apps.find(a=>a.Name===name);assert(found,`earlier records include ${name}`);return found;};
+const beforePair=(a,b)=>beforeIndex.pair(beforeApp(a).id,beforeApp(b).id);
 const shown=value=>new Intl.NumberFormat('en-US',{maximumFractionDigits:1}).format(scorePoints(value));
 const component=(direction,key)=>direction.components.find(c=>c.key===key);
 const close=(actual,expected)=>assert(Math.abs(actual-expected)<1e-12,`${actual} ≈ ${expected}`);
@@ -41,7 +49,7 @@ test('confirmed example 1: ARS vs AGR w/ Camera is 30.869565… shown as 30.9, c
 });
 
 test('confirmed example 2: Iris vs RBCW process directions 100% and 1/3, total Unavailable because RBCW capability is only B.06',()=>{
- const p=pair('Iris','RBCW Auto Warehouse Management System');
+ const p=beforePair('Iris','RBCW Auto Warehouse Management System');
  const forward=component(p.forward,'process').result,reverse=component(p.reverse,'process').result;
  assert.equal(forward.coverage,1);close(reverse.coverage,1/3);
  assert.deepEqual(forward.comparisonLevels,[2]);assert.deepEqual(forward.deferredTarget.map(s=>s.id),['M.I2D.020.030.030']);
@@ -61,11 +69,11 @@ test('confirmed example 3: ARS–Iris 31.3, ARS–RCS-2000 32.1, Iris–RCS-2000
 });
 
 test('threshold labels are inclusive, use settled scores and keep Out of scope separate',()=>{
- const tower=pair('Control Tower','RBCC LOG Control Tower V2');
+ const tower=beforePair('Control Tower','RBCC LOG Control Tower V2');
  assert.equal(tower.status,'confirmed');assert.equal(shown(tower.coverage),'34');
  // Owner request 2026-10-20: a confirmed pair below the threshold is 'Below threshold' (was 'Not similar').
  assert.equal(pairResultLabel(tower,34),'Potential overlap','an exact 34 meets a threshold of 34');assert.equal(pairResultLabel(tower,35),'Below threshold');
- const candidates=portfolioCandidates(index);
+ const candidates=portfolioCandidates(beforeIndex);
  assert(portfolioAtThreshold(candidates,34).confirmedPairs.some(p=>p.key===tower.key));
  assert(!belowThresholdConfirmedPairs(candidates.pairs,34).some(p=>p.key===tower.key));
  assert(belowThresholdConfirmedPairs(candidates.pairs,35).some(p=>p.key===tower.key));
@@ -106,8 +114,8 @@ test('real CSV exports never list a B.06 root or L0 chain as a confirmed shared 
 });
 
 test('weighted CSV status matches the UI label and capability/process CSV marks Out of scope',()=>{
- const p=pair('Iris','RCS-2000'),tower=pair('Control Tower','RBCC LOG Control Tower V2');
- const csv=similarityCSV([p,tower],'weighted',data,{threshold:34}),[review,overlap]=records(csv);
+ const p=beforePair('Iris','RCS-2000'),tower=beforePair('Control Tower','RBCC LOG Control Tower V2');
+ const csv=similarityCSV([p,tower],'weighted',before,{threshold:34}),[review,overlap]=records(csv);
  // Owner decision 2026-10-19 (c): a No complete score pair (named 'Review needed' before 2026-10-20) also states its
  // code evidence. Iris–RCS-2000 has capability 1/1
  // and process 0/1 in both directions and no shared name or description word, so each directional total is
@@ -142,8 +150,9 @@ test('weighted CSV status matches the UI label and capability/process CSV marks 
 });
 
 test('a capability recorded only outside B.06 keeps its label but explains the scope instead of asking to confirm the code',()=>{
- const scrap=app('RBCD LOM Scrap Management Platform'),peer=app('ARS');
- const p=index.pair(scrap.id,peer.id);
+ // The Scrap platform recorded only B.14.09.1 until the 2026-10-20 export (it also records B.06.5 since then).
+ const scrap=beforeApp('RBCD LOM Scrap Management Platform'),peer=beforeApp('ARS');
+ const p=beforeIndex.pair(scrap.id,peer.id);
  assert.equal(pairResultLabel(p),'Needs confirmation');
  const reasons=missingPairEvidence(p).filter(item=>item.label==='Capability').map(item=>item.reason);
  assert(reasons.some(reason=>/only outside the B\.06 comparison scope \(B\.14\.09\.1 Waste Management\)/.test(reason)&&/does not mean the code is incorrect/.test(reason)),reasons.join(' | '));
@@ -160,7 +169,7 @@ test('an L0-only chain beside deeper chains needs more detail, not confirmation'
 });
 
 test('a direction with no comparable branch gives a specific reason, never "known branch results are retained"',()=>{
- const r=cap.compare(app('Iris').id,app('RBCW Auto Warehouse Management System').id);
+ const r=beforeCap.compare(beforeApp('Iris').id,beforeApp('RBCW Auto Warehouse Management System').id);
  assert.equal(r.comparableBranches,0);assert.equal(r.coverage,null);
  assert.equal(r.reason,'对方登记深度不足。');
  for(const a of model.apps.slice(0,30))for(const b of model.apps)if(a.id!==b.id)for(const s of [cap,process]){const result=s.compare(a.id,b.id);if(result.comparableBranches===0)assert.notEqual(result.reason,'部分分支信息不足，保留已知分支结果。');}
@@ -173,7 +182,7 @@ test('a direction with no comparable branch gives a specific reason, never "know
 });
 
 test('real direction changed by option A: VM-CN Auto labeling printing system → RBCW Auto Warehouse process is 2/8',()=>{
- const r=process.compare(app('VM-CN Auto labeling printing system').id,app('RBCW Auto Warehouse Management System').id);
+ const r=beforeProcess.compare(beforeApp('VM-CN Auto labeling printing system').id,beforeApp('RBCW Auto Warehouse Management System').id);
  assert.equal(r.commonCount,2);assert.equal(r.targetCount,8);assert.equal(r.coverage,.25);
 });
 
@@ -183,9 +192,9 @@ function stubDocument(){
  const node=()=>({innerHTML:'',value:'',hidden:false,open:false,dataset:{},style:{},classList:{toggle(){},add(){},remove(){}},addEventListener(type,listener){this.listeners??=new Map();if(!this.listeners.has(type))this.listeners.set(type,[]);this.listeners.get(type).push(listener);},fire(type,event){for(const listener of this.listeners?.get(type)||[])listener(event);},setAttribute(){},querySelectorAll(){return [];},querySelector(selector){this.children??=new Map();if(!this.children.has(selector))this.children.set(selector,node());return this.children.get(selector);},insertAdjacentHTML(where,html){this.innerHTML+=html;},scrollIntoView(){},showModal(){this.open=true;},close(){this.open=false;},append(){}});
  return {body:node(),createElement(){return {click(){},remove(){}};},getElementById(id){if(!nodes.has(id))nodes.set(id,node());return nodes.get(id);}};
 }
-function withUI(run){
+function withUI(run,on={model,data}){
  const old=globalThis.document,document=stubDocument();globalThis.document=document;
- try{run(createComparisonUI({getModel:()=>model,getData:()=>data,escape:esc,isSignedIn:()=>true}),document);}finally{globalThis.document=old;}
+ try{run(createComparisonUI({getModel:()=>on.model,getData:()=>on.data,escape:esc,isSignedIn:()=>true}),document);}finally{globalThis.document=old;}
 }
 
 test('multi-select compares every pair: four applications give six pairs and five give ten',()=>withUI((ui,document)=>{
@@ -247,11 +256,11 @@ test('the CSV exported from the comparison dialog uses the threshold chosen in t
  URL.createObjectURL=value=>{blob=value;return 'blob:test';};URL.revokeObjectURL=()=>{};globalThis.setTimeout=()=>0;
  try{
   withUI((ui,document)=>{
-   const ids=[app('Control Tower').id,app('RBCC LOG Control Tower V2').id];
+   const ids=[beforeApp('Control Tower').id,beforeApp('RBCC LOG Control Tower V2').id];
    ui.open({poolIds:ids,contextLabel:'Pair'});
    ui.restoreState({...ui.getState(),similarityThreshold:34,pool:ids,selected:ids,dimension:'weighted'});
    document.getElementById('exportSelection').onclick();
-  });
+  },{model:beforeModel,data:before});
  }finally{URL.createObjectURL=saved.create;URL.revokeObjectURL=saved.revoke;globalThis.setTimeout=saved.timer;}
  const text=await blob.text(),[row]=records(text.startsWith('\uFEFF')?text:'\uFEFF'+text);// Blob.text() drops the BOM
  assert.equal(row.Status,'Potential overlap','an exact 34 at the UI threshold 34');

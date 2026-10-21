@@ -29,25 +29,34 @@ export async function readXlsx(file){
  return result;
 }
 export function inventoryFromSheets(sheets){
- const rows=sheets['Logistic Apps']||Object.values(sheets).find(rows=>rows?.some(r=>r?.includes('ID')&&r?.includes('Name')));
+ const entry=sheets['Logistic Apps']?['Logistic Apps',sheets['Logistic Apps']]:Object.entries(sheets).filter(([name])=>!/^readme$/i.test(name)).find(([,rows])=>Array.isArray(rows)&&rows.some(r=>r?.includes('ID')&&r?.includes('Name')));
+ const rows=entry?.[1];
  if(!rows)throw Error('未找到应用清单工作表。');
  const h=rows.findIndex(r=>r?.includes('ID')&&r?.includes('Name')),headers=rows[h];
- for(const key of ['ID','Name','Division','Entity','Business Capabilities','Processes'])if(!headers.includes(key))throw Error('应用清单缺少列：'+key);
+ // A LeanIX application export (first received 2026-10-20): display names in row 1, a Type column, no Division /
+ // Entity columns and no cost sheet. The fields it lacks are kept by ID (mergeInventoryEvidence); applications it
+ // does not list are kept and recorded (applyInventory), because such an export can be a filtered view.
+ const leanix=!headers.includes('Division')&&!headers.includes('Entity')&&headers.includes('Type')&&headers.includes('Display Name');
+ for(const key of (leanix?['ID','Name','Business Capabilities','Processes']:['ID','Name','Division','Entity','Business Capabilities','Processes']))if(!headers.includes(key))throw Error('应用清单缺少列：'+key);
  // Optional columns absent from the sheet are left out, so existing values are kept by ID.
  const keys=['ID','Division','Entity','Name','Description','Business Capabilities','Processes','Lifecycle: Current Lifecycle','Lifecycle: Active'].filter(k=>headers.includes(k));
  if(headers.includes('Main Business Capability'))keys.push('Main Business Capability');
  const hasScopeColumn=rows===sheets['Logistic Apps']&&!String(headers[2]??'').trim();
  const apps=rows.flatMap((r,index)=>{
   if(index<=h||!r||!r.some(x=>String(x??'').trim()))return [];
+  if(leanix&&String(r[headers.indexOf('Type')]??'').trim()&&String(r[headers.indexOf('Type')]).trim()!=='Application')return [];
   const app=Object.fromEntries(keys.map(k=>[k,k==='Lifecycle: Active'?excelDate(r[headers.indexOf(k)],sheets.date1904):r[headers.indexOf(k)]??'']));
   if(headers.includes('Annual benefit (CNY/year)')){try{app.annualBenefitCNY=cleanAnnualBenefit(r[headers.indexOf('Annual benefit (CNY/year)')]);}catch(error){throw Error(`Row ${index+1}, application ID ${String(r[headers.indexOf('ID')]??'').trim()||'not provided'}: ${error.message}`);}app.annualBenefitSource=`Inventory · Annual benefit (CNY/year) · row ${index+1}`;}
   if(hasScopeColumn){app.scopeNote=String(r[2]??'').trim();app.scopeSource=`Logistic Apps!C${index+1}`;}
   return [app];
  });
  if(!apps.length)throw Error('应用清单没有数据。');
+ if(leanix){const readme=Object.entries(sheets).find(([name])=>/^readme$/i.test(name))?.[1];const exportedAt=(Array.isArray(readme)?readme.flat():[]).map(v=>String(v??'')).map(s=>s.match(/created at:\s*(.+?)\s*$/i)?.[1]).find(Boolean)||'';apps.leanixExport={exportedAt,sheet:String(entry[0])};}
  if(!Object.hasOwn(sheets,'Parameter Score'))return apps;
  const costs=operationCostScoresFromSheets(sheets),roi=roiScoresFromSheets(sheets);
- return apps.map(app=>{const cost=costs.get(String(app.ID).trim());return {...app,...(roi?{roiScore:roi.get(String(app.ID).trim())?.score??null,roiSource:roi.get(String(app.ID).trim())?.source||''}:{}),operationCostScore:cost?.score??null,operationCostSource:cost?.source||''};});
+ const scored=apps.map(app=>{const cost=costs.get(String(app.ID).trim());return {...app,...(roi?{roiScore:roi.get(String(app.ID).trim())?.score??null,roiSource:roi.get(String(app.ID).trim())?.source||''}:{}),operationCostScore:cost?.score??null,operationCostSource:cost?.source||''};});
+ if(apps.leanixExport)scored.leanixExport=apps.leanixExport;
+ return scored;
 }
 // Date-time serials carry the time as a fraction; only the calendar date is stored. Text is kept as recorded
 // unless it is exactly an ISO date or date-time, so a date followed by a note is never cut short.

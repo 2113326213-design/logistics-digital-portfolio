@@ -121,12 +121,21 @@ const all=cap.peers(appId('AR Stock Taking')),same=cap.peers(appId('AR Stock Tak
 assert.equal(same.length+other.length,all.length);assert.ok(all.every(r=>r.target.app.id!==r.peer.app.id));assert.ok(same.every(r=>r.peer.app.Entity==='RBCD'));
 const legacyAll=legacyCap.peers(appId('AR Stock Taking'));assert.equal(legacyAll.length,all.length);
 assert(legacyAll.every(r=>r.coverage===null),'with the legacy catalogue AR Stock Taking retains an unresolved semantic registration, so no pair has complete capability evidence');
-assert.equal([...legacyCap.scopes.values()].reduce((n,scope)=>n+scope.semanticConcerns.length,0),22);
+// 2026-10-21 (V9.16 export merge): 22 → 23 legacy concerns, recomputed from the bundled data. BMLP_Nexeed_IAS@WxP and
+// VMCN_Digital Dynamic Supermarket now also carry the held parent "B.06.4 Inventory Management" (+2), while
+// Material Requistion Digitalization moved from B.06.4 to B.06.5 Material Flow Orchestration, which is not a held name (−1).
+assert.equal([...legacyCap.scopes.values()].reduce((n,scope)=>n+scope.semanticConcerns.length,0),23);
 // The standard names match the seven held source meanings, so no application is held and AR Stock Taking has a full result for each other comparable target.
 assert.equal([...cap.scopes.values()].reduce((n,scope)=>n+scope.semanticConcerns.length,0),0);
 assert.deepEqual(all.filter(r=>r.coverage!==null).map(r=>r.peer.app.id).sort(),comparableTargets.map(scope=>scope.app.id).filter(id=>id!==appId('AR Stock Taking')).sort());
-assert.equal(all.filter(r=>r.coverage!==null).length,68);
-assert.equal(model.issues.length,22);assert.equal(model.taxonomyIssues.length,2);
+// 2026-10-21 (V9.16 export merge): 68 → 75, recomputed from the bundled data. Seven more applications are comparable capability
+// targets: RBCE/RBCW Auto Warehouse Management System, ShzP_Pad system and Szh5_ASRS_WCS_WMS replaced the lone B.06 root with
+// B.06.5 (L2), RBCD LOM Scrap Management Platform gained B.06.5 beside its B.14 code, VMCN_CONNEX moved from HC.06 codes to
+// B.06.2.3/B.06.2.6, and VMCN_Digital Dynamic Supermarket's pending B.06.4.4 record became B.06.4. All 76 applications now qualify.
+assert.equal(all.filter(r=>r.coverage!==null).length,75);
+// 2026-10-21 (V9.16 export merge): 22 → 23 source issues, recomputed from the bundled data: the export gave RBCW Auto Warehouse
+// Management System "BBM PM I2D Transport Material Intra Plant L3", which the process catalogue cannot confirm (流程未匹配层级表).
+assert.equal(model.issues.length,23);assert.equal(model.taxonomyIssues.length,2);
 // Bundled data, L3V as Level 3: the six L3V records with applied mappings count as their L3 codes; the seven without a
 // standard L3 of the same name (at any level, in any chain) are pending like any unmatched L3, so none of their four
 // applications has a process score as target.

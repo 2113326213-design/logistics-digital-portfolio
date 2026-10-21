@@ -1,5 +1,8 @@
 // Comparison records box for an application whose capabilities are all outside B.06 (2026-10-20): its pairs show the
 // outside-scope reason, as the pair status does, and never "More detail needed"; real depth gaps keep that heading.
+// 2026-10-21: the LeanIX export of 2026-10-20 (V9.16) added B.06.5 to the Scrap platform and replaced every B.06-root-only
+// registration by B.06.5, so the bundled data has neither an outside-only application nor a real depth gap any more. The
+// fixture below is the current data with those two pre-export registrations restored; every other record is current.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -11,7 +14,11 @@ import {comparisonRecordEvidence,renderComparisonRecords} from '../public/compar
 import {pairResultLabel,pairStatusReason} from '../public/pair-status.mjs';
 import {scopeReason} from '../public/display.mjs';
 
-const data=workspaceData(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url))));
+const bundled=workspaceData(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url))));
+// Re-derived 2026-10-21 from the current data: the Scrap platform records only its outside capability again and
+// ShzP_Pad system only the B.06 root (both as registered before the 2026-10-20 export), so the rules keep a subject.
+const restored={'RBCD LOM Scrap Management Platform':'B.14.09.1 Waste Management','ShzP_Pad system':'B.06 Logistics Management'};
+const data={...bundled,apps:bundled.apps.map(a=>a.Name in restored?{...a,'Business Capabilities':restored[a.Name]}:a)};
 const model=buildModel(data),cap=createSimilarity(model,'cap'),process=createSimilarity(model,'process');
 const weighted=createWeightedSimilarity(model,data.similarityWeights||DEFAULT_WEIGHTS);
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
@@ -20,10 +27,14 @@ const render=(a,b)=>renderComparisonRecords({model,cap:cap.compare(a.id,b.id),ca
 const capabilityPart=html=>html.split('<h5>Process</h5>')[0];
 const scrap=app('RBCD LOM Scrap Management Platform');
 
-test('the only in-scope application with capabilities only outside B.06 is RBCD LOM Scrap Management Platform (B.14.09.1)',()=>{
- const outside=model.apps.filter(a=>!scopeReason(a)&&a.cap.length&&a.cap.every(id=>!(id==='B.06'||id.startsWith('B.06.'))));
- assert.deepEqual(outside.map(a=>a.Name),['RBCD LOM Scrap Management Platform']);
+test('the only in-scope application with capabilities only outside B.06 is RBCD LOM Scrap Management Platform (B.14.09.1); the bundled data has none since the 2026-10-20 export',()=>{
+ const outsideOnly=apps=>apps.filter(a=>!scopeReason(a)&&a.cap.length&&a.cap.every(id=>!(id==='B.06'||id.startsWith('B.06.')))).map(a=>a.Name);
+ assert.deepEqual(outsideOnly(model.apps),['RBCD LOM Scrap Management Platform']);
  assert.deepEqual(scrap.rawCap,['B.14.09.1 Waste Management']);
+ // 2026-10-21: why the fixture restores the pre-export registration — the export added B.06.5 to the Scrap platform.
+ const current=buildModel(bundled);
+ assert.deepEqual(current.apps.find(a=>a.Name===scrap.Name).rawCap,['B.06.5 Material Flow Orchestration','B.14.09.1 Waste Management']);
+ assert.deepEqual(outsideOnly(current.apps),[]);
 });
 
 test('its pairs show "Not compared · outside the B.06 scope" with the pair-status reason, never "Peer records are not detailed enough"',()=>{

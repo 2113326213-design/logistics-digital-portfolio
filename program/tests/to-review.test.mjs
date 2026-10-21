@@ -93,8 +93,11 @@ test('Show all levels does not change To review; the Total and plant rows match 
 test('bundled data: To review counts and the profile shows exactly the same issues',()=>{
  const model=buildModel(workspaceData(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url)))));
  const cap=maintenanceReport(model,{},'cap'),process=maintenanceReport(model,{},'process');
- assert.deepEqual([cap.needsReview.length,process.needsReview.length],[38,24],'Capability unchanged; V9.5 Process L0–L2 gaps covered by confirmed L3');
- assert.deepEqual([l3MaintenanceMetrics(cap).notPassing.length,l3MaintenanceMetrics(process).notPassing.length],[37,21],'Level 3 metrics unchanged');
+ // Re-derived 2026-10-21 from the V9.16 data (LeanIX export 2026-10-20 merged by ID): Capability 38 → 40 (Control Tower, D-sample tracking system,
+ // Dolly call off program, Physical Logistics Management System now register an L2 only; VMCN_CONNEX and VMCN_Digital Dynamic Supermarket resolved),
+ // Process 24 → 23 (VMCN_CONNEX gained a confirmed L3). Level 3 metrics move with the same applications: 37 → 39, 21 → 20.
+ assert.deepEqual([cap.needsReview.length,process.needsReview.length],[40,23],'V9.16 export: Capability +4 −2, Process −1; V9.5 Process L0–L2 gaps covered by confirmed L3');
+ assert.deepEqual([l3MaintenanceMetrics(cap).notPassing.length,l3MaintenanceMetrics(process).notPassing.length],[39,20],'Level 3 metrics follow the same applications');
  for(const a of model.apps){
   assert.deepEqual(capabilityIssues(model,a).map(i=>[i.raw||i.label,i.findings[0]]),cap.issues.get(a.id).map(i=>[i.record||i.label,i.text]),a.Name);
   assert.deepEqual(processIssues(model,a).map(i=>[i.raw||i.label,i.findings[0]]),process.issues.get(a.id).map(i=>[i.record||i.label,i.text]),a.Name);

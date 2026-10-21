@@ -16,25 +16,31 @@ const app=(ID,extra={})=>({ID,Name:`Warehouse ${ID}`,Description:'manage warehou
 const index=(apps,weights,rows=processRows)=>createWeightedSimilarity(buildModel({apps,capabilityRows,processRows:rows}),weights);
 const names=result=>result.apps.map(row=>row.app.Name);
 
-test('bundled portfolio: 1159 affected pairs reduce to 19 source applications with no unexplained pair',()=>{
+// 2026-10-21: expectations re-derived from the V9.16 data (LeanIX export 2026-10-20 merged by application ID).
+// ShzP_Pad system, RBCW Auto Warehouse Management System and Szh5_ASRS_WCS_WMS now register B.06.5 instead of the
+// B.06 root and VMCN_Digital Dynamic Supermarket no longer registers B.06.4.4, so two applications left the queue
+// (none joined; RBCW AWMS stays because its new "Transport Material Intra Plant L3" record needs confirmation).
+// 17 queued applications × 70 affected pairs − C(17,2) shared pairs = 1054 (was 19 × 70 − C(19,2) = 1159).
+test('bundled portfolio: 1054 affected pairs reduce to 17 source applications with no unexplained pair',()=>{
  const data=workspaceData(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url))));
  const model=buildModel(data),pairs=createWeightedSimilarity(model,data.similarityWeights).pairs();
  const before=JSON.stringify({apps:data.apps,labels:pairs.map(pair=>[pair.status,pair.coverage])});
  const result=comparisonReadiness(pairs);
- assert.equal(result.pairCount,1159);
- assert.equal(result.apps.length,19);
+ assert.equal(result.pairCount,1054);
+ assert.equal(result.apps.length,17);
  assert.equal(result.unattributedPairCount,0);
  assert.equal(result.apps.filter(row=>row.kinds.includes('Needs confirmation')).length,15);
- assert.equal(result.apps.filter(row=>row.kinds.includes('More detail needed')).length,5,
-  'one coarse-capability application also has an unresolved process and remains a single application');
- assert.equal(new Set(result.apps.map(row=>row.app.id)).size,19);
+ assert.equal(result.apps.filter(row=>row.kinds.includes('More detail needed')).length,2,
+  'only the two Level-0-only process applications remain coarse; 15 + 2 = 17, no application carries both kinds since Szh5_ASRS_WCS_WMS gained B.06.5');
+ assert.equal(new Set(result.apps.map(row=>row.app.id)).size,17);
  assert(!names(result).includes('CGQB_Logistic_system'));
  const shzp=result.apps.find(row=>row.app.Name==='ShzP_DAVIS');
  assert.equal(shzp.pairCount,70);
  assert.equal(shzp.records.length,1);
  assert.equal(shzp.records[0].raw,'BBM PM I2D Load Truck L3');
- assert.equal(result.apps.find(row=>row.app.Name==='RBCD LOM Scrap Management Platform').records.length,3,
-  'two pending processes and one outside-only capability are distinct reasons for the same application');
+ // 2026-10-21: the export added B.06.5 beside B.14.09.1, so the outside-only capability reason no longer applies.
+ assert.equal(result.apps.find(row=>row.app.Name==='RBCD LOM Scrap Management Platform').records.length,2,
+  'two pending processes are distinct reasons for the same application; its capability is now also inside B.06');
  assert.equal(JSON.stringify({apps:data.apps,labels:pairs.map(pair=>[pair.status,pair.coverage])}),before);
 });
 

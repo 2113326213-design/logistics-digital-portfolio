@@ -1,6 +1,18 @@
 # 物流工具：Claude 接手说明
 
-## V9.15 当前状态（2026-10-20，优先于所有历史段落）
+## V9.16 当前状态（2026-10-21，优先于所有历史段落）
+
+- 基线：V9.15（仓库 72cc439，含 Galvin 的 IIS 部署脚本和 README 使用指南）。用户决定（2026-10-21）：把 2026-10-20 的 LeanIX 应用导出按应用 ID 并入程序，更新它提供的字段，保留导出没有的 5 个应用、成本、ROI、工厂和业务部门，保留之前的决定，并让 Import data 接受这种格式。
+- **新附件** `20261020_083736_UKj4Y_inventory.xlsx`（导出时间 2026-10-20 08:37:37 GMT）：LeanIX 原始应用导出，第 1 行是显示名称表头，有 Type 列，没有 Division / Entity 列，没有成本 / ROI 表，另有 ReadMe 表。71 个应用，全部能按 ID 对应到现有应用；没有新增。
+- **导入器**（public/xlsx.mjs inventoryFromSheets）：识别这种格式（无 Division / Entity，有 Type 和 Display Name），只取 Type 为 Application 的行，跳过 ReadMe，记录导出时间；缺的列按 ID 保留现有值（Division、Entity 新加入 mergeInventoryEvidence 的保留组）。经典的 Logistic Apps 工作簿仍要求 Division / Entity。
+- **未包含的应用**（public/import-review.mjs applyInventory）：LeanIX 导出可能是筛选视图，所以它没列出的应用原样保留，记在 `data.inventoryExport`（file、exportedAt、sheet、missingIds）；应用详情顶部显示 “Not included in the LeanIX export of …; kept with its last known records. This does not show that the application is retired.”；导入预览多一行 “Not in this export · kept”。导入完整的 Logistic Apps 工作簿时仍按原规则替换整个清单并清除该记录。workspaceData 保留该字段；prepare-data 的 PRESERVED_KEYS 加入 inventoryExport。
+- **内置数据**（public/data.json，经程序自己的导入路径合并）：35 个应用更新（Business Capabilities 35 个，其中 13 个只是补上或去掉上级、22 个最细登记有变；Processes 2 个：RBCW Auto Warehouse Management System 删 Internal Transport L2、加 3 条 L3，其中 Transport Material Intra Plant L3 目录里无法确认；VMCN_CONNEX 新增 Prepare demand forecasting L3；生命周期 1 个：RBCE Auto Warehouse Management System plan → phaseIn）。未包含的 5 个保留：CGQB_Logistic_system_Q、RBCW LOM Dashboard、RMM System (recovered 2025-12-19 10:03:58)、VM/LOG-Szh2_DAVIS、360° Supplier dashboard。BMLP_Nexeed_IAS@WxP 导出里又带回 Manufacturing，按 2026-10-19 的决定再次去掉并记入导入事件。importHistory 新增一条导入事件（38 处字段变化）。
+- **保留之前的映射决定**：5 条已应用的映射（AUTO-RACK、RBHP_LOG AGV Performance Tracking System ×2、RBCC LOG Control Tower V2、VMCN_Digital Dynamic Supermarket）只因为应用的其他字段变了而变成“需复核”，其本身的记录未变，因此撤销旧条目并以 “Owner decision carried over · import 2026-10-21” 重新创建，全部仍为 Applied。在浏览器里用 Import data 导入同一文件时不会自动这样做，预览会显示 “5 need review”，需要人工再确认。
+- 结果：Capability To review 38 → 40（新增 Control Tower、D-sample tracking system、Dolly call off program、Physical Logistics Management System；移出 VMCN_CONNEX、VMCN_Digital Dynamic Supermarket）；Process To review 24 → 23（移出 VMCN_CONNEX）。相似度分数随登记变化，例如 Control Tower ↔ Physical Logistics Management System 71.6 → 41.6，CGQB_Logistic_monitoring ↔ Physical Logistics Management System 41.7 → 71.7。评分规则不变。
+- 仍需核对：导出的筛选范围（那 5 个应用是否仍有效）；RBCW 的 Transport Material Intra Plant L3；AUTO-RACK 的 Putaway to Automated Warehouse L3V 仍待确认；导出里 11 个单元格的分类名称中间带换行，程序按编号匹配不受影响。
+- 当前离线包：`offline/logistics-offline-20261021-v9.16.zip`；HTML 文件名及页面标识均为 V9.16，日期 2026-10-21。验证记录见 `verification/v9.16-verification.md`。
+
+## V9.15 历史状态（2026-10-20，受顶部 V9.16 更新）
 
 - 基线：V9.14 程序；用户提出四项使用问题，并要求拆成小部分分别完成再综合（四个代理并行、三方合并）。规则、评分和数据不变。
 - **单对比较的资料归因**：同一应用、同一维度、同一来源记录的问题只显示一次。未确认记录不再误报为 “More detail needed”；真正过粗的登记仍然提示。单对比较页沿用多应用比较的口径，按应用列出，例如 “AUTO-RACK · 1 process record to check”。View details 打开该应用详情并定位到对应问题，关闭后比较页不变。

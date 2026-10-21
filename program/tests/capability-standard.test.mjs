@@ -23,9 +23,15 @@ import {recordImport,cleanImportHistory,importEvents,applicationTimeline,applica
 import {chronologicalEvents,renderHistoryRecords} from '../public/history-view.mjs';
 import {capCode,split} from '../public/codes.mjs';
 import {taxonomySheets,xlsxBuffer} from './source-workbooks.mjs';
+import {recordsBefore20261020,EXPORT_FILE} from './records-before-20261020.mjs';
 
 installDOMParser();
-const raw=JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url),'utf8')),data=workspaceData(raw);
+// This file pins the catalogue switch (2026-10-16) and the HC removal (2026-10-19) as recorded in public/data.json. Since
+// V9.16 (2026-10-21) the file also holds the LeanIX application export of 2026-10-20 (new application records and a third
+// import event), so the history checks below run on the records before that export, restored from its import event;
+// the last test checks that the export changed only application records and added exactly that one event.
+const current=JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url),'utf8'));
+const raw=recordsBefore20261020(current),data=workspaceData(raw);
 const old=JSON.parse(readFileSync(new URL('./capability-rows-2026-10-15.json',import.meta.url),'utf8'));
 const appSource=readFileSync(new URL('../public/app.js',import.meta.url),'utf8');
 // The workspace before the switch: the same applications and processes with the 2026-10-15 catalogue and no history.
@@ -868,4 +874,17 @@ test('the older Business Capability sheet leaves HC rows out as well',()=>{
  const {capabilityRows,processRows}=taxonomyFromSheets({'Business Capability':[['L1','L2','L3'],['B.06 Logistics Management','B.06.1 Strategy',''],['B.06 Logistics Management','HC.06.01 Supply Chain Planning','HC.06.01.01 Demand Planning'],[' HC.02 Other','','']],'Data_RBW Process Structure':process});
  assert.deepEqual(capabilityRows,[['B.06 Logistics Management','B.06.1 Strategy','']]);
  assert.deepEqual(processRows,[['Plan to Fulfill (P2F)','L1','M.P2F.010','Plan Demand']]);
+});
+
+test('the LeanIX export of 2026-10-20 changed only application records: same catalogue, processes and earlier history, one inventory event (V9.16)',()=>{
+ // The current file keeps the catalogue and the two taxonomy events checked above, and adds one inventory import.
+ assert.deepEqual(current.capabilityRows,raw.capabilityRows);assert.deepEqual(current.processRows,raw.processRows);assert.equal(current.taxonomySource,raw.taxonomySource);
+ assert.deepEqual(current.importHistory.slice(0,-1),raw.importHistory);
+ const event=current.importHistory.at(-1);
+ assert.deepEqual([event.kind,event.inventoryFile,event.taxonomyFile,event.source,event.taxonomySource],['import',EXPORT_FILE,'',EXPORT_FILE,raw.taxonomySource]);
+ assert.equal(current.source,EXPORT_FILE);
+ // The HC records stay the applications' own records: Wuj HK AGV keeps HC.02.04.05; VMCN_CONNEX's HC.06 records were
+ // replaced by B.06 codes in the export itself, not by the program.
+ assert.equal(current.apps.find(a=>a.ID===WUJ)['Business Capabilities'],raw.apps.find(a=>a.ID===WUJ)['Business Capabilities']);
+ assert.deepEqual(event.changes.filter(c=>c.appId===VMCN).map(c=>[c.field,c.before,c.after]),[['Business Capabilities','HC.06.01.01 Demand Planning;HC.06.01.05 Detailed Production Scheduling','B.06.2.3 Demand Planning;B.06.2.6 Procurement Planning'],['Processes','','BBM PM P2F Prepare demand forecasting L3']]);
 });

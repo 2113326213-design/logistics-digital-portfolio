@@ -33,7 +33,9 @@ const HC_CODES=['HC.06.01','HC.06.01.01','HC.06.01.02','HC.06.01.03','HC.06.01.0
 const isHc=value=>/^HC\./.test(String(value??'').trim());
 const codesOf=rows=>new Set(rows.flat().filter(Boolean).map(label=>label.split(' ')[0]));
 // Applications keep their own HC records; they are checked as recorded, outside the B.06 catalogue.
-const HC_RECORDS=[['8aa81a3c-259e-400e-9eb4-1a792cb12d08','VMCN_CONNEX','HC.06.01.01 Demand Planning;HC.06.01.05 Detailed Production Scheduling'],
+// Re-derived 2026-10-21 (V9.16): the 2026-10-20 export re-registered VMCN_CONNEX under B.06.2.3/B.06.2.6 (its HC.06.01.01/.05 are
+// gone; Wuj HK AGV keeps the only HC record left), so its entry now checks that the export's registration is rebuilt as recorded.
+const HC_RECORDS=[['8aa81a3c-259e-400e-9eb4-1a792cb12d08','VMCN_CONNEX','B.06.2.3 Demand Planning;B.06.2.6 Procurement Planning'],
  ['2be34702-a301-49bd-b00c-0d235639253d','Wuj HK AGV (recovered 2025-06-26 03:31:37)','B.06.5 Material Flow Orchestration;HC.02.04.05 Transportation Management']];
 const APP_ORDER=['ID','Division','Entity','Name','Description','Main Business Capability','Business Capabilities','Processes','Lifecycle: Current Lifecycle','Lifecycle: Active','scopeNote','scopeSource','operationCostScore','operationCostSource','roiScore','roiSource'];
 
@@ -78,7 +80,8 @@ test('rebuilding from the source workbooks reproduces public/data.json byte for 
  assert.deepEqual(given.flatMap((row,index)=>row?.some(isHc)?[index+1]:[]),[63,64,65,66,67,68,69,70,71,72]);
  assert.equal(data.capabilityRows.flat().some(isHc),false,'public/data.json has no HC entry in its catalogue');
  assert.match(result.stdout,/76 applications; App operation cost recorded for 71, ROI for 71\./);
- assert.match(result.stdout,/Corrections: 12 applied, 0 need review, 0 revoked\./);
+ // 2026-10-21 (V9.16): 17 corrections, 5 of them revoked and re-created when the export changed their applications' other fields.
+ assert.match(result.stdout,/Corrections: 12 applied, 0 need review, 5 revoked\./);
  assert.match(result.stdout,/Owner decision applied: removed 'Manufacturing' from the Processes of BMLP_Nexeed_IAS@WxP/);
 });
 
@@ -88,7 +91,8 @@ test('--capabilities takes the capability names from the standard workbook and t
  assert.equal(data.taxonomySource,BOTH_SOURCES,'public/data.json names the standard and the process workbook');
  const rebuilt=JSON.parse(readFileSync(base.output,'utf8'));
  assert.equal(rebuilt.taxonomySource,BOTH_SOURCES);
- assert.match(result.stdout,/^Wrote .*data\.json from 20260825_logistic_inventory\.xlsx and Business Capability \+ Process\.xlsx with standard\+name\.xlsx\.\n/);
+ // Since 2026-10-21 (V9.16) the inventory is the LeanIX export of 2026-10-20.
+ assert.match(result.stdout,/^Wrote .*data\.json from 20261020_083736_UKj4Y_inventory\.xlsx and Business Capability \+ Process\.xlsx with standard\+name\.xlsx\.\n/);
  // 71 entries in the standard, of which ten are HC (another department's since 2026-10-19): 61 capability rows.
  assert(result.stdout.includes(`\nTaxonomy: ${BOTH_SOURCES}: 61 capability rows, 1,569 process rows.\n`),result.stdout);
  assert.equal(rebuilt.capabilityRows.length,61);
@@ -248,10 +252,15 @@ test('ROI scores and sources survive the rebuild; contact and infrastructure col
  const rebuilt=JSON.parse(readFileSync(base.output,'utf8'));
  // Since 2026-10-16 public/data.json also carries the (empty) application history and the taxonomy import events:
  // the switch to the standard (2026-10-16) and the HC removal (2026-10-19, stored compactly against the first).
- assert.deepEqual(Object.keys(rebuilt),['apps','capabilityRows','processRows','source','taxonomySource','corrections','applicationEvents','importHistory']);
+ // Since 2026-10-21 (V9.16) also the LeanIX export's import event (stored against the second) and inventoryExport (the export's
+ // file, date, sheet and the five IDs it does not list).
+ assert.deepEqual(Object.keys(rebuilt),['apps','capabilityRows','processRows','source','taxonomySource','corrections','applicationEvents','importHistory','inventoryExport']);
  assert.deepEqual(rebuilt.applicationEvents,[]);
- assert.deepEqual(rebuilt.importHistory.map(event=>[event.kind,event.taxonomySource,event.at.slice(0,10)]),[['taxonomy',BOTH_SOURCES,'2026-10-16'],['taxonomy',BOTH_SOURCES,'2026-10-19']]);
+ assert.deepEqual(rebuilt.importHistory.map(event=>[event.kind,event.taxonomySource,event.at.slice(0,10)]),[['taxonomy',BOTH_SOURCES,'2026-10-16'],['taxonomy',BOTH_SOURCES,'2026-10-19'],['import',BOTH_SOURCES,'2026-10-21']]);
  assert.equal(rebuilt.importHistory[1].appIdsBase,rebuilt.importHistory[0].id);
+ assert.equal(rebuilt.importHistory[2].appIdsBase,rebuilt.importHistory[1].id);
+ assert.deepEqual([rebuilt.importHistory[2].inventoryFile,rebuilt.inventoryExport.file,rebuilt.inventoryExport.missingIds.length],[data.source,data.source,5]);
+ assert.deepEqual(rebuilt.inventoryExport,data.inventoryExport);
  assert.deepEqual(rebuilt.importHistory,data.importHistory);
  for(const app of rebuilt.apps)assert.deepEqual(Object.keys(app),APP_ORDER,app.ID);
  assert.equal(rebuilt.apps.filter(app=>app.roiScore!==null).length,71);
@@ -264,7 +273,8 @@ test('ROI scores and sources survive the rebuild; contact and infrastructure col
 test('--check finds no differences against public/data.json and writes nothing',async()=>{
  const result=await run([...sources(base),'--check']);
  assert.equal(result.code,0,result.stderr+result.stdout);
- assert.match(result.stdout,/against a rebuild from 20260825_logistic_inventory\.xlsx and Business Capability \+ Process\.xlsx with standard\+name\.xlsx \(nothing is written\)\./);
+ // 2026-10-21 (V9.16): the inventory is the LeanIX export of 2026-10-20.
+ assert.match(result.stdout,/against a rebuild from 20261020_083736_UKj4Y_inventory\.xlsx and Business Capability \+ Process\.xlsx with standard\+name\.xlsx \(nothing is written\)\./);
  assert.match(result.stdout,/Result: no differences\. .*data\.json matches the rebuild byte for byte\./);
  assert(readFileSync(dataPath).equals(dataBytes));
 });
@@ -306,9 +316,12 @@ test('an exported workspace (version 6) works as --preserve-workspace',async()=>
  assert.equal(JSON.parse(exported).version,6);writeFileSync(file,exported);
  const result=await run([...sources(base),'--preserve-workspace',file,'--output',output]);
  assert.equal(result.code,0,result.stderr);
- assert.match(result.stdout,/\(workspace export, version 6\): corrections, reviews, reviewHistory, applicationEvents, importHistory, similarityWeights, similarityWeightsVersion, similarityThreshold\./);
- const rebuilt=JSON.parse(readFileSync(output,'utf8')),document=JSON.parse(exported);
- assert.deepEqual(Object.keys(rebuilt),['apps','capabilityRows','processRows','source','taxonomySource',...PRESERVED_KEYS]);
+ // Only the preserved keys the workspace actually holds are carried (inventoryExport exists since V9.16, 2026-10-21).
+ const document=JSON.parse(exported),carriedKeys=PRESERVED_KEYS.filter(key=>Object.hasOwn(document.data,key));
+ assert.match(result.stdout,new RegExp(`\\(workspace export, version 6\\): ${carriedKeys.join(', ')}\\.`));
+ assert(carriedKeys.includes('similarityThreshold')&&carriedKeys.includes('corrections'));
+ const rebuilt=JSON.parse(readFileSync(output,'utf8'));
+ assert.deepEqual(Object.keys(rebuilt),['apps','capabilityRows','processRows','source','taxonomySource',...carriedKeys]);
  assert.equal(rebuilt.source,data.source,'source names the inventory file, not the workspace');
  assert.deepEqual(rebuilt.apps,data.apps);assert.deepEqual(rebuilt.processRows,data.processRows);
  for(const key of PRESERVED_KEYS)assert.deepEqual(rebuilt[key],document.data[key],key);
@@ -322,9 +335,10 @@ test('an exported workspace (version 6) works as --preserve-workspace',async()=>
  const older=await run([...sources(base),'--preserve-workspace',v1,'--output',path.join(base.dir,'from-v1.json')]);
  assert.equal(older.code,0,older.stderr);
  assert.match(older.stdout,/\(workspace export, version 1\): corrections\.\n/);
- // A version 1 export has no application history or import events, so those two keys are not carried over.
- const {applicationEvents,importHistory,...withoutHistory}=data;
- assert.deepEqual([applicationEvents.length,importHistory.length],[0,2]);
+ // A version 1 export has no application history, import events or export record (inventoryExport, since V9.16 2026-10-21),
+ // so those three keys are not carried over. Three import events since 2026-10-21: two taxonomy, one LeanIX export.
+ const {applicationEvents,importHistory,inventoryExport,...withoutHistory}=data;
+ assert.deepEqual([applicationEvents.length,importHistory.length,inventoryExport.missingIds.length],[0,3,5]);
  assert(readFileSync(path.join(base.dir,'from-v1.json')).equals(Buffer.from(JSON.stringify(withoutHistory,null,2)+'\n','utf8')),'a version 1 export carrying only corrections gives the same file without the history keys');
 });
 
@@ -382,7 +396,8 @@ test('missing sheets, columns and invalid cells stop the rebuild with clear Engl
  // 'Standard Name' row 2 is B.06 alone; rows 3 and 4 both name B.06.1 (Level 2), and row 4 adds B.06.1.1 (Level 3).
  assert.deepEqual(standardSheets(data)['Standard Name'].slice(1,4).map(row=>row.filter(Boolean).filter((_,i)=>i%2===0)),[['B.06'],['B.06','B.06.1'],['B.06','B.06.1','B.06.1.1']]);
  const cases=[
-  ['no Parameter Score',{inventory:inv(s=>delete s['Parameter Score'])},/The inventory workbook 20260825_logistic_inventory\.xlsx has no 'Parameter Score' worksheet \(worksheets found: 'Logistic Apps', 'Notes'\)\./],
+  // The inventory file name is data.source: the LeanIX export of 2026-10-20 since V9.16 (2026-10-21).
+  ['no Parameter Score',{inventory:inv(s=>delete s['Parameter Score'])},/The inventory workbook 20261020_083736_UKj4Y_inventory\.xlsx has no 'Parameter Score' worksheet \(worksheets found: 'Logistic Apps', 'Notes'\)\./],
   ['no Logistic Apps',{inventory:inv(s=>{s.Apps=s['Logistic Apps'];delete s['Logistic Apps'];})},/has no 'Logistic Apps' worksheet \(worksheets found: 'Parameter Score', 'Notes', 'Apps'\)\./],
   ['ROI header with a space',{inventory:inv(renameHeader('Parameter Score','ROI','ROI '))},/'Parameter Score' is missing the required column 'ROI' \(found "ROI "; check spaces and capitals\)\./],
   ['no App operation cost',{inventory:inv(renameHeader('Parameter Score','App operation cost','Cost'))},/'Parameter Score' is missing the required column 'App operation cost'\./],
@@ -511,7 +526,8 @@ test('a correction whose source row changed is counted as need review and named 
  const inventory=inventorySheets(data),row=inventory['Logistic Apps'].find(r=>r?.[1]==='AUTO-RACK');row[5]+=' Edited in the source.';
  const files=workbooks({inventory}),result=await run([...sources(files),'--preserve-workspace',dataPath,'--output',files.output]);
  assert.equal(result.code,0,result.stderr);
- assert.match(result.stdout,/Corrections: 11 applied, 1 need review, 0 revoked\./);
+ // 2026-10-21 (V9.16): the 5 revoked corrections stay revoked; only the AUTO-RACK mapping leaves the 12 applied ones.
+ assert.match(result.stdout,/Corrections: 11 applied, 1 need review, 5 revoked\./);
  assert.match(result.stdout,/ {2}Warning: the process mapping of "BBM PM I2D Putaway of Automated Goods Receipt \(AGR\) L3V" for AUTO-RACK \(b97561de-87df-46ec-a86c-477fe0e431f9\) no longer matches its source row or taxonomy and will show as Needs review\./);
  assert.equal(JSON.parse(readFileSync(files.output,'utf8')).corrections.length,data.corrections.length,'the stale correction is kept, not dropped');
 });
@@ -604,7 +620,8 @@ test('a data.json saved with a byte-order mark is read and replaced like any oth
  const check=await run([...sources(base),'--output',output,'--check']);
  assert.equal(check.code,1);assert.match(check.stdout,/Same data; only the formatting differs \(indentation, spacing, line endings or a byte-order mark\)\./);
  const write=await run([...sources(base),'--output',output]);
- assert.equal(write.code,0,write.stderr);assert.match(write.stdout,/Carried over from .*with-bom\.json \(data\.json snapshot\): corrections, applicationEvents, importHistory\./);
+ // inventoryExport is carried too since V9.16 (2026-10-21).
+ assert.equal(write.code,0,write.stderr);assert.match(write.stdout,/Carried over from .*with-bom\.json \(data\.json snapshot\): corrections, applicationEvents, importHistory, inventoryExport\./);
  assert(readFileSync(output).equals(dataBytes),'rewritten without the byte-order mark');
  const blocked=await run([...sources(base),'--preserve-workspace',dataPath,'--output',path.join(output,'data.json')]);
  assert.equal(blocked.code,2);assert.match(blocked.stderr,/^Error: Cannot write .+: E[A-Z]+: /);assert.doesNotMatch(blocked.stderr,/Unexpected error|\n\s+at /);

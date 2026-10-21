@@ -236,27 +236,39 @@ test('bundled data: Iris–RCS-2000 code evidence is the 30.0 subtotal confirmed
  assert.equal(pairResultLabel(pair),'No complete score');close(codeEvidenceScore(pair),0.3);assert.equal(formatCodeEvidence(codeEvidenceScore(pair)),'30 / 100');
 });
 
-test('bundled data: BMLP_Nexeed_IAS@WxP | QinP FG Smart Label Management is now No complete score with code evidence 47.5',()=>{
+test('bundled data: BMLP_Nexeed_IAS@WxP | QinP FG Smart Label Management is now No complete score with code evidence 50',()=>{
  const bmlp=app('BMLP_Nexeed_IAS@WxP'),qinp=app('QinP FG Smart Label Management'),pair=index.pair(bmlp.id,qinp.id);
  // Before 2026-10-19 the lone "p" split from WxP and QinP was the names' only shared word (1/10), which made the pair a
- // confirmed min(0.475 + 0.1 × 0.1, 0.5 + 0.01) = 48.5. Now the names share nothing. BMLP→QinP: capability 1/4,
- // process 1/1 → 0.3 × 1/4 + 0.4 × 1 = 0.475; QinP→BMLP: capability 1/1, process 1/2 → 0.3 + 0.2 = 0.5. Lower: 0.475.
- assert.deepEqual(coverage(cap,bmlp,qinp),[1,4]);assert.deepEqual(coverage(processSimilarity,bmlp,qinp),[1,1]);
+ // confirmed min(0.475 + 0.1 × 0.1, 0.5 + 0.01) = 48.5. Now the names share nothing. Until V9.15: BMLP→QinP capability
+ // 1/4, process 1/1 → 0.475; QinP→BMLP capability 1/1 (B.06.3 shared), process 1/2 → 0.5. Lower: 0.475.
+ // 2026-10-21 (V9.16, LeanIX export of 2026-10-20, re-derived with node from public/data.json): BMLP now records
+ // B.06.4, B.06.4.1, B.06.4.2 and B.06.5 (the B.06 root and B.06.3 are gone; B.06.4 is the ancestor of its two L3
+ // codes, so three codes are compared) and QinP records B.06.5 instead of B.06.3. BMLP→QinP: capability 1/3,
+ // process 1/1 → 0.3 × 1/3 + 0.4 × 1 = 0.5; QinP→BMLP: capability 1/1, process 1/2 → 0.3 + 0.2 = 0.5. Lower: 0.5.
+ assert.deepEqual(coverage(cap,bmlp,qinp),[1,3]);assert.deepEqual(coverage(processSimilarity,bmlp,qinp),[1,1]);
  assert.deepEqual(coverage(cap,qinp,bmlp),[1,1]);assert.deepEqual(coverage(processSimilarity,qinp,bmlp),[1,2]);
  assert.equal(pair.status,'investigation');assert.equal(pairResultLabel(pair),'No complete score');
- close(codeEvidenceScore(pair),0.475);assert.equal(formatCodeEvidence(codeEvidenceScore(pair)),'47.5 / 100');
+ close(codeEvidenceScore(pair),0.5);assert.equal(formatCodeEvidence(codeEvidenceScore(pair)),'50 / 100');
 });
 
-test('bundled data: all 139 No complete score pairs have code evidence, equal to their lower capability + process total',()=>{
+test('bundled data: all 201 No complete score pairs have code evidence, equal to their lower capability + process total',()=>{
  // 2026-10-20: the 139 pairs once labelled Review needed are exactly the No complete score pairs (owner request).
  const pairs=portfolioCandidates(index).pairs,review=pairs.filter(p=>pairResultLabel(p,50)==='No complete score');
- // 139 comes from an independent recount over the 2,850 pairs: both applications in scope, name and description
+ // 139 came from an independent recount over the 2,850 pairs: both applications in scope, name and description
  // distinct-word Jaccard both exactly 0 (own tokenizer: names NFKC-normalized, "( recovered …)" removed, single
  // letters dropped while single digits and Chinese characters stay), all four directional capability/process
- // coverages known, and at least one shared code. The round-1 rule (every single character dropped) gives the same
- // 139 pairs; the old rule without name filtering gives the documented 138; the added pair is
+ // coverages known, and at least one shared code. The round-1 rule (every single character dropped) gave the same
+ // 139 pairs; the old rule without name filtering gave the documented 138; the added pair was
  // BMLP_Nexeed_IAS@WxP | QinP FG Smart Label Management.
- assert.equal(review.length,139);
+ // 2026-10-21 (V9.16, LeanIX export of 2026-10-20 merged by ID): the same recount over the current data.json gives
+ // 201 (82 pairs joined, 20 left; the recount on the V9.15 data still gives 139). The scoring rules did not change:
+ // 35 applications changed their Business Capabilities, mostly to B.06.5 or an L2 ancestor (Material Requistion
+ // Digitalization, Dolly call off program, Control Tower, QinP, iTracker, VMCN_iWPC_AKL_Szh5, ...), so pairs that
+ // were No shared registrations (599 → 582) or More detail needed (214 → 109, root-only registrations) now share a
+ // code with complete coverage (joined: 67 from No shared registrations, 6 from More detail needed, 9 from Needs
+ // confirmation; all 20 that left are now No shared registrations). The round-1 rule gives the same 201; no name
+ // filtering gives 199 (the two added pairs share only a single letter: BMLP | QinP and VMCN_iWPC_AKL_Szh5 | iTracker).
+ assert.equal(review.length,201);
  for(const pair of review)close(codeEvidenceScore(pair),codeOnly(pair),pair.key);
  for(const pair of pairs)if(pairResultLabel(pair,50)!=='No complete score')assert.equal(codeEvidenceScore(pair),null,pair.key);
  // The recount's range: highest 0.7 (only Iris | RBCD B308 AGV Traffic Control System), lowest 0.05 — never 0.
@@ -369,7 +381,7 @@ test('code evidence keeps names HTML-escaped, and disappears when no code field 
 // Iris | BMLP_Nexeed_IAS@WxP, derived by hand from the two source records in public/data.json:
 // - Names {iris} vs {bmlp, nexeed, ias, wx} (the lone P of WxP is a single letter) and descriptions share no word, and
 //   both text fields are weighted → held back, No complete score.
-// - Capability: Iris records B.06.5; BMLP records B.06 (root, not compared), B.06.3, B.06.4.1, B.06.4.2 and B.06.5.
+// - Capability: Iris records B.06.5; BMLP recorded B.06 (root, not compared), B.06.3, B.06.4.1, B.06.4.2 and B.06.5.
 //   Iris→BMLP: B.06.5 shared → 1/1. BMLP→Iris: B.06.3 (L2), B.06.4.1 and B.06.4.2 (L3, a branch Iris does not record,
 //   so they keep their level) and B.06.5 → 1 shared of 4.
 // - Process: Iris records M.I2D (L0) and the M.I2D.020 chain down to L3 (Warehouse to Consume → Internal Transport →
@@ -377,21 +389,25 @@ test('code evidence keeps names HTML-escaped, and disappears when no code field 
 //   compared at BMLP's L1: M.I2D.020 vs M.I2D.010 → 0/1 both ways.
 // - Iris→BMLP = 0.3 × 1 + 0.4 × 0 = 0.30; BMLP→Iris = 0.3 × 1/4 + 0.4 × 0 = 0.075. The code evidence is the lower
 //   direction, 7.5 / 100, whichever application is the target; 30 / 100 (the higher direction) must not appear.
-test('an asymmetric No complete score pair shows its lower direction everywhere: Iris | BMLP_Nexeed_IAS@WxP is 7.5, never 30',()=>{
+// 2026-10-21 (V9.16, LeanIX export of 2026-10-20; re-derived with node from the current public/data.json): BMLP now
+// records B.06.4, B.06.4.1, B.06.4.2 and B.06.5 (the B.06 root and B.06.3 are gone; B.06.4 is the ancestor of its two
+// L3 codes, so it is not a leaf). BMLP→Iris: B.06.4.1, B.06.4.2 (L3, kept) and B.06.5 → 1 shared of 3 → 0.3 × 1/3 +
+// 0.4 × 0 = 0.10. Iris→BMLP and both process directions are unchanged. The lower direction is now 10 / 100.
+test('an asymmetric No complete score pair shows its lower direction everywhere: Iris | BMLP_Nexeed_IAS@WxP is 10, never 30',()=>{
  const iris=app('Iris'),bmlp=app('BMLP_Nexeed_IAS@WxP');
  // The coverage engine agrees with the hand derivation.
- assert.deepEqual(coverage(cap,iris,bmlp),[1,1]);assert.deepEqual(coverage(cap,bmlp,iris),[1,4]);
+ assert.deepEqual(coverage(cap,iris,bmlp),[1,1]);assert.deepEqual(coverage(cap,bmlp,iris),[1,3]);
  assert.deepEqual(coverage(processSimilarity,iris,bmlp),[0,1]);assert.deepEqual(coverage(processSimilarity,bmlp,iris),[0,1]);
  const fromIris=index.pair(iris.id,bmlp.id),fromBmlp=index.pair(bmlp.id,iris.id);
- close(fromIris.forward.coverage,0.3);close(fromIris.reverse.coverage,0.075);
- close(fromBmlp.forward.coverage,0.075);close(fromBmlp.reverse.coverage,0.3);
+ close(fromIris.forward.coverage,0.3);close(fromIris.reverse.coverage,0.1);
+ close(fromBmlp.forward.coverage,0.1);close(fromBmlp.reverse.coverage,0.3);
  for(const pair of [fromIris,fromBmlp]){
   assert.equal(pair.status,'investigation');assert.equal(pairResultLabel(pair),'No complete score');
-  close(codeEvidenceScore(pair),0.075);assert.equal(pairStatusReason(pair,50,scopeReason),withCode('7.5'));
-  // 0.075 × 100 = 7.5 → '7.5000' in the CSV column.
-  assert.equal(records(similarityCSV([pair],'weighted',data)).rows[0][CODE_COLUMN],'7.5000');
+  close(codeEvidenceScore(pair),0.1);assert.equal(pairStatusReason(pair,50,scopeReason),withCode('10'));
+  // 0.1 × 100 = 10 → '10.0000' in the CSV column (was 0.075 → '7.5000' until V9.15).
+  assert.equal(records(similarityCSV([pair],'weighted',data)).rows[0][CODE_COLUMN],'10.0000');
  }
- const box=/<div class="comparison-score"><span>Score<\/span><strong>Unavailable<\/strong><em class="comparison-status">No complete score<\/em><small class="comparison-code-evidence">Code evidence 7\.5 \/ 100<\/small><\/div>/;
+ const box=/<div class="comparison-score"><span>Score<\/span><strong>Unavailable<\/strong><em class="comparison-status">No complete score<\/em><small class="comparison-code-evidence">Code evidence 10 \/ 100<\/small><\/div>/;
  for(const [focus,peer] of [[iris,bmlp],[bmlp,iris]])withUI((ui,document)=>{
   // Single-pair score box, with either application as the focus (its direction is the forward one).
   ui.restoreState({focusAppId:focus.id,focusPeerId:peer.id});
@@ -409,7 +425,7 @@ test('an asymmetric No complete score pair shows its lower direction everywhere:
   assert.equal(rendered.target,esc(focus.id),'row target follows the pool order');
   assert.equal(rendered.peer,esc(peer.id),'row peer follows the pool order');
   assert(rendered.attributes.includes(`data-open-similarity-target="${esc(focus.id)}" data-open-similarity-peer="${esc(peer.id)}"`),'direct comparison follows the same direction');
-  assert.equal(pairRows(matrix).get(rowKey(iris,bmlp)).strong,pairCode('7.5'));
+  assert.equal(pairRows(matrix).get(rowKey(iris,bmlp)).strong,pairCode('10'));// 2026-10-21: was '7.5', see above
   assert(!matrix.includes('Code evidence 30 / 100'));
  });
 });

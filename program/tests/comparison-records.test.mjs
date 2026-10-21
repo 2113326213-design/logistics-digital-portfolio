@@ -94,15 +94,19 @@ test('semantic pending records remain visible even when other confirmed codes ma
 });
 
 test('a capability code outside the standard stays an unconfirmed original record and is not credited to its parent',()=>{
- const args=pair(model,id('VMCN_Digital Dynamic Supermarket'),id('AR Stock Taking')),evidence=comparisonRecordEvidence(model,args.cap,args.capBack);
- assert.equal(model.caps.get('B.06.4.4').reference,undefined);assert.equal(model.caps.get('B.06.4').reference,'B.06.4 Inventory Management');
+ // Re-derived 2026-10-21: the LeanIX export of 2026-10-20 replaced B.06.4.4 with the standard B.06.4 in VMCN_Digital Dynamic Supermarket, and no current application
+ // records an outside code under a standard parent, so the fixture is the current data with that application carrying its former record (2026-08-25 export) again.
+ const former='B.06.4.4 Physical Inventory Management',apps=data.apps.map(app=>app.Name==='VMCN_Digital Dynamic Supermarket'?{...app,'Business Capabilities':app['Business Capabilities'].replace('B.06.4 Inventory Management',former)}:app);
+ assert.equal(model.caps.get('B.06.4.4'),undefined,'the current export no longer records B.06.4.4');
+ const fixture=buildModel({...data,apps}),args=pair(fixture,id('VMCN_Digital Dynamic Supermarket'),id('AR Stock Taking')),evidence=comparisonRecordEvidence(fixture,args.cap,args.capBack);
+ assert.equal(fixture.caps.get('B.06.4.4').reference,undefined);assert.equal(fixture.caps.get('B.06.4').reference,'B.06.4 Inventory Management');
  assert.deepEqual(evidence.sides[0].unconfirmed,[{raw:'B.06.4.4 Physical Inventory Management',reason:'No confirmed standard code in the taxonomy',candidates:[]}]);
  assert(!evidence.shared.some(match=>match.node.id==='B.06.4')&&!evidence.broader.some(match=>match.node.id==='B.06.4'),'AR Stock Taking records B.06.4, but the unconfirmed child must not match it');
  assert.equal(args.cap.coverage,null);
  const html=renderComparisonRecords(args);
  assert.match(html,/Records not yet confirmed \(1\)/);assert.match(html,/B\.06\.4\.4 Physical Inventory Management/);
- const before=pair(legacy,id('VMCN_Digital Dynamic Supermarket'),id('AR Stock Taking'));
- assert(!comparisonRecordEvidence(legacy,before.cap,before.capBack).sides[0].unconfirmed.some(record=>record.raw.startsWith('B.06.4.4')),'the former catalogue listed B.06.4.4');
+ const formerCatalogue=buildModel({...legacyData,apps}),before=pair(formerCatalogue,id('VMCN_Digital Dynamic Supermarket'),id('AR Stock Taking'));
+ assert(!comparisonRecordEvidence(formerCatalogue,before.cap,before.capBack).sides[0].unconfirmed.some(record=>record.raw.startsWith('B.06.4.4')),'the former catalogue listed B.06.4.4');
 });
 
 test('a missing taxonomy parent cannot be presented as a broader-level match',()=>{

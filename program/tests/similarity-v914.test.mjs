@@ -39,10 +39,14 @@ const clickOn=(host,button)=>host.fire('click',{target:{closest:()=>button}});
 test('the hidden screening outcomes are not built; record checks and their affected pairs remain',()=>withUI(({document})=>{
  const html=document.getElementById('portfolioProvisional').innerHTML;
  assert.doesNotMatch(html,/portfolioOtherOutcomes|View other comparison results|<summary>(Below threshold|No shared registrations|No complete score|Out of scope) · /);
- assert.match(html,/Check application records · 19 applications/);
- assert.match(html,/View affected comparisons · 1,159 pairs/);
+ // 2026-10-21 (V9.16, LeanIX export 20261020_083736_UKj4Y_inventory.xlsx merged by ID): counts re-derived from public/data.json with
+ // comparisonReadiness/pairResultLabel. ShzP_Pad system (B.06 root → B.06.5) and VMCN_Digital Dynamic Supermarket (lost the uncatalogued
+ // B.06.4.4) left the record checks: 19 → 17 applications, 1,159 → 1,054 pairs (More detail needed 214 → 109, Needs confirmation still 945);
+ // the hidden screening outcomes are 635+201+582+365 = 1,783 pairs (were 1,684).
+ assert.match(html,/Check application records · 17 applications/);
+ assert.match(html,/View affected comparisons · 1,054 pairs/);
  const buttons=(html.match(/<button\b/g)||[]).length;
- assert.equal(buttons,19+1159,'19 application entries and the 1,159 affected pairs; the 1,684 hidden pair buttons are gone');
+ assert.equal(buttons,17+1054,'17 application entries and the 1,054 affected pairs; the 1,783 hidden pair buttons are gone');
 }));
 
 test('closing the details returns focus to the entry that opened them',()=>withUI(({document,model,opened})=>{

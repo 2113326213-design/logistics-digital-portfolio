@@ -137,22 +137,28 @@ test('RBCW and portfolio: the Level 3 gap stays Level 3 only; To review covers e
  const data=JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url)));
  const model=buildModel(data),all=maintenanceReport(model,{},'cap'),report=maintenanceReport(model,{entity:'RBCW'},'cap'),l1=report.levels.find(l=>l.level===1),l3=l3MaintenanceMetrics(report);
  assert.equal(all.levels.find(level=>level.level===1).filled.length,76);
- // Legacy catalogue (before 2026-10-16): 38. The standard adds B.06.9.x (2 applications pass L3) but has no B.06.4.4 (1 application fails): 37.
- // Its HC.06.xx entries belong to another department and are not catalogued (owner decision 2026-10-19), so VMCN_CONNEX
- // (HC.06.01.01, HC.06.01.05) still needs review, as with the legacy catalogue.
+ // Legacy catalogue (before 2026-10-16) with the 2026-08-25 inventory: 38. The standard added B.06.9.x (2 applications pass L3) but has no B.06.4.4 (1 application fails): 37.
+ // HC.xx entries belong to another department and are not catalogued (owner decision 2026-10-19): an application whose only L3 record is HC still needs review.
+ // Re-derived 2026-10-21 from the V9.16 data (LeanIX export 2026-10-20 merged by ID, registrations changed in 35 applications): legacy 38 -> 43.
+ // Joined: Control Tower, Dolly call off program, D-sample tracking system, Physical Logistics Management System (their L3 record was replaced by an L2 only, B.06.5 or B.06.8),
+ // VM-CN Auto labeling printing system and VMCN_iWPC_AKL_Szh5 (now B.06.5.7, which the legacy catalogue lacks). Left: VMCN_CONNEX (HC.06.01.01/HC.06.01.05 replaced by B.06.2.3/B.06.2.6, catalogued in both).
  const old=JSON.parse(readFileSync(new URL('./capability-rows-2026-10-15.json',import.meta.url))),legacy=maintenanceReport(buildModel({...data,capabilityRows:old.capabilityRows,taxonomySource:old.taxonomySource}),{},'cap');
- assert.equal(l3MaintenanceMetrics(legacy).notPassing.length,38);
- // Confirmed L3 coverage removes 15 L2-only gaps from the previous 63 legacy-catalogue reviews.
- assert.equal(legacy.needsReview.length,48);
+ assert.equal(l3MaintenanceMetrics(legacy).notPassing.length,43);
+ // Confirmed L3 coverage removes 15 L2-only gaps from the previous 63 legacy-catalogue reviews: 48. Re-derived 2026-10-21: 53, the same six joined and VMCN_CONNEX left.
+ assert.equal(legacy.needsReview.length,53);
  assert(l3MaintenanceMetrics(legacy).notPassing.every(app=>legacy.needsReview.includes(app)),'every Level 3 gap is also To review');
  assert.deepEqual([...model.caps.values()].filter(node=>node.reference&&node.id.startsWith('HC.')).map(node=>node.id),[],'no HC entry in the capability catalogue');
- assert.equal(l3MaintenanceMetrics(all).notPassing.length,37);
- assert.equal(all.needsReview.length,38);
- assert.equal(all.levels.find(level=>level.level===3).valid.length,39);
+ // Re-derived 2026-10-21: the standard adds B.06.9.x and B.06.5.7 (4 applications pass L3 only there) and the B.06.4.4 record of VMCN_Digital Dynamic Supermarket became B.06.4
+ // in the export, so no application fails only in the standard: 43 - 4 = 39. To review 38 -> 40 (joined: the four L2-only applications; left: VMCN_CONNEX, VMCN_Digital Dynamic Supermarket).
+ // L3 valid 39 -> 37: VMCN_CONNEX and VMCN_Digital Dynamic Supermarket joined, the four L2-only applications left.
+ assert.equal(l3MaintenanceMetrics(all).notPassing.length,39);
+ assert.equal(all.needsReview.length,40);
+ assert.equal(all.levels.find(level=>level.level===3).valid.length,37);
  const names=report=>new Set(l3MaintenanceMetrics(report).notPassing.map(app=>app.Name));
- assert.deepEqual([...names(legacy)].filter(name=>!names(all).has(name)).sort(),['RBCC Supplier Logistics Management Platform','RBHP_LOG SupplierManager']);
- assert.deepEqual([...names(all)].filter(name=>!names(legacy).has(name)),['VMCN_Digital Dynamic Supermarket']);
- assert(names(all).has('VMCN_CONNEX')&&names(all).has('Wuj HK AGV (recovered 2025-06-26 03:31:37)'),'applications whose only L3 records are HC still need review');
+ assert.deepEqual([...names(legacy)].filter(name=>!names(all).has(name)).sort(),['RBCC Supplier Logistics Management Platform','RBHP_LOG SupplierManager','VM-CN Auto labeling printing system','VMCN_iWPC_AKL_Szh5']);
+ assert.deepEqual([...names(all)].filter(name=>!names(legacy).has(name)),[]);
+ // Re-derived 2026-10-21: Wuj HK AGV (B.06.5 + HC.02.04.05) is now the only application with an HC record; VMCN_CONNEX lost its HC records in the export and passes.
+ assert(names(all).has('Wuj HK AGV (recovered 2025-06-26 03:31:37)')&&!names(all).has('VMCN_CONNEX'),'an application whose only L3 record is HC still needs review; one whose HC records were replaced by catalogued B.06 records no longer does');
  assert(l3MaintenanceMetrics(all).notPassing.every(app=>all.needsReview.includes(app)));
  assert.equal(report.apps.length,8);
  assert.equal(l1.filled.length,8);

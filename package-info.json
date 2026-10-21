@@ -1,13 +1,13 @@
 {
-  "createdAt": "2026-10-20T09:17:35.096Z",
-  "snapshot": "20261020_v9.15",
+  "createdAt": "2026-10-21T06:19:47.896Z",
+  "snapshot": "20261021_v9.16",
   "applications": 76,
   "tests": {
-    "passed": 442,
+    "passed": 446,
     "failed": 0,
-    "log": "verification/v9.15-test-results.txt"
+    "log": "verification/v9.16-test-results.txt"
   },
-  "offlineHTML": "offline/物流工具_最新版_离线单文件_20261020_v9.15.html",
+  "offlineHTML": "offline/物流工具_最新版_离线单文件_20261021_v9.16.html",
   "source": "program/",
   "workspace": "latest-workspace.json",
   "browserVisualVerification": "offline HTML checked in a local browser over http://127.0.0.1 (not file://); hosted sign-in not verified",
@@ -15,5 +15,6 @@
   "gitHistoryIncluded": false,
   "nodeModulesIncluded": false,
   "workspaceFormatVersion": 6,
-  "nodeVerified": "v24.22.0"
+  "nodeVerified": "v24.22.0",
+  "inventory": "20260825_logistic_inventory.xlsx + LeanIX export 20261020_083736_UKj4Y_inventory.xlsx (merged by ID)"
 }

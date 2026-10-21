@@ -11,12 +11,15 @@ const old=JSON.parse(readFileSync(new URL('./capability-rows-2026-10-15.json',im
 const {importHistory,applicationEvents,...previous}=data;
 const model=buildModel(data),legacy=buildModel({...previous,capabilityRows:old.capabilityRows,taxonomySource:old.taxonomySource});
 const catalogueName=(rows,code)=>String(rows.flat().find(value=>String(value??'').startsWith(code+' '))??'').replace(/^\S+\s*/,'');
+// 2026-10-21: counts re-derived from the current apps after the V9.16 LeanIX import (20261020_083736_UKj4Y_inventory.xlsx). Its Business Capabilities
+// changes gave "B.06.4 Inventory Management" to BMLP_Nexeed_IAS@WxP and VMCN_Digital Dynamic Supermarket and took it from Material Requistion
+// Digitalization, so the legacy B.06.4 concerns go 7 -> 8 and the held/pending totals 22 -> 23; the other six codes are unchanged.
 
 test('only the seven signed-off-pending legacy labels are flagged',()=>{
  const concerns=legacy.apps.flatMap(app=>semanticConcerns(app,legacy.correctionLog,legacy.caps));
  assert.equal(SEMANTIC_CASES.length,7);
  assert.deepEqual(Object.fromEntries(SEMANTIC_CASES.map(item=>[item.code,concerns.filter(c=>c.code===item.code).length])),{
-  'B.06.2.10':1,'B.06.4':7,'B.06.4.1':4,'B.06.4.2':4,'B.06.5.2':3,'B.06.5.3':2,'B.06.7.1':1
+  'B.06.2.10':1,'B.06.4':8,'B.06.4.1':4,'B.06.4.2':4,'B.06.5.2':3,'B.06.5.3':2,'B.06.7.1':1
  });
  assert(concerns.every(c=>c.status==='pending'&&c.decision===null));
  assert.equal(semanticConcerns({ID:'modern', 'Business Capabilities':'B.06.2.10 Order Planning Simulation'}).length,0);
@@ -30,7 +33,7 @@ test('the business capability standard adopts all seven source names, so no sema
  }
  assert.deepEqual(model.apps.flatMap(app=>semanticConcerns(app,model.correctionLog,model.caps)),[]);
  const held=legacy.apps.flatMap(app=>semanticConcerns(app,legacy.correctionLog,legacy.caps).map(c=>[c.appId,c.raw]));
- assert.equal(held.length,22);
+ assert.equal(held.length,23);
  assert(held.every(([appId,raw])=>model.apps.find(app=>app.id===appId).rawCap.includes(raw)),'original application records are preserved');
 });
 
@@ -55,7 +58,7 @@ test('an applied verified mapping clears only its own application and raw label'
 
 test('source label table keeps all differences while highlighting just pending semantic cases',()=>{
  const rows=labelDifferenceRows(legacy);
- assert.equal(rows.filter(row=>row.semanticStatus==='pending').length,22);
+ assert.equal(rows.filter(row=>row.semanticStatus==='pending').length,23);
  assert(rows.some(row=>row.code==='B.06.2.10'&&row.sourceName==='Customer Order Planning'&&row.semanticStatus==='pending'));
  assert(rows.some(row=>row.semanticStatus===null));
  const current=labelDifferenceRows(model);

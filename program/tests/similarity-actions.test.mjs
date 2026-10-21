@@ -64,14 +64,18 @@ test('five-application example turns four AUTO-RACK comparisons into one direct 
  assert.doesNotMatch(markup,/Putaway to Automated Warehouse/,'record details stay inside View details');
 }));
 
-test('the four code-evidence comparisons remain grouped and each opens its own evidence',()=>withUI(({ui,document,model,html})=>{
+// 2026-10-21: re-derived from the V9.16 data (LeanIX export 2026-10-20). The four healthy applications no longer all share
+// B.06.1.4: Control Tower and Dolly call off program now record B.06.5 and Physical Logistics Management System B.06.8, so only
+// Control Tower ↔ Dolly call off program keeps code evidence (30 / 100); the other three former code-evidence pairs share no registration.
+test('the code-evidence comparison remains grouped and opens its own evidence',()=>withUI(({ui,document,model,html})=>{
  const markup=html(),codeGroup=markup.match(/<details\b[^>]*><summary>[^<]*Shared business classifications[^<]*<\/summary>([\s\S]*?)<\/details>/)?.[0]||'';
  assert.match(codeGroup,/compare actual uses/);
- assert.match(codeGroup,/4 pairs/);
- assert.equal(pairButtons(codeGroup).length,4);
- assert.equal((codeGroup.match(/data-open-similarity-target=/g)||[]).length,4,
+ assert.match(codeGroup,/· 1 pair<\/summary>/);
+ assert.equal(pairButtons(codeGroup).length,1);
+ assert.equal((codeGroup.match(/data-open-similarity-target=/g)||[]).length,1,
   'each code-evidence pair has a direct action to its complete comparison');
- const a=appByName(model,'AR Stock Taking'),b=appByName(model,'Control Tower');
+ assert.match(markup,/No shared registrations · 3 pairs/,'the three former code-evidence pairs now share no registration');
+ const a=appByName(model,'Control Tower'),b=appByName(model,'Dolly call off program');
  click(document.getElementById('compareDialog'),{cellTarget:a.id,cellPeer:b.id,openSimilarityTarget:a.id,openSimilarityPeer:b.id});
  assert.deepEqual(ui.getState().cell,[a.id,b.id]);
  assert.equal(document.getElementById('compareDialog').open,false);
