@@ -7,6 +7,28 @@ import {opportunityEligibility} from './scope.mjs';
 import {capCode} from './codes.mjs';
 import {OTHER_DEPARTMENT_CODE} from './xlsx.mjs';
 import {keepThreshold} from './score-settings.mjs';
+import {fieldChanges} from './application-history.mjs';
+import {historyFieldLabel,historyFieldValue} from './history-view.mjs';
+import {split} from './codes.mjs';
+
+// Fields that hold a ';' list: the change details show the entries that were removed and added.
+export const LIST_FIELDS=new Set(['Business Capabilities','Processes','Main Business Capability']);
+export function listDifference(before,after){
+ const a=split(before),b=split(after);
+ return {removed:a.filter(x=>!b.includes(x)),added:b.filter(x=>!a.includes(x))};
+}
+// The import's change details as CSV for Excel (owner request 2026-10-22, V9.20): one row per changed field, plus one row
+// per added or removed application. Values starting with a formula character are prefixed with ' (as in the History CSV).
+export function importChangesCSV(preview,{inventoryFile='',taxonomyFile=''}={}){
+ const quote=x=>'"'+String(x??'').replace(/^(\s*[=+@\-\t\r])/u,"'$1").replaceAll('"','""')+'"';
+ const source=[inventoryFile,taxonomyFile].filter(Boolean).join(' + ');
+ const rows=[['Change','Application ID','Application','Field','Before','After','Removed entries','Added entries','Import file'],
+  ...preview.added.map(a=>['Application added',a.ID,a.Name,'','','','','',source]),
+  ...preview.removed.map(a=>['Application removed',a.ID,a.Name,'','','','','',source]),
+  ...preview.fieldChanges.map(c=>{const list=LIST_FIELDS.has(c.field)?listDifference(c.before,c.after):null;
+   return ['Field changed',c.appId,c.name,historyFieldLabel(c.field),historyFieldValue(c.field,c.before),historyFieldValue(c.field,c.after),list?list.removed.join('\n'):'',list?list.added.join('\n'):'',source];})];
+ return '﻿'+rows.map(row=>row.map(quote).join(',')).join('\r\n');
+}
 // Capability catalogue changes by code: renamed (same code, new name; a code merely written another way,
 // such as B.06.2.02 for B.06.2.2, is not a rename), added and removed codes.
 export function capabilityCatalogueChanges(currentRows,nextRows){
@@ -79,5 +101,5 @@ export function previewImport(current,incoming,raw=incoming){
  const scopeExclusionsAdded=[...added,...updated].filter(app=>!opportunityEligibility(app).eligible&&(!before.has(String(app.ID).trim())||opportunityEligibility(before.get(String(app.ID).trim())).eligible));
  // Explicit blank cells in a supplied column replace recorded text; count them for the preview warning.
  const cleared=field=>updated.filter(app=>String(before.get(String(app.ID).trim())?.[field]??'').trim()&&!String(app[field]??'').trim()).length;
- return {next,added,removed,updated,unchanged:next.apps.length-added.length-updated.length,taxonomyChanged,capabilityChanges:capabilityCatalogueChanges(current.capabilityRows,next.capabilityRows),costScoresRemoved,scopeExclusionsRemoved,scopeExclusionsAdded,descriptionsCleared:cleared('Description'),lifecycleValuesCleared:cleared('Lifecycle: Current Lifecycle')+cleared('Lifecycle: Active'),ownerDecisions:ownerDecisions(raw),keptNotInExport:(next.inventoryExport?.missingIds||[]).length,hasChanges:!!(added.length||removed.length||updated.length||taxonomyChanged||workspaceChanged),appliedMappings:states.filter(c=>c.state==='Applied').length,staleMappings:states.filter(c=>c.state==='Needs review').length,reviewNotes:Object.keys(next.reviews).length,pairReviews,activityRecords:afterActivity.length,activityRemoved:beforeActivity.filter(e=>!retained.has(e.id)).length};
+ return {next,added,removed,updated,fieldChanges:fieldChanges(current,next),unchanged:next.apps.length-added.length-updated.length,taxonomyChanged,capabilityChanges:capabilityCatalogueChanges(current.capabilityRows,next.capabilityRows),costScoresRemoved,scopeExclusionsRemoved,scopeExclusionsAdded,descriptionsCleared:cleared('Description'),lifecycleValuesCleared:cleared('Lifecycle: Current Lifecycle')+cleared('Lifecycle: Active'),ownerDecisions:ownerDecisions(raw),keptNotInExport:(next.inventoryExport?.missingIds||[]).length,hasChanges:!!(added.length||removed.length||updated.length||taxonomyChanged||workspaceChanged),appliedMappings:states.filter(c=>c.state==='Applied').length,staleMappings:states.filter(c=>c.state==='Needs review').length,reviewNotes:Object.keys(next.reviews).length,pairReviews,activityRecords:afterActivity.length,activityRemoved:beforeActivity.filter(e=>!retained.has(e.id)).length};
 }

@@ -339,3 +339,16 @@ html:has(body.portfolio-fullscreen){scrollbar-gutter:auto}
 #detail .profile-processes>div.profile-unlisted{display:block;padding:10px 12px;margin-bottom:7px;background:#faf7ef;border-left:3px solid #c9ad70;border-bottom:0;border-radius:6px}
 /* The issue opened from a comparison record check (V9.15). */
 #detail .profile-processes>div.profile-unlisted.is-focused-issue{background:#fff3d6;border-left-color:#b07a12;box-shadow:0 0 0 2px #e3bd6a;scroll-margin:24px}
+
+/* Import preview change details (V9.20) */
+.import-changes{margin:14px 0}.import-changes>summary{cursor:pointer;font-weight:650;color:#1f4255}.import-changes .hint{margin:8px 0}
+.import-changes-scroll{max-height:380px;overflow:auto;border:1px solid #d7e3eb;border-radius:6px;background:#fff}
+.import-changes-table{width:100%;border-collapse:collapse;font-size:.8125rem;line-height:1.45}
+.import-changes-table th,.import-changes-table td{padding:6px 10px;border-bottom:1px solid #e5edf2;text-align:left;vertical-align:top;white-space:pre-wrap;overflow-wrap:anywhere}
+.import-changes-table thead th{position:sticky;top:0;z-index:1;background:#f1f6f9;color:#405a6b;font-weight:650}
+.import-changes-table tbody th{font-weight:600;color:#1f4255;min-width:9em}
+.import-change-removed{color:#9b2c2c}.import-change-added{color:#1f6f43}.import-change-blank{color:#8a9aa6;font-style:italic}
+/* The landscape table's global th/td rules (fixed widths, 140px header, sticky first column) do not apply here. */
+.import-changes-table th,.import-changes-table td{width:auto;min-width:0;height:auto;border-right:0;padding:6px 10px}
+.import-changes-table thead th,.import-changes-table thead th:first-child{position:sticky;top:0;left:auto;height:auto;z-index:1;background:#f1f6f9;color:#405a6b}
+.import-changes-table tbody th:first-child{position:static;width:auto;min-width:9em;background:transparent;z-index:auto}

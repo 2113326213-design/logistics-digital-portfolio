@@ -8,6 +8,16 @@ const kinds=['created','issue','fixed','updated','uploaded','note'];
 const fields=['Name','Division','Entity','Description','Main Business Capability','Business Capabilities','Processes','Lifecycle: Current Lifecycle','Lifecycle: Active','operationCostScore','roiScore','annualBenefitCNY','annualBenefitSource','scopeNote','statusNote'];
 // Annual benefit changes stay in stored history for retention but are never displayed.
 const hiddenFields=new Set(['annualBenefitCNY','annualBenefitSource']);
+// Field changes between two workspaces for every application in both, in field order, without the hidden fields. The
+// import preview shows them before Apply (owner request 2026-10-22, V9.20); recordImport stores the same comparison.
+export function fieldChanges(current,incoming){
+ const before=new Map(current.apps.map(a=>[String(a.ID).trim(),a])),out=[];
+ for(const a of incoming.apps){
+  const appId=String(a.ID).trim(),previous=before.get(appId);if(!previous)continue;
+  for(const field of fields){if(hiddenFields.has(field))continue;const x=String(previous[field]??''),y=String(a[field]??'');if(x!==y)out.push({appId,name:String(a.Name??''),field,before:x,after:y});}
+ }
+ return out;
+}
 const value=(v,max=6000)=>String(v??'').slice(0,max);
 const unique=events=>[...new Map(events.map(e=>[e.id,e])).values()];
 // Import events are immutable records: the first (local) copy of an ID wins. Fields an older

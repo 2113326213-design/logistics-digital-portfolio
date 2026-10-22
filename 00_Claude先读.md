@@ -12,7 +12,23 @@
 6. **只改模板** `program/scripts/deploy-iis.template.bat`（LF 换行，生成时转为 CRLF）；`tests/deploy-script.test.mjs` 检查以上规则。
 7. **发布前在本机模拟一遍**：`npm run release:files` 之后运行 `npm run deploy:sim`（仅 Windows；不弹 UAC、不碰 IIS），5 种情况（未提权并同意 UAC、UAC 被取消、已是管理员、关闭当前目录查找的新站点、带网页服务的重新部署）都要 PASS 才能发布。
 
-## V9.19 当前状态（2026-10-22，优先于所有历史段落）
+## 版本号规则（2026-10-22 起长期有效）
+
+用户在另一个对话里问“为什么一直都是 V9”，确认按这个规则：
+- **大版本**（V10、V11……）：新的数据来源、新的功能模块，或页面结构有可见变化。
+- **小版本**（V10.1、V10.2……）：修正、文字和显示调整。
+- 版本号写在 `program/scripts/release.mjs` 的 RELEASE_VERSION（小写，如 `v10`、`v10.1`）；文件名、发布 zip、部署脚本和 Release 标签（`v10-20261022`）都随它生成。导入预览的“变化明细”是新功能，所以这一版是 V10（原计划的 V9.20 没有发布）。
+
+## V10 当前状态（2026-10-22，优先于所有历史段落）
+
+- 用户要求（2026-10-22）：在导入预览里加一块“变化明细”，按应用列出每个字段“原值 → 新值”，点 Apply 之前就能看到；再加一个按钮把明细导出成 CSV。
+- 实现：`public/application-history.mjs` 新增 `fieldChanges(current,incoming)`（与 recordImport 写入导入事件的比较相同，不含隐藏的年度收益字段）；`public/import-review.mjs` 的 previewImport 返回 `fieldChanges`，新增 `importChangesCSV`（UTF-8 BOM，公式字符前加 '，列：Change、Application ID、Application、Field、Before、After、Removed entries、Added entries、Import file）和 `listDifference`；新模块 `public/import-changes-view.mjs` 渲染明细表（默认展开、表头固定、最高 380 px 可滚动）；`app.js` 在预览里插入明细并接上 “Export change details (CSV)” 按钮；`interface.css` 加样式并屏蔽景观大表的全局 th/td 规则（否则表头 140 px 高）。
+- 预览顶部的 “Updated” 也算只在来源位置（表和行，例如 scopeSource）变化的应用，明细里会写明这类应用的数量，让两个数字对得上。
+- 核对：用 V9.16 的记录导入当前数据，明细的 104 处字段变化与 2026-10-21 导入事件逐条一致；浏览器里用 2026-08-25 的工作簿导入 V10：“Change details · 67 fields in 53 applications · 1 added”，另 22 个只在来源位置变化。CSV 由单元测试检查，浏览器里没有点下载。
+- 测试：新增 `tests/v920-import-changes.test.mjs`（4 项，文件名沿用开发时的 V9.20）。
+- 当前离线包：`offline/logistics-offline-20261022-v10.zip`；HTML 文件名及页面标识均为 V10，日期 2026-10-22。部署脚本 `offline/deploy-iis.bat`（V10，本机模拟 5/5 通过）。验证记录见 `verification/v10-verification.md`。
+
+## V9.19 历史状态（2026-10-22，受顶部 V10 更新）
 
 - 用户看到内网 IIS 页面（当时还是 V9.15）顶部的长提示，问能否去掉。用户决定：只留一行版本号和“改动只在本标签页，用 Export workspace 保存”的提醒；双击文件打开时才显示 Offline edition 和不需要联网的说明，内网网址打开时不显示；删掉 “Incomplete Level 3 records are currently deferred” 那句。
 - 实现（`program/scripts/export-offline.mjs`）：提示是导出离线文件时插在 `<main>` 前的 `<aside id="releaseNotice">`；离线文字放在 `<span data-offline-only hidden>` 里，离线版脚本在 `location.protocol==='file:'` 时取消 hidden。右上角标签由 `'Admin preview'` 换成 `location.protocol==='file:'?'Offline edition':''`。程序页面本身（public/）没有改。`tests/offline-export.test.mjs` 检查提示全文、隐藏规则和标签。
