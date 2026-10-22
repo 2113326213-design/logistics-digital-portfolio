@@ -54,8 +54,9 @@ test('replacing workspace closes stale application details before rerender',asyn
  const app=readFileSync(new URL('../public/app.js',import.meta.url),'utf8');
  const useData=app.split('\n').find(line=>line.trim().startsWith('function useData('));
  const sequence=[];const detail={open:true,close(){sequence.push('close');this.open=false;}};
- runInNewContext(`${useData}; useData({apps:[]});`,{workspaceData:value=>value,buildModel:value=>value,expanded:{clear(){}},$:()=>detail,render(){sequence.push('render');}});
- assert.deepEqual(sequence,['close','render']);
+ // V12: useData also refreshes the data line under the page title.
+ runInNewContext(`${useData}; useData({apps:[],source:'20261021_logistic_inventory.xlsx'});`,{workspaceData:value=>value,buildModel:value=>value,expanded:{clear(){}},$:()=>detail,dataAsOfText:value=>{sequence.push('data line '+value.source);return '';},render(){sequence.push('render');}});
+ assert.deepEqual(sequence,['data line 20261021_logistic_inventory.xlsx','close','render']);
 });
 
 

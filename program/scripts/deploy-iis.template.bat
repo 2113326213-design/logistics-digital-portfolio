@@ -75,8 +75,15 @@ pushd "%INETSRV%"
 set "ZIP="
 if exist "%~dp0%ZIPNAME%" set "ZIP=%~dp0%ZIPNAME%"
 if not defined ZIP if exist "%USERPROFILE%\Downloads\%ZIPNAME%" set "ZIP=%USERPROFILE%\Downloads\%ZIPNAME%"
+rem A browser saves a second download as "name (1).zip": take the newest copy of this release. The SHA-256 check
+rem below still stops any other build.
+set "ZIPBASE=%ZIPNAME:.zip=%"
+if not defined ZIP for /f "delims=" %%Z in ('dir /b /a-d /o-d "%USERPROFILE%\Downloads\%ZIPBASE%*.zip" 2^>nul') do if not defined ZIP set "ZIP=%USERPROFILE%\Downloads\%%Z"
 if not defined ZIP (
   echo [X] %ZIPNAME% not found next to this script or in Downloads.
+  echo     Download it from the same GitHub release as this script into %USERPROFILE%\Downloads, then run the script again.
+  echo     Release zips now in Downloads:
+  dir /b /a-d "%USERPROFILE%\Downloads\logistics-offline-*.zip" 2>nul || echo       ^(none^)
   goto :fail
 )
 echo [1/6] OK  zip: %ZIP%

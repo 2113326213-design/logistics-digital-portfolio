@@ -53,11 +53,11 @@
 
 不在内网，或想自己保留一份时用：
 
-1. 下载 [**logistics-offline-20261022-v11.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest)。
+1. 下载 [**logistics-offline-20261022-v12.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest)。
 2. 右键 → **Extract all**。
 3. 用 Chrome 打开里面的 HTML。
 
-页面顶部显示 **V11** 就对了。
+页面顶部显示 **V12** 就对了。
 
 </td>
 </tr>
@@ -68,7 +68,7 @@
     <td align="center" width="25%"><h3>75</h3><sub>应用 · 10 个工厂 · 5 个业务部门</sub></td>
     <td align="center" width="25%"><h3>2,775</h3><sub>组两两比较 · 9 组得分 ≥ 50</sub></td>
     <td align="center" width="25%"><h3>22 / 39</h3><sub>Process / Capability 待处理应用</sub></td>
-    <td align="center" width="25%"><h3>V11</h3><sub>2026-10-22 · 474 项测试通过</sub></td>
+    <td align="center" width="25%"><h3>V12</h3><sub>2026-10-22 · 476 项测试通过</sub></td>
   </tr>
 </table>
 
@@ -125,7 +125,7 @@
 <details>
 <summary><b>数据有多新？</b></summary>
 <br>
-应用清单来自 2026-10-21 的自有工作簿（<code>20261021_logistic_inventory.xlsx</code> 的 Logistic Apps_1021，含 Status in Oct；不是 still active 的应用和 no score 的应用不计入成本、ROI 和相似度检查），此前依次并入了 2026-08-25 的清单和 2026-10-20 的 LeanIX 应用导出；流程标准以 2025-02-21 的快照为准，并按编号合并了 2026-10-20 的 LeanIX 流程导出（新旧名称并列保留，有差异的标为待确认）。
+页面标题下面那行（Data: 文件名 · as of 日期）就是当前数据的来源和日期；在页面里导入新表后会跟着变。内置数据的应用清单来自 2026-10-21 的自有工作簿（<code>20261021_logistic_inventory.xlsx</code> 的 Logistic Apps_1021，含 Status in Oct；不是 still active 的应用和 no score 的应用不计入成本、ROI 和相似度检查），此前依次并入了 2026-08-25 的清单和 2026-10-20 的 LeanIX 应用导出；流程标准以 2025-02-21 的快照为准，并按编号合并了 2026-10-20 的 LeanIX 流程导出（新旧名称并列保留，有差异的标为待确认）。
 </details>
 
 <details>
@@ -140,7 +140,7 @@
 </details>
 
 <details>
-<summary><b>页面打开了，但不是 V11，或者显示不全？</b></summary>
+<summary><b>页面打开了，但不是 V12，或者显示不全？</b></summary>
 <br>
 按 <b>Ctrl + F5</b> 强制刷新（浏览器可能缓存了旧版本）。工具在 Chrome 上测试过，请优先用 Chrome。
 </details>
@@ -166,7 +166,9 @@
 
 完整更新日志见 [`CHANGELOG.md`](CHANGELOG.md)。
 
-**V11（当前，2026-10-22）**：页面里的改动自动保存在本机浏览器，下次打开时可选“继续上次的工作”；Overview 可按当前筛选导出 To review 清单（CSV，Excel 可直接打开）；应用详情可复制直达链接，网址带 ?app= 时直接打开该应用。
+**V12（当前，2026-10-22）**：页面标题下面显示当前数据来自哪个文件、截至哪天（如 “Data: 20261021_logistic_inventory.xlsx · as of 2026-10-21”），导入新表后跟着变；部署脚本能找到浏览器存成 “(1)” 的压缩包，找不到时列出 Downloads 里有哪些版本。
+
+**V11（2026-10-22）**：页面里的改动自动保存在本机浏览器，下次打开时可选“继续上次的工作”；Overview 可按当前筛选导出 To review 清单（CSV，Excel 可直接打开）；应用详情可复制直达链接，网址带 ?app= 时直接打开该应用。
 
 **V10（2026-10-22）**：导入预览新增“变化明细”：点 Apply 之前按应用列出每个字段的“原值 → 新值”（Business Capabilities、Processes 只列出删掉和新增的条目），并可一键导出 CSV；版本号改按新规则，新功能升大版本。
 
@@ -186,6 +188,7 @@
 
 | 版本 | 主要变化 |
 |---|---|
+| [V12](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v12-20261022) | 页面标题下面显示当前数据来自哪个文件、截至哪天（如 “Data: 20261021_logistic_inventory.xlsx · as of 2026-10-21”），导入新表后跟着变；部署脚本能找到浏览器存成 “(1)” 的压缩包，找不到时列出 Downloads 里有哪些版本 |
 | [V11](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v11-20261022) | 页面里的改动自动保存在本机浏览器，下次打开时可选“继续上次的工作”；Overview 可按当前筛选导出 To review 清单（CSV，Excel 可直接打开）；应用详情可复制直达链接，网址带 ?app= 时直接打开该应用 |
 | [V10](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v10-20261022) | 导入预览新增“变化明细”：点 Apply 之前按应用列出每个字段的“原值 → 新值”（Business Capabilities、Processes 只列出删掉和新增的条目），并可一键导出 CSV；版本号改按新规则，新功能升大版本 |
 | [V9.19](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v9.19-20261022) | 页面顶部提示改成一行：版本、日期和“改动只在本标签页，用 Export workspace 保存”；“Offline edition”和“不需要联网”只在双击文件打开时显示，内网网址打开时不显示；删掉内部说明 “Incomplete Level 3 records are currently deferred” |
@@ -224,7 +227,7 @@
 <summary><b>🚀 部署 / 更新内网版（IIS，WX-WEB-TD02）</b></summary>
 <br>
 
-1. 在服务器的 Chrome 里（已登录 GitHub）下载 [**deploy-iis-script.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/raw/main/offline/deploy-iis-script.zip) 和 [Releases 最新版](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest)里的 **logistics-offline-….zip**，都放在 `Downloads`。脚本每次发布都会按当前版本自动重新生成，两者要来自同一个版本；不一致时脚本会在校验这一步停下并写明需要哪个 zip。
+1. 在服务器的 Chrome 里（已登录 GitHub）下载 [**deploy-iis-script.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/raw/main/offline/deploy-iis-script.zip) 和 [Releases 最新版](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest)里的 **logistics-offline-….zip**，都放在 `Downloads`。脚本每次发布都会按当前版本自动重新生成，两者要来自同一个版本；不一致时脚本会在校验这一步停下并写明需要哪个 zip。浏览器把重复下载存成 “…(1).zip” 也能识别；找不到时会列出 Downloads 里现有的版本。
 2. 打开脚本 zip，双击 `deploy-iis.bat` → Security Warning 点 **Run** → UAC 点 **Yes**（脚本会自己申请管理员权限）。部署在新打开的管理员窗口里进行；第一个小窗口关闭是正常的。
 3. 新窗口显示 `[6/6] OK` 和 `=== DONE ===` 即完成；窗口不会自动关闭，出错时会写明原因。如果没有出现新窗口，原窗口会写明原因并等待按键，这时把脚本 zip 解压到 `Downloads`，右键 `deploy-iis.bat` → **Run as administrator**。
 
@@ -303,7 +306,7 @@ flowchart LR
 | 导入 / 导出（Excel、工作区、CSV） | `program/public/xlsx.mjs`、`program/public/import-review.mjs`、`program/public/workspace.mjs`、`program/public/exports.mjs`、`program/public/score-settings.mjs`（阈值随备份）、`program/public/offline-save.mjs`（离线导出提示） |
 | 样式 | `program/public/*.css` |
 | 构建和离线单文件 | `program/scripts/build.mjs`、`program/scripts/export-offline.mjs` |
-| 测试（`npm test`，当前 474 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v11-test-results.txt` |
+| 测试（`npm test`，当前 476 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v12-test-results.txt` |
 | 离线单文件版 | `offline/` |
 | IIS 部署脚本（每次发布自动生成） | `offline/deploy-iis.bat`（打包下载版 `offline/deploy-iis-script.zip`）；生成器 `program/scripts/deploy-script.mjs`，模板 `program/scripts/deploy-iis.template.bat`，发布打包 `program/scripts/release-files.mjs`（`npm run release:files`），检查 `program/tests/deploy-script.test.mjs`，本机模拟 `program/scripts/deploy-sim.mjs`（`npm run deploy:sim`） |
 | 构建输出、文件校验清单 | `built/`、`MANIFEST.sha256` |

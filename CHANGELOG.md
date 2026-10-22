@@ -2,6 +2,11 @@
 
 每个版本的离线包在 [Releases](https://github.com/2113326213-design/logistics-digital-portfolio/releases)；详细的修改说明和用户决定在 [`00_Claude先读.md`](00_Claude先读.md)，验证记录在 [`verification/`](verification/)。
 
+## [V12](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v12-20261022) · 2026-10-22
+
+- **数据日期**（用户选择 2026-10-22）：页面标题下面显示 “Data: <文件名> · as of <日期>”。日期取自文件名里的 YYYYMMDD（自有工作簿和 LeanIX 导出都是这种命名）；没有时用 LeanIX 导出时间，再没有时显示导入日期。导入新表、撤销导入、恢复备份或继续本机保存的工作后都会跟着更新。
+- **部署脚本**（用户在服务器上遇到 “logistics-offline-20261022-v11.zip not found”）：Downloads 里没有同名压缩包时，接受浏览器存成的 “<同名> (1).zip” 等副本（取最新的一份，后面仍校验 SHA-256）；还找不到时写明要下载什么，并列出 Downloads 里现有的 logistics-offline-*.zip。`npm run deploy:sim` 扩展为 7 种情况。
+
 ## [V11](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v11-20261022) · 2026-10-22
 
 - **改动自动保存在本机**：页面里的调整（映射、审核备注、权重、最低分、导入）在停顿约半秒后保存在这台电脑的浏览器里。下次打开时询问“Continue kept work / Use the data in this file”，并可先 “Export kept work”；文件是更新的版本或数据时会提醒。浏览器不允许保存时沿用以前的规则（只在本标签页，离开时提醒）。页面顶部提示改为 “Your changes are kept in this browser on this computer — use Export workspace to back them up or share them.”

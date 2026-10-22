@@ -1,7 +1,9 @@
-npm run deploy:sim · 2026-10-22 · deploy-iis.bat V11
+npm run deploy:sim · 2026-10-22 · deploy-iis.bat V12
 PASS  1. not Administrator, UAC accepted
 PASS  2. not Administrator, UAC cancelled
 PASS  3. already Administrator
 PASS  4. Administrator window, new site, current-directory lookup disabled, no web server
 PASS  5. Administrator window, existing site, web server answering
-All 5 checks passed for deploy-iis.bat (V11).
+PASS  6. the zip in Downloads saved as "name (1).zip"
+PASS  7. only another release in Downloads
+All 7 checks passed for deploy-iis.bat (V12).

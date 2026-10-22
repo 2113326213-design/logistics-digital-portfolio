@@ -10,7 +10,7 @@
 4. **任何结束都要先给出原因并 `pause`**：UAC 被取消或拦截时写明原因并提示“右键 → Run as administrator”；只有把工作交给新窗口时才不暂停直接退出。
 5. **从 zip 里双击运行时，先把脚本复制到 Downloads**，新窗口运行这份副本（资源管理器会在窗口关闭后删除 zip 里临时解出的文件）。
 6. **只改模板** `program/scripts/deploy-iis.template.bat`（LF 换行，生成时转为 CRLF）；`tests/deploy-script.test.mjs` 检查以上规则。
-7. **发布前在本机模拟一遍**：`npm run release:files` 之后运行 `npm run deploy:sim`（仅 Windows；不弹 UAC、不碰 IIS），5 种情况（未提权并同意 UAC、UAC 被取消、已是管理员、关闭当前目录查找的新站点、带网页服务的重新部署）都要 PASS 才能发布。
+7. **发布前在本机模拟一遍**：`npm run release:files` 之后运行 `npm run deploy:sim`（仅 Windows；不弹 UAC、不碰 IIS），7 种情况（未提权并同意 UAC、UAC 被取消、已是管理员、关闭当前目录查找的新站点、带网页服务的重新部署、Downloads 里只有浏览器存成 “(1)” 的压缩包、Downloads 里只有别的版本）都要 PASS 才能发布。
 
 ## 版本号规则（2026-10-22 起长期有效）
 
@@ -19,7 +19,15 @@
 - **小版本**（V10.1、V10.2……）：修正、文字和显示调整。
 - 版本号写在 `program/scripts/release.mjs` 的 RELEASE_VERSION（小写，如 `v10`、`v10.1`）；文件名、发布 zip、部署脚本和 Release 标签（`v10-20261022`）都随它生成。导入预览的“变化明细”是新功能，所以这一版是 V10（原计划的 V9.20 没有发布）。
 
-## V11 当前状态（2026-10-22，优先于所有历史段落）
+## V12 当前状态（2026-10-22，优先于所有历史段落）
+
+- 用户从升级清单选了“页面上显示数据截至哪天”（新功能，按版本号规则为 V12）。
+- **数据日期**（`public/data-as-of.mjs`）：标题下 `<p id="dataAsOf">` 显示 “Data: <data.source> · as of <日期>”；日期依次取文件名中的 YYYYMMDD（校验是真实日期）、`inventoryExport.exportedAt`、最近一次非目录导入的日期（显示为 “imported”）；没有来源时不显示。`app.js` 的 useData 每次换数据都会更新（导入、撤销、恢复备份、继续本机保存的工作）。`tests/v12-data-as-of.test.mjs`；`ui-review-regressions` 里单独运行 useData 的测试补上了这一步。
+- **部署脚本**：用户在服务器上运行 V11 脚本时，因为 Downloads 里没有 `logistics-offline-20261022-v11.zip` 而停下（窗口正常停住并写明原因，说明 V9.17 的修复有效）。模板改为：同名文件找不到时，在 Downloads 里找 `<同名>*.zip`（如浏览器存成的 “(1)” 副本），取最新的一份，后面的 SHA-256 校验仍会拦下其他版本；仍找不到时写明从同一个 Release 下载到 Downloads，并列出 Downloads 里现有的 `logistics-offline-*.zip`。`npm run deploy:sim` 新增第 6、7 种情况，7/7 通过。
+- 浏览器检查（本机 http）：标题下显示 “Data: 20261021_logistic_inventory.xlsx · as of 2026-10-21”；导入 2026-08-25 的表并 Apply 后变为 “… 20260825_logistic_inventory.xlsx · as of 2026-08-25”；撤销导入后恢复；测试留下的本机保存已清除。
+- 当前离线包：`offline/logistics-offline-20261022-v12.zip`；HTML 文件名及页面标识均为 V12，日期 2026-10-22。部署脚本 `offline/deploy-iis.bat`（V12，本机模拟 7/7 通过）。验证记录见 `verification/v12-verification.md`。
+
+## V11 历史状态（2026-10-22，受顶部 V12 更新）
 
 - 用户从升级清单里选了三项（2026-10-22）：自动保存在本机、To review 导出 Excel、应用直达链接。三项都是新功能，按版本号规则发 V11。
 - **自动保存在本机**（`public/offline-save.mjs`）：离线版适配器在每次改动后约 600 ms 把整个工作区（exportWorkspace 的 JSON）写入 localStorage 键 `logistics-portfolio:kept-workspace`（含 release、source、savedAt）。离开页面时先把未写入的改动写入；写入成功就不再弹离开提醒（只开始下载导出文件仍然提醒，规则同 V9.15）。打开时 load() 读到与当前数据不同的已存工作，就用 index.html 的 `#localRestore` 对话框询问：Continue kept work（交给 app.js 的 onRestore，经 mergeBundledCorrections 合并内置的映射）/ Use the data in this file（删除已存工作）/ Export kept work。文件版本或数据来源与已存工作不同时显示提醒。浏览器不允许 localStorage 时沿用旧规则。保存提示放在 `LOCAL_SAVE_MESSAGES`（“kept in this browser”），导出相关的 `OFFLINE_SAVE_MESSAGES` 仍不说“已保存”。导出脚本把版本传给适配器（`createOfflineAutosave({release:"V11",…`），页面顶部提示改为 “Your changes are kept in this browser on this computer — use Export workspace to back them up or share them.”。页面的视图设置（当前页面、筛选、最低分）本来就单独记在浏览器里，选 “Use the data in this file” 不会重置它们。
@@ -67,7 +75,7 @@
 - **结果**：不计入 8 个（no score 5 个 + 不是 still active 3 个：360° Supplier dashboard owner changed to central、RBCW LOM Dashboard phaseout、VM/LOG-Szh2_DAVIS endoflife）；计入 67 个，年成本合计 ¥4,140,000 → ¥2,890,000（约 ¥1,020,000 来自重新打分，主要是 7 个应用成本分 1 → 5；¥220,000 来自 3 个不再计入的应用；¥10,000 来自移出的 CGQB_Logistic_system_Q）。Capability To review 40 → 39（360° 名称对上标准），Process 23 不变。
 - **测试**：新增 `tests/v917-owner-workbook.test.mjs`（7 项）。基于 V9.16 数据手算或用户确认过的历史测试改读冻结副本 `tests/data-v9.16.json`（`tests/records-v916.mjs`，与 GitHub 上 V9.16 的 data.json 逐字节相同），断言不改；描述当前数据的 4 个测试（costs、roi-payback、scope、to-review）按新数据更新并写明推导。prepare-data 的重建测试现在针对 V9.16 记录：prepare-data 只能重建 8 月格式（`Logistic Apps` + 无标题 C 列），不读 Status 列；V9.17 数据来自 Import data 路径。
 - **用户确认（2026-10-21，V9.17 发布后）**：新分数里 1 和 5 对调的（如 CDR_EM 成本 1 → 5、RBCC PESS 5 → 1、PMS ROI 5 → 1）没有问题，以新分数为准；CGQB_Logistic_system_Q 没写原因也没关系，按移出处理；导入时把最新的 `Logistic Apps_<日期>` 排在旧表前面，这个做法确认；IIS 服务器上的部署由用户后续自己更新。之前遗留的 RBCW Transport Material Intra Plant L3、AUTO-RACK Putaway to Automated Warehouse L3V 仍待确认。
-- **以后每次发布的固定步骤**：改 `scripts/release.mjs` 的版本和日期 → `npm test` → `npm run build` → `npm run export:offline` → `npm run release:files` → `npm test`（再跑一次，确认部署脚本已对应）→ `npm run deploy:sim`（本机模拟部署，5 项都要 PASS，结果写入 `verification/deploy-sim-results.txt`）→ 更新文档并把测试日志复制到 `verification/test-results.txt` → `npm run readme:art`（重新生成 README 的按钮和徽章；界面有变化时用无头浏览器重拍 `docs/images/screen-*.png`）、`node .github/scripts/check-manifest.mjs --write`、提交、发 Release（附发布 zip 和 `offline/deploy-iis-script.zip`）。
+- **以后每次发布的固定步骤**：改 `scripts/release.mjs` 的版本和日期 → `npm test` → `npm run build` → `npm run export:offline` → `npm run release:files` → `npm test`（再跑一次，确认部署脚本已对应）→ `npm run deploy:sim`（本机模拟部署，7 项都要 PASS，结果写入 `verification/deploy-sim-results.txt`）→ 更新文档并把测试日志复制到 `verification/test-results.txt` → `npm run readme:art`（重新生成 README 的按钮和徽章；界面有变化时用无头浏览器重拍 `docs/images/screen-*.png`）、`node .github/scripts/check-manifest.mjs --write`、提交、发 Release（附发布 zip 和 `offline/deploy-iis-script.zip`）。
 - **README 改版（2026-10-22）**：用户要求“把 github 修的好看一些”。先做的质量证书和奖章用户不要，已删除。随后找了网上公认好看的 README（GyulyVGC/sniffnet、othneildrew/Best-README-Template、immich-app/immich），用户选 Sniffnet 的版式：横幅下面一排彩色按钮（下载离线版、打开在线版、使用说明、更新日志、反馈问题），一句话介绍和状态徽章，然后是一张大截图。截图换成 V9.17 离线页面的 1440×900 实拍（Edge 无头模式，`docs/images/screen-*.png`）。按钮和徽章由 `program/scripts/readme-art.mjs`（`npm run readme:art`）按测试日志和内置数据生成。新增 `CHANGELOG.md`、`LICENSE`（内部使用许可，不是开源许可）、`SECURITY.md`，GitHub 右侧栏会显示这几个入口。README 里过时的数字已更新：75 个应用、2,775 组比较、9 组 ≥ 50。
 - **IIS 部署脚本修复（2026-10-22）**：按上面的“部署脚本编写规则”修改模板并重新生成 V9.17 的 `deploy-iis.bat` / `deploy-iis-script.zip`（HTML 和发布 zip 不变，版本仍是 V9.17）；Release 里的 `deploy-iis-script.zip` 已替换。新增 `npm run deploy:sim`（`program/scripts/deploy-sim.mjs`）。
 - 当前离线包：`offline/logistics-offline-20261021-v9.17.zip`；HTML 文件名及页面标识均为 V9.17，日期 2026-10-21。部署脚本：`offline/deploy-iis.bat`（V9.17，自动生成，2026-10-22 修复）。验证记录见 `verification/v9.17-verification.md`。

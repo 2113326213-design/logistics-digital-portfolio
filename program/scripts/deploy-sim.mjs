@@ -13,6 +13,8 @@
 //   4. Administrator window, new site, current-directory lookup disabled (NoDefaultCurrentDirectoryInExePath=1),
 //      no web server                    -> steps 1-5 pass, the smoke test fails with a message and waits for a key
 //   5. Administrator window, existing site, local web server -> [6/6] OK and === DONE ===
+//   6. the zip only in Downloads, saved by the browser as "name (1).zip" -> found and verified
+//   7. no zip of this release in Downloads, only another release -> says so, lists the zips found, waits
 import {readFileSync,writeFileSync,copyFileSync,mkdirSync,mkdtempSync,rmSync,existsSync} from 'node:fs';
 import {spawn} from 'node:child_process';
 import {createServer} from 'node:http';
@@ -62,6 +64,12 @@ try{
  await new Promise((resolve,reject)=>server.once('error',reject).listen(8083,'127.0.0.1',resolve));
  try{check('5. Administrator window, existing site, web server answering',await run(adminBat,['8083',target,'ELEVATED'],{NoDefaultCurrentDirectoryInExePath:'1'}),['redeploy mode','old index.html backed up','[6/6] OK  http://localhost:8083/ responds','=== DONE ===','Press any key to close this window...'],0);}
  finally{server.close();}
+ // 6-7: the script in a folder without the zip, so only Downloads is searched.
+ const other=path.join(dir,'other');mkdirSync(other);const elsewhere=write(path.join('other','s6.bat'),readFileSync(adminBat,'utf8'));
+ const renamed=path.join(home,'Downloads',RELEASE_ZIP_NAME.replace(/\.zip$/,' (1).zip'));copyFileSync(zip,renamed);
+ check('6. the zip in Downloads saved as "name (1).zip"',await run(elsewhere,['8083',target,'ELEVATED'],{NoDefaultCurrentDirectoryInExePath:'1'}),[`[1/6] OK  zip: ${renamed}`,'[2/6] OK  extracted and SHA-256 verified'],1);
+ rmSync(renamed);writeFileSync(path.join(home,'Downloads','logistics-offline-20200101-v1.zip'),'not this release');
+ check('7. only another release in Downloads',await run(elsewhere,['8083',target,'ELEVATED']),[`[X] ${RELEASE_ZIP_NAME} not found next to this script or in Downloads.`,'Release zips now in Downloads:','logistics-offline-20200101-v1.zip','Press any key to close this window...'],1);
 }catch(error){results.push(false);console.error(error.message);}
 finally{rmSync(dir,{recursive:true,force:true});}
 const failed=results.filter(ok=>!ok).length,summary=failed?`${failed} of ${results.length} checks failed.`:`All ${results.length} checks passed for ${DEPLOY_SCRIPT_NAME} (${VERSION}).`;

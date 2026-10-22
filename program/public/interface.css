@@ -358,3 +358,5 @@ html:has(body.portfolio-fullscreen){scrollbar-gutter:auto}
 /* Direct link and To review export (V11) */
 .profile-link{margin:6px 0 0;display:flex;align-items:center;gap:8px;font-size:.8125rem}.profile-link button{padding:4px 10px;font-size:.8125rem}.profile-link span{color:#2e7d4f}
 #overviewExportReview{white-space:nowrap}
+/* Which data the page shows (V12) */
+.data-as-of{margin:4px 0 0;color:#607587;font-size:.8125rem}

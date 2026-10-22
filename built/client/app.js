@@ -20,6 +20,7 @@ import {renderSourceRecords} from './source-records.mjs';
 import {chronologicalEvents,renderHistoryRecords} from './history-view.mjs';
 import {tabFromSearch,searchForTab,appFromSearch,searchWithApp,appLink} from './view-route.mjs';
 import {toReviewCSV,toReviewFileName} from './to-review-export.mjs';
+import {dataAsOfText} from './data-as-of.mjs';
 import './fullscreen.mjs';
 const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // Keep the supplied taxonomy text intact; tidy repeated ellipses in menu labels only.
@@ -126,7 +127,7 @@ function showApp(id,focus){
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.view){view=b.dataset.view;filters.branch='';expanded.clear();render();}if(b.dataset.expand){openOneLevel(expanded,b.dataset.expand);render();}if(b.dataset.collapse){closeCategory(expanded,b.dataset.collapse,model.ancestor);render();}if(b.dataset.app)showApp(b.dataset.app);if(b.dataset.compareColumn){const c=visibleColumns.find(c=>c.key===b.dataset.compareColumn);if(c)comparison.open({poolIds:c.apps.map(a=>a.id),contextLabel:c.id==='unmapped'?'Not classified':displayName(c)});}});
 $('group').onchange=e=>{group=e.target.value;render();};$('collapse').onclick=()=>{expanded.clear();render();};$('expandAll').onclick=()=>{expandAll(filterLandscape(model,view,filters),view,expanded,filters.branch,columns);render();};
 $('detailClose').onclick=()=>$('detail').close();$('detail').addEventListener('close',()=>setAppParam(''));$('importOpen').onclick=()=>{if(initializing)return;$('inventoryFile').value='';$('taxonomyFile').value='';resetImportPreview();$('importStatus').textContent='';$('importDialog').showModal();};$('importClose').onclick=()=>$('importDialog').close();
- function useData(next){const clean=workspaceData(next),nextModel=buildModel(clean);data=clean;model=nextModel;expanded.clear();if($('detail').open)$('detail').close();render();}
+ function useData(next){const clean=workspaceData(next),nextModel=buildModel(clean);data=clean;model=nextModel;$('dataAsOf').textContent=dataAsOfText(clean);expanded.clear();if($('detail').open)$('detail').close();render();}
  $('restoreData').onclick=()=>{if(initializing||!initialData||!data?.isAcceptanceSample)return;const previous=importUndo;if($('compareDialog').open)$('compareDialog').close();useData(previous?recordImport(data,previous.data,{kind:'restore'}):initialData);if(previous)restoreView(previous.view);importUndo=null;$('importUndoNotice').hidden=true;autosave.schedule();$('sessionStatus').textContent='Returned to the application inventory.';};
  function downloadWorkspace(workspace,prefix){try{const text=exportWorkspace(workspace),url=URL.createObjectURL(new Blob([text],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download=prefix+new Date().toISOString().slice(0,10)+'.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);$('sessionStatus').textContent='Export started. Check your downloads for '+a.download+'.';return true;}catch(e){$('sessionStatus').textContent='Export failed: '+english(e.message);}}
  // The backup carries the minimum score in use; a started download is not proof that the file was saved.
