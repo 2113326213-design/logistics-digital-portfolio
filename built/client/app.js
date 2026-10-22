@@ -23,6 +23,7 @@ import {toReviewCSV,toReviewFileName} from './to-review-export.mjs';
 import {dataAsOf,dataAsOfText} from './data-as-of.mjs';
 import {DATA_PACKAGE_FILE,readDataPackage,applyDataPackage,packageIsNew,packageNotOlder,dataPackageText} from './data-package.mjs';
 import {createAppSearch} from './app-search.mjs';
+import {isLeanixProcessLinks,processExportWithoutLinks,readProcessLinks,compareProcessLinks,processCheckCSV,NO_APPLICATIONS_COLUMN} from './leanix-process-check.mjs';
 import './fullscreen.mjs';
 const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // Keep the supplied taxonomy text intact; tidy repeated ellipses in menu labels only.
@@ -185,14 +186,38 @@ function previewDataPackage(){
 $('serverPackagePreview').onclick=previewDataPackage;
 // The steward's export: the shared data of this workspace as logistics-data.json for the IIS server.
 $('exportDataPackage').onclick=()=>{if(!data)return;try{const text=dataPackageText(data),pkg=JSON.parse(text);downloadText(text,DATA_PACKAGE_FILE,'application/json');$('exportDataPackageStatus').textContent=`Exported ${DATA_PACKAGE_FILE}: ${pkg.applications} applications${pkg.dataAsOf?`, data as of ${pkg.dataAsOf}`:''}, id ${pkg.id}. Copy it next to index.html on the IIS server.`;}catch(error){$('exportDataPackageStatus').textContent='Export failed: '+english(error.message);}};
+// LeanIX process check (V15, owner decision 2026-10-22: compare only). Applications that differ come first and are open;
+// there is nothing to apply, so the Apply button stays hidden and the current data is never changed.
+function showProcessCheck(check){
+ const items=list=>list.length?`<ul>${list.map(p=>`<li>${esc(p)}</li>`).join('')}</ul>`:'<p class="hint">None</p>';
+ const app=r=>`<details class="process-check-app"><summary><strong>${esc(r.name)}</strong> · ${r.both.length} in both · ${r.onlyLeanix.length} only in LeanIX · ${r.onlyTool.length} only in the tool${r.sameName>1?` · <span class="review-reason">${r.sameName} applications in the tool have this name</span>`:''}</summary><div class="process-check-lists"><section><h4>Only in LeanIX · ${r.onlyLeanix.length}</h4>${items(r.onlyLeanix)}</section><section><h4>Only in the tool · ${r.onlyTool.length}</h4>${items(r.onlyTool)}</section><section><h4>In both · ${r.both.length}</h4>${items(r.both)}</section></div>${r.notInExport.length?`<p class="hint">Recorded in the tool but not in this export (not compared): ${r.notInExport.map(esc).join('; ')}</p>`:''}</details>`;
+ const by=status=>check.rows.filter(r=>r.status===status);
+ const group=(title,rows,open)=>rows.length?`<details class="import-changes"${open?' open':''}><summary>${title} · ${rows.length}</summary>${rows.map(app).join('')}</details>`:'';
+ const none=by('not-in-export'),unknown=check.unknownApplications;
+ $('importPreview').innerHTML=`<div class="import-summary"><h3>LeanIX process check</h3><p class="hint">Compared only: for each application, the processes LeanIX links to it and the processes recorded in the tool. Nothing is changed and there is nothing to apply.</p><div class="import-counts">${[['Applications',check.counts.applications],['Differ',check.counts.differs],['Match',check.counts.matches],['No processes in this export',check.counts.notInExport]].map(([label,n])=>`<div><span>${label}</span><strong>${n}</strong></div>`).join('')}</div><dl class="source-records"><dt>LeanIX export</dt><dd>${esc(check.file)} · sheet ${esc(check.sheet)}${check.exportedAt?` · exported ${esc(check.exportedAt)}`:''}</dd><dt>Processes</dt><dd>${check.processes} in this export · linked to ${check.linkedApplications} applications by name</dd></dl>${unknown.length?`<p class="review-reason">${unknown.length} ${unknown.length===1?'application named in LeanIX is':'applications named in LeanIX are'} not in the tool under that name. Check the names below.</p>`:''}</div>${group('Applications that differ',by('differs'),true)}${group('Applications that match',by('matches'),false)}${none.length?`<details class="import-changes"><summary>No processes in this export · ${none.length}</summary><ul>${none.map(r=>`<li>${esc(r.name)}${r.notInExport.length?` · ${r.notInExport.length} recorded ${r.notInExport.length===1?'process':'processes'} outside this export`:''}</li>`).join('')}</ul></details>`:''}${unknown.length?`<details class="import-changes"><summary>Applications in LeanIX, not in the tool · ${unknown.length}</summary><ul>${unknown.map(a=>`<li>${esc(a.name)} · ${a.processes} ${a.processes===1?'process':'processes'}</li>`).join('')}</ul></details>`:''}<p><button type="button" id="exportProcessCheck">Download check (CSV)</button></p>`;
+ $('exportProcessCheck').onclick=()=>downloadText(processCheckCSV(check),'LeanIX_process_check_'+new Date().toISOString().slice(0,10)+'.csv','text/csv;charset=utf-8');
+ $('importPreview').hidden=false;$('importApply').hidden=true;
+ $('importStatus').textContent=`Process check ready: ${check.counts.differs} of ${check.counts.applications} applications differ. Nothing was changed.`;
+}
 $('importRun').onclick=async()=>{
  const inventory=$('inventoryFile').files[0],taxonomy=$('taxonomyFile').files[0];resetImportPreview();
  if(!inventory&&!taxonomy){$('importStatus').textContent='Select an inventory, saved workspace or taxonomy.';return;}
  const button=$('importRun'),base=data,generation=importGeneration;button.disabled=true;$('importStatus').textContent='Reading and validating data…';
  try{
+  for(const file of [inventory,taxonomy])if(file&&file.size>30*1024*1024)throw Error('File exceeds 30 MB');
+  const inventorySheets=inventory&&!/\.json$/i.test(inventory.name)?await readXlsx(inventory):null,taxonomySheets=taxonomy?await readXlsx(taxonomy):null;
+  // A LeanIX process export with the Applications column (V15) is only compared with the current data.
+  const linksFile=[[inventory,inventorySheets],[taxonomy,taxonomySheets]].find(([,sheets])=>sheets&&isLeanixProcessLinks(sheets));
+  if(linksFile){
+   if(inventory&&taxonomy)throw Error('A LeanIX process export is only compared with the current data. Select it on its own, without a second file.');
+   const check=compareProcessLinks(base,readProcessLinks(linksFile[1]),{file:linksFile[0].name});
+   if(generation===importGeneration)showProcessCheck(check);
+   return;
+  }
+  if([inventorySheets,taxonomySheets].some(sheets=>sheets&&processExportWithoutLinks(sheets)))throw Error(NO_APPLICATIONS_COLUMN);
   let next=base,raw;
-  let inventorySheet=null;if(inventory){if(inventory.size>30*1024*1024)throw Error('File exceeds 30 MB');if(/\.json$/i.test(inventory.name)){const text=await inventory.text();next=importWorkspace(text);raw=JSON.parse(text).data;}else{const read=inventoryFromSheets(await readXlsx(inventory));inventorySheet=read.inventorySheet||null;next=applyInventory(base,read,inventory.name);}}
-  if(taxonomy){if(taxonomy.size>30*1024*1024)throw Error('File exceeds 30 MB');const rows=taxonomyFromSheets(await readXlsx(taxonomy));next={...next,...rows,taxonomySource:rows.processRows?taxonomy.name:taxonomySourceName(processTaxonomySource(next.taxonomySource),taxonomy.name)};delete next.dataPackage;}
+  let inventorySheet=null;if(inventory){if(/\.json$/i.test(inventory.name)){const text=await inventory.text();next=importWorkspace(text);raw=JSON.parse(text).data;}else{const read=inventoryFromSheets(inventorySheets);inventorySheet=read.inventorySheet||null;next=applyInventory(base,read,inventory.name);}}
+  if(taxonomy){const rows=taxonomyFromSheets(taxonomySheets);next={...next,...rows,taxonomySource:rows.processRows?taxonomy.name:taxonomySourceName(processTaxonomySource(next.taxonomySource),taxonomy.name)};delete next.dataPackage;}
   if(generation!==importGeneration)return;
   const preview=previewImport(base,next,raw||next);pendingImport={...preview,base,inventoryFile:inventory?.name||'',taxonomyFile:taxonomy?.name||''};
   showImportPreview(preview,{inventoryFile:inventory?.name||'',taxonomyFile:taxonomy?.name||'',inventorySheet});

@@ -361,8 +361,8 @@ test('uploading the standard workbook alone in the browser keeps the processes, 
  // Run the taxonomy step of the Import button exactly as written in public/app.js.
  assert(appSource.includes("import {readXlsx,inventoryFromSheets,taxonomyFromSheets,taxonomySourceName,processTaxonomySource} from './xlsx.mjs';"));
  const step=appSource.match(/\n\s*if\(taxonomy\)\{(.*)\}\r?\n/)?.[1];assert(step?.includes('taxonomySourceName(processTaxonomySource(next.taxonomySource),taxonomy.name)'),'taxonomy import step found');
- const AsyncFunction=(async()=>{}).constructor,taxonomyStep=new AsyncFunction('taxonomy','next','readXlsx','taxonomyFromSheets','taxonomySourceName','processTaxonomySource',step+'return next;');
- const upload=async(base,file)=>{const next=await taxonomyStep(file,base,readXlsx,taxonomyFromSheets,taxonomySourceName,processTaxonomySource);return previewImport(base,next,next);};
+ const AsyncFunction=(async()=>{}).constructor,taxonomyStep=new AsyncFunction('taxonomy','taxonomySheets','next','taxonomyFromSheets','taxonomySourceName','processTaxonomySource',step+'return next;');
+ const upload=async(base,file)=>{const next=await taxonomyStep(file,await readXlsx(file),base,taxonomyFromSheets,taxonomySourceName,processTaxonomySource);return previewImport(base,next,next);};
  // The real standard workbook, with its ten HC entries on rows 63-72.
  const standardBook=()=>workbook({'Standard Name':realSheet()},STANDARD_BOOK);
  const [switchEvent,removalEvent]=raw.importHistory;

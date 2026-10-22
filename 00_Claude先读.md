@@ -20,7 +20,17 @@
 - **小版本**（V10.1、V10.2……）：修正、文字和显示调整。
 - 版本号写在 `program/scripts/release.mjs` 的 RELEASE_VERSION（小写，如 `v10`、`v10.1`）；文件名、发布 zip、部署脚本和 Release 标签（`v10-20261022`）都随它生成。导入预览的“变化明细”是新功能，所以这一版是 V10（原计划的 V9.20 没有发布）。
 
-## V14 当前状态（2026-10-22，优先于所有历史段落）
+## V15 当前状态（2026-10-22，优先于所有历史段落）
+
+- **用户决定（2026-10-22，选 A）**：“先只核对、不改数据。导入预览按应用列出 LeanIX 里挂的流程和工具里登记的流程哪些对得上、哪些只有一边有。” 新的数据来源和功能，按版本号规则为 V15。数据只在公司电脑上处理：只按截图里的版式（表头和前几行）写读取，测试用同样版式的合成文件；不要让用户把 LeanIX 导出发到这台电脑。
+- **导出版式**（视图 “BBM PM process”，3560 行）：工作表 “BBM PM process (Export 2026-…)”；第 1 行技术字段 id,type,name,displayName,description,processLifecycleStatus,relToParent,relProcessToApplication,fullName,updatedAt；第 2 行显示名（Applications 等）；第 3 行起每行一个流程；Applications 为分号分隔的应用名称；ReadMe 工作表有 “created at: … GMT”。
+- **模块**（`public/leanix-process-check.mjs`）：`isLeanixProcessLinks`（非 ReadMe 工作表第 1 行有 relProcessToApplication 和 name/displayName）；`processExportWithoutLinks`（第 1 行有 id,type,name,displayName、没有 relProcessToApplication，且记录类型有 Process —— 应用导出不会被误认）；`readProcessLinks`（第 2 行是显示名时从第 3 行读；非 Process 类型和空行跳过；导出时间换北京时间，没有 ReadMe 时取工作表名里的日期）；`compareProcessLinks(data,links)`（每个应用一行：both / onlyLeanix / onlyTool / notInExport，status differs / matches / not-in-export；应用按 `nameKey` 对应名称，流程的 Name、Display Name、Full Name 都可对应；HC 两边都不比较；unknownApplications；sameName）；`processCheckCSV`。`nameKey`：NFKC、小写、& → and、空白合并。
+- **页面**（`app.js`）：Import 按钮先读两个文件的工作表；任一个是带 Applications 的流程导出就只做核对（另一个也选了则报错），`showProcessCheck` 显示结果、隐藏 Apply、不碰 pendingImport / useData / 自动保存；没有 Applications 列的流程导出报 `NO_APPLICATIONS_COLUMN`；其他文件走原来的导入（读表只做一次，顺序不变）。`index.html` 第 1 格加了一行说明；`interface.css` 加了 `.process-check-*`（手机宽度单栏）。
+- **测试**：`tests/v15-leanix-process-check.test.mjs`（识别和不误认、读法、缺 Applications 列的说明、按应用三类与不改数据、用内置数据重建导出经 .xlsx 读回全部一致并能精确找出改动的两处、页面接线、CSV 与公式前缀）；`capability-standard` 中抽取分类导入步骤的测试改为传入已读的工作表。
+- **浏览器检查**（本机 http，V15，合成导出：由内置数据重建 200 个流程，去掉 1 个链接、加 1 个链接、加 1 个不认识的应用）：预览显示 “Process check ready: 2 of 75 applications differ. Nothing was changed.”，75 / 2 / 73 / 0，200 个流程关联 76 个应用名，“1 application named in LeanIX is not in the tool”；AGR w/ Camera 展开为三栏（Only in the tool · 1）；Apply 隐藏；手机宽度单栏、无横向滚动。CSV 按钮未点击（会下载），由测试覆盖。
+- 当前离线包：`offline/logistics-offline-20261022-v15.zip`（HTML + deploy-iis.bat）。验证记录见 `verification/v15-verification.md`。
+
+## V14 历史状态（2026-10-22，受顶部 V15 更新）
 
 - **来历**：侧边会话（fork-11，“在 Bosch 内网 SAP LeanIX 里找到 Process 表”）和用户定了方案 A，开始做 V14；用户随后说“把这个任务一直到主对话框吧”，主会话接手、补完并发布。
 - **用户决定（2026-10-22）**：GitHub 私有仓库继续保存真实数据（data.json、latest-workspace.json、built/、每个 Release 的离线文件）；LeanIX 原始导出（`leanix_export/`、`leanix_processes*.csv`）永不提交、不进 MANIFEST（`.gitignore` 和 `.github/scripts/check-manifest.mjs` 已排除）。不清理历史。
@@ -33,7 +43,7 @@
 - **tools/leanix/**（侧边会话写的，本版一并提交）：README、summarize-export.mjs、find-processes.mjs（API 版，需 token，目前用不上；token 只从环境变量读、不打印）、leanix-common.mjs；`node --test tools/leanix/leanix.test.mjs` 5/5。
 - 当前离线包：`offline/logistics-offline-20261022-v14.zip`（HTML + deploy-iis.bat）。验证记录见 `verification/v14-verification.md`。
 
-## V13.3 历史状态（2026-10-22，受顶部 V14 更新）
+## V13.3 历史状态（2026-10-22，受 V14 更新）
 
 - 用户：“HC的开头的都不需要了，那个是其他公司的”。2026-10-19 的决定（“HC 去除，这不属于我们部门的”）只把标准表里的 HC 条目挡在能力目录外，各应用自己的 HC 记录仍保留并显示为 “B.06 范围外”；这次连这些记录也不再参与分析。按版本号规则属于修正（V13.3）。
 - **规则**（`public/codes.mjs`）：`OTHER_COMPANY_CODE=/^HC\./`（与原来 `xlsx.mjs` 的 `OTHER_DEPARTMENT_CODE` 相同，后者现在就是它），`otherCompanyRecord(raw)` 对去掉首尾空格的记录判断。

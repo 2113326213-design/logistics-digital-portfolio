@@ -2,6 +2,14 @@
 
 每个版本的离线包在 [Releases](https://github.com/2113326213-design/logistics-digital-portfolio/releases)；详细的修改说明和用户决定在 [`00_Claude先读.md`](00_Claude先读.md)，验证记录在 [`verification/`](verification/)。
 
+## [V15](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v15-20261022) · 2026-10-22
+
+- **LeanIX 流程核对**（用户选 A：“先只核对、不改数据。导入预览按应用列出 LeanIX 里挂的流程和工具里登记的流程哪些对得上、哪些只有一边有。”）：在 **Import data** 第 1 格选 LeanIX 流程导出（保存的视图 “BBM PM process”，必须带 **Applications** 列），**Preview changes** 显示 “LeanIX process check”：应用总数、有差异 / 一致 / 本导出里没有其流程的数量；有差异的应用排在前面并展开，每个应用分三栏列出 **Only in LeanIX**、**Only in the tool**、**In both**。
+- 规则：应用按名称对应（LeanIX 的 Applications 列是分号分隔的应用名称）；流程按名称对应，忽略大小写、空格和 “&” / “and” 的写法差别，Name、Display Name、Full Name 任一相同都算同一个流程。工具里登记、但这份导出里根本没有的流程（例如不属于 BBM PM 的 “RBCC | Warehouse Delivery”）不算差异，单独注明 “not in this export”。HC 开头的记录属于其他公司，不比较（与 V13.3 一致）。LeanIX 里出现、工具里没有同名应用的，单独列出以便核对名称；工具里同名的多个应用会标出。
+- **只核对**：不改任何数据，没有 Apply 按钮，历史也不记录。**Download check (CSV)** 每行一个应用和流程（Result 为 In both / Only in LeanIX / Only in the tool / Not in this export），用 Excel 打开。导出的时间按 ReadMe 里的 GMT 换算成北京时间显示。
+- 选了没有 Applications 列的流程导出（如 2026-10-20 那份）时，页面说明要在 LeanIX 的 Manage columns 加上 Applications 再导出；流程导出要单独选，不能同时选第二个文件。
+- 数据只在公司电脑上处理：维护者只按截图里的版式写读取和测试（测试用同样版式的合成文件），没有接触真实导出。
+
 ## [V14](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v14-20261022) · 2026-10-22
 
 - **数据包**（用户选定方案 A：没有 LeanIX API，IT 不提供；服务器也登不上 LeanIX）：数据管家在工具里导入 LeanIX 导出并 Apply 后，在 Import data 对话框底部导出 `logistics-data.json`，复制到服务器 `D:\logistics-tool\`。用内网网址打开的页面会读取它（只在 http/https，离线文件从不读取）：如果它的数据和当前页面不同，标题下提示 “New data on the server · as of … · published …”，**Preview changes** 用与导入文件相同的预览和 Apply；**Hide this update** 只隐藏这条提示，Import data 对话框顶部的 **Preview server data** 仍可打开它。

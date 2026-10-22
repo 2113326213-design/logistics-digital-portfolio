@@ -69,7 +69,7 @@
 <dialog id="importDialog" aria-labelledby="importTitle">
 <button class="close" id="importClose" aria-label="Close import">×</button><h2 id="importTitle">Update application data</h2>
 <p id="serverPackageEntry" class="server-package-entry" hidden><span id="serverPackageText"></span><button type="button" id="serverPackagePreview">Preview server data</button></p>
-<label class="upload"><span class="upload-heading"><span class="step-number">1</span><span>Application inventory / Workspace backup</span></span><input type="file" id="inventoryFile" accept=".xlsx,.json"></label>
+<label class="upload"><span class="upload-heading"><span class="step-number">1</span><span>Application inventory / Workspace backup<small>A LeanIX process export with the Applications column is compared only; nothing is changed.</small></span></span><input type="file" id="inventoryFile" accept=".xlsx,.json"></label>
 <label class="upload"><span class="upload-heading"><span class="step-number">2</span><span>Capability and process taxonomy</span></span><input type="file" id="taxonomyFile" accept=".xlsx"></label>
 <details class="package-publish" id="packagePublish"><summary>For the data steward: publish this data to the intranet server</summary><p>After applying the latest LeanIX exports here, export a data package and put it next to index.html on the IIS server. Users of the intranet page are then offered the new data with this same preview; their review notes, pair reviews, score settings and own mappings are kept.</p><button type="button" id="exportDataPackage">Export data package (logistics-data.json)</button><p id="exportDataPackageStatus" class="hint" role="status"></p></details>
 

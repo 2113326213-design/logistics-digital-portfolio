@@ -53,11 +53,11 @@
 
 不在内网，或想自己保留一份时用：
 
-1. 下载 [**logistics-offline-20261022-v14.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest)。
+1. 下载 [**logistics-offline-20261022-v15.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest)。
 2. 右键 → **Extract all**。
 3. 用 Chrome 打开里面的 HTML（同一个 zip 里的 `deploy-iis.bat` 是给内网服务器部署用的，自己用时不用管）。
 
-页面顶部显示 **V14** 就对了。
+页面顶部显示 **V15** 就对了。
 
 </td>
 </tr>
@@ -68,7 +68,7 @@
     <td align="center" width="25%"><h3>75</h3><sub>应用 · 10 个工厂 · 5 个业务部门</sub></td>
     <td align="center" width="25%"><h3>2,775</h3><sub>组两两比较 · 9 组得分 ≥ 50</sub></td>
     <td align="center" width="25%"><h3>22 / 39</h3><sub>Process / Capability 待处理应用</sub></td>
-    <td align="center" width="25%"><h3>V14</h3><sub>2026-10-22 · 510 项测试通过</sub></td>
+    <td align="center" width="25%"><h3>V15</h3><sub>2026-10-22 · 517 项测试通过</sub></td>
   </tr>
 </table>
 
@@ -102,6 +102,7 @@
 | 保存我的调整，下次接着用 | 任意页面 | 自动保存在这台电脑的浏览器里，下次打开选 **Continue kept work**；要备份或发给别人用 **Export workspace** |
 | 把待处理清单发给工厂 | **Overview** | 选工厂 → **Export To review (CSV)**，用 Excel 打开 |
 | 把 LeanIX 的新数据发给所有人（数据管家） | **Import data** | 导入新的导出并 Apply → 对话框底部 **For the data steward** → **Export data package**，把 `logistics-data.json` 复制到服务器 `D:\logistics-tool\`；见下方“给维护者 → 发布新数据” |
+| 核对 LeanIX 里应用挂的流程和工具里登记的是否一致 | **Import data** | 在公司电脑上从 LeanIX 视图 “BBM PM process” 导出 Excel（要带 **Applications** 列），在第 1 格选这个文件 → **Preview changes**：按应用列出对得上的、只在 LeanIX 的、只在工具里的流程；**Download check (CSV)** 可存成表格。只核对，不改数据，也没有 Apply |
 | 把某个应用发给同事 | 应用详情 | **Copy link to this application**，对方打开链接直接看到这个应用 |
 
 ## 常见问题
@@ -142,7 +143,7 @@
 </details>
 
 <details>
-<summary><b>页面打开了，但不是 V14，或者显示不全？</b></summary>
+<summary><b>页面打开了，但不是 V15，或者显示不全？</b></summary>
 <br>
 按 <b>Ctrl + F5</b> 强制刷新（浏览器可能缓存了旧版本）。工具在 Chrome 上测试过，请优先用 Chrome。
 </details>
@@ -174,7 +175,9 @@
 
 完整更新日志见 [`CHANGELOG.md`](CHANGELOG.md)。
 
-**V14（当前，2026-10-22）**：数据包：数据管家在工具里导入 LeanIX 导出后，导出 logistics-data.json 放到 IIS 服务器；内网页面会在标题下提示 “New data on the server”，预览后 Apply，个人的备注、配对审核、打分设置和自己的映射都保留；被改过的或比当前更旧的数据包不会被采用。
+**V15（当前，2026-10-22）**：LeanIX 流程核对：在 Import data 里选 LeanIX 流程导出（带 Applications 列），预览按应用列出 LeanIX 挂的流程和工具里登记的流程哪些对得上、哪些只在 LeanIX、哪些只在工具里，可下载 CSV；只核对，不改任何数据。
+
+**V14（2026-10-22）**：数据包：数据管家在工具里导入 LeanIX 导出后，导出 logistics-data.json 放到 IIS 服务器；内网页面会在标题下提示 “New data on the server”，预览后 Apply，个人的备注、配对审核、打分设置和自己的映射都保留；被改过的或比当前更旧的数据包不会被采用。
 
 **V13.3（2026-10-22）**：能力和流程记录中以 HC 开头的属于其他公司，不再参与任何统计、地图、搜索、待处理和相似度（原记录保留，应用详情的 Source records 标明未使用）；地图少了 HC.02 一列，待处理少了 1 项。
 
@@ -206,6 +209,7 @@
 
 | 版本 | 主要变化 |
 |---|---|
+| [V15](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v15-20261022) | LeanIX 流程核对：在 Import data 里选 LeanIX 流程导出（带 Applications 列），预览按应用列出 LeanIX 挂的流程和工具里登记的流程哪些对得上、哪些只在 LeanIX、哪些只在工具里，可下载 CSV；只核对，不改任何数据 |
 | [V14](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v14-20261022) | 数据包：数据管家在工具里导入 LeanIX 导出后，导出 logistics-data.json 放到 IIS 服务器；内网页面会在标题下提示 “New data on the server”，预览后 Apply，个人的备注、配对审核、打分设置和自己的映射都保留；被改过的或比当前更旧的数据包不会被采用 |
 | [V13.3](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v13.3-20261022) | 能力和流程记录中以 HC 开头的属于其他公司，不再参与任何统计、地图、搜索、待处理和相似度（原记录保留，应用详情的 Source records 标明未使用）；地图少了 HC.02 一列，待处理少了 1 项 |
 | [V13.2](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v13.2-20261022) | IIS 部署只需下载一个文件：deploy-iis.bat 放进发布 zip，存到 Downloads、打开 zip、双击脚本即可；Release 不再附 deploy-iis-script.zip |
@@ -343,6 +347,7 @@ flowchart LR
 |---|---|
 | 当前状态、改动记录、用户决定 | `00_Claude先读.md`、`program/README.md` |
 | 内置数据（75 个应用、能力和流程目录） | `program/public/data.json`（2026-10-21 自有工作簿 Logistic Apps_1021，经 Import data 同一路径合并；`statusNote` 记录 Status in Oct）；`program/scripts/prepare-data.mjs` 只能重建 8 月格式的工作簿（不读 Status 列），可从原始 Excel 重建 |
+| LeanIX 流程核对（V15） | `program/public/leanix-process-check.mjs`（识别导出、按应用比较、CSV）；页面接线 `program/public/app.js` 的 `showProcessCheck`；测试 `program/tests/v15-leanix-process-check.test.mjs` |
 | 数据包（V14） | `program/public/data-package.mjs`（生成、校验、应用数据包）；页面接线在 `program/public/app.js`；测试 `program/tests/v14-data-package.test.mjs` |
 | LeanIX 导出整理工具 | `tools/leanix/`（说明见其中 README；`summarize-export.mjs` 整理导出文件；`find-processes.mjs` 需要 LeanIX API token，目前用不上）。LeanIX 原始导出放 `leanix_export/`，永远不提交、不进 MANIFEST |
 | LeanIX 流程导出（2026-10-20，26 条） | `program/public/leanix-process-export.mjs`（原样数据）、`program/public/leanix-processes.mjs`（按编号合并、名称差异、来源） |
@@ -358,7 +363,7 @@ flowchart LR
 | 导入 / 导出（Excel、工作区、CSV） | `program/public/xlsx.mjs`、`program/public/import-review.mjs`、`program/public/workspace.mjs`、`program/public/exports.mjs`、`program/public/score-settings.mjs`（阈值随备份）、`program/public/offline-save.mjs`（离线导出提示）；应用搜索在 `program/public/app-search.mjs`（6 个搜索框共用 matchesApplication 和同一个名称、提示） |
 | 样式 | `program/public/*.css` |
 | 构建和离线单文件 | `program/scripts/build.mjs`、`program/scripts/export-offline.mjs` |
-| 测试（`npm test`，当前 510 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v14-test-results.txt` |
+| 测试（`npm test`，当前 517 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v15-test-results.txt` |
 | 离线单文件版 | `offline/` |
 | IIS 部署脚本（每次发布自动生成） | `offline/deploy-iis.bat`（同一份脚本也在发布 zip `offline/logistics-offline-<日期>-<版本>.zip` 里，部署只需下载这个 zip）；生成器 `program/scripts/deploy-script.mjs`，模板 `program/scripts/deploy-iis.template.bat`，发布打包 `program/scripts/release-files.mjs`（`npm run release:files`），检查 `program/tests/deploy-script.test.mjs`，本机模拟 `program/scripts/deploy-sim.mjs`（`npm run deploy:sim`） |
 | 构建输出、文件校验清单 | `built/`、`MANIFEST.sha256` |
