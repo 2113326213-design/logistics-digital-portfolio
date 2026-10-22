@@ -12,7 +12,15 @@
 6. **只改模板** `program/scripts/deploy-iis.template.bat`（LF 换行，生成时转为 CRLF）；`tests/deploy-script.test.mjs` 检查以上规则。
 7. **发布前在本机模拟一遍**：`npm run release:files` 之后运行 `npm run deploy:sim`（仅 Windows；不弹 UAC、不碰 IIS），5 种情况（未提权并同意 UAC、UAC 被取消、已是管理员、关闭当前目录查找的新站点、带网页服务的重新部署）都要 PASS 才能发布。
 
-## V9.18 当前状态（2026-10-22，优先于所有历史段落）
+## V9.19 当前状态（2026-10-22，优先于所有历史段落）
+
+- 用户看到内网 IIS 页面（当时还是 V9.15）顶部的长提示，问能否去掉。用户决定：只留一行版本号和“改动只在本标签页，用 Export workspace 保存”的提醒；双击文件打开时才显示 Offline edition 和不需要联网的说明，内网网址打开时不显示；删掉 “Incomplete Level 3 records are currently deferred” 那句。
+- 实现（`program/scripts/export-offline.mjs`）：提示是导出离线文件时插在 `<main>` 前的 `<aside id="releaseNotice">`；离线文字放在 `<span data-offline-only hidden>` 里，离线版脚本在 `location.protocol==='file:'` 时取消 hidden。右上角标签由 `'Admin preview'` 换成 `location.protocol==='file:'?'Offline edition':''`。程序页面本身（public/）没有改。`tests/offline-export.test.mjs` 检查提示全文、隐藏规则和标签。
+- 已用 Edge 无头模式分别以 http:// 和 file:// 打开核对：http 只显示 “V9.19 · 2026-10-22 · Changes stay in this tab — use Export workspace to keep them.”，右上角无标签；file 显示 “Offline edition · V9.19 · 2026-10-22 · All data is included in this file; no internet connection is required. Changes stay in this tab — use Export workspace to keep them.”，右上角 “Offline edition”。
+- 地址栏的 “Not secure” 是因为内网站点用 http；要去掉需在 IIS 上配置 https 证书，属服务器负责人决定，本版未处理。
+- 当前离线包：`offline/logistics-offline-20261022-v9.19.zip`；HTML 文件名及页面标识均为 V9.19，日期 2026-10-22。部署脚本 `offline/deploy-iis.bat`（V9.19，本机模拟 5/5 通过）。服务器上目前仍是 V9.15（用户照片），需要用 V9.19 的脚本和 zip 重新部署。验证记录见 `verification/v9.19-verification.md`。
+
+## V9.18 历史状态（2026-10-22，受顶部 V9.19 更新）
 
 - 基线：V9.17（仓库 24ff893，含部署脚本修复和 README 改版）。用户确认（2026-10-22）：“确定就是这样登记的”，指两条——RBCW Auto Warehouse Management System 的 `BBM PM I2D Transport Material Intra Plant L3` 和 AUTO-RACK 的 `BBM PM I2D Putaway to Automated Warehouse L3V`；显示方式选“不再列为待处理”。这两个流程在流程目录（21.02.2025 快照 + 2026-10-20 LeanIX 流程导出）里都没有，所以没有标准编号。
 - **新机制“负责人确认按原样登记”**（`program/public/accepted-records.mjs`，数据字段 `data.acceptedRecords`：appId、dimension、raw、reviewer、reason、acceptedAt）：buildModel 遇到被确认的记录时不再生成 issue，而是记在应用的 `accepted` 上。效果：不进 To review、应用详情的问题、数据检查（显示 “Confirmed by owner as recorded”）、审核清单和相似度的待核对资料；maintenanceReport 里该记录 `valid=false`、`accepted` 有值，所以“Level 3 matches standard”不变；l3MaintenanceMetrics 新增 `confirmed`，`notPassing` 不含只因被确认记录而不通过的应用，Overview 卡片显示 “· N confirmed as recorded”；应用详情显示确认说明。确认只对完全相同的登记原文有效，原文一变就重新检查。workspaceData / 导出导入 / mergeBundledCorrections / 导入预览 / prepare-data PRESERVED_KEYS 都带上这个字段。

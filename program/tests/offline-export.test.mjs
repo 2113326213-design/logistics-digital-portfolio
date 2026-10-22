@@ -21,7 +21,7 @@ test('offline export embeds current inventory and assets without removed review 
   await cp(path.join(root,'public'),path.join(dir,'public'),{recursive:true});
   execFileSync(process.execPath,[exporter],{cwd:dir,stdio:'pipe'});
   const html=await readFile(path.join(dir,'outputs',OFFLINE_FILE_NAME),'utf8');
-  assert(html.includes(`Offline edition · ${RELEASE_VERSION.toUpperCase()} · ${RELEASE_DATE}`),'the offline page must identify the same version as its filename');
+  assert(html.includes(`${RELEASE_VERSION.toUpperCase()} · ${RELEASE_DATE} · `),'the offline page must identify the same version as its filename');
   const inventory=html.match(/<script type="application\/json" id="offlineInventory">([\s\S]*?)<\/script>/);
   assert(inventory,'bundled inventory must exist');
   assert.deepEqual(JSON.parse(inventory[1]),JSON.parse(await readFile(path.join(dir,'public/data.json'),'utf8')));
@@ -35,9 +35,14 @@ test('offline export embeds current inventory and assets without removed review 
   assert.doesNotMatch(script,/location\.hostname/,'offline access setting replaces the hosted admin check');
   assert.doesNotMatch(html,/Relationship not established|Review assistant|Owner review|reviewSubmissions/i);
   for(const label of ['Original descriptions and shared words','Source records','How the score is calculated'])assert(html.includes(label),label);
-  assert.equal(html.split(`Offline edition · ${RELEASE_VERSION.toUpperCase()} · ${RELEASE_DATE} |`).length-1,1,'banner shows the release version and date once');
+  assert.equal(html.split(`${RELEASE_VERSION.toUpperCase()} · ${RELEASE_DATE} · `).length-1,1,'banner shows the release version and date once');
   assert(html.indexOf('<aside')<html.indexOf('<main'),'banner sits directly before the page content');
-  assert(!html.includes('Admin preview')&&/["']Offline edition["']/.test(script),'account label switches to the offline edition');
+  // Owner decision 2026-10-22 (V9.19): one line with the version and the reminder that changes stay in this tab; the
+  // offline wording shows only for a file opened from disk, not on the intranet site; the internal "deferred" note is gone.
+  assert.equal(html.match(/<aside id="releaseNotice"[^>]*>([\s\S]*?)<\/aside>/)[1],`<span data-offline-only hidden>Offline edition · </span>${RELEASE_VERSION.toUpperCase()} · ${RELEASE_DATE} · <span data-offline-only hidden>All data is included in this file; no internet connection is required. </span>Changes stay in this tab — use Export workspace to keep them.`);
+  assert.doesNotMatch(html,/currently deferred|No internet connection required|Reopening this HTML/);
+  assert.match(script,/if\(location\.protocol===["']file:["']\)for\((?:const|let) \w+ of document\.querySelectorAll\(["']\[data-offline-only\]["']\)\)\w+\.hidden=!1/,'the offline wording is shown only for file://');
+  assert(!html.includes('Admin preview')&&/location\.protocol===["']file:["']\?["']Offline edition["']:["']["']/.test(script),'the account label says Offline edition only for file://');
   assert.match(script,/try\{\(\w+\?history\.replaceState:history\.pushState\)\.call\(history,null,"",\w+\)\}catch\{\}/,'address bar updates cannot break file:// pages');
   assert.match(html,/src="data:image\/svg\+xml;base64,/,'SVG logo keeps its SVG type');
  }finally{await rm(dir,{recursive:true,force:true});}

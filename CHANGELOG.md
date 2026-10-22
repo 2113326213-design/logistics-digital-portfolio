@@ -2,6 +2,12 @@
 
 每个版本的离线包在 [Releases](https://github.com/2113326213-design/logistics-digital-portfolio/releases)；详细的修改说明和用户决定在 [`00_Claude先读.md`](00_Claude先读.md)，验证记录在 [`verification/`](verification/)。
 
+## [V9.19](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v9.19-20261022) · 2026-10-22
+
+- 用户决定（2026-10-22）：页面顶部的提示只留一行——版本、日期和 “Changes stay in this tab — use Export workspace to keep them.”。
+- “Offline edition” 和 “All data is included in this file; no internet connection is required.” 只在双击文件打开（file://）时显示；通过内网网址（IIS）打开时不显示，右上角也不再显示 “Offline edition”。
+- 删掉开发时留下的内部说明 “Incomplete Level 3 records are currently deferred.”。
+
 ## [V9.18](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v9.18-20261022) · 2026-10-22
 
 - 负责人确认（2026-10-22）：RBCW Auto Warehouse Management System 的 “BBM PM I2D Transport Material Intra Plant L3” 和 AUTO-RACK 的 “BBM PM I2D Putaway to Automated Warehouse L3V” 按原样登记有效。流程目录里没有这两个流程，所以没有标准编号。

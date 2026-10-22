@@ -25,14 +25,19 @@ let source=await readFile(path.join(pub,'app.js'),'utf8');
 source=replaceRequired(source,/const localAdmin=.*?;/,'const localAdmin=true;','offline access setting');
 source=replaceRequired(source,"const response=await fetch('./data.json');","const response={ok:true,json:async()=>JSON.parse(document.getElementById('offlineInventory').textContent)};",'embedded data loader');
 source=replaceRequired(source,'autosave=createAutosave({','autosave=createOfflineAutosave({','offline save adapter');
-source=replaceRequired(source,"'Admin preview'","'Offline edition'",'offline account label');
+// The edition label and the offline wording of the notice show only when the file is opened from disk (file://); the
+// same file served by the intranet IIS site shows the version line alone (owner decision 2026-10-22, V9.19).
+source=replaceRequired(source,"'Admin preview'","(location.protocol==='file:'?'Offline edition':'')",'offline account label');
 source=replaceRequired(source,"(alias?history.replaceState:history.pushState).call(history,null,'',url);","try{(alias?history.replaceState:history.pushState).call(history,null,'',url);}catch{}",'address bar update');
 // The offline save state (changes not exported, export started) lives in public/offline-save.mjs.
 source+=`\nimport {createOfflineAutosave} from './offline-save.mjs';\n`;
+source+=`\nif(location.protocol==='file:')for(const node of document.querySelectorAll('[data-offline-only]'))node.hidden=false;\n`;
 const result=await build({stdin:{contents:source,resolveDir:pub,sourcefile:'offline-app.js',loader:'js'},bundle:true,write:false,format:'esm',target:'es2022',minify:true});
 let markup=await readFile(path.join(pub,'index.html'),'utf8');
 // Insert the banner before CSS and scripts are embedded, so '<main' can only match the page's own element.
-markup=replaceRequired(markup,'<main',()=>`<aside style="padding:10px 24px;background:#edf5f8;color:#25485b;font:14px system-ui">Offline edition · ${RELEASE_VERSION.toUpperCase()} · ${RELEASE_DATE} | All data is included. No internet connection required. Changes remain in this tab only; use Export workspace to save a backup and Import data to restore it. Reopening this HTML loads the bundled data. Incomplete Level 3 records are currently deferred.</aside><main`,'offline banner position');
+// One line: version, date and the reminder that changes stay in this tab. The offline wording is in data-offline-only
+// spans, shown by the offline app only for file:// (owner decision 2026-10-22, V9.19).
+markup=replaceRequired(markup,'<main',()=>`<aside id="releaseNotice" style="padding:8px 24px;background:#edf5f8;color:#25485b;font:14px system-ui"><span data-offline-only hidden>Offline edition · </span>${RELEASE_VERSION.toUpperCase()} · ${RELEASE_DATE} · <span data-offline-only hidden>All data is included in this file; no internet connection is required. </span>Changes stay in this tab — use Export workspace to keep them.</aside><main`,'offline banner position');
 for(const match of [...markup.matchAll(/<link rel="stylesheet" href="([^"]+)">/g)]){
  const css=await inlineAssets(await readFile(path.join(pub,match[1]),'utf8'),/url\(["']?([^\s)"']+)["']?\)/g,uri=>`url("${uri}")`);
  markup=replaceRequired(markup,match[0],()=>'<style>'+css+'</style>',`stylesheet link ${match[1]}`);
