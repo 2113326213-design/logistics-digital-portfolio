@@ -51,5 +51,6 @@ await mkdir(path.join(root,'outputs'),{recursive:true});
 const output=path.join(root,'outputs',OFFLINE_FILE_NAME);
 await writeFile(output,markup);
 console.log(output);console.log(`${(Buffer.byteLength(markup)/1024).toFixed(0)} KB`);
-// The IIS deploy script follows every export automatically (owner request 2026-10-21).
+// The IIS deploy script follows every export automatically (owner request 2026-10-21), and the release ZIP holds it
+// next to this HTML, so the server needs one download (owner report 2026-10-22).
 for(const file of writeDeployFiles(path.join(root,'outputs'),Buffer.from(markup)))console.log(file);

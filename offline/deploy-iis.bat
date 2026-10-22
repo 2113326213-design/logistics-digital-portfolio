@@ -1,11 +1,12 @@
 @echo off
 setlocal EnableExtensions
 rem ======================================================================
-rem  Logistics Tool V13.1 - one-click IIS deploy (static single HTML file)
+rem  Logistics Tool V13.2 - one-click IIS deploy (static single HTML file)
 rem  Generated for this release by program/scripts/deploy-script.mjs from deploy-iis.template.bat. Do not edit by hand.
 rem
-rem  Run as Administrator on the IIS server (Windows Server 2016+).
-rem  The zip must be next to this script, or in %USERPROFILE%\Downloads.
+rem  One download: logistics-offline-20261022-v13.2.zip holds the HTML and this script. Save it in
+rem  %USERPROFILE%\Downloads on the IIS server (Windows Server 2016+), open it
+rem  and double-click deploy-iis.bat; it asks for Administrator rights itself.
 rem
 rem  Usage:   deploy-iis.bat [PORT] [TARGET_DIR]
 rem  Default: PORT=8083  TARGET_DIR=D:\logistics-tool
@@ -26,15 +27,15 @@ set "TARGET=D:\logistics-tool"
 if not "%~1"=="" set "PORT=%~1"
 if not "%~2"=="" set "TARGET=%~2"
 
-set "ZIPNAME=logistics-offline-20261022-v13.1.zip"
-set "EXPECT_SHA256=ae18da4d62cac6c8fa981617674aa00484778b05307f28c5e0d17526ff4dbb0f"
+set "ZIPNAME=logistics-offline-20261022-v13.2.zip"
+set "EXPECT_SHA256=da6e9fc684a326d3cfe5e3d954cba3c9273a4132e93691e468b0c6a6f60f180b"
 set "INETSRV=%windir%\system32\inetsrv"
 set "APPCMD=%INETSRV%\appcmd.exe"
-set "TMPX=%TEMP%\logistics-v13.1-extract"
+set "TMPX=%TEMP%\logistics-v13.2-extract"
 set "BACKUP=%TARGET%_backup"
 
 echo.
-echo === Logistics Tool V13.1 : IIS deploy ===
+echo === Logistics Tool V13.2 : IIS deploy ===
 echo Site: %SITE%   Port: %PORT%
 echo Dir : %TARGET%
 echo.
@@ -42,14 +43,14 @@ echo.
 rem ---- [1/6] pre-checks -------------------------------------------------
 rem The deploy always continues in a window that stays open (cmd /k), so every message can be read, also when this
 rem script was started as Administrator. Explorer deletes files opened from inside a zip once this window exits, so
-rem the new window runs a stable copy in Downloads (where the V13.1 zip also lives).
+rem the new window runs a stable copy in Downloads, next to the V13.2 zip that holds this script.
 if /i "%~3"=="ELEVATED" goto :inwindow
 set "SELF=%USERPROFILE%\Downloads\deploy-iis.bat"
 if /i not "%~f0"=="%SELF%" copy /y "%~f0" "%SELF%" >nul
 if not exist "%SELF%" set "SELF=%~f0"
 fltmc >nul 2>&1
 if errorlevel 1 goto :elevate
-start "Logistics Tool V13.1 : IIS deploy" cmd.exe /k call "%SELF%" %PORT% "%TARGET%" ELEVATED
+start "Logistics Tool V13.2 : IIS deploy" cmd.exe /k call "%SELF%" %PORT% "%TARGET%" ELEVATED
 exit /b 0
 :elevate
 echo Not elevated - asking Windows for Administrator rights ^(click Yes on the UAC prompt^)...
@@ -72,6 +73,8 @@ if not exist "%INETSRV%\appcmd.exe" (
 )
 pushd "%INETSRV%"
 
+rem The script ships inside logistics-offline-20261022-v13.2.zip (one download). Double-clicked there, it runs from a temporary folder; the copy
+rem in Downloads that runs here finds the zip next to it.
 set "ZIP="
 if exist "%~dp0%ZIPNAME%" set "ZIP=%~dp0%ZIPNAME%"
 if not defined ZIP if exist "%USERPROFILE%\Downloads\%ZIPNAME%" set "ZIP=%USERPROFILE%\Downloads\%ZIPNAME%"
@@ -81,7 +84,8 @@ set "ZIPBASE=%ZIPNAME:.zip=%"
 if not defined ZIP for /f "delims=" %%Z in ('dir /b /a-d /o-d "%USERPROFILE%\Downloads\%ZIPBASE%*.zip" 2^>nul') do if not defined ZIP set "ZIP=%USERPROFILE%\Downloads\%%Z"
 if not defined ZIP (
   echo [X] %ZIPNAME% not found next to this script or in Downloads.
-  echo     Download it from the same GitHub release as this script into %USERPROFILE%\Downloads, then run the script again.
+  echo     This script deploys the HTML inside that zip. Save %ZIPNAME% from the GitHub release
+  echo     in %USERPROFILE%\Downloads, open it and double-click deploy-iis.bat inside it.
   echo     Release zips now in Downloads:
   dir /b /a-d "%USERPROFILE%\Downloads\logistics-offline-*.zip" 2>nul || echo       ^(none^)
   goto :fail
@@ -123,7 +127,8 @@ if not defined SRC (
 )
 powershell -NoProfile -ExecutionPolicy Bypass -Command "if ((Get-FileHash -Algorithm SHA256 -LiteralPath $env:SRC).Hash -ne $env:EXPECT_SHA256) { exit 1 }"
 if errorlevel 1 (
-  echo [X] SHA-256 mismatch - the zip is not the expected V13.1 build ^(logistics-offline-20261022-v13.1.zip^). Download the zip and the script of the same release. Stopping.
+  echo [X] SHA-256 mismatch - the HTML in the zip named at [1/6] is not the expected V13.2 build ^(logistics-offline-20261022-v13.2.zip^).
+  echo     Delete that zip, save logistics-offline-20261022-v13.2.zip from the GitHub release in Downloads again, open it and double-click deploy-iis.bat inside it. Stopping.
   goto :fail
 )
 echo [2/6] OK  extracted and SHA-256 verified
@@ -145,6 +150,10 @@ if errorlevel 1 (
   echo [X] Copy to %TARGET%\index.html failed.
   goto :fail
 )
+rem Every release of one date has the same file time inside its zip, and IIS answers a browser's "changed since?"
+rem check from that time: give index.html the deploy time, so a later deploy on the same day is never served from cache.
+powershell -NoProfile -ExecutionPolicy Bypass -Command "(Get-Item -LiteralPath ($env:TARGET + '\index.html')).LastWriteTime = Get-Date"
+if errorlevel 1 echo [!] Could not set the time of index.html; if a browser shows the previous version, press Ctrl+F5.
 echo [3/6] OK  index.html written
 
 rem ---- [4/6] permissions (SIDs: IIS_IUSRS=S-1-5-32-568, IUSR=S-1-5-17) --

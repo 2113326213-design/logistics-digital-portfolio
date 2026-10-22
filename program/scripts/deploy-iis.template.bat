@@ -4,8 +4,9 @@ rem ======================================================================
 rem  Logistics Tool {{VERSION}} - one-click IIS deploy (static single HTML file)
 rem  Generated for this release by program/scripts/deploy-script.mjs from deploy-iis.template.bat. Do not edit by hand.
 rem
-rem  Run as Administrator on the IIS server (Windows Server 2016+).
-rem  The zip must be next to this script, or in %USERPROFILE%\Downloads.
+rem  One download: {{ZIPNAME}} holds the HTML and this script. Save it in
+rem  %USERPROFILE%\Downloads on the IIS server (Windows Server 2016+), open it
+rem  and double-click {{SCRIPT}}; it asks for Administrator rights itself.
 rem
 rem  Usage:   {{SCRIPT}} [PORT] [TARGET_DIR]
 rem  Default: PORT=8083  TARGET_DIR=D:\logistics-tool
@@ -42,7 +43,7 @@ echo.
 rem ---- [1/6] pre-checks -------------------------------------------------
 rem The deploy always continues in a window that stays open (cmd /k), so every message can be read, also when this
 rem script was started as Administrator. Explorer deletes files opened from inside a zip once this window exits, so
-rem the new window runs a stable copy in Downloads (where the {{VERSION}} zip also lives).
+rem the new window runs a stable copy in Downloads, next to the {{VERSION}} zip that holds this script.
 if /i "%~3"=="ELEVATED" goto :inwindow
 set "SELF=%USERPROFILE%\Downloads\{{SCRIPT}}"
 if /i not "%~f0"=="%SELF%" copy /y "%~f0" "%SELF%" >nul
@@ -72,6 +73,8 @@ if not exist "%INETSRV%\appcmd.exe" (
 )
 pushd "%INETSRV%"
 
+rem The script ships inside {{ZIPNAME}} (one download). Double-clicked there, it runs from a temporary folder; the copy
+rem in Downloads that runs here finds the zip next to it.
 set "ZIP="
 if exist "%~dp0%ZIPNAME%" set "ZIP=%~dp0%ZIPNAME%"
 if not defined ZIP if exist "%USERPROFILE%\Downloads\%ZIPNAME%" set "ZIP=%USERPROFILE%\Downloads\%ZIPNAME%"
@@ -81,7 +84,8 @@ set "ZIPBASE=%ZIPNAME:.zip=%"
 if not defined ZIP for /f "delims=" %%Z in ('dir /b /a-d /o-d "%USERPROFILE%\Downloads\%ZIPBASE%*.zip" 2^>nul') do if not defined ZIP set "ZIP=%USERPROFILE%\Downloads\%%Z"
 if not defined ZIP (
   echo [X] %ZIPNAME% not found next to this script or in Downloads.
-  echo     Download it from the same GitHub release as this script into %USERPROFILE%\Downloads, then run the script again.
+  echo     This script deploys the HTML inside that zip. Save %ZIPNAME% from the GitHub release
+  echo     in %USERPROFILE%\Downloads, open it and double-click {{SCRIPT}} inside it.
   echo     Release zips now in Downloads:
   dir /b /a-d "%USERPROFILE%\Downloads\logistics-offline-*.zip" 2>nul || echo       ^(none^)
   goto :fail
@@ -123,7 +127,8 @@ if not defined SRC (
 )
 powershell -NoProfile -ExecutionPolicy Bypass -Command "if ((Get-FileHash -Algorithm SHA256 -LiteralPath $env:SRC).Hash -ne $env:EXPECT_SHA256) { exit 1 }"
 if errorlevel 1 (
-  echo [X] SHA-256 mismatch - the zip is not the expected {{VERSION}} build ^({{ZIPNAME}}^). Download the zip and the script of the same release. Stopping.
+  echo [X] SHA-256 mismatch - the HTML in the zip named at [1/6] is not the expected {{VERSION}} build ^({{ZIPNAME}}^).
+  echo     Delete that zip, save {{ZIPNAME}} from the GitHub release in Downloads again, open it and double-click {{SCRIPT}} inside it. Stopping.
   goto :fail
 )
 echo [2/6] OK  extracted and SHA-256 verified
@@ -145,6 +150,10 @@ if errorlevel 1 (
   echo [X] Copy to %TARGET%\index.html failed.
   goto :fail
 )
+rem Every release of one date has the same file time inside its zip, and IIS answers a browser's "changed since?"
+rem check from that time: give index.html the deploy time, so a later deploy on the same day is never served from cache.
+powershell -NoProfile -ExecutionPolicy Bypass -Command "(Get-Item -LiteralPath ($env:TARGET + '\index.html')).LastWriteTime = Get-Date"
+if errorlevel 1 echo [!] Could not set the time of index.html; if a browser shows the previous version, press Ctrl+F5.
 echo [3/6] OK  index.html written
 
 rem ---- [4/6] permissions (SIDs: IIS_IUSRS=S-1-5-32-568, IUSR=S-1-5-17) --

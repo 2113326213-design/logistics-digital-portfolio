@@ -8,9 +8,10 @@
 2. **`for /f ('…')` 里调用带引号路径的程序，前面加 `call`**（否则 cmd 会去掉首尾引号）。
 3. **真正部署的窗口一律用 `cmd /k` 打开**：未提权时经 UAC（`Start-Process … -Verb RunAs -ErrorAction Stop`），已是管理员时用 `start "…" cmd.exe /k call …`；新窗口先再次确认管理员权限。
 4. **任何结束都要先给出原因并 `pause`**：UAC 被取消或拦截时写明原因并提示“右键 → Run as administrator”；只有把工作交给新窗口时才不暂停直接退出。
-5. **从 zip 里双击运行时，先把脚本复制到 Downloads**，新窗口运行这份副本（资源管理器会在窗口关闭后删除 zip 里临时解出的文件）。
+5. **从 zip 里双击运行时，先把脚本复制到 Downloads**，新窗口运行这份副本（资源管理器会在窗口关闭后删除 zip 里临时解出的文件）。副本就在下载的发布 zip 旁边，所以能找到它。
 6. **只改模板** `program/scripts/deploy-iis.template.bat`（LF 换行，生成时转为 CRLF）；`tests/deploy-script.test.mjs` 检查以上规则。
-7. **发布前在本机模拟一遍**：`npm run release:files` 之后运行 `npm run deploy:sim`（仅 Windows；不弹 UAC、不碰 IIS），7 种情况（未提权并同意 UAC、UAC 被取消、已是管理员、关闭当前目录查找的新站点、带网页服务的重新部署、Downloads 里只有浏览器存成 “(1)” 的压缩包、Downloads 里只有别的版本）都要 PASS 才能发布。
+7. **发布前在本机模拟一遍**：`npm run release:files` 之后运行 `npm run deploy:sim`（仅 Windows；不弹 UAC、不碰 IIS），10 种情况（未提权并同意 UAC、UAC 被取消、已是管理员、关闭当前目录查找的新站点、带网页服务的重新部署、Downloads 里只有浏览器存成 “(1)” 的压缩包、Downloads 里只有别的版本；一次下载：在发布 zip 里双击脚本、在 “(1)” 副本里双击脚本、zip 里的 HTML 与脚本里的 SHA-256 不符必须停下并等待按键）都要 PASS 才能发布。
+8. **一次下载**（2026-10-22 起；用户在 V11 和 V13.1 两次只下载了 `deploy-iis-script.zip`，脚本正确地停在 “…zip not found”）：`deploy-iis.bat` 放进发布 zip `logistics-offline-<日期>-<版本>.zip`，和 HTML 放在一起；部署步骤是“下载这一个 zip → 打开 → 双击 deploy-iis.bat”。脚本不能包含装着它的 zip 的 SHA-256，所以校验的是同一个 zip 里 HTML 的 SHA-256（发布前就已知），不符时停下、写明原因并 `pause`。**发 Release 只附发布 zip 一个文件**，不再生成也不再附 `deploy-iis-script.zip`（`npm run release:files` 会删掉 `offline/` 里的旧文件；下文历史段落里“附 `offline/deploy-iis-script.zip`”的步骤作废）。`offline/deploy-iis.bat` 仍保留，供在 GitHub 上查看。
 
 ## 版本号规则（2026-10-22 起长期有效）
 
@@ -19,7 +20,21 @@
 - **小版本**（V10.1、V10.2……）：修正、文字和显示调整。
 - 版本号写在 `program/scripts/release.mjs` 的 RELEASE_VERSION（小写，如 `v10`、`v10.1`）；文件名、发布 zip、部署脚本和 Release 标签（`v10-20261022`）都随它生成。导入预览的“变化明细”是新功能，所以这一版是 V10（原计划的 V9.20 没有发布）。
 
-## V13.1 当前状态（2026-10-22，优先于所有历史段落）
+## V13.2 当前状态（2026-10-22，优先于所有历史段落）
+
+- 用户：“发布 V13.2：一个文件即可部署。按原流程测试、模拟部署、更新文档后发布到 GitHub 并复制到 D 盘；本地的 V13.1 zip 先恢复成已发布的那份。” 部署改动由另一个会话（“IIS deploy with one download instead of two”）完成，本会话核对、修正 `release:files` 后发布。按版本号规则属于修正。
+
+- 起因：用户在 V11 和 V13.1 两次只下载了 `deploy-iis-script.zip`，脚本正确地停在 “[X] logistics-offline-20261022-v13.1.zip not found next to this script or in Downloads” 并列出了别的版本。目标：部署只需下载一次。规则见顶部第 8 条。
+- **做法**：`deploy-iis.bat` 放进发布 zip（`scripts/deploy-script.mjs` 的 `releaseZip(html,script)` = HTML + deploy-iis.bat，存储方式、固定日期，同样输入得到同样字节）。脚本本来就在 Downloads 里找这个 zip（也认 “(1)” 副本），从 zip 里双击时先把自己复制到 Downloads，管理员窗口运行这份副本，正好在 zip 旁边。脚本校验 HTML 的 SHA-256（不能包含装着自己的 zip 的值）。模板只改了说明和两条提示：找不到 zip 时写“Save <zip> from the GitHub release in Downloads, open it and double-click deploy-iis.bat inside it”；HTML 不符时写“the HTML in the zip named at [1/6] is not the expected … build”和“Delete that zip, save … again, open it and double-click deploy-iis.bat inside it. Stopping.”，在第 3 步复制之前停下并 pause。cmd /k、UAC、复制到 Downloads 的流程没变。
+- **`deploy-iis-script.zip` 不保留**：单独的脚本没有 HTML 就部署不了，留着它就是两次出错的原因；README 原来指向 `raw/main/offline/deploy-iis-script.zip` 的链接改为指向 Releases 最新版。`release.mjs` 的 `DEPLOY_ZIP_NAME` 改为 `OLD_DEPLOY_ZIP_NAME`，只用来清理；`npm run release:files` 删除 `offline/deploy-iis-script.zip`，测试要求它不存在。`npm run export:offline` 在 `outputs/` 写 `deploy-iis.bat` 和发布 zip（不再写脚本 zip）。
+- **`npm run release:files`**：先做全部检查再写文件。同一版本的 HTML 和发布 zip 都不许变：已有的发布 zip 即使 HTML 相同、只是里面的脚本不同（或没有脚本），也会停下并要求新的 RELEASE_VERSION（只有从未发布过的版本，才可以先删掉文件再生成）。另一个会话最初的做法是改写 zip 并打印提示，结果本机已发布的 V13.1 zip 被改写了；发布 V13.2 前已把它恢复为 GitHub 上的原件，并改成停下。
+- **部署时间**（发布前复核发现，自 V9.16 起就有）：`storedZip` 把每个文件的时间写成 RELEASE_DATE 00:00，Expand-Archive 和 copy 都保留这个时间，所以同一天的几个版本部署后 index.html 的 LastWriteTime 相同；IIS 的 Last-Modified/ETag 由它而来，浏览器可能得到 304、继续显示旧版本（IIS 这一半是推断，未在 IIS 上实测）。模板在 [3/6] 复制成功后用 PowerShell 把 index.html 的 LastWriteTime 设为当前时间；失败只提示 Ctrl+F5，不中断。zip 本身保持固定时间（同样输入得到同样字节，release:files 的“不改写”检查依赖这一点）。`deploy:sim` 第 8 种检查 index.html 的时间是部署时刻；测试检查这一步在复制之后、[3/6] OK 之前。
+- **当前 offline/**：V13.2 —— `offline/物流工具_最新版_离线单文件_20261022_v13.2.html`、`offline/logistics-offline-20261022-v13.2.zip`（HTML + deploy-iis.bat，Release 只附这一个文件）、`offline/deploy-iis.bat`（同一份脚本，供阅读）。`offline/logistics-offline-20261022-v13.1.zip` 与 GitHub V13.1 Release 的原件一致；`offline/deploy-iis-script.zip` 已删除（V13.1 及以前的 Release 里仍有）。验证记录见 `verification/v13.2-verification.md`。
+- **`npm run deploy:sim` 扩展为 10 种情况**：第 8–10 种模拟“一次下载”：Downloads 里只有发布 zip；先从资源管理器的临时文件夹 `Temp1_<zip 名>` 运行 zip 里的脚本（UAC 和新窗口只打印），删掉该文件夹，再以管理员窗口运行 Downloads 里的副本。8：发布 zip → `=== DONE ===`；9：“(1)” 副本（临时路径带空格和括号）→ `=== DONE ===`；10：同名 zip 但 HTML 不同 → SHA-256 mismatch，没有 `[3/6]`、index.html 未变、等待按键。运行改为 `cmd /d /s /c ""脚本" 参数"`，路径带括号也保持引号。
+- **测试**：`tests/deploy-script.test.mjs` 新增 3 项（发布 zip 内容和字节固定、脚本校验的就是同一个 zip 里的 HTML、提示文字；`writeDeployFiles` 只写脚本和发布 zip；在临时文件夹里运行 `release-files.mjs`：新版本写出发布 zip 和脚本并删掉旧脚本 zip、再运行无变化、已有发布 zip 只是脚本不同时停下且不改任何文件、换了 build 时停下且不写任何文件），并更新 V9.15 对照和打包检查。`npm test` 489/489；`npm run deploy:sim` 10/10（V13.2）。
+- 复核：发布前用 2 个 agent 复核新的部署脚本（1 个按服务器上的实际操作逐步检查，1 个专门反驳）。确认 2 条：同一天再次部署时 index.html 的时间不变、浏览器可能继续显示旧版本（已修：复制后设为部署时刻）；交接说明里 release:files 的描述与代码不符（本次文档已改）。驳回 2 条：Downloads 里固定名称的脚本副本可能被误用（按 README 步骤不会，旧副本运行时也会安全停下）；deploy:sim 缺少“原名和 (1) 同时存在”的情况（不影响使用）。反向检查：把旧的 V13.1 zip（无脚本）放回时第 8–10 种 FAIL；把模板的提示改回旧文字时 2 项测试失败。
+
+## V13.1 历史状态（2026-10-22，受顶部 V13.2 更新）
 
 - 用户问“有没有重复出现的功能？”，看了排查结果后要求：比较窗口只留一个 Clear selection；6 个搜索框统一叫法和能搜的内容（名称、ID、工厂、业务单元）。属于修正和文字调整，按版本号规则为 V13.1。
 - **统一的搜索规则**（`public/app-search.mjs`）：`APP_SEARCH_LABEL='Find applications'`、`APP_SEARCH_PLACEHOLDER='Name, ID, plant or business unit'`、`matchesApplication(app,query,extra=[])`（NFKC + 小写，按空白拆词，每个词都要出现在 Name / Entity / Division 里，或是 id / ID 的开头；空查询全部匹配）。使用者：标题搜索 `searchApplications`（排序不变）、`landscape.mjs` filterLandscape（先用共同规则；否则把整个查询当一句，在该应用的原始记录和分类代码/名称里找，与 V13 相同，保留早先按分类搜的要求，`tests/customer-search.test.mjs` 仍通过）、`overview.mjs` filterOverviewApplications、`similarity-ui.mjs` 的 focusAppSearch / focusPeerSearch / selectionSearch。旧的 `matches`、局部 `matchesApplication` 已删除。

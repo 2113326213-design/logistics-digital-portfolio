@@ -53,11 +53,11 @@
 
 不在内网，或想自己保留一份时用：
 
-1. 下载 [**logistics-offline-20261022-v13.1.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest)。
+1. 下载 [**logistics-offline-20261022-v13.2.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest)。
 2. 右键 → **Extract all**。
-3. 用 Chrome 打开里面的 HTML。
+3. 用 Chrome 打开里面的 HTML（同一个 zip 里的 `deploy-iis.bat` 是给内网服务器部署用的，自己用时不用管）。
 
-页面顶部显示 **V13.1** 就对了。
+页面顶部显示 **V13.2** 就对了。
 
 </td>
 </tr>
@@ -68,7 +68,7 @@
     <td align="center" width="25%"><h3>75</h3><sub>应用 · 10 个工厂 · 5 个业务部门</sub></td>
     <td align="center" width="25%"><h3>2,775</h3><sub>组两两比较 · 9 组得分 ≥ 50</sub></td>
     <td align="center" width="25%"><h3>22 / 39</h3><sub>Process / Capability 待处理应用</sub></td>
-    <td align="center" width="25%"><h3>V13.1</h3><sub>2026-10-22 · 485 项测试通过</sub></td>
+    <td align="center" width="25%"><h3>V13.2</h3><sub>2026-10-22 · 489 项测试通过</sub></td>
   </tr>
 </table>
 
@@ -141,9 +141,15 @@
 </details>
 
 <details>
-<summary><b>页面打开了，但不是 V13.1，或者显示不全？</b></summary>
+<summary><b>页面打开了，但不是 V13.2，或者显示不全？</b></summary>
 <br>
 按 <b>Ctrl + F5</b> 强制刷新（浏览器可能缓存了旧版本）。工具在 Chrome 上测试过，请优先用 Chrome。
+</details>
+
+<details>
+<summary><b>离线版 zip 里为什么有一个 deploy-iis.bat？</b></summary>
+<br>
+它是给维护人在内网服务器上部署在线版用的：维护人只下载这一个 zip，打开后双击它即可（见下方“给维护者”）。自己用离线版时不用管它，只打开 HTML；它只在装了 IIS 的服务器上有用，在别的电脑上运行会停在 “IIS not found”。
 </details>
 
 <details>
@@ -167,7 +173,9 @@
 
 完整更新日志见 [`CHANGELOG.md`](CHANGELOG.md)。
 
-**V13.1（当前，2026-10-22）**：6 个找应用的搜索框统一叫 Find applications，都能按名称、ID、工厂、业务单元搜（多个词时每个词都要对上；Application landscape 另外仍可按分类搜）；比较窗口里重复的 Clear selection 只留一个。
+**V13.2（当前，2026-10-22）**：IIS 部署只需下载一个文件：deploy-iis.bat 放进发布 zip，存到 Downloads、打开 zip、双击脚本即可；Release 不再附 deploy-iis-script.zip。
+
+**V13.1（2026-10-22）**：6 个找应用的搜索框统一叫 Find applications，都能按名称、ID、工厂、业务单元搜（多个词时每个词都要对上；Application landscape 另外仍可按分类搜）；比较窗口里重复的 Clear selection 只留一个。
 
 **V13（2026-10-22）**：页面标题右侧新增应用搜索框（任意页面按 / 键即可定位），输入名称、ID、工厂或业务单元，回车直接打开应用详情；Import data 读取工作簿里日期最新的 Logistic Apps_<日期> 表，导入预览写明读的是哪一张。
 
@@ -193,6 +201,7 @@
 
 | 版本 | 主要变化 |
 |---|---|
+| [V13.2](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v13.2-20261022) | IIS 部署只需下载一个文件：deploy-iis.bat 放进发布 zip，存到 Downloads、打开 zip、双击脚本即可；Release 不再附 deploy-iis-script.zip |
 | [V13.1](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v13.1-20261022) | 6 个找应用的搜索框统一叫 Find applications，都能按名称、ID、工厂、业务单元搜（多个词时每个词都要对上；Application landscape 另外仍可按分类搜）；比较窗口里重复的 Clear selection 只留一个 |
 | [V13](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v13-20261022) | 页面标题右侧新增应用搜索框（任意页面按 / 键即可定位），输入名称、ID、工厂或业务单元，回车直接打开应用详情；Import data 读取工作簿里日期最新的 Logistic Apps_<日期> 表，导入预览写明读的是哪一张 |
 | [V12](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v12-20261022) | 页面标题下面显示当前数据来自哪个文件、截至哪天（如 “Data: 20261021_logistic_inventory.xlsx · as of 2026-10-21”），导入新表后跟着变；部署脚本能找到浏览器存成 “(1)” 的压缩包，找不到时列出 Downloads 里有哪些版本 |
@@ -234,15 +243,23 @@
 <summary><b>🚀 部署 / 更新内网版（IIS，WX-WEB-TD02）</b></summary>
 <br>
 
-1. 在服务器的 Chrome 里（已登录 GitHub）下载 [**deploy-iis-script.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/raw/main/offline/deploy-iis-script.zip) 和 [Releases 最新版](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest)里的 **logistics-offline-….zip**，都放在 `Downloads`。脚本每次发布都会按当前版本自动重新生成，两者要来自同一个版本；不一致时脚本会在校验这一步停下并写明需要哪个 zip。浏览器把重复下载存成 “…(1).zip” 也能识别；找不到时会列出 Downloads 里现有的版本。
-2. 打开脚本 zip，双击 `deploy-iis.bat` → Security Warning 点 **Run** → UAC 点 **Yes**（脚本会自己申请管理员权限）。部署在新打开的管理员窗口里进行；第一个小窗口关闭是正常的。
-3. 新窗口显示 `[6/6] OK` 和 `=== DONE ===` 即完成；窗口不会自动关闭，出错时会写明原因。如果没有出现新窗口，原窗口会写明原因并等待按键，这时把脚本 zip 解压到 `Downloads`，右键 `deploy-iis.bat` → **Run as administrator**。
+只需下载**一个文件**：
 
-> 2026-10-22 修复：脚本现在按完整路径调用 `appcmd`，任何情况下窗口都会停住并写明原因（之前在部分服务器上会“黑框消失”）。改脚本的规则见 [`00_Claude先读.md`](00_Claude先读.md) 的“部署脚本编写规则”，发布前运行 `npm run deploy:sim` 在本机模拟。
+1. 在服务器的 Chrome 里（已登录 GitHub）打开 [Releases 最新版](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest)，下载 **logistics-offline-<日期>-<版本>.zip**，保存在 `Downloads`（Chrome 默认就存在这里）。这个 zip 里有离线 HTML 和部署脚本 `deploy-iis.bat`，两者一定属于同一个版本。
+2. 打开这个 zip，双击里面的 `deploy-iis.bat` → Security Warning 点 **Run** → UAC 点 **Yes**（脚本会自己申请管理员权限）。脚本先把自己复制到 `Downloads`，部署在新打开的管理员窗口里进行；第一个小窗口关闭是正常的。
+3. 新窗口显示 `[6/6] OK` 和 `=== DONE ===` 即完成；窗口不会自动关闭，出错时会写明原因。如果没有出现新窗口，原窗口会写明原因并等待按键，这时把这个 zip 解压（右键 → **Extract all**），右键里面的 `deploy-iis.bat` → **Run as administrator**。
+
+> 2026-10-22 修复：脚本现在按完整路径调用 `appcmd`，任何情况下窗口都会停住并写明原因（之前在部分服务器上会“黑框消失”）。同日起部署脚本放进发布 zip，不再单独提供 `deploy-iis-script.zip`（之前两次只下载了脚本、没下载 zip，部署停在找不到 zip）。改脚本的规则见 [`00_Claude先读.md`](00_Claude先读.md) 的“部署脚本编写规则”，发布前运行 `npm run deploy:sim` 在本机模拟。
+
+**脚本停下时怎么办**
+
+- `[X] logistics-offline-….zip not found next to this script or in Downloads`：Downloads 里没有这个版本的 zip（比如存到了桌面，或解压后删掉了 zip）。把 zip 存到 `Downloads`，打开它，再双击里面的 `deploy-iis.bat`。窗口里会列出 Downloads 里现有的 logistics-offline-*.zip；浏览器存成的 “…(1).zip” 也能识别。
+- `[X] SHA-256 mismatch`：`[1/6]` 那一行写的 zip 里的 HTML 不是这个版本（下载不完整或文件被换过）。删掉那个 zip，重新下载后再试。这一步在复制文件之前，服务器上的网站没有被改动。
+- `[X] Windows did not open the Administrator window`：UAC 被取消或拦截，按上面第 3 步用 **Run as administrator**。
 
 默认部署到 `D:\logistics-tool`、端口 `8083`、站点 `LogisticsTool`；换端口或目录：`deploy-iis.bat 8084 D:\其他目录`。站点已存在时只更新文件。
 
-脚本会校验 HTML 的 SHA-256，把旧 `index.html` 备份到 `D:\logistics-tool_backup\`，按 SID 授予 IIS_IUSRS/IUSR 读取权限（这台服务器是域控，按名字找不到 IIS_IUSRS），只新建自己的站点，**不改防火墙和其他站点**。其他电脑访问不了时需要放行 8083 入站，须先经服务器负责人同意。源文件：[`offline/deploy-iis.bat`](offline/deploy-iis.bat)，由 `program/scripts/deploy-script.mjs` 按模板 `program/scripts/deploy-iis.template.bat` 自动生成（`npm run export:offline` 生成，`npm run release:files` 放进 `offline/`）。旧的 `deploy-iis-v9.15.bat` 只适用于 V9.15。
+脚本会校验 HTML 的 SHA-256，把旧 `index.html` 备份到 `D:\logistics-tool_backup\`，按 SID 授予 IIS_IUSRS/IUSR 读取权限（这台服务器是域控，按名字找不到 IIS_IUSRS），只新建自己的站点，**不改防火墙和其他站点**。其他电脑访问不了时需要放行 8083 入站，须先经服务器负责人同意。源文件：[`offline/deploy-iis.bat`](offline/deploy-iis.bat)（与发布 zip 里的是同一份，放在这里方便查看），由 `program/scripts/deploy-script.mjs` 按模板 `program/scripts/deploy-iis.template.bat` 自动生成（`npm run export:offline` 生成，`npm run release:files` 放进 `offline/` 和发布 zip）。脚本里写的 SHA-256 是同一个 zip 里那份 HTML 的校验值（脚本没法包含装着它自己的 zip 的校验值）。旧的 `deploy-iis-v9.15.bat` 只适用于 V9.15。
 
 **回滚**：把 `D:\logistics-tool_backup\` 里的旧文件复制回 `D:\logistics-tool\index.html`。
 
@@ -313,9 +330,9 @@ flowchart LR
 | 导入 / 导出（Excel、工作区、CSV） | `program/public/xlsx.mjs`、`program/public/import-review.mjs`、`program/public/workspace.mjs`、`program/public/exports.mjs`、`program/public/score-settings.mjs`（阈值随备份）、`program/public/offline-save.mjs`（离线导出提示）；应用搜索在 `program/public/app-search.mjs`（6 个搜索框共用 matchesApplication 和同一个名称、提示） |
 | 样式 | `program/public/*.css` |
 | 构建和离线单文件 | `program/scripts/build.mjs`、`program/scripts/export-offline.mjs` |
-| 测试（`npm test`，当前 485 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v13.1-test-results.txt` |
+| 测试（`npm test`，当前 489 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v13.2-test-results.txt` |
 | 离线单文件版 | `offline/` |
-| IIS 部署脚本（每次发布自动生成） | `offline/deploy-iis.bat`（打包下载版 `offline/deploy-iis-script.zip`）；生成器 `program/scripts/deploy-script.mjs`，模板 `program/scripts/deploy-iis.template.bat`，发布打包 `program/scripts/release-files.mjs`（`npm run release:files`），检查 `program/tests/deploy-script.test.mjs`，本机模拟 `program/scripts/deploy-sim.mjs`（`npm run deploy:sim`） |
+| IIS 部署脚本（每次发布自动生成） | `offline/deploy-iis.bat`（同一份脚本也在发布 zip `offline/logistics-offline-<日期>-<版本>.zip` 里，部署只需下载这个 zip）；生成器 `program/scripts/deploy-script.mjs`，模板 `program/scripts/deploy-iis.template.bat`，发布打包 `program/scripts/release-files.mjs`（`npm run release:files`），检查 `program/tests/deploy-script.test.mjs`，本机模拟 `program/scripts/deploy-sim.mjs`（`npm run deploy:sim`） |
 | 构建输出、文件校验清单 | `built/`、`MANIFEST.sha256` |
 | README 横幅、按钮、徽章和截图 | `docs/images/`；按钮 `button-*.svg` 和徽章 `badge-*.svg` 由 `program/scripts/readme-art.mjs`（`npm run readme:art`）按测试日志和内置数据生成；截图 `screen-*.png` 是离线页面 1440×900 的实拍 |
 | 更新日志、许可、安全说明 | [`CHANGELOG.md`](CHANGELOG.md)、[`LICENSE`](LICENSE)（内部使用）、[`SECURITY.md`](SECURITY.md) |

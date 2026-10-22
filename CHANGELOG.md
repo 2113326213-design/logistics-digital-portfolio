@@ -2,6 +2,12 @@
 
 每个版本的离线包在 [Releases](https://github.com/2113326213-design/logistics-digital-portfolio/releases)；详细的修改说明和用户决定在 [`00_Claude先读.md`](00_Claude先读.md)，验证记录在 [`verification/`](verification/)。
 
+## [V13.2](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v13.2-20261022) · 2026-10-22
+
+- **部署只需下载一个文件**（用户在 V11 和 V13.1 两次只下载了部署脚本，脚本停在 “…zip not found”）：`deploy-iis.bat` 放进发布 zip `logistics-offline-<日期>-<版本>.zip`，和离线 HTML 在一起。服务器上：下载这个 zip 存在 Downloads → 打开 → 双击 `deploy-iis.bat`。脚本仍校验 HTML 的 SHA-256；不符时在复制文件之前停下，写明删掉哪个 zip、重新下载，并等待按键。Release 不再附 `deploy-iis-script.zip`。`npm run deploy:sim` 扩展为 10 种情况。
+- **发布打包不再改写已有的发布 zip**：`npm run release:files` 遇到同一版本已有的发布 zip，只要内容不同（哪怕 HTML 相同、只是里面的脚本不同）就停下，要求新的版本号。发布前发现本机的 V13.1 zip 曾被这样改写，已恢复为 GitHub 上发布的原件。
+- **同一天再次部署也会显示新版本**（发布前复核发现）：发布 zip 里每个文件的时间都是发布日期 00:00，同一天的几个版本部署后 index.html 的时间完全相同，IIS 据此判断“没变”，浏览器可能继续显示旧版本。脚本在复制后把 index.html 的时间设为部署时刻（失败时只提示按 Ctrl+F5，不中断部署）。此问题自 V9.16 起就有。
+
 ## [V13.1](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v13.1-20261022) · 2026-10-22
 
 - **搜索框统一**（用户确认 2026-10-22）：标题右侧、Application landscape、Overview 卡片点开的应用列表、Similarity check 的 Compare an application 第 1 步和第 2 步、Compare multiple applications，这 6 个找应用的搜索框都叫 **Find applications**，提示都是 “Name, ID, plant or business unit”，规则相同：输入的每个词都要出现在名称、工厂或业务单元里，或是应用 ID 的开头（不分大小写和全角半角；ID 是很长的生成码，只认开头，避免中间的片段匹配到无关应用）。以前比较窗口里不能按 ID 搜、Compare multiple applications 也不能按业务单元搜，现在都可以。Application landscape 另外仍可按分类编号或分类名称搜（早先的要求，按整句匹配，与 V13 相同；提示写作 “Name, ID, plant, business unit or category”）。标题搜索框加了放大镜图标和 “/” 快捷键提示；窗口较窄、标题行放不下时，搜索框和按钮换到标题下方靠右，不再盖住标题。

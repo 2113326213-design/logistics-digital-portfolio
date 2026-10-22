@@ -1,17 +1,19 @@
 // The IIS deploy script of the current release (owner request 2026-10-21: the script must follow every change
 // automatically). It is generated from deploy-iis.template.bat, the script tested on the IIS server for V9.15, with the
-// release version, the release ZIP name and the SHA-256 of the offline HTML filled in. npm run export:offline writes it
-// next to the offline HTML in outputs/; npm run release:files puts it into the package's offline/ folder.
+// release version, the release ZIP name and the SHA-256 of the offline HTML filled in. The script ships inside the
+// release ZIP next to that HTML, so the server needs one download (owner report 2026-10-22: twice only the separate
+// script ZIP was downloaded); a script cannot hold the hash of the ZIP it is in, so it checks the HTML. npm run
+// export:offline writes both next to the offline HTML in outputs/; npm run release:files puts them into offline/.
 // Rules for the template (owner request 2026-10-22, after the window closed on the IIS server): system programs by full
 // path ("%APPCMD%"), "call" before a quoted program inside for /f, the deploy always in a cmd /k window (UAC or start),
 // every other end prints the reason and pauses. tests/deploy-script.test.mjs checks them; npm run deploy:sim
-// (scripts/deploy-sim.mjs) runs the script in five situations on this PC before a release.
+// (scripts/deploy-sim.mjs) runs the script in ten situations on this PC before a release.
 import {readFileSync,writeFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {crc32,inflateRawSync} from 'node:zlib';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {RELEASE_DATE,RELEASE_VERSION,RELEASE_ZIP_NAME,DEPLOY_SCRIPT_NAME,DEPLOY_ZIP_NAME} from './release.mjs';
+import {RELEASE_DATE,RELEASE_VERSION,OFFLINE_FILE_NAME,RELEASE_ZIP_NAME,DEPLOY_SCRIPT_NAME} from './release.mjs';
 
 export const DEPLOY_TEMPLATE=fileURLToPath(new URL('./deploy-iis.template.bat',import.meta.url));
 export const sha256=bytes=>createHash('sha256').update(bytes).digest('hex');
@@ -60,10 +62,13 @@ export function readZip(bytes){
  return entries;
 }
 
-// Writes the deploy script and its download ZIP for this HTML into dir; returns the two file paths.
+// The release ZIP, the one download: the offline HTML and the deploy script that checks it, side by side.
+export const releaseZip=(html,script=deployScript({html}))=>storedZip([[OFFLINE_FILE_NAME,html],[DEPLOY_SCRIPT_NAME,script]]);
+
+// Writes the deploy script and the release ZIP for this HTML into dir; returns the two file paths.
 export function writeDeployFiles(dir,html){
- const script=deployScript({html}),scriptPath=path.join(dir,DEPLOY_SCRIPT_NAME),zipPath=path.join(dir,DEPLOY_ZIP_NAME);
+ const script=deployScript({html}),scriptPath=path.join(dir,DEPLOY_SCRIPT_NAME),zipPath=path.join(dir,RELEASE_ZIP_NAME);
  writeFileSync(scriptPath,script);
- writeFileSync(zipPath,storedZip([[DEPLOY_SCRIPT_NAME,script]]));
+ writeFileSync(zipPath,releaseZip(html,script));
  return [scriptPath,zipPath];
 }
