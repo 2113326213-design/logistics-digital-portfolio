@@ -5,13 +5,25 @@ import {compareNatural} from './codes.mjs';
 // matches come first (name starts with the text, then a word of the name, then the ID, the plant or business unit,
 // then anywhere).
 const norm=value=>String(value??'').normalize('NFKC').toLowerCase().replace(/\s+/g,' ').trim();
+export {norm as normalizeSearch};
+// One name and one rule for every application search box (owner choice 2026-10-22, V13.1): the title search, the
+// Application landscape, the Overview application list and the three Similarity check pickers.
+export const APP_SEARCH_LABEL='Find applications';
+export const APP_SEARCH_PLACEHOLDER='Name, ID, plant or business unit';
+// Every word typed must appear in the application's name, plant or business unit, or begin its ID (IDs are long
+// generated codes, so a fragment from the middle would match applications for no visible reason). An empty query
+// matches every application.
+export function matchesApplication(app,query){
+ const q=norm(query);if(!q)return true;
+ const text=norm([app?.Name,app?.Entity,app?.Division].join(' ')),ids=[app?.id,app?.ID].map(norm).filter(Boolean);
+ return q.split(' ').every(word=>text.includes(word)||ids.some(id=>id.startsWith(word)));
+}
 export function searchApplications(apps,query,limit=8){
  const q=norm(query);if(!q)return [];
- const words=q.split(' ');
  const ranked=[];
  for(const app of apps){
-  const name=norm(app.Name),id=norm(app.id??app.ID),plant=norm(app.Entity),unit=norm(app.Division),all=[name,id,plant,unit].join(' ');
-  if(!words.every(word=>all.includes(word)))continue;
+  if(!matchesApplication(app,q))continue;
+  const name=norm(app.Name),id=norm(app.id??app.ID),plant=norm(app.Entity),unit=norm(app.Division);
   const rank=name.startsWith(q)?0:name.split(/[\s_\-/()@.]+/).some(part=>part.startsWith(q))?1:id.startsWith(q)?2:plant===q||unit===q?3:name.includes(q)?4:5;
   ranked.push({app,rank});
  }

@@ -85,7 +85,7 @@ test('multi-application entry expands selection to all categories and compares e
   document.getElementById('selectionSearch').value=other.Name;
   document.getElementById('selectionSearch').oninput();
   assert.equal(ui.getState().selected.length,3,'search does not discard selected applications in other categories');
-  document.getElementById('clearSelection').onclick();
+  document.getElementById('clearSelectedApplications').onclick();
   assert.equal(ui.getState().selected.length,0);
   assert.equal(document.getElementById('exportSelection').disabled,true);
   assert.match(document.getElementById('comparisonMatrix').innerHTML,/Select at least two applications/);

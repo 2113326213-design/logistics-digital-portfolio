@@ -361,11 +361,18 @@ html:has(body.portfolio-fullscreen){scrollbar-gutter:auto}
 /* Which data the page shows (V12) */
 .data-as-of{margin:4px 0 0;color:#607587;font-size:.8125rem}
 /* Global application search (V13) */
-.app-search{position:relative}
-.app-search input{width:260px;max-width:60vw;padding:8px 12px;border:1px solid #c9d6df;border-radius:6px;font:inherit;background:#fff}
+.app-search{position:relative;flex:0 0 320px}
+/* V13.1: the search keeps room for its whole hint; when the title row is too narrow the actions move under the title,
+   still on the right, instead of covering it (review finding). */
+.heading{flex-wrap:wrap;row-gap:12px}.heading .heading-actions{max-width:none;margin-left:auto}
+.app-search input{width:100%;padding:8px 34px;border:1px solid #c9d6df;border-radius:6px;font:inherit;background:#fff}
+.app-search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#607587;pointer-events:none}
+.app-search-key{position:absolute;right:10px;top:50%;transform:translateY(-50%);min-width:18px;padding:0 5px;border:1px solid #c9d6df;border-radius:4px;color:#607587;background:#f5f8fa;font-family:inherit;font-size:12px;line-height:18px;text-align:center;pointer-events:none}
+.app-search input:focus~.app-search-key,.app-search input:not(:placeholder-shown)~.app-search-key{display:none}
 .app-search ul{position:absolute;right:0;top:calc(100% + 4px);z-index:50;width:360px;max-width:90vw;max-height:340px;overflow:auto;margin:0;padding:4px 0;list-style:none;background:#fff;border:1px solid #d7e3eb;border-radius:8px;box-shadow:0 8px 24px rgba(16,42,58,.15)}
 .app-search li{display:flex;flex-direction:column;gap:2px;padding:8px 12px;cursor:pointer;color:#1f4255}
 .app-search li small{color:#607587;font-size:.75rem}
 .app-search li.active,.app-search li[role=option]:hover{background:#eaf3f8}
 .app-search li.app-search-empty{color:#607587;cursor:default}
-@media (max-width:700px){.app-search{flex-basis:100%}.app-search input{width:100%;max-width:none}}
+@media (max-width:800px){.heading .heading-actions{margin-left:0;width:100%}}
+@media (max-width:700px){.heading-actions{flex-wrap:wrap}.app-search{flex:1 1 100%;min-width:0}}

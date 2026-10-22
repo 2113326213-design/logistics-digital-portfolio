@@ -1,16 +1,19 @@
 import {displayCode,displayName} from './display.mjs';
 import {compareNatural} from './codes.mjs';
 import {english} from './english.mjs';
+import {matchesApplication,normalizeSearch} from './app-search.mjs';
 
 export function filterLandscape(model,dimension,{query='',division='',entity='',branch=''}={}){
- const q=query.trim().toLowerCase(),map=dimension==='cap'?model.caps:model.procs;
+ const q=query.trim(),map=dimension==='cap'?model.caps:model.procs;
  const apps=model.apps.filter(a=>{
   if(division&&(a.Division||'Not provided')!==division)return false;
   if(entity&&(a.Entity||'Not provided')!==entity)return false;
   if(branch&&!a[dimension+'Leaf'].some(id=>model.ancestor(branch,id)))return false;
-  if(!q)return true;
+  // The common search rule (V13.1) first; this page also finds an application by its categories and source records,
+  // matched as one phrase as before (word by word they would match unrelated applications).
+  if(!q||matchesApplication(a,q))return true;
   const assigned=a[dimension],labels=[...map.values()].filter(n=>assigned.includes(n.id)).map(n=>[n.id,n.label,displayCode(n.id),displayName(n)].join(' '));
-  return [a.id,a.Name,a.Division,a.Entity,...(dimension==='cap'?a.rawCap:a.rawProcess),...labels].join(' ').toLowerCase().includes(q);
+  return normalizeSearch([...(dimension==='cap'?a.rawCap:a.rawProcess),...labels].join(' ')).includes(normalizeSearch(q));
  });
  return {...model,apps};
 }

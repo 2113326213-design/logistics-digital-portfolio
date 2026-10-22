@@ -56,6 +56,6 @@ test('the search box: results as you type, arrows and Enter open, Escape clears,
   handlers.keydown({key:'/',target:{closest:()=>null},preventDefault(){}});assert.equal(input.focused,true);
  }finally{globalThis.document=oldDocument;}
  const html=readFileSync(new URL('../public/index.html',import.meta.url),'utf8');
- assert(html.includes('<input id="appSearch" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="appSearchResults" aria-label="Find an application"'));
+ assert(html.includes('<input id="appSearch" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="appSearchResults" aria-label="Find applications"'));
  assert(readFileSync(new URL('../public/app.js',import.meta.url),'utf8').includes("createAppSearch({input:$('appSearch'),list:$('appSearchResults'),getApps:()=>model?.apps||[],onOpen:showApp,escape:esc});"));
 });

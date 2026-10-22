@@ -34,7 +34,7 @@ let startupView=null,startupRenderedView=null,handlingPopstate=false,lastNavTab=
 let importGeneration=0,pendingImport,importUndo,data,model,landscapeModel,visibleColumns=[],filters={query:'',division:'',entity:'',branch:''},initialData,initializing=true,viewTimer,view='cap',group='Division',expanded=new Set();
 const comparison=createComparisonUI({getModel:()=>model,getData:()=>data,escape:esc,onApp:showApp,isSignedIn:isAdmin,onStateChange:saveView,onPairReview:(key,review)=>{data={...data,pairReviews:{...(data.pairReviews||{}),[key]:review}};if(isAdmin())autosave.schedule();},onWeightsChange:weights=>{if(!isAdmin())return;data={...data,similarityWeights:weights,similarityWeightsVersion:2};autosave.schedule();},onThresholdChange:storeThreshold});
 const overview=createOverviewUI({getModel:()=>model,escape:esc,onApp:showApp,onStateChange:saveView});
-// Find an application from any page (V13).
+// Find applications from any page (V13; the same search rule as every other search box since V13.1).
 createAppSearch({input:$('appSearch'),list:$('appSearchResults'),getApps:()=>model?.apps||[],onOpen:showApp,escape:esc});
 // A text file download (CSV exports).
 function downloadText(text,name,type){const url=URL.createObjectURL(new Blob([text],{type})),link=document.createElement('a');link.href=url;link.download=name;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);}

@@ -53,11 +53,11 @@
 
 不在内网，或想自己保留一份时用：
 
-1. 下载 [**logistics-offline-20261022-v13.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest)。
+1. 下载 [**logistics-offline-20261022-v13.1.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest)。
 2. 右键 → **Extract all**。
 3. 用 Chrome 打开里面的 HTML。
 
-页面顶部显示 **V13** 就对了。
+页面顶部显示 **V13.1** 就对了。
 
 </td>
 </tr>
@@ -68,7 +68,7 @@
     <td align="center" width="25%"><h3>75</h3><sub>应用 · 10 个工厂 · 5 个业务部门</sub></td>
     <td align="center" width="25%"><h3>2,775</h3><sub>组两两比较 · 9 组得分 ≥ 50</sub></td>
     <td align="center" width="25%"><h3>22 / 39</h3><sub>Process / Capability 待处理应用</sub></td>
-    <td align="center" width="25%"><h3>V13</h3><sub>2026-10-22 · 479 项测试通过</sub></td>
+    <td align="center" width="25%"><h3>V13.1</h3><sub>2026-10-22 · 485 项测试通过</sub></td>
   </tr>
 </table>
 
@@ -91,7 +91,7 @@
 
 | 我想 | 去哪里 | 点什么 |
 |---|---|---|
-| 直接找到某个应用 | 任意页面 | 标题右侧的 **Find an application**（按 **/** 键直接定位），输入名称、ID、工厂或业务单元的一部分，回车或点结果打开详情 |
+| 直接找到某个应用 | 任意页面 | 标题右侧的 **Find applications**（按 **/** 键直接定位），输入名称、ID、工厂或业务单元的一部分，回车或点结果打开详情。各页面列表上方的 **Find applications** 用同样的规则筛选 |
 | 看我们工厂哪些应用要补登记 | **Overview** | 选工厂 → **To review** → 应用的 **View details** |
 | 知道某条记录具体错在哪、该怎么改 | 应用详情 | **View details** 里每个问题都写了来源记录、对照的目录版本和下一步 |
 | 看某个业务能力或流程下有哪些应用 | **Application landscape** | **Category** 下拉选层级，点分类旁的 **+** 展开 |
@@ -141,7 +141,7 @@
 </details>
 
 <details>
-<summary><b>页面打开了，但不是 V13，或者显示不全？</b></summary>
+<summary><b>页面打开了，但不是 V13.1，或者显示不全？</b></summary>
 <br>
 按 <b>Ctrl + F5</b> 强制刷新（浏览器可能缓存了旧版本）。工具在 Chrome 上测试过，请优先用 Chrome。
 </details>
@@ -167,7 +167,9 @@
 
 完整更新日志见 [`CHANGELOG.md`](CHANGELOG.md)。
 
-**V13（当前，2026-10-22）**：页面标题右侧新增应用搜索框（任意页面按 / 键即可定位），输入名称、ID、工厂或业务单元，回车直接打开应用详情；Import data 读取工作簿里日期最新的 Logistic Apps_<日期> 表，导入预览写明读的是哪一张。
+**V13.1（当前，2026-10-22）**：6 个找应用的搜索框统一叫 Find applications，都能按名称、ID、工厂、业务单元搜（多个词时每个词都要对上；Application landscape 另外仍可按分类搜）；比较窗口里重复的 Clear selection 只留一个。
+
+**V13（2026-10-22）**：页面标题右侧新增应用搜索框（任意页面按 / 键即可定位），输入名称、ID、工厂或业务单元，回车直接打开应用详情；Import data 读取工作簿里日期最新的 Logistic Apps_<日期> 表，导入预览写明读的是哪一张。
 
 **V12（2026-10-22）**：页面标题下面显示当前数据来自哪个文件、截至哪天（如 “Data: 20261021_logistic_inventory.xlsx · as of 2026-10-21”），导入新表后跟着变；部署脚本能找到浏览器存成 “(1)” 的压缩包，找不到时列出 Downloads 里有哪些版本。
 
@@ -191,6 +193,7 @@
 
 | 版本 | 主要变化 |
 |---|---|
+| [V13.1](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v13.1-20261022) | 6 个找应用的搜索框统一叫 Find applications，都能按名称、ID、工厂、业务单元搜（多个词时每个词都要对上；Application landscape 另外仍可按分类搜）；比较窗口里重复的 Clear selection 只留一个 |
 | [V13](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v13-20261022) | 页面标题右侧新增应用搜索框（任意页面按 / 键即可定位），输入名称、ID、工厂或业务单元，回车直接打开应用详情；Import data 读取工作簿里日期最新的 Logistic Apps_<日期> 表，导入预览写明读的是哪一张 |
 | [V12](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v12-20261022) | 页面标题下面显示当前数据来自哪个文件、截至哪天（如 “Data: 20261021_logistic_inventory.xlsx · as of 2026-10-21”），导入新表后跟着变；部署脚本能找到浏览器存成 “(1)” 的压缩包，找不到时列出 Downloads 里有哪些版本 |
 | [V11](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v11-20261022) | 页面里的改动自动保存在本机浏览器，下次打开时可选“继续上次的工作”；Overview 可按当前筛选导出 To review 清单（CSV，Excel 可直接打开）；应用详情可复制直达链接，网址带 ?app= 时直接打开该应用 |
@@ -307,10 +310,10 @@ flowchart LR
 | Similarity check：页面、状态、证据 | `program/public/similarity-ui.mjs`、`program/public/similarity-readiness.mjs`（按应用归并待检查记录）、`program/public/pair-status.mjs`、`program/public/comparison-records.mjs`、`program/public/weight-controls.mjs` |
 | 已保存的组合评审数据 | `program/public/similarity-guide.mjs`（`cleanPairReviews`）、`program/public/workspace.mjs` |
 | ROI 回本时间、年度成本 | `program/public/roi.mjs`、`program/public/costs.mjs` |
-| 导入 / 导出（Excel、工作区、CSV） | `program/public/xlsx.mjs`、`program/public/import-review.mjs`、`program/public/workspace.mjs`、`program/public/exports.mjs`、`program/public/score-settings.mjs`（阈值随备份）、`program/public/offline-save.mjs`（离线导出提示）；应用搜索在 `program/public/app-search.mjs` |
+| 导入 / 导出（Excel、工作区、CSV） | `program/public/xlsx.mjs`、`program/public/import-review.mjs`、`program/public/workspace.mjs`、`program/public/exports.mjs`、`program/public/score-settings.mjs`（阈值随备份）、`program/public/offline-save.mjs`（离线导出提示）；应用搜索在 `program/public/app-search.mjs`（6 个搜索框共用 matchesApplication 和同一个名称、提示） |
 | 样式 | `program/public/*.css` |
 | 构建和离线单文件 | `program/scripts/build.mjs`、`program/scripts/export-offline.mjs` |
-| 测试（`npm test`，当前 479 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v13-test-results.txt` |
+| 测试（`npm test`，当前 485 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v13.1-test-results.txt` |
 | 离线单文件版 | `offline/` |
 | IIS 部署脚本（每次发布自动生成） | `offline/deploy-iis.bat`（打包下载版 `offline/deploy-iis-script.zip`）；生成器 `program/scripts/deploy-script.mjs`，模板 `program/scripts/deploy-iis.template.bat`，发布打包 `program/scripts/release-files.mjs`（`npm run release:files`），检查 `program/tests/deploy-script.test.mjs`，本机模拟 `program/scripts/deploy-sim.mjs`（`npm run deploy:sim`） |
 | 构建输出、文件校验清单 | `built/`、`MANIFEST.sha256` |

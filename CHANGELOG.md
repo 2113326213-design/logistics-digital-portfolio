@@ -2,6 +2,11 @@
 
 每个版本的离线包在 [Releases](https://github.com/2113326213-design/logistics-digital-portfolio/releases)；详细的修改说明和用户决定在 [`00_Claude先读.md`](00_Claude先读.md)，验证记录在 [`verification/`](verification/)。
 
+## [V13.1](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v13.1-20261022) · 2026-10-22
+
+- **搜索框统一**（用户确认 2026-10-22）：标题右侧、Application landscape、Overview 卡片点开的应用列表、Similarity check 的 Compare an application 第 1 步和第 2 步、Compare multiple applications，这 6 个找应用的搜索框都叫 **Find applications**，提示都是 “Name, ID, plant or business unit”，规则相同：输入的每个词都要出现在名称、工厂或业务单元里，或是应用 ID 的开头（不分大小写和全角半角；ID 是很长的生成码，只认开头，避免中间的片段匹配到无关应用）。以前比较窗口里不能按 ID 搜、Compare multiple applications 也不能按业务单元搜，现在都可以。Application landscape 另外仍可按分类编号或分类名称搜（早先的要求，按整句匹配，与 V13 相同；提示写作 “Name, ID, plant, business unit or category”）。标题搜索框加了放大镜图标和 “/” 快捷键提示；窗口较窄、标题行放不下时，搜索框和按钮换到标题下方靠右，不再盖住标题。
+- **比较窗口只留一个 Clear selection**：原来 “1. Select applications” 里和 “N selected” 旁边各有一个，作用完全一样；现在只留 “N selected” 旁边那个（折叠选择列表时也看得到）。
+
 ## [V13](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v13-20261022) · 2026-10-22
 
 - **应用搜索**：页面标题右侧新增 **Find an application** 搜索框。输入名称、应用 ID、工厂或业务单元的一部分（多个词时每个词都要对上），最多列出 8 个结果，名称开头相符的排在最前；方向键选择、回车或点击打开应用详情（地址栏同时带上 ?app=，可直接复制分享），Esc 清空。在任意页面不在输入框里时按 **/** 键直接定位到搜索框。

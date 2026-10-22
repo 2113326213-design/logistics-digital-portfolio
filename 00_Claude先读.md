@@ -19,7 +19,18 @@
 - **小版本**（V10.1、V10.2……）：修正、文字和显示调整。
 - 版本号写在 `program/scripts/release.mjs` 的 RELEASE_VERSION（小写，如 `v10`、`v10.1`）；文件名、发布 zip、部署脚本和 Release 标签（`v10-20261022`）都随它生成。导入预览的“变化明细”是新功能，所以这一版是 V10（原计划的 V9.20 没有发布）。
 
-## V13 当前状态（2026-10-22，优先于所有历史段落）
+## V13.1 当前状态（2026-10-22，优先于所有历史段落）
+
+- 用户问“有没有重复出现的功能？”，看了排查结果后要求：比较窗口只留一个 Clear selection；6 个搜索框统一叫法和能搜的内容（名称、ID、工厂、业务单元）。属于修正和文字调整，按版本号规则为 V13.1。
+- **统一的搜索规则**（`public/app-search.mjs`）：`APP_SEARCH_LABEL='Find applications'`、`APP_SEARCH_PLACEHOLDER='Name, ID, plant or business unit'`、`matchesApplication(app,query,extra=[])`（NFKC + 小写，按空白拆词，每个词都要出现在 Name / Entity / Division 里，或是 id / ID 的开头；空查询全部匹配）。使用者：标题搜索 `searchApplications`（排序不变）、`landscape.mjs` filterLandscape（先用共同规则；否则把整个查询当一句，在该应用的原始记录和分类代码/名称里找，与 V13 相同，保留早先按分类搜的要求，`tests/customer-search.test.mjs` 仍通过）、`overview.mjs` filterOverviewApplications、`similarity-ui.mjs` 的 focusAppSearch / focusPeerSearch / selectionSearch。旧的 `matches`、局部 `matchesApplication` 已删除。
+- **一个 Clear selection**：比较窗口删去工具栏里的 `#clearSelection`，保留 “N selected” 旁的 `#clearSelectedApplications`。
+- 标题搜索框：放大镜图标、`<kbd class="app-search-key">/</kbd>`（获得焦点或有内容时隐藏）、`aria-keyshortcuts="/"`，固定 320px（Chrome 的 search 框给清除按钮留位，再窄提示就显示不全）。`.heading` 可换行，按钮行 `margin-left:auto`：标题行放不下时（约 1000px 以下）搜索框和按钮换到标题下方靠右；≤800px 按钮行左对齐占满一行；≤700px 搜索框单独一行（复核发现 V13.1 初稿在 840–990px 宽时会盖住标题）。Similarity 第 1 步的说明改为 “Use Find applications to narrow the list, then choose one to compare with it.”。
+- 测试：`tests/v13-1-search-unified.test.mjs`（规则本身，ID 只认开头；6 个框用同一组查询（含全角）找同一个应用；景观仍可按分类搜，按名称或工厂搜时与 Overview 列表结果完全一致；比较窗口搜 “de” 只列出 DEMOS#CGD；6 个框的名称和提示；源码里不再有旧叫法；比较窗口只有一个 Clear selection 且能清空）。`ui-review-regressions` 改为点 `clearSelectedApplications`，`v13-search-and-sheets` 改为新的 aria-label。
+- 复核：发布前用 4 个 agent 复核（3 个角度各 1 个，再由 1 个专门反驳）。9 条发现中确认 4 条，均已处理：景观逐词匹配分类导致结果过多（如 “RBCD LOG” 从 1 个变 12 个），已改回分类整句匹配；ID 中间片段会匹配无关应用（比较窗口搜 “de” 出现 10 个，Select visible 会全选），已改为只认 ID 开头；标题搜索框在 840–990px 宽时会盖住标题，已改为换行；文档和 built/ 仍是 V13，本次文档步骤已更新。驳回 2 条（部署模拟已对 V13.1 重跑；Overview 规则覆盖不足风险很小，但仍补了全角查询测试），其余 3 条与上面重复。
+- 浏览器检查（本机 http，离线版 V13.1）：6 个框的名称和提示一致；按 ID、工厂+业务单元、多个词搜索在 6 个框里结果一致；景观按 “transport management” 仍找到 3 个（与 V13 相同），“RBCD LOG” 2 个（与其他框一致）；比较窗口只有一个 Clear selection，Select visible 后能清空；375–1280px 各宽度下标题行不重叠、没有横向滚动，点击后 “/” 提示隐藏。
+- 当前离线包：`offline/logistics-offline-20261022-v13.1.zip`；HTML 文件名及页面标识均为 V13.1，日期 2026-10-22。部署脚本 `offline/deploy-iis.bat`（V13.1，本机模拟 7/7 通过）。验证记录见 `verification/v13.1-verification.md`。
+
+## V13 历史状态（2026-10-22，受顶部 V13.1 更新）
 
 - 用户说“继续更新”；本版做了两项（新功能，按版本号规则为 V13）。
 - **应用搜索**（`public/app-search.mjs`）：`searchApplications(apps,query,limit=8)` 要求每个词都出现在名称、ID、工厂（Entity）或业务单元（Division）里；排序：名称以输入开头 → 名称中某个词以输入开头 → ID 以输入开头 → 工厂或业务单元完全相同 → 名称包含 → 其他，同级按名称自然顺序。`createAppSearch` 是标题右侧 `#appSearch` 的 combobox：方向键、回车（打开详情，沿用 showApp，所以地址栏带 ?app=）、Esc；鼠标用 mousedown 选择；不在输入框且没有打开的对话框时按 / 定位。`tests/v13-search-and-sheets.test.mjs`。

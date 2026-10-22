@@ -1,9 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="99" height="24" role="img" aria-label="version: V13">
-<title>version: V13</title>
+<svg xmlns="http://www.w3.org/2000/svg" width="109" height="24" role="img" aria-label="version: V13.1">
+<title>version: V13.1</title>
 <defs><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-opacity=".12"/></linearGradient>
-<clipPath id="r"><rect width="99" height="24" rx="6" fill="#fff"/></clipPath></defs>
-<g clip-path="url(#r)"><rect width="61" height="24" fill="#1f2d3d"/><rect x="61" width="38" height="24" fill="#0071a8"/><rect width="99" height="24" fill="url(#s)"/></g>
+<clipPath id="r"><rect width="109" height="24" rx="6" fill="#fff"/></clipPath></defs>
+<g clip-path="url(#r)"><rect width="61" height="24" fill="#1f2d3d"/><rect x="61" width="48" height="24" fill="#0071a8"/><rect width="109" height="24" fill="url(#s)"/></g>
 <g fill="#fff" text-anchor="middle" font-family="'Segoe UI',Verdana,Geneva,DejaVu Sans,'Microsoft YaHei',sans-serif" font-size="12" font-weight="600">
 <text x="30.5" y="16" fill="#010101" fill-opacity=".3">version</text><text x="30.5" y="15">version</text>
-<text x="80" y="16" fill="#010101" fill-opacity=".3">V13</text><text x="80" y="15">V13</text>
+<text x="85" y="16" fill="#010101" fill-opacity=".3">V13.1</text><text x="85" y="15">V13.1</text>
 </g></svg>

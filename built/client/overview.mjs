@@ -3,6 +3,7 @@ import {annualLabel,scopeReason} from './display.mjs';
 import {capCode,norm,split,PROCESS_LEVEL,compareNatural} from './codes.mjs';
 import {reviewIssues,processAncestorCoverage,level2Coverage as coverageAtLevel2} from './review-issues.mjs';
 import {annualCost,costSummary,formatAnnualCost,formatRMB} from './costs.mjs';
+import {matchesApplication,APP_SEARCH_LABEL,APP_SEARCH_PLACEHOLDER} from './app-search.mjs';
 // Overview reports presence and taxonomy alignment separately. It does not score similarity.
 export const maintenanceFields=[
  ['ID','Application ID'],['Name','Name'],['Description','Description'],
@@ -13,8 +14,7 @@ const filled=(app,key)=>String(app[key]??'').trim().length>0;
 const inB06=id=>id==='B.06'||id.startsWith('B.06.');
 // Search stays inside the supplied drill cohort; it never expands to the portfolio.
 export function filterOverviewApplications(apps,{entity='',query=''}={}){
- const terms=query.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
- return apps.filter(a=>(!entity||(a.Entity||'Not provided')===entity)&&terms.every(term=>[a.Name,a.id,a.ID,a.Entity,a.Division].join(' ').toLocaleLowerCase().includes(term)));
+ return apps.filter(a=>(!entity||(a.Entity||'Not provided')===entity)&&matchesApplication(a,query));
 }
 export function overviewStats(model,filters={}){
  const apps=model.apps.filter(a=>(!filters.division||(a.Division||'Not provided')===filters.division)&&(!filters.entity||(a.Entity||'Not provided')===filters.entity));
@@ -126,7 +126,7 @@ export function createOverviewUI({getModel,escape:esc,onApp,onStateChange=()=>{}
  const title=()=>dimension==='cap'?'Business Capability':'Process';
  const el=id=>document.getElementById(id);
  host.innerHTML=`<div class="overview-toolbar"><div><h2>Application maintenance</h2><p id="overviewScope" role="status"></p></div><div class="overview-filters"><label>Business unit<select id="overviewGB"></select></label><button id="overviewReset">Clear filters</button><button id="overviewExportReview" type="button">Export To review (CSV)</button></div></div><div id="overviewSummary"></div><section class="overview-plant-finder" aria-labelledby="overviewPlantTitle"><div class="plant-finder-heading"><h3 id="overviewPlantTitle">Find your plant</h3><label class="plant-search"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="1.6"/><path d="m16 16 4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><input id="overviewPlantSearch" type="search" aria-label="Search plants" placeholder="Search plants" autocomplete="off"></label></div><div id="overviewPlantChoices" class="overview-plant-choices" role="group" aria-label="Choose a plant"></div></section><div class="overview-dimension-row"><div class="segments" aria-label="Overview dimension"><button data-overview-dim="cap" class="active" aria-pressed="true">Business Capability</button><button data-overview-dim="process" aria-pressed="false">Process</button></div></div><div id="overviewPanels"></div>`;
- dialog.innerHTML='<div class="overview-detail-header"><button class="close" id="overviewDetailClose" aria-label="Close overview details">×</button><p id="overviewDetailContext" role="status" aria-live="polite"></p><h2 id="overviewDetailTitle"></h2><p id="overviewDetailNote"></p></div><div class="overview-detail-toolbar"><label class="overview-detail-search">Search applications<input id="overviewDetailSearch" type="search" placeholder="Application name, ID or plant" autocomplete="off"></label><label>Plant<select id="overviewDetailPlant"></select></label><button id="overviewDetailReset">Clear filters</button></div><div id="overviewDetailBody"></div>';
+ dialog.innerHTML='<div class="overview-detail-header"><button class="close" id="overviewDetailClose" aria-label="Close overview details">×</button><p id="overviewDetailContext" role="status" aria-live="polite"></p><h2 id="overviewDetailTitle"></h2><p id="overviewDetailNote"></p></div><div class="overview-detail-toolbar"><label class="overview-detail-search">'+APP_SEARCH_LABEL+'<input id="overviewDetailSearch" type="search" placeholder="'+APP_SEARCH_PLACEHOLDER+'" autocomplete="off"></label><label>Plant<select id="overviewDetailPlant"></select></label><button id="overviewDetailReset">Clear filters</button></div><div id="overviewDetailBody"></div>';
  function plantScope(){return getModel().apps.filter(a=>!filters.division||(a.Division||'Not provided')===filters.division);}
  function renderPlantChoices(){
   const apps=plantScope(),query=el('overviewPlantSearch').value.trim().toLocaleLowerCase();
