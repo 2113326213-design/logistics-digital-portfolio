@@ -60,37 +60,40 @@ const resolutionCounts=(list,history)=>Object.fromEntries(['action','mapped','ou
 // (incl. B.06.9, B.06.9.1). Re-derived 2026-10-21 after the inventory import: VMCN_CONNEX's HC.06.1.1 and HC.06.1.5 are gone
 // (-2), B.06.5.7 (VMCN_iWPC_AKL_Szh5, VM-CN Auto labeling printing system) is not in this catalogue (+1), VMCN_CONNEX's empty
 // process is filled (-1) and RBCW Auto Warehouse Management System's new L3 record is unmatched (+1): 41 - 2 + 1 - 1 + 1 = 40.
+// Since 2026-10-22 Wuj HK AGV's HC.02.4.5 belongs to another company and is left out (-1): 39.
 const old=JSON.parse(readFileSync(new URL('./capability-rows-2026-10-15.json',import.meta.url))),legacy=workspaceData({...initial,capabilityRows:old.capabilityRows,taxonomySource:old.taxonomySource,importHistory:[],applicationEvents:[]}),legacyModel=buildModel(legacy),legacyItems=reviewItems(legacyModel);
-assert.equal(legacyItems.length,40);
+assert.equal(legacyItems.length,39);
 assert(legacyItems.every(i=>i.raw.trim()),'original evidence includes zero-padded capability codes');
-assert.deepEqual(categoryCounts(legacyItems),{'流程匹配':23,'流程层级表':2,'能力编码缺失':8,'能力匹配':7});
-assert.deepEqual(legacyItems.filter(i=>i.category==='能力编码缺失').map(i=>i.code).sort(),['B.01.1.2','B.05.2','B.05.3.7','B.06.5.7','B.06.9','B.06.9.1','B.14.9.1','HC.02.4.5']);
+assert.deepEqual(categoryCounts(legacyItems),{'流程匹配':23,'流程层级表':2,'能力编码缺失':7,'能力匹配':7});
+assert.deepEqual(legacyItems.filter(i=>i.category==='能力编码缺失').map(i=>i.code).sort(),['B.01.1.2','B.05.2','B.05.3.7','B.06.5.7','B.06.9','B.06.9.1','B.14.9.1']);
 assert.equal(legacyItems.filter(i=>i.semantic).length,7);
 const legacySourceItems=reviewItems(buildModel({...legacy,corrections:[]})),legacyMappingHistory=correctionStates(legacy);
 // L3V is Level 3 (owner decision 2026-10-19, "level 3v就是level3"). Without the mappings, each of the six mapped L3V
 // records already matches its unique L3 name, so it is no source record (52 - 6 = 46) and only the six other mappings
 // resolve one (12 - 6 = 6). The seven unmatched L3V records need action like any unmatched L3: nothing is beyond L3
-// (action 28 + 7 = 35, beyond 7 - 7 = 0); the 40 open records are unchanged. Outside B.06 are the five missing codes
-// B.01.1.2, B.05.2, B.05.3.7, B.14.9.1 and HC.02.4.5 (the two HC.06 codes left with the 2026-10-21 import).
-assert.equal(legacySourceItems.length,46);assert.equal(legacySourceItems.filter(i=>reviewItemResolved(i,legacyMappingHistory)).length,6);assert.equal(legacySourceItems.filter(i=>!reviewItemResolved(i,legacyMappingHistory)).length,40);
-assert.deepEqual(resolutionCounts(legacySourceItems,legacyMappingHistory),{action:35,mapped:6,outside:5,beyond:0});
+// (action 28 + 7 = 35, beyond 7 - 7 = 0); the 39 open records are unchanged. Outside B.06 are the four missing codes
+// B.01.1.2, B.05.2, B.05.3.7 and B.14.9.1 (the two HC.06 codes left with the 2026-10-21 import; HC.02.4.5, another
+// company, is left out since 2026-10-22: 46 - 1 = 45).
+assert.equal(legacySourceItems.length,45);assert.equal(legacySourceItems.filter(i=>reviewItemResolved(i,legacyMappingHistory)).length,6);assert.equal(legacySourceItems.filter(i=>!reviewItemResolved(i,legacyMappingHistory)).length,39);
+assert.deepEqual(resolutionCounts(legacySourceItems,legacyMappingHistory),{action:35,mapped:6,outside:4,beyond:0});
 for(const item of legacyItems)for(let i=0;i<item.appIds.length;i++)assert.equal(legacyModel.apps.find(a=>a.id===item.appIds[i]).Name,item.apps[i]);
 // Business capability standard without its HC entries (another department, owner decision 2026-10-19): no semantic groups;
 // missing codes 8 - 3 now catalogued (B.06.9, B.06.9.1, B.06.5.7) = 5; items 40 - 7 - 3 = 30. Re-derived 2026-10-21: the
 // inventory import removed the B.06.4.4 record and VMCN_CONNEX's HC records (its B.06.2.3/B.06.2.6 are catalogued), so no
-// missing code is left under B.06 or HC.06 and no application is without a process.
-assert.equal(items.length,30);
+// missing code is left under B.06 or HC.06 and no application is without a process. Since 2026-10-22 Wuj HK AGV's HC.02.4.5
+// (another company) is left out: 5 - 1 = 4 missing codes, 30 - 1 = 29 items.
+assert.equal(items.length,29);
 assert(items.every(i=>i.raw.trim()),'original evidence includes zero-padded capability codes');
-assert.deepEqual(categoryCounts(items),{'流程匹配':23,'流程层级表':2,'能力编码缺失':5});
-assert.deepEqual(items.filter(i=>i.category==='能力编码缺失').map(i=>i.code).sort(),['B.01.1.2','B.05.2','B.05.3.7','B.14.9.1','HC.02.4.5']);
-assert.deepEqual(items.filter(i=>i.category==='能力编码缺失'&&i.code.startsWith('HC.')).map(i=>[i.code,i.raw,i.apps]).sort((a,b)=>a[0].localeCompare(b[0])),[['HC.02.4.5','HC.02.04.05 Transportation Management',['Wuj HK AGV (recovered 2025-06-26 03:31:37)']]],'the application keeps its own HC record as evidence');
+assert.deepEqual(categoryCounts(items),{'流程匹配':23,'流程层级表':2,'能力编码缺失':4});
+assert.deepEqual(items.filter(i=>i.category==='能力编码缺失').map(i=>i.code).sort(),['B.01.1.2','B.05.2','B.05.3.7','B.14.9.1']);
+assert.deepEqual(items.filter(i=>i.code?.startsWith('HC.')),[],'another company\'s records are not review items (the source field keeps them)');
 assert(!items.some(i=>i.appIds.includes(connex.ID)),'VMCN_CONNEX needs no review since the 2026-10-21 import');
 assert(items.some(i=>i.category==='流程匹配'&&i.appIds.includes(rbcwAuto.ID)&&i.raw==='BBM PM I2D Transport Material Intra Plant L3'),'the unconfirmed L3 record from the import is open for review');
 const unmappedModel=buildModel({...initial,corrections:[]}),sourceItems=reviewItems(unmappedModel),mappingHistory=correctionStates(initial);
-// Each missing code outside B.06 (incl. HC.02.4.5) resolves as Outside B.06 (5); none needs action. L3V as Level 3, as for
-// the legacy catalogue: 42 - 6 = 36 source records, 6 resolved by mappings, action 18 + 7 = 25, nothing beyond L3.
-assert.equal(sourceItems.length,36);assert.equal(sourceItems.filter(i=>reviewItemResolved(i,mappingHistory)).length,6);assert.equal(sourceItems.filter(i=>!reviewItemResolved(i,mappingHistory)).length,30);
-assert.deepEqual(resolutionCounts(sourceItems,mappingHistory),{action:25,mapped:6,outside:5,beyond:0});
+// Each missing code outside B.06 resolves as Outside B.06 (4; HC.02.4.5 is left out since 2026-10-22); none needs action. L3V
+// as Level 3, as for the legacy catalogue: 41 - 6 = 35 source records, 6 resolved by mappings, action 18 + 7 = 25, nothing beyond L3.
+assert.equal(sourceItems.length,35);assert.equal(sourceItems.filter(i=>reviewItemResolved(i,mappingHistory)).length,6);assert.equal(sourceItems.filter(i=>!reviewItemResolved(i,mappingHistory)).length,29);
+assert.deepEqual(resolutionCounts(sourceItems,mappingHistory),{action:25,mapped:6,outside:4,beyond:0});
 // The seven L3V records without a standard L3 of the same name are unmatched Level 3 records that need action.
 assert.deepEqual(sourceItems.filter(i=>/\bL3V\s*$/i.test(i.raw)).map(i=>[i.apps.join(', '),i.raw,i.reason,reviewResolution(i,mappingHistory)]).sort((a,b)=>(a[0]+a[1]).localeCompare(b[0]+b[1])),[
  ['AUTO-RACK','BBM PM I2D Putaway to Automated Warehouse L3V','流程未匹配层级表','action'],
@@ -108,7 +111,7 @@ for(const c of l3vMappings){
  assert(!unmappedModel.issues.some(i=>i.appId===c.appId&&i.value===c.raw),c.raw+' needs no review without its mapping');
  assert(model.apps.find(a=>a.id===c.appId).process.includes(c.targetId),c.raw+' still counts as '+c.targetId+' with its mapping');
 }
-assert.deepEqual(sourceItems.filter(i=>i.code?.startsWith('HC.')).map(i=>[i.code,reviewResolution(i,mappingHistory)]).sort((a,b)=>a[0].localeCompare(b[0])),[['HC.02.4.5','outside']]);
+assert.deepEqual(sourceItems.filter(i=>i.code?.startsWith('HC.')),[]);
 for(const item of items)for(let i=0;i<item.appIds.length;i++)assert.equal(model.apps.find(a=>a.id===item.appIds[i]).Name,item.apps[i]);
 const notes=cleanReviews({[items[0].key]:{status:'已确认',result:'经业务确认，保留该流程变体',reviewer:'验收人员',updatedAt:'2026-09-15T03:00:00.000Z'}});
 const event={id:'note-1',action:'note',at:'2026-09-15T03:00:00.000Z',reviewer:'验收人员',issueKey:items[0].key,appIds:items[0].appIds,appNames:items[0].apps,raw:items[0].raw,status:'已确认',previousStatus:'待核对',result:'经业务确认，保留该流程变体',previousResult:''};
@@ -162,4 +165,4 @@ const sample=acceptanceSample(initial),index=createSimilarity(buildModel(sample)
 assert.equal(a.coverage,.5);assert.deepEqual(difference.common.map(n=>n.id),['B.06.1.2']);assert.deepEqual(difference.targetOnly.map(n=>n.id),['B.06.1.3']);assert.deepEqual(difference.peerOnly.map(n=>n.id),['B.06.1.4']);assert.match(explainResult(a),/1 shared codes/);
 const mixed=structuredClone(sample);mixed.apps[1]['Business Capabilities']='B.06.1 Supply Chain Strategy';const shallow=createSimilarity(buildModel(mixed),'cap').compare(mixed.apps[0].ID,mixed.apps[1].ID);assert.equal(shallow.coverage,1);assert.deepEqual(shallow.comparisonLevels,[2]);assert.deepEqual(shallow.deferredLevels,[3]);
 sqlite.close();
-console.log('PASS: 36 source review records (HC missing code outside B.06; L3V as Level 3, unmatched L3V needing action) (46 with the legacy catalogue, including seven semantic review groups), workspace migration, both taxonomy events and the 2026-10-21 inventory import kept in import history, review activity round trip and CSV, legacy workspaces, SQLite persistence, user isolation, revision conflicts, save recovery, preferences and comparison evidence.');
+console.log('PASS: 35 source review records (HC records of another company left out; L3V as Level 3, unmatched L3V needing action) (45 with the legacy catalogue, including seven semantic review groups), workspace migration, both taxonomy events and the 2026-10-21 inventory import kept in import history, review activity round trip and CSV, legacy workspaces, SQLite persistence, user isolation, revision conflicts, save recovery, preferences and comparison evidence.');

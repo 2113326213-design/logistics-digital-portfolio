@@ -99,6 +99,8 @@ var split = (v) => String(v ?? "").split(";").map((x) => x.trim()).filter((x) =>
 var norm = (v) => String(v ?? "").toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]/g, "");
 var compareNatural = new Intl.Collator(void 0, { numeric: true }).compare;
 var PROCESS_LEVEL = /\bL([0-3])V?\s*$/i;
+var OTHER_COMPANY_CODE = /^HC\./;
+var otherCompanyRecord = (raw) => OTHER_COMPANY_CODE.test(String(raw ?? "").trim());
 function capCode(s) {
   const m = String(s).match(/^([A-Z]+\.\d+(?:\.\d+)*)\b/);
   return m ? m[1].split(".").map((x, i) => i < 2 ? x : String(Number(x))).join(".") : null;
@@ -383,7 +385,12 @@ function buildModel(data) {
     if (!id || !String(raw.Name ?? "").trim()) throw Error(`\u7B2C ${i + 2} \u884C\u7F3A\u5C11 ID \u6216 Name`);
     if (ids.has(id)) throw Error(`\u5E94\u7528 ID \u91CD\u590D\uFF1A${id}`);
     ids.add(id);
-    const a = { ...raw, id, cap: [], process: [], unmatched: [], processMatches: [], accepted: [], notInExport: missingFromExport.has(id) ? data.inventoryExport : null, rawCap: split(raw["Business Capabilities"]), rawProcess: split(raw.Processes) };
+    const records = (dimension, value2) => {
+      const all = split(value2), other = (s) => otherCompanyRecord(s) && !mapped(id, dimension, s);
+      return { own: all.filter((s) => !other(s)), other: all.filter(other) };
+    };
+    const capRecords = records("cap", raw["Business Capabilities"]), processRecords = records("process", raw.Processes);
+    const a = { ...raw, id, cap: [], process: [], unmatched: [], processMatches: [], accepted: [], notInExport: missingFromExport.has(id) ? data.inventoryExport : null, rawCap: capRecords.own, rawProcess: processRecords.own, otherCompany: [...capRecords.other, ...processRecords.other] };
     for (const s of a.rawCap) {
       const corrected = mapped(id, "cap", s);
       if (corrected) {

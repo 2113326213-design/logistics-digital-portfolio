@@ -112,12 +112,11 @@ coversEveryGap(model,reports);
  const [app,checks]=checked(preExport({...data,capabilityRows:old.capabilityRows,taxonomySource:old.taxonomySource})).find('VMCN_CONNEX');
  assert.equal(checks.checks.filter(row=>row.primary==='Process: Level 3 missing').length,1);
  assert(checks.checks.some(row=>row.dimension==='process'&&row.tags.some(tag=>tag.label==='Missing process')));
- const hc=checks.checks.filter(row=>row.raw.startsWith('HC.06.'));
- assert.equal(hc.length,2);
- assert(hc.every(row=>row.primary==='Business Capability: Level 3 match needs review'));
- // HC belongs to another department (owner decision 2026-10-19): only the Outside B.06 review scope tag, never Possibly B.06.
- assert.deepEqual(hc.map(row=>row.tags.map(tag=>tag.label)),[['Outside B.06 review scope'],['Outside B.06 review scope']]);
- assert(!hc.some(row=>row.tags.some(tag=>tag.label==='Possibly B.06')));
+ // HC records belong to another company (owner decision 2026-10-22; on 2026-10-19 they still got an Outside B.06 review
+ // scope row): no data-check row at all, and the application lists them as not used.
+ assert.deepEqual(checks.checks.filter(row=>row.raw.startsWith('HC.')),[]);
+ assert.deepEqual(app.otherCompany,['HC.06.01.01 Demand Planning','HC.06.01.05 Detailed Production Scheduling']);
+ assert(app['Business Capabilities'].includes('HC.06.01.01'),'the source field keeps them');
 }
 assert(!all.some(([,checks])=>checks.checks.some(row=>row.tags.some(tag=>tag.label==='Possibly B.06'))),'no record is tagged Possibly B.06');
 {
@@ -168,7 +167,7 @@ assert(!all.some(([,checks])=>checks.checks.some(row=>row.tags.some(tag=>tag.lab
 // plus the 2 'Name differs from standard' rows of 360° Supplier dashboard = 83 (owner decision 2026-10-19); 81 outside Szh5_ASRS_WCS_WMS
 // plus its 2. The total is unchanged by the export: its 4 'Level 3 missing' rows replace VMCN_CONNEX's 3 rows and VMCN_Digital Dynamic
 // Supermarket's B.06.4.4 row (before: 109 - 22 - 7 + 1 B.06.4.4 row = 81).
-// (the HC records keep their Outside B.06 review scope row whether or not HC is catalogued).
+// (since 2026-10-22 HC records belong to another company and get no row at all; before, they kept an Outside B.06 row).
 // Needs review: legacy 43 - RBCC and RBHP_LOG SupplierManager (B.06.9.x catalogued) - VM-CN Auto labeling printing system and
 // VMCN_iWPC_AKL_Szh5 (B.06.5.7 catalogued) = 39 (2026-10-21: 37 + Control Tower, D-sample tracking system, Dolly call off program,
 // Physical Logistics Management System - VMCN_CONNEX - VMCN_Digital Dynamic Supermarket).
@@ -220,27 +219,29 @@ assert(!all.some(([,checks])=>checks.checks.some(row=>row.tags.some(tag=>tag.lab
   assert.equal(checks.k,0);
  }
  {
-  // HC entries are not in the catalogue: VMCN_CONNEX's own HC.06.01.01 and HC.06.01.05 records are kept as recorded,
-  // stay outside B.06 review scope (no Possibly B.06 tag) and are an L3 gap again, as with the legacy catalogue.
+  // HC entries are not in the catalogue, and since 2026-10-22 VMCN_CONNEX's own HC.06.01.01 and HC.06.01.05 records (another
+  // company) are left out of the analysis: the source field keeps them, they get no row, and without them the application has
+  // no capability of its own left, so it is an L3 gap.
   // 2026-10-21 (V9.16 export): the current record is B.06.2.3 / B.06.2.6 with a process (no check, no gap), so the HC case
   // uses VMCN_CONNEX's pre-export registration (preExport).
   const [current,currentChecks]=find('VMCN_CONNEX');
   assert.deepEqual([current.rawCap,currentChecks.n,currentChecks.k,l3Gap(reports.cap).includes(current),l3Gap(reports.process).includes(current)],[['B.06.2.3 Demand Planning','B.06.2.6 Procurement Planning'],0,0,false,false]);
   const pre=checked(preExport(data)),[app,checks]=pre.find('VMCN_CONNEX');
-  assert(app.rawCap.includes('HC.06.01.01 Demand Planning')&&app.rawCap.includes('HC.06.01.05 Detailed Production Scheduling'),'source HC records are untouched');
+  assert(app['Business Capabilities'].includes('HC.06.01.01 Demand Planning')&&app['Business Capabilities'].includes('HC.06.01.05 Detailed Production Scheduling'),'source HC records are untouched');
+  assert.deepEqual([app.rawCap,app.otherCompany],[[],['HC.06.01.01 Demand Planning','HC.06.01.05 Detailed Production Scheduling']]);
   assert.equal(checks.checks.filter(row=>row.primary==='Process: Level 3 missing').length,1);
-  const hc=checks.checks.filter(row=>row.raw.startsWith('HC.06.'));
-  assert.deepEqual(hc.map(row=>row.raw),['HC.06.01.01 Demand Planning','HC.06.01.05 Detailed Production Scheduling']);
-  assert(hc.every(row=>row.primary==='Business Capability: Level 3 match needs review'));
-  assert.deepEqual(hc.map(row=>row.tags.map(tag=>tag.label)),[['Outside B.06 review scope'],['Outside B.06 review scope']]);
+  assert.deepEqual(checks.checks.filter(row=>row.raw.startsWith('HC.')),[],'no row for another company\'s records');
   assert(l3Gap(pre.reports.cap).includes(app));
-  assert.equal(checks.k,0,'an uncatalogued HC record has no standard name to compare');
+  assert.equal(checks.k,0,'an HC record has no standard name to compare');
  }
  {
-  // Wuj HK AGV's own HC.02.04.05 record (never catalogued) is unchanged: outside B.06 review scope and an L3 gap.
+  // Wuj HK AGV's own HC.02.04.05 record (never catalogued; another company since 2026-10-22) stays in its source field
+  // and gets no row; its B.06.5 (Level 2) leaves it an L3 gap, shown as "Level 3 missing".
   const [app,checks]=find('Wuj HK AGV');
-  assert(app.rawCap.includes('HC.02.04.05 Transportation Management'),'source HC record is untouched');
-  assert.deepEqual(checks.checks.filter(row=>row.raw.startsWith('HC.')).map(row=>[row.raw,row.primary,row.tags.map(tag=>tag.label)]),[['HC.02.04.05 Transportation Management','Business Capability: Level 3 match needs review',['Outside B.06 review scope']]]);
+  assert(app['Business Capabilities'].includes('HC.02.04.05 Transportation Management'),'source HC record is untouched');
+  assert.deepEqual(app.otherCompany,['HC.02.04.05 Transportation Management']);
+  assert.deepEqual(checks.checks.filter(row=>row.raw.startsWith('HC.')),[]);
+  assert(checks.checks.some(row=>row.dimension==='cap'&&row.raw===''&&row.primary==='Business Capability: Level 3 missing'));
   assert(l3Gap(reports.cap).includes(app));
  }
  assert(!rows.some(([,row])=>row.tags.some(tag=>tag.label==='Possibly B.06')),'no record is tagged Possibly B.06');

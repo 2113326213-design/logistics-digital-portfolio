@@ -20,7 +20,18 @@
 - **小版本**（V10.1、V10.2……）：修正、文字和显示调整。
 - 版本号写在 `program/scripts/release.mjs` 的 RELEASE_VERSION（小写，如 `v10`、`v10.1`）；文件名、发布 zip、部署脚本和 Release 标签（`v10-20261022`）都随它生成。导入预览的“变化明细”是新功能，所以这一版是 V10（原计划的 V9.20 没有发布）。
 
-## V13.2 当前状态（2026-10-22，优先于所有历史段落）
+## V13.3 当前状态（2026-10-22，优先于所有历史段落）
+
+- 用户：“HC的开头的都不需要了，那个是其他公司的”。2026-10-19 的决定（“HC 去除，这不属于我们部门的”）只把标准表里的 HC 条目挡在能力目录外，各应用自己的 HC 记录仍保留并显示为 “B.06 范围外”；这次连这些记录也不再参与分析。按版本号规则属于修正（V13.3）。
+- **规则**（`public/codes.mjs`）：`OTHER_COMPANY_CODE=/^HC\./`（与原来 `xlsx.mjs` 的 `OTHER_DEPARTMENT_CODE` 相同，后者现在就是它），`otherCompanyRecord(raw)` 对去掉首尾空格的记录判断。
+- **模型**（`public/model.mjs`）：每个应用的 `rawCap` / `rawProcess` 去掉 HC 记录（所有者对该记录有映射时保留），去掉的放在 `otherCompany`。原始字段 `Business Capabilities` / `Processes` 不变（导出、导入比较、历史都用原文）。因为所有分析都基于 `rawCap` / `rawProcess`，所以 HC 不再生成能力节点、地图列、分类选项、搜索匹配、待处理、数据检查和相似度的 “范围外” 记录。`overview.mjs` 的 Main Business Capability 也去掉 HC。
+- **显示**（`public/source-records.mjs`）：Source records 仍原样列出，字段说明写 “Not used: <记录> (HC entries belong to another company).”。
+- **变化**（改动前后对比全部数字）：只有 Wuj HK AGV 受影响 —— 地图能力视图 13 → 12 列（去掉 HC.02），To review 去掉 “能力编码缺失 HC.02.4.5”，Overview 中它从 pending 变为 matched，数据检查从 HC 行变为 “Level 3 missing”（只登记了 B.06.5，确实缺 Level 3）。相似度 2775 对的状态和分数完全不变。
+- **测试**：`tests/v13-3-hc-records.test.mjs`（规则、Wuj HK AGV 全链路、流程和 Main Business Capability、其他应用不变、所有者映射照常生效；去掉 Main Business Capability 过滤的变异会被发现）。按旧规则写的断言已更新：`acceptance`（范围外示例改用 B.14.09.1，HC 不再算范围外）、`data-checks-v3`、`model`、`workspace-improvements`（旧目录下的 To review 40 → 39 等，各减去这 1 项）、`capability-standard`（重算历史事件时去掉 HC 记录再与存档比较；存档的历史本身不改）。
+- 浏览器检查（本机 http，V13.3）：地图 “12 categories”、页面上没有 HC、搜 “HC.02” 为 0；Wuj HK AGV 详情的待处理为 “Level 3 missing · No Level 3 capability recorded.”，Source records 显示 “Not used: HC.02.04.05 Transportation Management (HC entries belong to another company).”。
+- 当前离线包：`offline/logistics-offline-20261022-v13.3.zip`（HTML + deploy-iis.bat，一次下载）；HTML 文件名及页面标识均为 V13.3。验证记录见 `verification/v13.3-verification.md`。
+
+## V13.2 历史状态（2026-10-22，受顶部 V13.3 更新）
 
 - 用户：“发布 V13.2：一个文件即可部署。按原流程测试、模拟部署、更新文档后发布到 GitHub 并复制到 D 盘；本地的 V13.1 zip 先恢复成已发布的那份。” 部署改动由另一个会话（“IIS deploy with one download instead of two”）完成，本会话核对、修正 `release:files` 后发布。按版本号规则属于修正。
 

@@ -53,11 +53,11 @@
 
 不在内网，或想自己保留一份时用：
 
-1. 下载 [**logistics-offline-20261022-v13.2.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest)。
+1. 下载 [**logistics-offline-20261022-v13.3.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest)。
 2. 右键 → **Extract all**。
 3. 用 Chrome 打开里面的 HTML（同一个 zip 里的 `deploy-iis.bat` 是给内网服务器部署用的，自己用时不用管）。
 
-页面顶部显示 **V13.2** 就对了。
+页面顶部显示 **V13.3** 就对了。
 
 </td>
 </tr>
@@ -68,7 +68,7 @@
     <td align="center" width="25%"><h3>75</h3><sub>应用 · 10 个工厂 · 5 个业务部门</sub></td>
     <td align="center" width="25%"><h3>2,775</h3><sub>组两两比较 · 9 组得分 ≥ 50</sub></td>
     <td align="center" width="25%"><h3>22 / 39</h3><sub>Process / Capability 待处理应用</sub></td>
-    <td align="center" width="25%"><h3>V13.2</h3><sub>2026-10-22 · 489 项测试通过</sub></td>
+    <td align="center" width="25%"><h3>V13.3</h3><sub>2026-10-22 · 493 项测试通过</sub></td>
   </tr>
 </table>
 
@@ -126,7 +126,7 @@
 <details>
 <summary><b>数据有多新？</b></summary>
 <br>
-页面标题下面那行（Data: 文件名 · as of 日期）就是当前数据的来源和日期；在页面里导入新表后会跟着变。导入的工作簿里有多张 Logistic Apps_<日期> 表时，读取日期最新的一张，导入预览的 Inventory 一行写明读的是哪一张。内置数据的应用清单来自 2026-10-21 的自有工作簿（<code>20261021_logistic_inventory.xlsx</code> 的 Logistic Apps_1021，含 Status in Oct；不是 still active 的应用和 no score 的应用不计入成本、ROI 和相似度检查），此前依次并入了 2026-08-25 的清单和 2026-10-20 的 LeanIX 应用导出；流程标准以 2025-02-21 的快照为准，并按编号合并了 2026-10-20 的 LeanIX 流程导出（新旧名称并列保留，有差异的标为待确认）。
+页面标题下面那行（Data: 文件名 · as of 日期）就是当前数据的来源和日期；在页面里导入新表后会跟着变。导入的工作簿里有多张 Logistic Apps_<日期> 表时，读取日期最新的一张，导入预览的 Inventory 一行写明读的是哪一张。内置数据的应用清单来自 2026-10-21 的自有工作簿（<code>20261021_logistic_inventory.xlsx</code> 的 Logistic Apps_1021，含 Status in Oct；不是 still active 的应用和 no score 的应用不计入成本、ROI 和相似度检查），此前依次并入了 2026-08-25 的清单和 2026-10-20 的 LeanIX 应用导出；流程标准以 2025-02-21 的快照为准，并按编号合并了 2026-10-20 的 LeanIX 流程导出（新旧名称并列保留，有差异的标为待确认）。能力或流程记录以 HC 开头的属于其他公司，不参与任何统计和比较，只在应用详情的 Source records 里原样列出并注明未使用。
 </details>
 
 <details>
@@ -141,7 +141,7 @@
 </details>
 
 <details>
-<summary><b>页面打开了，但不是 V13.2，或者显示不全？</b></summary>
+<summary><b>页面打开了，但不是 V13.3，或者显示不全？</b></summary>
 <br>
 按 <b>Ctrl + F5</b> 强制刷新（浏览器可能缓存了旧版本）。工具在 Chrome 上测试过，请优先用 Chrome。
 </details>
@@ -173,7 +173,9 @@
 
 完整更新日志见 [`CHANGELOG.md`](CHANGELOG.md)。
 
-**V13.2（当前，2026-10-22）**：IIS 部署只需下载一个文件：deploy-iis.bat 放进发布 zip，存到 Downloads、打开 zip、双击脚本即可；Release 不再附 deploy-iis-script.zip。
+**V13.3（当前，2026-10-22）**：能力和流程记录中以 HC 开头的属于其他公司，不再参与任何统计、地图、搜索、待处理和相似度（原记录保留，应用详情的 Source records 标明未使用）；地图少了 HC.02 一列，待处理少了 1 项。
+
+**V13.2（2026-10-22）**：IIS 部署只需下载一个文件：deploy-iis.bat 放进发布 zip，存到 Downloads、打开 zip、双击脚本即可；Release 不再附 deploy-iis-script.zip。
 
 **V13.1（2026-10-22）**：6 个找应用的搜索框统一叫 Find applications，都能按名称、ID、工厂、业务单元搜（多个词时每个词都要对上；Application landscape 另外仍可按分类搜）；比较窗口里重复的 Clear selection 只留一个。
 
@@ -201,6 +203,7 @@
 
 | 版本 | 主要变化 |
 |---|---|
+| [V13.3](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v13.3-20261022) | 能力和流程记录中以 HC 开头的属于其他公司，不再参与任何统计、地图、搜索、待处理和相似度（原记录保留，应用详情的 Source records 标明未使用）；地图少了 HC.02 一列，待处理少了 1 项 |
 | [V13.2](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v13.2-20261022) | IIS 部署只需下载一个文件：deploy-iis.bat 放进发布 zip，存到 Downloads、打开 zip、双击脚本即可；Release 不再附 deploy-iis-script.zip |
 | [V13.1](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v13.1-20261022) | 6 个找应用的搜索框统一叫 Find applications，都能按名称、ID、工厂、业务单元搜（多个词时每个词都要对上；Application landscape 另外仍可按分类搜）；比较窗口里重复的 Clear selection 只留一个 |
 | [V13](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v13-20261022) | 页面标题右侧新增应用搜索框（任意页面按 / 键即可定位），输入名称、ID、工厂或业务单元，回车直接打开应用详情；Import data 读取工作簿里日期最新的 Logistic Apps_<日期> 表，导入预览写明读的是哪一张 |
@@ -330,7 +333,7 @@ flowchart LR
 | 导入 / 导出（Excel、工作区、CSV） | `program/public/xlsx.mjs`、`program/public/import-review.mjs`、`program/public/workspace.mjs`、`program/public/exports.mjs`、`program/public/score-settings.mjs`（阈值随备份）、`program/public/offline-save.mjs`（离线导出提示）；应用搜索在 `program/public/app-search.mjs`（6 个搜索框共用 matchesApplication 和同一个名称、提示） |
 | 样式 | `program/public/*.css` |
 | 构建和离线单文件 | `program/scripts/build.mjs`、`program/scripts/export-offline.mjs` |
-| 测试（`npm test`，当前 489 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v13.2-test-results.txt` |
+| 测试（`npm test`，当前 493 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v13.3-test-results.txt` |
 | 离线单文件版 | `offline/` |
 | IIS 部署脚本（每次发布自动生成） | `offline/deploy-iis.bat`（同一份脚本也在发布 zip `offline/logistics-offline-<日期>-<版本>.zip` 里，部署只需下载这个 zip）；生成器 `program/scripts/deploy-script.mjs`，模板 `program/scripts/deploy-iis.template.bat`，发布打包 `program/scripts/release-files.mjs`（`npm run release:files`），检查 `program/tests/deploy-script.test.mjs`，本机模拟 `program/scripts/deploy-sim.mjs`（`npm run deploy:sim`） |
 | 构建输出、文件校验清单 | `built/`、`MANIFEST.sha256` |

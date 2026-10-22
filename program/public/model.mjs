@@ -1,4 +1,4 @@
-import {split,norm,capCode,PROCESS_LEVEL,compareNatural} from './codes.mjs';
+import {split,norm,capCode,PROCESS_LEVEL,compareNatural,otherCompanyRecord} from './codes.mjs';
 export {split,norm,capCode} from './codes.mjs';
 import {correctionStates,recordKey} from './corrections.mjs';
 import {applyLeanixExport} from './leanix-processes.mjs';
@@ -24,7 +24,11 @@ export function buildModel(data){
  const missingFromExport=new Set(data.inventoryExport?.missingIds||[]);
  const apps=data.apps.map((raw,i)=>{
   const id=String(raw.ID??'').trim();if(!id||!String(raw.Name??'').trim())throw Error(`第 ${i+2} 行缺少 ID 或 Name`);if(ids.has(id))throw Error(`应用 ID 重复：${id}`);ids.add(id);
-  const a={...raw,id,cap:[],process:[],unmatched:[],processMatches:[],accepted:[],notInExport:missingFromExport.has(id)?data.inventoryExport:null,rawCap:split(raw['Business Capabilities']),rawProcess:split(raw.Processes)};
+  // HC records belong to another company (owner 2026-10-22): left out of every count, column, search and comparison
+  // unless an owner mapping names them. The source fields stay as recorded; Source records names what is not used.
+  const records=(dimension,value)=>{const all=split(value),other=s=>otherCompanyRecord(s)&&!mapped(id,dimension,s);return {own:all.filter(s=>!other(s)),other:all.filter(other)};};
+  const capRecords=records('cap',raw['Business Capabilities']),processRecords=records('process',raw.Processes);
+  const a={...raw,id,cap:[],process:[],unmatched:[],processMatches:[],accepted:[],notInExport:missingFromExport.has(id)?data.inventoryExport:null,rawCap:capRecords.own,rawProcess:processRecords.own,otherCompany:[...capRecords.other,...processRecords.other]};
   for(const s of a.rawCap){const corrected=mapped(id,'cap',s);if(corrected){a.cap.push(corrected);continue;}const code=capCode(s);if(code){ensureCap(code,s);a.cap.push(code);}else{a.unmatched.push(s);flag(a,'cap',{appId:a.id,app:a.Name,type:'业务能力无法识别',value:s});}}
   // L3V is Level 3 (owner decision 2026-10-19): matched by name and counted exactly like L3.
   // A record with a full business process code is matched by that code first; otherwise by chain, level and

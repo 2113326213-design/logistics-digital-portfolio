@@ -1,6 +1,6 @@
 import {formatROIPayback,roiPaybackNote,ROI_PAYBACK_RULE} from './roi.mjs';
 import {annualLabel,scopeReason} from './display.mjs';
-import {capCode,norm,split,PROCESS_LEVEL,compareNatural} from './codes.mjs';
+import {capCode,norm,split,PROCESS_LEVEL,compareNatural,otherCompanyRecord} from './codes.mjs';
 import {reviewIssues,processAncestorCoverage,level2Coverage as coverageAtLevel2} from './review-issues.mjs';
 import {annualCost,costSummary,formatAnnualCost,formatRMB} from './costs.mjs';
 import {matchesApplication,APP_SEARCH_LABEL,APP_SEARCH_PLACEHOLDER} from './app-search.mjs';
@@ -48,7 +48,7 @@ export function maintenanceReport(model,filters={},dimension='cap'){
  const apps=model.apps.filter(a=>(!filters.division||(a.Division||'Not provided')===filters.division)&&(!filters.entity||(a.Entity||'Not provided')===filters.entity)),isCap=dimension==='cap';
  const levels=isCap?[1,2,3]:[0,1,2,3],map=isCap?model.caps:model.procs;
  const records=new Map(apps.map(a=>{
-  const rawCapabilities=[...split(a['Main Business Capability']),...a.rawCap];
+  const rawCapabilities=[...split(a['Main Business Capability']).filter(raw=>!otherCompanyRecord(raw)),...a.rawCap];
   const seen=new Set(),uniqueCapabilities=rawCapabilities.filter(raw=>{const key=capCode(raw)||norm(raw);if(seen.has(key))return false;seen.add(key);return true;});
   // A process record listed twice in the source is one record (one issue at most), as for capabilities.
   const source=isCap?uniqueCapabilities:[...new Set(a.rawProcess)];

@@ -23,7 +23,9 @@ r=compare(pair([label('B.06.1.2')],[label('B.06.1.3')]));assert.equal(r.coverage
 r=compare(pair([label('B.06.1.2'),label('B.06.1.3')],[label('B.06.1.2'),label('B.06.1.4'),label('B.06.1.5')]));assert.equal(r.coverageA,.5);assert.equal(r.coverageB,1/3);
 r=compare(pair(['B.06.1.2 Unconfirmed wording'],[label('B.06.1.2')]));assert.equal(r.coverageA,1);assert.equal(r.forward.hasSourceNameDifferences,true);
 r=compare(pair(['B.06.99 Unknown'],[label('B.06.1.2')]));assert.equal(r.coverageA,null);assert.equal(r.coverageB,null);
-r=compare(pair(['HC.06.01 Other'],[label('B.06.1.2')]));assert.equal(r.coverageA,null);assert.equal(r.forward.target.outside.length,1);
+r=compare(pair(['B.14.09.1 Other'],[label('B.06.1.2')]));assert.equal(r.coverageA,null);assert.equal(r.forward.target.outside.length,1);
+// 2026-10-22: HC records belong to another company and are left out entirely, not even kept as outside records.
+r=compare(pair(['HC.06.01 Other'],[label('B.06.1.2')]));assert.equal(r.coverageA,null);assert.equal(r.forward.target.outside.length,0);
 const real=buildModel(original),a=real.apps.find(a=>a.Name==='AR Stock Taking'),b=real.apps.find(a=>a.Name==='AUTO-RACK');
 // Legacy catalogue (before 2026-10-16) named B.06.4 "Storage Management", so AR Stock Taking's "B.06.4 Inventory Management" waits for business confirmation.
 const old=JSON.parse(fs.readFileSync(new URL('./capability-rows-2026-10-15.json',import.meta.url))),legacy=buildModel({...original,capabilityRows:old.capabilityRows,taxonomySource:old.taxonomySource});

@@ -2,6 +2,10 @@
 
 每个版本的离线包在 [Releases](https://github.com/2113326213-design/logistics-digital-portfolio/releases)；详细的修改说明和用户决定在 [`00_Claude先读.md`](00_Claude先读.md)，验证记录在 [`verification/`](verification/)。
 
+## [V13.3](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v13.3-20261022) · 2026-10-22
+
+- **HC 记录不再使用**（用户：“HC的开头的都不需要了，那个是其他公司的”）：2026-10-19 起 HC 条目已不进能力目录，但各应用自己的 HC 记录还保留在“B.06 范围外”。现在凡是以 `HC.` 开头的能力或流程记录（以及 Main Business Capability）都不参与任何统计、地图、搜索、待处理、数据检查和相似度；原始记录不改，应用详情的 Source records 原样列出并写明 “Not used: … (HC entries belong to another company)”。目前只有 Wuj HK AGV 有一条（HC.02.04.05 Transportation Management）：Application landscape 少了 HC.02 一列（13 → 12），To review 少了 1 项（“能力编码缺失 HC.02.4.5”），它的数据检查从 “HC 记录 Level 3 待确认” 变为 “Level 3 missing”（只登记了 B.06.5）。相似度的 2775 对结果完全不变。所有者若把某条 HC 记录映射到我们的能力，映射照常生效。
+
 ## [V13.2](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v13.2-20261022) · 2026-10-22
 
 - **部署只需下载一个文件**（用户在 V11 和 V13.1 两次只下载了部署脚本，脚本停在 “…zip not found”）：`deploy-iis.bat` 放进发布 zip `logistics-offline-<日期>-<版本>.zip`，和离线 HTML 在一起。服务器上：下载这个 zip 存在 Downloads → 打开 → 双击 `deploy-iis.bat`。脚本仍校验 HTML 的 SHA-256；不符时在复制文件之前停下，写明删掉哪个 zip、重新下载，并等待按键。Release 不再附 `deploy-iis-script.zip`。`npm run deploy:sim` 扩展为 10 种情况。

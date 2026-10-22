@@ -22,7 +22,7 @@ import {similarityCSV} from '../public/exports.mjs';
 import {workspaceData} from '../public/workspace.mjs';
 import {recordImport,cleanImportHistory,importEvents,applicationTimeline,applicationTimelineCSV} from '../public/application-history.mjs';
 import {chronologicalEvents,renderHistoryRecords} from '../public/history-view.mjs';
-import {capCode,split} from '../public/codes.mjs';
+import {capCode,split,otherCompanyRecord} from '../public/codes.mjs';
 import {taxonomySheets,xlsxBuffer} from './source-workbooks.mjs';
 import {recordsBefore20261020,EXPORT_FILE} from './records-before-20261020.mjs';
 
@@ -40,6 +40,9 @@ const {importHistory:_history,applicationEvents:_events,...shipped}=raw;
 const legacy=workspaceData({...shipped,capabilityRows:old.capabilityRows,taxonomySource:old.taxonomySource});
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const sorted=values=>[...values].sort();
+// Since 2026-10-22 HC records (another company) take part in no check, so recomputing a stored event gives it without
+// its HC records; the stored history itself stays as it was recorded.
+const ownRecords=e=>({...e,issues:(e.issues||[]).filter(i=>!otherCompanyRecord(i.record))});
 const PROCESS_BOOK='Business Capability + Process.xlsx',STANDARD_BOOK='standard+name.xlsx';
 const HEADER=['Level 1 Code','Level 1 Name','Level 2 Code','Level 2 Name','Level 3 Code','Level 3 Name'];
 // The layout of the real standard+name.xlsx (checked 2026-10-16): header on row 1, one entry per row, each row
@@ -295,7 +298,7 @@ test('public/data.json records the switch and the HC removal as two taxonomy eve
  assert.equal(hash(raw.apps),'dc65a6f3702720bb61aed9e8279fa5b8bd93d608cc628afa1e4dd6713574ec05');
  // recordImport from the 2026-10-15 catalogue to the standard as read then (with its HC entries) gives exactly the first event.
  const again=recordImport(legacy,workspaceData({...shipped,capabilityRows:REAL_STANDARD}),{taxonomyFile:STANDARD_BOOK,at:event.at}).importHistory;
- assert.deepEqual(cleanImportHistory(again).map(e=>({...e,id:event.id})),[event]);
+ assert.deepEqual(cleanImportHistory(again).map(e=>({...e,id:event.id})),[ownRecords(event)]);
  // Every check in the event follows from the catalogue change alone (verified by code with capCode).
  const before=catalogue(old.capabilityRows),after=catalogue(REAL_STANDARD),count={};
  for(const issue of event.issues){
@@ -321,7 +324,7 @@ test('public/data.json records the switch and the HC removal as two taxonomy eve
  assert.deepEqual(importEvents(raw.importHistory).map(e=>sorted(e.appIds)),[sorted(L.keys()),sorted(L.keys())],'both events cover every application');
  // recordImport from the workspace after the switch to the catalogue without HC gives exactly the stored history.
  const removed=recordImport(beforeRemoval,workspaceData(shipped),{taxonomyFile:STANDARD_BOOK,at:removal.at}).importHistory;
- assert.deepEqual(cleanImportHistory(removed).map((e,index)=>index===1?{...e,id:removal.id}:e),raw.importHistory);
+ assert.deepEqual(cleanImportHistory(removed).map((e,index)=>index===1?{...e,id:removal.id}:e),raw.importHistory.map((e,index)=>index===1?ownRecords(e):e));
  // Its checks are exactly the recorded capabilities whose code left the catalogue; nothing entered and no name changed.
  const now=catalogue(raw.capabilityRows),gone=[],came=[];
  for(const app of raw.apps)for(const record of split(app['Business Capabilities'])){const id=capCode(record);if(id&&after.has(id)&&!now.has(id))gone.push([app.ID.trim(),record]);if(id&&!after.has(id)&&now.has(id))came.push([app.ID.trim(),record]);}
@@ -381,7 +384,7 @@ test('uploading the standard workbook alone in the browser keeps the processes, 
  assert.equal(removal.next.taxonomySource,raw.taxonomySource);assert.deepEqual(removal.next.capabilityRows,data.capabilityRows);assert.deepEqual(removal.next.processRows,data.processRows);
  assert.deepEqual(removal.capabilityChanges,HC_REMOVAL);assert.equal(removal.taxonomyChanged,true);assert.equal(removal.hasChanges,true);assert.deepEqual(removal.updated,[]);assert.deepEqual(removal.ownerDecisions,[]);
  const appliedRemoval=recordImport(beforeRemoval,removal.next,{inventoryFile:'',taxonomyFile:STANDARD_BOOK,decisions:removal.ownerDecisions,at:removalEvent.at});
- assert.deepEqual(cleanImportHistory(appliedRemoval.importHistory).map((e,index)=>index===1?{...e,id:removalEvent.id}:e),raw.importHistory);
+ assert.deepEqual(cleanImportHistory(appliedRemoval.importHistory).map((e,index)=>index===1?{...e,id:removalEvent.id}:e),raw.importHistory.map((e,index)=>index===1?ownRecords(e):e));
  assert.deepEqual(workspaceData(appliedRemoval).apps,data.apps);
 
  // Re-uploading the same standard changes nothing and keeps the combined source.

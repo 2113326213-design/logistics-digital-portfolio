@@ -1,12 +1,15 @@
 import {formatROIPayback,roiPayback,ROI_PAYBACK_RULE} from './roi.mjs';
+import {otherCompanyRecord} from './codes.mjs';
 export function renderSourceRecords(app,esc){
  const entries=value=>String(value??'').split(';').filter(entry=>entry.trim());
+ // HC entries belong to another company (owner decision 2026-10-22): shown as recorded, named as not used.
+ const notUsed=values=>{const other=values.filter(otherCompanyRecord);return other.length?`Not used: ${other.join('; ')} (HC entries belong to another company).`:'';};
  const notes=String(app.Description??'').split(/\r?\n/).filter(line=>/^oneIDM name is\b/i.test(line.trim()));
  const fields=[
   {name:'ROI (payback period)',values:[formatROIPayback(app)],note:`Source ROI score: ${roiPayback(app).score??'not provided'}${roiPayback(app).score!==null?' / 5':''} · ${app.roiSource||'No ROI source recorded'} · Shown as a payback period: ${ROI_PAYBACK_RULE}.`},
   ...(String(app.statusNote??'').trim()?[{name:'Status in source inventory',values:[String(app.statusNote).trim()],note:`${app.statusSource||'No source recorded'}${String(app.statusNote).trim().toLowerCase().replace(/\s+/g,' ')==='still active'?'':' · Not still active: not counted in cost totals, ROI or the similarity check.'}`}]:[]),
-  {name:'Business Capabilities',values:entries(app['Business Capabilities'])},
-  {name:'Processes',values:entries(app.Processes)},
+  {name:'Business Capabilities',values:entries(app['Business Capabilities']),note:notUsed(entries(app['Business Capabilities']))},
+  {name:'Processes',values:entries(app.Processes),note:notUsed(entries(app.Processes))},
   ...(notes.length?[{name:'Description',values:notes,note:'Source notes from Description'}]:[])
  ];
  return `<p class="app-source-guide">Current inventory values, grouped by field. Entries are shown in source order.</p>

@@ -42,7 +42,8 @@ function sourceRows(model,app){
    continue;
   }
   if(!/^B\.06(?:\.|$)/.test(code)){
-   // HC codes belong to another department (owner decision 2026-10-19), so they are no longer flagged as possibly B.06.
+   // Other capability areas (B.01, B.05, …). HC records never get here: they belong to another company and are left
+   // out of the model (owner decision 2026-10-22); Source records names them.
    addTag(row,'Outside B.06 review scope','Outside B.06 review scope and excluded from similarity. This does not establish an error; confirm the business assignment before changing it.');
   }else if(!node?.reference){
    // With the business capability standard as catalogue, a B.06 code outside it is a record to correct (owner decision

@@ -3,7 +3,7 @@ import {cleanAnnualBenefit} from './annual-benefit.mjs';
 // No workbook content is sent to a server.
 import {roiScoresFromSheets} from './roi.mjs';
 import {operationCostScoresFromSheets} from './costs.mjs';
-import {capCode} from './codes.mjs';
+import {capCode,OTHER_COMPANY_CODE} from './codes.mjs';
 export async function readXlsx(file){
  if(file.size>30*1024*1024)throw Error('文件超过 30 MB，请导出所需工作表后重试。');
  const bytes=new Uint8Array(await file.arrayBuffer()),v=new DataView(bytes.buffer),decoder=new TextDecoder();let end=-1;
@@ -87,8 +87,9 @@ export function taxonomyFromSheets(sheets){const standard=sheets['Standard Name'
 // Names are kept as recorded (trimmed). One code with two different names stops the import; the same code
 // written two ways (B.06.2.01 / B.06.2.1) with the same name keeps the first spelling.
 // Owner decision 2026-10-19: HC capabilities belong to another department, so an entry with an HC code is
-// not taken into the catalogue (applications' own HC records are kept and stay outside B.06).
-export const OTHER_DEPARTMENT_CODE=/^HC\./;
+// not taken into the catalogue. Since 2026-10-22 (another company) the applications' own HC records are left out of
+// the analysis too (model.mjs); the rule lives in codes.mjs.
+export const OTHER_DEPARTMENT_CODE=OTHER_COMPANY_CODE;
 export function capabilityRowsFromStandard(rows){
  // Header cells match without regard to surrounding spaces or capitals ('level 1 code ').
  const key=value=>String(value??'').trim().toLowerCase(),column=(row,name)=>row.findIndex(cell=>key(cell)===name.toLowerCase());
