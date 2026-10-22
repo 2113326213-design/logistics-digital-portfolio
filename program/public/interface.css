@@ -352,3 +352,9 @@ html:has(body.portfolio-fullscreen){scrollbar-gutter:auto}
 .import-changes-table th,.import-changes-table td{width:auto;min-width:0;height:auto;border-right:0;padding:6px 10px}
 .import-changes-table thead th,.import-changes-table thead th:first-child{position:sticky;top:0;left:auto;height:auto;z-index:1;background:#f1f6f9;color:#405a6b}
 .import-changes-table tbody th:first-child{position:static;width:auto;min-width:9em;background:transparent;z-index:auto}
+
+/* Restore question for work kept in this browser (V11) */
+#localRestore{max-width:640px}
+/* Direct link and To review export (V11) */
+.profile-link{margin:6px 0 0;display:flex;align-items:center;gap:8px;font-size:.8125rem}.profile-link button{padding:4px 10px;font-size:.8125rem}.profile-link span{color:#2e7d4f}
+#overviewExportReview{white-space:nowrap}

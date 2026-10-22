@@ -53,11 +53,11 @@
 
 不在内网，或想自己保留一份时用：
 
-1. 下载 [**logistics-offline-20261022-v10.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest)。
+1. 下载 [**logistics-offline-20261022-v11.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest)。
 2. 右键 → **Extract all**。
 3. 用 Chrome 打开里面的 HTML。
 
-页面顶部显示 **V10** 就对了。
+页面顶部显示 **V11** 就对了。
 
 </td>
 </tr>
@@ -68,7 +68,7 @@
     <td align="center" width="25%"><h3>75</h3><sub>应用 · 10 个工厂 · 5 个业务部门</sub></td>
     <td align="center" width="25%"><h3>2,775</h3><sub>组两两比较 · 9 组得分 ≥ 50</sub></td>
     <td align="center" width="25%"><h3>22 / 39</h3><sub>Process / Capability 待处理应用</sub></td>
-    <td align="center" width="25%"><h3>V10</h3><sub>2026-10-22 · 468 项测试通过</sub></td>
+    <td align="center" width="25%"><h3>V11</h3><sub>2026-10-22 · 474 项测试通过</sub></td>
   </tr>
 </table>
 
@@ -98,14 +98,16 @@
 | 拿一个应用和其他应用比 | **Similarity check** | **Compare an application** → 选第一个应用 → **Choose another application** |
 | 一次比较多个应用 | **Similarity check** | **Compare multiple applications**，勾选要比的应用 |
 | 调整打分标准 | **Similarity check** 顶部 | **Score settings** → **Edit settings**，改权重和 **Minimum score** |
-| 保存我的调整，下次接着用 | 任意页面 | **Export workspace** 导出备份；下次用 **Import data** 恢复 |
+| 保存我的调整，下次接着用 | 任意页面 | 自动保存在这台电脑的浏览器里，下次打开选 **Continue kept work**；要备份或发给别人用 **Export workspace** |
+| 把待处理清单发给工厂 | **Overview** | 选工厂 → **Export To review (CSV)**，用 Excel 打开 |
+| 把某个应用发给同事 | 应用详情 | **Copy link to this application**，对方打开链接直接看到这个应用 |
 
 ## 常见问题
 
 <details>
 <summary><b>我在页面里改的东西会保存吗？</b></summary>
 <br>
-只保存在当前浏览器标签页里，关掉就没了。要保留，请用 <b>Export workspace</b> 导出备份文件，下次用 <b>Import data</b> 导入；备份里包含 Score settings 的权重和最低分。在线版也一样：修改只在你自己的浏览器里，别人看不到，也不会改到服务器上的内容。
+会。从 V11 起，改动会自动保存在<b>这台电脑的这个浏览器</b>里；下次打开时会问你“继续上次的工作”（Continue kept work）还是“用文件里的数据”（Use the data in this file）。换电脑、换浏览器或清除浏览器数据后就没有了，所以重要的调整请用 <b>Export workspace</b> 导出备份，换地方用 <b>Import data</b> 导入；备份里包含 Score settings 的权重和最低分。在线版也一样：修改只在你自己的浏览器里，别人看不到，也不会改到服务器上的内容。
 </details>
 
 <details>
@@ -138,7 +140,7 @@
 </details>
 
 <details>
-<summary><b>页面打开了，但不是 V10，或者显示不全？</b></summary>
+<summary><b>页面打开了，但不是 V11，或者显示不全？</b></summary>
 <br>
 按 <b>Ctrl + F5</b> 强制刷新（浏览器可能缓存了旧版本）。工具在 Chrome 上测试过，请优先用 Chrome。
 </details>
@@ -164,7 +166,9 @@
 
 完整更新日志见 [`CHANGELOG.md`](CHANGELOG.md)。
 
-**V10（当前，2026-10-22）**：导入预览新增“变化明细”：点 Apply 之前按应用列出每个字段的“原值 → 新值”（Business Capabilities、Processes 只列出删掉和新增的条目），并可一键导出 CSV；版本号改按新规则，新功能升大版本。
+**V11（当前，2026-10-22）**：页面里的改动自动保存在本机浏览器，下次打开时可选“继续上次的工作”；Overview 可按当前筛选导出 To review 清单（CSV，Excel 可直接打开）；应用详情可复制直达链接，网址带 ?app= 时直接打开该应用。
+
+**V10（2026-10-22）**：导入预览新增“变化明细”：点 Apply 之前按应用列出每个字段的“原值 → 新值”（Business Capabilities、Processes 只列出删掉和新增的条目），并可一键导出 CSV；版本号改按新规则，新功能升大版本。
 
 **V9.19（2026-10-22）**：页面顶部提示改成一行：版本、日期和“改动只在本标签页，用 Export workspace 保存”；“Offline edition”和“不需要联网”只在双击文件打开时显示，内网网址打开时不显示；删掉内部说明 “Incomplete Level 3 records are currently deferred”。
 
@@ -182,6 +186,7 @@
 
 | 版本 | 主要变化 |
 |---|---|
+| [V11](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v11-20261022) | 页面里的改动自动保存在本机浏览器，下次打开时可选“继续上次的工作”；Overview 可按当前筛选导出 To review 清单（CSV，Excel 可直接打开）；应用详情可复制直达链接，网址带 ?app= 时直接打开该应用 |
 | [V10](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v10-20261022) | 导入预览新增“变化明细”：点 Apply 之前按应用列出每个字段的“原值 → 新值”（Business Capabilities、Processes 只列出删掉和新增的条目），并可一键导出 CSV；版本号改按新规则，新功能升大版本 |
 | [V9.19](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v9.19-20261022) | 页面顶部提示改成一行：版本、日期和“改动只在本标签页，用 Export workspace 保存”；“Offline edition”和“不需要联网”只在双击文件打开时显示，内网网址打开时不显示；删掉内部说明 “Incomplete Level 3 records are currently deferred” |
 | [V9.18](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v9.18-20261022) | 负责人确认两条流程登记按原样有效（RBCW Auto Warehouse Management System 的 Transport Material Intra Plant L3、AUTO-RACK 的 Putaway to Automated Warehouse L3V）：不再列为待处理，详情里写明确认人和日期，仍不算“匹配标准”；Process To review 23 → 22 |
@@ -298,7 +303,7 @@ flowchart LR
 | 导入 / 导出（Excel、工作区、CSV） | `program/public/xlsx.mjs`、`program/public/import-review.mjs`、`program/public/workspace.mjs`、`program/public/exports.mjs`、`program/public/score-settings.mjs`（阈值随备份）、`program/public/offline-save.mjs`（离线导出提示） |
 | 样式 | `program/public/*.css` |
 | 构建和离线单文件 | `program/scripts/build.mjs`、`program/scripts/export-offline.mjs` |
-| 测试（`npm test`，当前 468 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v10-test-results.txt` |
+| 测试（`npm test`，当前 474 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v11-test-results.txt` |
 | 离线单文件版 | `offline/` |
 | IIS 部署脚本（每次发布自动生成） | `offline/deploy-iis.bat`（打包下载版 `offline/deploy-iis-script.zip`）；生成器 `program/scripts/deploy-script.mjs`，模板 `program/scripts/deploy-iis.template.bat`，发布打包 `program/scripts/release-files.mjs`（`npm run release:files`），检查 `program/tests/deploy-script.test.mjs`，本机模拟 `program/scripts/deploy-sim.mjs`（`npm run deploy:sim`） |
 | 构建输出、文件校验清单 | `built/`、`MANIFEST.sha256` |

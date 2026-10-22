@@ -2,6 +2,12 @@
 
 每个版本的离线包在 [Releases](https://github.com/2113326213-design/logistics-digital-portfolio/releases)；详细的修改说明和用户决定在 [`00_Claude先读.md`](00_Claude先读.md)，验证记录在 [`verification/`](verification/)。
 
+## [V11](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v11-20261022) · 2026-10-22
+
+- **改动自动保存在本机**：页面里的调整（映射、审核备注、权重、最低分、导入）在停顿约半秒后保存在这台电脑的浏览器里。下次打开时询问“Continue kept work / Use the data in this file”，并可先 “Export kept work”；文件是更新的版本或数据时会提醒。浏览器不允许保存时沿用以前的规则（只在本标签页，离开时提醒）。页面顶部提示改为 “Your changes are kept in this browser on this computer — use Export workspace to back them up or share them.”
+- **To review 导出**：Overview 的 “Export To review (CSV)” 按当前业务部门和工厂筛选导出全部待处理问题（两个维度，每个问题一行：工厂、业务部门、应用、维度、层级、问题、来源记录、要核对什么、详细说明、数据来源）。
+- **应用直达链接**：网址带 `?app=<应用 ID>` 时直接打开该应用；打开详情时地址栏随之更新，关闭时去掉；详情里 “Copy link to this application” 复制链接（在线版可直接发给同事）。
+
 ## [V10](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v10-20261022) · 2026-10-22
 
 - 导入预览新增“变化明细”（用户要求 2026-10-22）：点 Apply 之前按应用列出每个字段的“原值 → 新值”；Business Capabilities 和 Processes 只列出删掉（−）和新增（+）的条目；只在来源位置（表和行）变化的应用单独说明数量。

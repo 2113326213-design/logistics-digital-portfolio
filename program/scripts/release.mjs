@@ -1,6 +1,6 @@
 // Keep the visible release label and downloaded file name in sync.
 export const RELEASE_DATE='2026-10-22';
-export const RELEASE_VERSION='v10';
+export const RELEASE_VERSION='v11';
 export const OFFLINE_FILE_NAME=`物流工具_最新版_离线单文件_${RELEASE_DATE.replaceAll('-','')}_${RELEASE_VERSION}.html`;
 // The release ZIP (GitHub release asset) and the IIS deploy script generated for it (scripts/deploy-script.mjs).
 export const RELEASE_ZIP_NAME=`logistics-offline-${RELEASE_DATE.replaceAll('-','')}-${RELEASE_VERSION}.zip`;

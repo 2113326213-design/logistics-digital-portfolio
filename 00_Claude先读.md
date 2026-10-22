@@ -19,7 +19,17 @@
 - **小版本**（V10.1、V10.2……）：修正、文字和显示调整。
 - 版本号写在 `program/scripts/release.mjs` 的 RELEASE_VERSION（小写，如 `v10`、`v10.1`）；文件名、发布 zip、部署脚本和 Release 标签（`v10-20261022`）都随它生成。导入预览的“变化明细”是新功能，所以这一版是 V10（原计划的 V9.20 没有发布）。
 
-## V10 当前状态（2026-10-22，优先于所有历史段落）
+## V11 当前状态（2026-10-22，优先于所有历史段落）
+
+- 用户从升级清单里选了三项（2026-10-22）：自动保存在本机、To review 导出 Excel、应用直达链接。三项都是新功能，按版本号规则发 V11。
+- **自动保存在本机**（`public/offline-save.mjs`）：离线版适配器在每次改动后约 600 ms 把整个工作区（exportWorkspace 的 JSON）写入 localStorage 键 `logistics-portfolio:kept-workspace`（含 release、source、savedAt）。离开页面时先把未写入的改动写入；写入成功就不再弹离开提醒（只开始下载导出文件仍然提醒，规则同 V9.15）。打开时 load() 读到与当前数据不同的已存工作，就用 index.html 的 `#localRestore` 对话框询问：Continue kept work（交给 app.js 的 onRestore，经 mergeBundledCorrections 合并内置的映射）/ Use the data in this file（删除已存工作）/ Export kept work。文件版本或数据来源与已存工作不同时显示提醒。浏览器不允许 localStorage 时沿用旧规则。保存提示放在 `LOCAL_SAVE_MESSAGES`（“kept in this browser”），导出相关的 `OFFLINE_SAVE_MESSAGES` 仍不说“已保存”。导出脚本把版本传给适配器（`createOfflineAutosave({release:"V11",…`），页面顶部提示改为 “Your changes are kept in this browser on this computer — use Export workspace to back them up or share them.”。页面的视图设置（当前页面、筛选、最低分）本来就单独记在浏览器里，选 “Use the data in this file” 不会重置它们。
+- **To review 导出**（`public/to-review-export.mjs`）：Overview 工具栏 “Export To review (CSV)”，按当前业务部门和工厂筛选，两个维度，每个问题一行（与 To review 和应用详情的问题完全相同）；文件名 `To_review_<工厂/业务部门/all plants>_<日期>.csv`，UTF-8 BOM，公式字符前加 '。
+- **应用直达链接**（`public/view-route.mjs` 的 appFromSearch / searchWithApp / appLink）：`?app=<ID>` 在加载（及恢复已存工作）后打开该应用；打开详情时地址栏加上 `app`，关闭时去掉；详情里 “Copy link to this application” 用剪贴板复制（失败时弹出可复制的文本框）；file:// 打开时提示链接只在本机有效；找不到 ID 时在页面状态行说明。
+- 测试：新增 `tests/v11-usability.test.mjs`（6 项）；`v915-part4-score-settings` 的离开提醒规则保留并通过。
+- 浏览器检查（本机 http）：`?app=` 打开 AUTO-RACK，Copy link 复制出带 `?app=` 的链接（测试时替换了剪贴板），关闭后地址栏去掉；选 RBCW 后导出 `To_review_RBCW_2026-10-22.csv`（7 行，测试时拦截了下载）；改最低分为 45 → 已写入 localStorage → 刷新弹出询问 → Continue 恢复 45 → 再刷新选 Use the data in this file，已存工作被删除。
+- 当前离线包：`offline/logistics-offline-20261022-v11.zip`；HTML 文件名及页面标识均为 V11，日期 2026-10-22。部署脚本 `offline/deploy-iis.bat`（V11，本机模拟 5/5 通过）。验证记录见 `verification/v11-verification.md`。
+
+## V10 历史状态（2026-10-22，受顶部 V11 更新）
 
 - 用户要求（2026-10-22）：在导入预览里加一块“变化明细”，按应用列出每个字段“原值 → 新值”，点 Apply 之前就能看到；再加一个按钮把明细导出成 CSV。
 - 实现：`public/application-history.mjs` 新增 `fieldChanges(current,incoming)`（与 recordImport 写入导入事件的比较相同，不含隐藏的年度收益字段）；`public/import-review.mjs` 的 previewImport 返回 `fieldChanges`，新增 `importChangesCSV`（UTF-8 BOM，公式字符前加 '，列：Change、Application ID、Application、Field、Before、After、Removed entries、Added entries、Import file）和 `listDifference`；新模块 `public/import-changes-view.mjs` 渲染明细表（默认展开、表头固定、最高 380 px 可滚动）；`app.js` 在预览里插入明细并接上 “Export change details (CSV)” 按钮；`interface.css` 加样式并屏蔽景观大表的全局 th/td 规则（否则表头 140 px 高）。
