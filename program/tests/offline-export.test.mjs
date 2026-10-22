@@ -27,10 +27,14 @@ test('offline export embeds current inventory and assets without removed review 
   assert.deepEqual(JSON.parse(inventory[1]),JSON.parse(await readFile(path.join(dir,'public/data.json'),'utf8')));
   assert.doesNotMatch(html,/<script[^>]+src=|<link[^>]+rel="stylesheet"|<img[^>]+src="(?!data:)/i);
   const script=html.match(/<script type="module">([\s\S]*?)<\/script>/)[1];
-  assert.doesNotMatch(script,/\bfetch\s*\(/,'offline runtime must not request data or save to the network');
-  // The hosted save path calls fetch through an injected default, so check the adapter itself.
+  // The offline runtime never saves to the network: the hosted save path (fetch through an injected default) is gone.
   assert.doesNotMatch(script,/\/api\//,'offline bundle must not contain the hosted API path');
-  assert.doesNotMatch(script,/\bfetch\b/,'offline bundle must not reference fetch at all');
+  // V14 (data package): the only network request is a guarded GET of logistics-data.json on the intranet page.
+  assert.equal((script.match(/\bfetch\b/g)||[]).length,1,'exactly one fetch in the offline bundle');
+  const guarded=script.match(/if\(!\/\^https\?:\$\/\.test\(location\.protocol\)\)return;let ([\w$]+);try\{\1=await fetch\(([\w$]+),\{cache:"no-store"\}\)\}/);
+  assert(guarded,'the fetch runs only on an http/https page, as a plain GET with no-store');
+  assert(new RegExp('\\b'+guarded[2].replace(/\$/g,'\\$')+'="logistics-data\\.json"').test(script),'and requests only logistics-data.json');
+  assert.doesNotMatch(script,/XMLHttpRequest|sendBeacon|WebSocket|EventSource/,'no other network API');
   assert(script.includes('Offline edition: data is included in this file. No cloud connection.'),'offline save adapter is applied');
   assert.doesNotMatch(script,/location\.hostname/,'offline access setting replaces the hosted admin check');
   assert.doesNotMatch(html,/Relationship not established|Review assistant|Owner review|reviewSubmissions/i);

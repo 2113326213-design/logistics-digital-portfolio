@@ -54,7 +54,7 @@ test('on opening: kept work that differs from the file asks; continue restores i
  let asked=null;
  const resume=adapter({storage,choose:async(kept,info)=>{asked={kept,info};return 'continue';}});
  assert.equal(await resume.autosave.load(),true);
- assert.deepEqual(asked.info,{release:'V11',source:'20261021_logistic_inventory.xlsx'});
+ assert.deepEqual(asked.info,{release:'V11',source:'20261021_logistic_inventory.xlsx',dataAsOf:'2026-10-21'},'V14: with the date of the data in this file');
  assert.equal(resume.log.restored.similarityThreshold,35);
  assert.equal(resume.autosave.exportState(),'clean','continuing is not a new change');
  const fresh=adapter({storage,choose:async()=>'fresh'});

@@ -1,3 +1,8 @@
 node_modules/
 dist/
 outputs/
+
+# Bosch internal LeanIX data (exports, the CSV and summary made from them): never committed or listed in
+# MANIFEST.sha256 (owner rule 2026-10-22). Scripts: tools/leanix/.
+leanix_export/
+leanix_processes*.csv

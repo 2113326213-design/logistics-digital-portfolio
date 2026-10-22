@@ -5,9 +5,11 @@ import {readFileSync,writeFileSync,readdirSync,lstatSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import path from 'node:path';
 const args=process.argv.slice(2),write=args.includes('--write'),root=path.resolve(args.find(a=>a!=='--write')||'.');
-const skip=new Set(['.git','MANIFEST.sha256','program/node_modules','program/dist','program/outputs']);
+// leanix_export/ holds Bosch internal LeanIX data (git-ignored): not even its file names go into the manifest.
+const skip=new Set(['.git','MANIFEST.sha256','program/node_modules','program/dist','program/outputs','leanix_export']);
+const skipFile=rel=>/(^|\/)leanix_processes[^/]*\.csv$/.test(rel);
 const files=[];
-const walk=dir=>{for(const name of readdirSync(dir)){const full=path.join(dir,name),rel=path.relative(root,full).split(path.sep).join('/');if(skip.has(rel))continue;if(lstatSync(full).isDirectory())walk(full);else files.push(rel);}};
+const walk=dir=>{for(const name of readdirSync(dir)){const full=path.join(dir,name),rel=path.relative(root,full).split(path.sep).join('/');if(skip.has(rel)||skipFile(rel))continue;if(lstatSync(full).isDirectory())walk(full);else files.push(rel);}};
 walk(root);
 files.sort((a,b)=>a<b?-1:a>b?1:0);
 const text=files.map(f=>createHash('sha256').update(readFileSync(path.join(root,f))).digest('hex')+'  '+f).join('\n')+'\n';

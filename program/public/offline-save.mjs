@@ -5,6 +5,8 @@
 // the next time the file or page is opened the user chooses to continue that work or to use the data in the file.
 // When the browser does not allow local storage, the earlier behaviour applies: changes stay in this tab.
 import {exportWorkspace,importWorkspace} from './workspace.mjs';
+import {dataAsOf} from './data-as-of.mjs';
+import {packageNotOlder} from './data-package.mjs';
 
 export const OFFLINE_SAVE_MESSAGES={
  clean:'Offline edition: data is included in this file. No cloud connection.',
@@ -28,10 +30,16 @@ export function readKeptWork(storage){
 }
 const when=iso=>{const date=new Date(iso);return Number.isNaN(date.getTime())?'an earlier session':date.toLocaleString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});};
 // What the restore question says (the dialog shows it; tests check it).
-export function keptWorkText(kept,{release='',source=''}={}){
- const from=[kept.release,kept.source?`data from ${kept.source}`:''].filter(Boolean).join(', ');
+export function keptWorkText(kept,{release='',source='',dataAsOf=''}={}){
+ const pkg=kept.data?.dataPackage;
+ const from=[kept.release,kept.source?`data from ${kept.source}`:'',pkg?`published on the intranet server${pkg.dataAsOf?`, as of ${pkg.dataAsOf}`:''}`:''].filter(Boolean).join(', ');
  const text=`This browser keeps work from ${when(kept.savedAt)}${from?` (${from})`:''}. Continue it, or start from the data in this file and delete the kept work.`;
  const newer=(kept.release&&release&&kept.release!==release)||(kept.source&&source&&kept.source!==source);
+ // V14 review: kept work from a server data package that is not older than this file's data is not "earlier data".
+ if(packageNotOlder(pkg,dataAsOf)){
+  const otherRelease=kept.release&&release&&kept.release!==release;
+  return {text,warning:otherRelease?`This file is ${release}. Continuing keeps the data published on the intranet server${pkg.dataAsOf?` (as of ${pkg.dataAsOf})`:''} and your changes. Export the kept work first if you are unsure.`:''};
+ }
  return {text,warning:newer?`This file is ${release||'a newer release'}${source?` with data from ${source}`:''}. Continuing keeps your earlier data and changes; the data in this file may be newer. Export the kept work first if you are unsure.`:''};
 }
 // The restore question in the page's dialog (index.html #localRestore). Closing it keeps the work.
@@ -67,7 +75,7 @@ export function createOfflineAutosave({getData=()=>null,onRestore=()=>{},onStatu
   load:async()=>{
    const kept=readKeptWork(storage),current=getData();
    if(!kept||(current&&kept.workspace===exportWorkspace(current))){status();return false;}
-   const choice=await choose(kept,{release,source:String(current?.source||'')});
+   const choice=await choose(kept,{release,source:String(current?.source||''),dataAsOf:current?dataAsOf(current)?.date||'':''});
    if(choice==='fresh'){try{storage.removeItem(LOCAL_SAVE_KEY);}catch{}status();return false;}
    onRestore(kept.data);keptRevision=revision;status();onNotice(LOCAL_SAVE_MESSAGES.kept);return true;
   },

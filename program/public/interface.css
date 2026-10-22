@@ -376,3 +376,12 @@ html:has(body.portfolio-fullscreen){scrollbar-gutter:auto}
 .app-search li.app-search-empty{color:#607587;cursor:default}
 @media (max-width:800px){.heading .heading-actions{margin-left:0;width:100%}}
 @media (max-width:700px){.heading-actions{flex-wrap:wrap}.app-search{flex:1 1 100%;min-width:0}}
+/* Data package on the intranet server (V14) */
+.package-notice{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 12px;padding:10px 14px;border:1px solid #9cc7de;border-left:4px solid #007bc0;border-radius:8px;background:#eef6fb;color:#173f55}
+.package-notice span{flex:1 1 260px}
+.package-notice button{white-space:nowrap}
+.package-publish{margin:14px 0 4px;padding:10px 14px;border:1px solid #dce6ed;border-radius:8px;background:#fafcfd}
+.package-publish summary{cursor:pointer;font-weight:600;color:#1f4255}
+.package-publish p{margin:8px 0}
+.server-package-entry{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 12px;padding:8px 12px;border:1px solid #9cc7de;border-radius:8px;background:#eef6fb;color:#173f55}
+.server-package-entry span{flex:1 1 220px}

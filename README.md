@@ -53,11 +53,11 @@
 
 不在内网，或想自己保留一份时用：
 
-1. 下载 [**logistics-offline-20261022-v13.3.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest)。
+1. 下载 [**logistics-offline-20261022-v14.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest)。
 2. 右键 → **Extract all**。
 3. 用 Chrome 打开里面的 HTML（同一个 zip 里的 `deploy-iis.bat` 是给内网服务器部署用的，自己用时不用管）。
 
-页面顶部显示 **V13.3** 就对了。
+页面顶部显示 **V14** 就对了。
 
 </td>
 </tr>
@@ -68,7 +68,7 @@
     <td align="center" width="25%"><h3>75</h3><sub>应用 · 10 个工厂 · 5 个业务部门</sub></td>
     <td align="center" width="25%"><h3>2,775</h3><sub>组两两比较 · 9 组得分 ≥ 50</sub></td>
     <td align="center" width="25%"><h3>22 / 39</h3><sub>Process / Capability 待处理应用</sub></td>
-    <td align="center" width="25%"><h3>V13.3</h3><sub>2026-10-22 · 493 项测试通过</sub></td>
+    <td align="center" width="25%"><h3>V14</h3><sub>2026-10-22 · 510 项测试通过</sub></td>
   </tr>
 </table>
 
@@ -101,6 +101,7 @@
 | 调整打分标准 | **Similarity check** 顶部 | **Score settings** → **Edit settings**，改权重和 **Minimum score** |
 | 保存我的调整，下次接着用 | 任意页面 | 自动保存在这台电脑的浏览器里，下次打开选 **Continue kept work**；要备份或发给别人用 **Export workspace** |
 | 把待处理清单发给工厂 | **Overview** | 选工厂 → **Export To review (CSV)**，用 Excel 打开 |
+| 把 LeanIX 的新数据发给所有人（数据管家） | **Import data** | 导入新的导出并 Apply → 对话框底部 **For the data steward** → **Export data package**，把 `logistics-data.json` 复制到服务器 `D:\logistics-tool\`；见下方“给维护者 → 发布新数据” |
 | 把某个应用发给同事 | 应用详情 | **Copy link to this application**，对方打开链接直接看到这个应用 |
 
 ## 常见问题
@@ -126,7 +127,7 @@
 <details>
 <summary><b>数据有多新？</b></summary>
 <br>
-页面标题下面那行（Data: 文件名 · as of 日期）就是当前数据的来源和日期；在页面里导入新表后会跟着变。导入的工作簿里有多张 Logistic Apps_<日期> 表时，读取日期最新的一张，导入预览的 Inventory 一行写明读的是哪一张。内置数据的应用清单来自 2026-10-21 的自有工作簿（<code>20261021_logistic_inventory.xlsx</code> 的 Logistic Apps_1021，含 Status in Oct；不是 still active 的应用和 no score 的应用不计入成本、ROI 和相似度检查），此前依次并入了 2026-08-25 的清单和 2026-10-20 的 LeanIX 应用导出；流程标准以 2025-02-21 的快照为准，并按编号合并了 2026-10-20 的 LeanIX 流程导出（新旧名称并列保留，有差异的标为待确认）。能力或流程记录以 HC 开头的属于其他公司，不参与任何统计和比较，只在应用详情的 Source records 里原样列出并注明未使用。
+页面标题下面那行（Data: 文件名 · as of 日期）就是当前数据的来源和日期；在页面里导入新表后会跟着变。导入的工作簿里有多张 Logistic Apps_<日期> 表时，读取日期最新的一张，导入预览的 Inventory 一行写明读的是哪一张。内置数据的应用清单来自 2026-10-21 的自有工作簿（<code>20261021_logistic_inventory.xlsx</code> 的 Logistic Apps_1021，含 Status in Oct；不是 still active 的应用和 no score 的应用不计入成本、ROI 和相似度检查），此前依次并入了 2026-08-25 的清单和 2026-10-20 的 LeanIX 应用导出；流程标准以 2025-02-21 的快照为准，并按编号合并了 2026-10-20 的 LeanIX 流程导出（新旧名称并列保留，有差异的标为待确认）。能力或流程记录以 HC 开头的属于其他公司，不参与任何统计和比较，只在应用详情的 Source records 里原样列出并注明未使用。用内网网址打开时，如果数据管家在服务器上放了更新的数据包，标题下会出现 “New data on the server”：点 **Preview changes** 先看变化，再 **Apply**；你的备注、配对审核、打分设置和自己的映射都会保留。
 </details>
 
 <details>
@@ -141,7 +142,7 @@
 </details>
 
 <details>
-<summary><b>页面打开了，但不是 V13.3，或者显示不全？</b></summary>
+<summary><b>页面打开了，但不是 V14，或者显示不全？</b></summary>
 <br>
 按 <b>Ctrl + F5</b> 强制刷新（浏览器可能缓存了旧版本）。工具在 Chrome 上测试过，请优先用 Chrome。
 </details>
@@ -173,7 +174,9 @@
 
 完整更新日志见 [`CHANGELOG.md`](CHANGELOG.md)。
 
-**V13.3（当前，2026-10-22）**：能力和流程记录中以 HC 开头的属于其他公司，不再参与任何统计、地图、搜索、待处理和相似度（原记录保留，应用详情的 Source records 标明未使用）；地图少了 HC.02 一列，待处理少了 1 项。
+**V14（当前，2026-10-22）**：数据包：数据管家在工具里导入 LeanIX 导出后，导出 logistics-data.json 放到 IIS 服务器；内网页面会在标题下提示 “New data on the server”，预览后 Apply，个人的备注、配对审核、打分设置和自己的映射都保留；被改过的或比当前更旧的数据包不会被采用。
+
+**V13.3（2026-10-22）**：能力和流程记录中以 HC 开头的属于其他公司，不再参与任何统计、地图、搜索、待处理和相似度（原记录保留，应用详情的 Source records 标明未使用）；地图少了 HC.02 一列，待处理少了 1 项。
 
 **V13.2（2026-10-22）**：IIS 部署只需下载一个文件：deploy-iis.bat 放进发布 zip，存到 Downloads、打开 zip、双击脚本即可；Release 不再附 deploy-iis-script.zip。
 
@@ -203,6 +206,7 @@
 
 | 版本 | 主要变化 |
 |---|---|
+| [V14](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v14-20261022) | 数据包：数据管家在工具里导入 LeanIX 导出后，导出 logistics-data.json 放到 IIS 服务器；内网页面会在标题下提示 “New data on the server”，预览后 Apply，个人的备注、配对审核、打分设置和自己的映射都保留；被改过的或比当前更旧的数据包不会被采用 |
 | [V13.3](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v13.3-20261022) | 能力和流程记录中以 HC 开头的属于其他公司，不再参与任何统计、地图、搜索、待处理和相似度（原记录保留，应用详情的 Source records 标明未使用）；地图少了 HC.02 一列，待处理少了 1 项 |
 | [V13.2](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v13.2-20261022) | IIS 部署只需下载一个文件：deploy-iis.bat 放进发布 zip，存到 Downloads、打开 zip、双击脚本即可；Release 不再附 deploy-iis-script.zip |
 | [V13.1](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v13.1-20261022) | 6 个找应用的搜索框统一叫 Find applications，都能按名称、ID、工厂、业务单元搜（多个词时每个词都要对上；Application landscape 另外仍可按分类搜）；比较窗口里重复的 Clear selection 只留一个 |
@@ -269,6 +273,25 @@
 </details>
 
 <details>
+<summary><b>📦 发布新数据（数据管家，不用重新部署程序）</b></summary>
+<br>
+
+V14 起，新数据不必等新版本：
+
+1. 在工具里点 **Import data**，导入新的 LeanIX 导出（或工作簿），看完预览后点 **Apply**。
+2. 在同一个对话框底部展开 **For the data steward: publish this data to the intranet server**，点 **Export data package (logistics-data.json)**。
+3. 远程登录服务器，把 `logistics-data.json` 复制到 `D:\logistics-tool\`（和 `index.html` 同一个文件夹，有旧的就替换）。
+4. 在服务器的浏览器打开 `http://localhost:8083/logistics-data.json`，能看到一大段文字就说明 IIS 已经能提供它。如果显示 404.3，说明 .json 类型没开，请告诉维护人。
+5. 大家用内网网址打开工具时，标题下会出现 “New data on the server · as of <日期> · published <日期>”：点 **Preview changes** 先看变化再 **Apply**。**Hide this update** 只隐藏这条提示，以后仍可在 **Import data** 对话框顶部点 **Preview server data** 打开。
+
+- 数据包只含共享数据：应用清单、能力和流程目录、所有者的映射和 “confirmed as recorded”。不含个人的备注、配对审核、打分设置和历史。映射以数据管家发布的为准（撤销和替换都会同步，数据管家从数据包里去掉的映射也会从你这里去掉），你自己另加的映射保留。
+- 只有应用后确实会有变化时才提示；已经应用过的同一个数据包不会再提示；应用后再打开页面，会说明你保存的工作用的是服务器上发布的数据。
+- 数据包被改过或损坏时，页面会说明并保持原数据；数据比页面当前数据更旧时不会提示。
+- 双击打开的离线文件不会去读数据包。
+
+</details>
+
+<details>
 <summary><b>🛠️ 修改程序</b></summary>
 <br>
 
@@ -320,6 +343,8 @@ flowchart LR
 |---|---|
 | 当前状态、改动记录、用户决定 | `00_Claude先读.md`、`program/README.md` |
 | 内置数据（75 个应用、能力和流程目录） | `program/public/data.json`（2026-10-21 自有工作簿 Logistic Apps_1021，经 Import data 同一路径合并；`statusNote` 记录 Status in Oct）；`program/scripts/prepare-data.mjs` 只能重建 8 月格式的工作簿（不读 Status 列），可从原始 Excel 重建 |
+| 数据包（V14） | `program/public/data-package.mjs`（生成、校验、应用数据包）；页面接线在 `program/public/app.js`；测试 `program/tests/v14-data-package.test.mjs` |
+| LeanIX 导出整理工具 | `tools/leanix/`（说明见其中 README；`summarize-export.mjs` 整理导出文件；`find-processes.mjs` 需要 LeanIX API token，目前用不上）。LeanIX 原始导出放 `leanix_export/`，永远不提交、不进 MANIFEST |
 | LeanIX 流程导出（2026-10-20，26 条） | `program/public/leanix-process-export.mjs`（原样数据）、`program/public/leanix-processes.mjs`（按编号合并、名称差异、来源） |
 | 数据模型：读入应用、匹配能力和流程 | `program/public/model.mjs`、`program/public/codes.mjs` |
 | 页面入口和整体渲染 | `program/public/index.html`、`program/public/app.js` |
@@ -333,7 +358,7 @@ flowchart LR
 | 导入 / 导出（Excel、工作区、CSV） | `program/public/xlsx.mjs`、`program/public/import-review.mjs`、`program/public/workspace.mjs`、`program/public/exports.mjs`、`program/public/score-settings.mjs`（阈值随备份）、`program/public/offline-save.mjs`（离线导出提示）；应用搜索在 `program/public/app-search.mjs`（6 个搜索框共用 matchesApplication 和同一个名称、提示） |
 | 样式 | `program/public/*.css` |
 | 构建和离线单文件 | `program/scripts/build.mjs`、`program/scripts/export-offline.mjs` |
-| 测试（`npm test`，当前 493 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v13.3-test-results.txt` |
+| 测试（`npm test`，当前 510 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v14-test-results.txt` |
 | 离线单文件版 | `offline/` |
 | IIS 部署脚本（每次发布自动生成） | `offline/deploy-iis.bat`（同一份脚本也在发布 zip `offline/logistics-offline-<日期>-<版本>.zip` 里，部署只需下载这个 zip）；生成器 `program/scripts/deploy-script.mjs`，模板 `program/scripts/deploy-iis.template.bat`，发布打包 `program/scripts/release-files.mjs`（`npm run release:files`），检查 `program/tests/deploy-script.test.mjs`，本机模拟 `program/scripts/deploy-sim.mjs`（`npm run deploy:sim`） |
 | 构建输出、文件校验清单 | `built/`、`MANIFEST.sha256` |

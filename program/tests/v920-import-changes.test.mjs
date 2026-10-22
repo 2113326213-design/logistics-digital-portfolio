@@ -75,5 +75,6 @@ test('fieldChanges compares only applications present in both, in field order, w
  assert.deepEqual(fieldChanges(before,after),[{appId:'A',name:'Alpha 2',field:'Name',before:'Alpha',after:'Alpha 2'},{appId:'A',name:'Alpha 2',field:'statusNote',before:'',after:'phaseout'}]);
  const app=readFileSync(new URL('../public/app.js',import.meta.url),'utf8');
  assert(app.includes("${renderImportChanges(preview,esc)}${list('Added applications',preview.added)}"),'shown in the preview before the application lists');
- assert(app.includes("const csv=importChangesCSV(preview,{inventoryFile:inventory?.name||'',taxonomyFile:taxonomy?.name||''})")&&app.includes("link.download='Import_changes_'+new Date().toISOString().slice(0,10)+'.csv'"));
+ // V14: one preview display for file imports and the server data package; the file names come in as parameters.
+ assert(app.includes("showImportPreview(preview,{inventoryFile:inventory?.name||'',taxonomyFile:taxonomy?.name||'',inventorySheet});")&&app.includes("const csv=importChangesCSV(preview,{inventoryFile,taxonomyFile})")&&app.includes("link.download='Import_changes_'+new Date().toISOString().slice(0,10)+'.csv'"));
 });

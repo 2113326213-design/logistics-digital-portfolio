@@ -432,7 +432,8 @@ test('a restored saved workspace with its own capability list is told how to swi
  assert.equal(catalogueNotice(data,data),'','already on the standard');
  assert.equal(catalogueNotice(legacy,legacy),'','the bundled data names no standard');
  assert.equal(catalogueNotice({...legacy,capabilityRows:data.capabilityRows},data),'','the same catalogue under another source name');
- assert(appSource.includes("const notice=catalogueNotice(merged.data,initialData);if(notice)$('sessionStatus').textContent=notice;"),'shown after a saved workspace is restored');
+ // V14: not for kept work that came from a server data package at least as new as this file's data (its catalogue is the steward's).
+ assert(appSource.includes("const fromPackage=packageNotOlder(merged.data.dataPackage,dataAsOf(initialData)?.date||'');const notice=fromPackage?'':catalogueNotice(merged.data,initialData);if(notice)$('sessionStatus').textContent=notice;"),'shown after a saved workspace is restored');
 });
 
 test('the status after an applied import says what changed: applications, else the taxonomy, else the workspace',()=>{

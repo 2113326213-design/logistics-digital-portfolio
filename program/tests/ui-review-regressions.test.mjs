@@ -55,8 +55,9 @@ test('replacing workspace closes stale application details before rerender',asyn
  const useData=app.split('\n').find(line=>line.trim().startsWith('function useData('));
  const sequence=[];const detail={open:true,close(){sequence.push('close');this.open=false;}};
  // V12: useData also refreshes the data line under the page title.
- runInNewContext(`${useData}; useData({apps:[],source:'20261021_logistic_inventory.xlsx'});`,{workspaceData:value=>value,buildModel:value=>value,expanded:{clear(){}},$:()=>detail,dataAsOfText:value=>{sequence.push('data line '+value.source);return '';},render(){sequence.push('render');}});
- assert.deepEqual(sequence,['data line 20261021_logistic_inventory.xlsx','close','render']);
+ runInNewContext(`${useData}; useData({apps:[],source:'20261021_logistic_inventory.xlsx'});`,{workspaceData:value=>value,buildModel:value=>value,expanded:{clear(){}},$:()=>detail,dataAsOfText:value=>{sequence.push('data line '+value.source);return '';},render(){sequence.push('render');},showPackageNotice(){sequence.push('package notice');}});
+ // V14: the server data package notice follows every data change, after the page is drawn.
+ assert.deepEqual(sequence,['data line 20261021_logistic_inventory.xlsx','close','render','package notice']);
 });
 
 

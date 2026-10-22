@@ -2,6 +2,13 @@
 
 每个版本的离线包在 [Releases](https://github.com/2113326213-design/logistics-digital-portfolio/releases)；详细的修改说明和用户决定在 [`00_Claude先读.md`](00_Claude先读.md)，验证记录在 [`verification/`](verification/)。
 
+## [V14](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v14-20261022) · 2026-10-22
+
+- **数据包**（用户选定方案 A：没有 LeanIX API，IT 不提供；服务器也登不上 LeanIX）：数据管家在工具里导入 LeanIX 导出并 Apply 后，在 Import data 对话框底部导出 `logistics-data.json`，复制到服务器 `D:\logistics-tool\`。用内网网址打开的页面会读取它（只在 http/https，离线文件从不读取）：如果它的数据和当前页面不同，标题下提示 “New data on the server · as of … · published …”，**Preview changes** 用与导入文件相同的预览和 Apply；**Hide this update** 只隐藏这条提示，Import data 对话框顶部的 **Preview server data** 仍可打开它。
+- 数据包只含共享数据（应用清单、能力和流程目录、所有者的映射和确认），应用后个人的备注、配对审核、打分设置、历史和自己的映射都保留。所有者的映射按编号以数据包为准：数据管家撤销或替换的会同步（你自己撤销的保持撤销），撤销人和原因也一起带来；随版本内置的映射同样算共享决定，数据包对同一条记录另有决定时以数据包为准；上一个数据包带来的映射算数据管家的：新数据包里没有了，就是数据管家撤回了，从你这里去掉；只有你在自己浏览器里另加的映射算你自己的，保留，并在同一条记录上优先于数据包；“confirmed as recorded” 以数据包为准。应用数据包后再导入 Excel 或分类表，就不再算 “服务器上的数据”，服务器上的数据包会重新提示。只有应用后确实有变化时才提示，提示出现时一定能 Apply；已经应用过的同一个数据包不再提示（新版本打开时为同一来源补回字段，也不会让它反复出现）。打开页面时的恢复提问能认出来自服务器数据包的工作，不再误说 “本文件的数据可能更新”。数据包带内容指纹：被改过或损坏时页面会说明并保持原数据；比页面当前数据更旧的不会提示（防止服务器上留着旧文件时把新版本的数据“降级”）。
+- 页面唯一的网络请求就是读取这一个文件（GET，不缓存）；测试从“完全不联网”改为精确检查这一条。
+- 新增 `tools/leanix/`（整理 LeanIX 导出的脚本），`.gitignore` 与 MANIFEST 永远排除 `leanix_export/` 和 `leanix_processes*.csv`。GitHub 私有仓库继续保存工具的真实数据（用户 2026-10-22 决定），LeanIX 原始导出不上传。
+
 ## [V13.3](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v13.3-20261022) · 2026-10-22
 
 - **HC 记录不再使用**（用户：“HC的开头的都不需要了，那个是其他公司的”）：2026-10-19 起 HC 条目已不进能力目录，但各应用自己的 HC 记录还保留在“B.06 范围外”。现在凡是以 `HC.` 开头的能力或流程记录（以及 Main Business Capability）都不参与任何统计、地图、搜索、待处理、数据检查和相似度；原始记录不改，应用详情的 Source records 原样列出并写明 “Not used: … (HC entries belong to another company)”。目前只有 Wuj HK AGV 有一条（HC.02.04.05 Transportation Management）：Application landscape 少了 HC.02 一列（13 → 12），To review 少了 1 项（“能力编码缺失 HC.02.4.5”），它的数据检查从 “HC 记录 Level 3 待确认” 变为 “Level 3 missing”（只登记了 B.06.5）。相似度的 2775 对结果完全不变。所有者若把某条 HC 记录映射到我们的能力，映射照常生效。

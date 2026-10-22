@@ -554,6 +554,11 @@ function workspaceWeights(data) {
   const shown = weightPercentages(weights);
   return Object.fromEntries(Object.keys(weights).map((key) => [key, shown[key] / 100]));
 }
+function dataPackageField(value2) {
+  if (!value2 || typeof value2 !== "object" || Array.isArray(value2) || !/^[0-9a-f]{16}$/.test(String(value2.id ?? ""))) return {};
+  const mappingIds = [...new Set((Array.isArray(value2.mappingIds) ? value2.mappingIds : []).map((v) => String(v ?? "").trim()).filter(Boolean))];
+  return { dataPackage: { id: String(value2.id), publishedAt: String(value2.publishedAt ?? ""), dataAsOf: String(value2.dataAsOf ?? ""), mappingIds } };
+}
 function inventoryExportField(value2) {
   if (!value2 || typeof value2 !== "object" || Array.isArray(value2)) return {};
   const missingIds = [...new Set((Array.isArray(value2.missingIds) ? value2.missingIds : []).map((v) => String(v ?? "").trim()).filter(Boolean))];
@@ -562,7 +567,7 @@ function inventoryExportField(value2) {
 function workspaceData(data) {
   if (!data || !Array.isArray(data.apps) || !data.apps.length || !Array.isArray(data.capabilityRows) || !Array.isArray(data.processRows)) throw Error("\u5DE5\u4F5C\u533A\u7F3A\u5C11\u5E94\u7528\u6E05\u5355\u6216\u5206\u7C7B\u8868");
   if (!data.apps.every((a) => a && typeof a === "object" && !Array.isArray(a)) || !data.capabilityRows.every(Array.isArray) || !data.processRows.every(Array.isArray)) throw Error("\u5DE5\u4F5C\u533A\u6570\u636E\u7ED3\u6784\u65E0\u6548");
-  return { similarityWeights: workspaceWeights(data), similarityWeightsVersion: 2, ...thresholdField(data), source: String(data.source || "Imported workspace"), taxonomySource: String(data.taxonomySource || "Workspace taxonomy"), ...inventoryExportField(data.inventoryExport), isAcceptanceSample: data.isAcceptanceSample === true, apps: data.apps.map((a) => {
+  return { similarityWeights: workspaceWeights(data), similarityWeightsVersion: 2, ...thresholdField(data), source: String(data.source || "Imported workspace"), taxonomySource: String(data.taxonomySource || "Workspace taxonomy"), ...inventoryExportField(data.inventoryExport), ...dataPackageField(data.dataPackage), isAcceptanceSample: data.isAcceptanceSample === true, apps: data.apps.map((a) => {
     const app = Object.fromEntries(fields2.map((k) => [k, String(a[k] ?? "")]));
     if (Object.hasOwn(a, mainCapabilityField)) app[mainCapabilityField] = String(a[mainCapabilityField] ?? "");
     if (Object.hasOwn(a, "scopeNote")) {

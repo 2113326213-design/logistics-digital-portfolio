@@ -1,4 +1,4 @@
-npm run deploy:sim · 2026-10-22 · deploy-iis.bat V13.3
+npm run deploy:sim · 2026-10-22 · deploy-iis.bat V14
 PASS  1. not Administrator, UAC accepted
 PASS  2. not Administrator, UAC cancelled
 PASS  3. already Administrator
@@ -9,4 +9,4 @@ PASS  7. only another release in Downloads
 PASS  8. one download: deploy-iis.bat double-clicked inside the release zip in Downloads
 PASS  9. one download saved as "name (1).zip", script double-clicked inside it
 PASS  10. one download whose HTML does not match the SHA-256 in the script
-All 10 checks passed for deploy-iis.bat (V13.3).
+All 10 checks passed for deploy-iis.bat (V14).

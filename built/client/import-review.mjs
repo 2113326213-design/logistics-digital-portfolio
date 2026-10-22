@@ -79,7 +79,8 @@ export function applyInventory(base,incomingApps,fileName){
  const info=incomingApps.leanixExport,kept=[];
  const apps=base.apps.flatMap(app=>{const id=String(app.ID).trim();if(merged.has(id)){const next=merged.get(id);merged.delete(id);return [next];}if(!info)return [];kept.push(id);return [app];});
  const next={...base,apps:[...apps,...merged.values()],source:String(fileName||''),isAcceptanceSample:false};
- delete next.inventoryExport;
+ // An inventory file replaces shared data, so the workspace is no longer a server data package (V14 review).
+ delete next.inventoryExport;delete next.dataPackage;
  if(info)next.inventoryExport={file:String(fileName||''),exportedAt:String(info.exportedAt||''),sheet:String(info.sheet||''),missingIds:kept};
  return next;
 }
@@ -94,7 +95,7 @@ export function previewImport(current,incoming,raw=incoming){
  const beforeActivity=reviewAuditEvents(current),afterActivity=reviewAuditEvents(next),retained=new Set(afterActivity.map(e=>e.id));
  const taxonomyChanged=JSON.stringify([current.capabilityRows,current.processRows])!==JSON.stringify([next.capabilityRows,next.processRows]);
  const pairReviews=pairReviewChanges(current.pairReviews,next.pairReviews);
- const workspaceChanged=pairReviews.total>0||['reviews','corrections','reviewHistory','applicationEvents','importHistory','similarityWeights','similarityThreshold','inventoryExport','acceptedRecords'].some(key=>JSON.stringify(current[key]??null)!==JSON.stringify(next[key]??null));
+ const workspaceChanged=pairReviews.total>0||['reviews','corrections','reviewHistory','applicationEvents','importHistory','similarityWeights','similarityThreshold','inventoryExport','acceptedRecords','dataPackage'].some(key=>JSON.stringify(current[key]??null)!==JSON.stringify(next[key]??null));
  const costScoresRemoved=updated.filter(app=>cleanCostScore(before.get(String(app.ID).trim())?.operationCostScore)!==null&&cleanCostScore(app.operationCostScore)===null).length;
  const scopeExclusionsRemoved=updated.filter(app=>!opportunityEligibility(before.get(String(app.ID).trim())).eligible&&opportunityEligibility(app).eligible).length;
  // Applications this import leaves out of cost totals, ROI and the similarity check (no score, or not still active).
