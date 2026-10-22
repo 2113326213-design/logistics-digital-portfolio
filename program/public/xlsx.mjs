@@ -29,7 +29,14 @@ export async function readXlsx(file){
  return result;
 }
 export function inventoryFromSheets(sheets){
- const entry=sheets['Logistic Apps']?['Logistic Apps',sheets['Logistic Apps']]:Object.entries(sheets).filter(([name])=>!/^readme$/i.test(name)).find(([,rows])=>Array.isArray(rows)&&rows.some(r=>r?.includes('ID')&&r?.includes('Name')));
+ // Which sheet is the inventory (V13, owner request 2026-10-22): a sheet named exactly 'Logistic Apps'; else, among the
+ // sheets with ID and Name columns, the newest 'Logistic Apps_<date>' (YYYYMMDD, or MMDD within one year, as in
+ // Logistic Apps_1021 / Logistic Apps_0825); else the first such sheet. The result says which sheet was read.
+ const inventorySheets=Object.entries(sheets).filter(([name])=>!/^readme$/i.test(name)).filter(([,rows])=>Array.isArray(rows)&&rows.some(r=>r?.includes('ID')&&r?.includes('Name')));
+ const dateKey=name=>{const m=String(name).trim().match(/^Logistic Apps[\s_-]*(\d{8}|\d{4})$/i);return m?(m[1].length===8?m[1]:'0000'+m[1]):'';};
+ const newest=inventorySheets.filter(([name])=>dateKey(name)).sort(([a],[b])=>dateKey(b).localeCompare(dateKey(a)))[0];
+ const entry=sheets['Logistic Apps']?['Logistic Apps',sheets['Logistic Apps']]:newest||inventorySheets[0];
+ const sheetRule=sheets['Logistic Apps']?'exact':newest?'newest':'first';
  const rows=entry?.[1];
  if(!rows)throw Error('未找到应用清单工作表。');
  const h=rows.findIndex(r=>r?.includes('ID')&&r?.includes('Name')),headers=rows[h];
@@ -60,10 +67,12 @@ export function inventoryFromSheets(sheets){
  });
  if(!apps.length)throw Error('应用清单没有数据。');
  if(leanix){const readme=Object.entries(sheets).find(([name])=>/^readme$/i.test(name))?.[1];const exportedAt=(Array.isArray(readme)?readme.flat():[]).map(v=>String(v??'')).map(s=>s.match(/created at:\s*(.+?)\s*$/i)?.[1]).find(Boolean)||'';apps.leanixExport={exportedAt,sheet:String(entry[0])};}
+ apps.inventorySheet={name:String(entry[0]),rule:sheetRule,all:inventorySheets.map(([name])=>String(name))};
  if(!Object.hasOwn(sheets,'Parameter Score'))return apps;
  const costs=operationCostScoresFromSheets(sheets),roi=roiScoresFromSheets(sheets);
  const scored=apps.map(app=>{const cost=costs.get(String(app.ID).trim());return {...app,...(roi?{roiScore:roi.get(String(app.ID).trim())?.score??null,roiSource:roi.get(String(app.ID).trim())?.source||''}:{}),operationCostScore:cost?.score??null,operationCostSource:cost?.source||''};});
  if(apps.leanixExport)scored.leanixExport=apps.leanixExport;
+ scored.inventorySheet=apps.inventorySheet;
  return scored;
 }
 // Date-time serials carry the time as a fraction; only the calendar date is stored. Text is kept as recorded

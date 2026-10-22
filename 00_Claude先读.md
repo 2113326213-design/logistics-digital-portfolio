@@ -19,7 +19,15 @@
 - **小版本**（V10.1、V10.2……）：修正、文字和显示调整。
 - 版本号写在 `program/scripts/release.mjs` 的 RELEASE_VERSION（小写，如 `v10`、`v10.1`）；文件名、发布 zip、部署脚本和 Release 标签（`v10-20261022`）都随它生成。导入预览的“变化明细”是新功能，所以这一版是 V10（原计划的 V9.20 没有发布）。
 
-## V12 当前状态（2026-10-22，优先于所有历史段落）
+## V13 当前状态（2026-10-22，优先于所有历史段落）
+
+- 用户说“继续更新”；本版做了两项（新功能，按版本号规则为 V13）。
+- **应用搜索**（`public/app-search.mjs`）：`searchApplications(apps,query,limit=8)` 要求每个词都出现在名称、ID、工厂（Entity）或业务单元（Division）里；排序：名称以输入开头 → 名称中某个词以输入开头 → ID 以输入开头 → 工厂或业务单元完全相同 → 名称包含 → 其他，同级按名称自然顺序。`createAppSearch` 是标题右侧 `#appSearch` 的 combobox：方向键、回车（打开详情，沿用 showApp，所以地址栏带 ?app=）、Esc；鼠标用 mousedown 选择；不在输入框且没有打开的对话框时按 / 定位。`tests/v13-search-and-sheets.test.mjs`。
+- **导入读最新的表**（`public/xlsx.mjs` inventoryFromSheets）：有正好叫 `Logistic Apps` 的表时读它（rule exact）；否则在所有带 ID 和 Name 表头的表中，取名称形如 `Logistic Apps_<MMDD 或 YYYYMMDD>` 且日期最大的一张（rule newest；MMDD 视为早于任何完整日期）；都没有日期时取第一张（rule first）。结果带 `inventorySheet={name,rule,all}`，导入预览 Inventory 写 “· sheet <名称>”，多张时加一行提示。原先按表的顺序取第一张，用户的 10-21 工作簿恰好把 Logistic Apps_1021 放在前面，所以以前结果没错，这次是防止表的顺序变了读错。
+- 浏览器检查（本机 http）：搜索 “rbcw dash” 只列出 RBCW LOM Dashboard，回车打开详情并带 ?app=；按 / 定位搜索框且不输入 “/”；Import data 选 20261021 工作簿 → Preview changes：Inventory 显示 “20261021_logistic_inventory.xlsx · sheet Logistic Apps_1021”，并提示 “This workbook has 2 inventory sheets (Logistic Apps_1021, Logistic Apps_0825); the newest, Logistic Apps_1021, was read.”；没有点 Apply。
+- 当前离线包：`offline/logistics-offline-20261022-v13.zip`；HTML 文件名及页面标识均为 V13，日期 2026-10-22。部署脚本 `offline/deploy-iis.bat`（V13，本机模拟 7/7 通过）。验证记录见 `verification/v13-verification.md`。
+
+## V12 历史状态（2026-10-22，受顶部 V13 更新）
 
 - 用户从升级清单选了“页面上显示数据截至哪天”（新功能，按版本号规则为 V12）。
 - **数据日期**（`public/data-as-of.mjs`）：标题下 `<p id="dataAsOf">` 显示 “Data: <data.source> · as of <日期>”；日期依次取文件名中的 YYYYMMDD（校验是真实日期）、`inventoryExport.exportedAt`、最近一次非目录导入的日期（显示为 “imported”）；没有来源时不显示。`app.js` 的 useData 每次换数据都会更新（导入、撤销、恢复备份、继续本机保存的工作）。`tests/v12-data-as-of.test.mjs`；`ui-review-regressions` 里单独运行 useData 的测试补上了这一步。

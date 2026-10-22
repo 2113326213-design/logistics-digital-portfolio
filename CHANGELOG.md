@@ -2,6 +2,11 @@
 
 每个版本的离线包在 [Releases](https://github.com/2113326213-design/logistics-digital-portfolio/releases)；详细的修改说明和用户决定在 [`00_Claude先读.md`](00_Claude先读.md)，验证记录在 [`verification/`](verification/)。
 
+## [V13](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v13-20261022) · 2026-10-22
+
+- **应用搜索**：页面标题右侧新增 **Find an application** 搜索框。输入名称、应用 ID、工厂或业务单元的一部分（多个词时每个词都要对上），最多列出 8 个结果，名称开头相符的排在最前；方向键选择、回车或点击打开应用详情（地址栏同时带上 ?app=，可直接复制分享），Esc 清空。在任意页面不在输入框里时按 **/** 键直接定位到搜索框。
+- **导入读最新的表**：Import data 选的工作簿里有多张 Logistic Apps_<日期> 表（如自有工作簿同时有 Logistic Apps_1021 和 Logistic Apps_0825）时，读取日期最新的一张，不再取决于表的排列顺序；工作簿里有一张正好叫 Logistic Apps 的表时仍读它。导入预览的 Inventory 一行写明 “· sheet <表名>”，有多张时另起一行说明有哪些表、读了哪一张。
+
 ## [V12](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v12-20261022) · 2026-10-22
 
 - **数据日期**（用户选择 2026-10-22）：页面标题下面显示 “Data: <文件名> · as of <日期>”。日期取自文件名里的 YYYYMMDD（自有工作簿和 LeanIX 导出都是这种命名）；没有时用 LeanIX 导出时间，再没有时显示导入日期。导入新表、撤销导入、恢复备份或继续本机保存的工作后都会跟着更新。
