@@ -392,3 +392,5 @@ html:has(body.portfolio-fullscreen){scrollbar-gutter:auto}
 .process-check-lists h4{margin:0 0 4px;font-size:.8125rem;color:#405a6b}.process-check-lists ul{margin:0;padding-left:18px;font-size:.8125rem;line-height:1.45;overflow-wrap:anywhere}
 .process-check-lists .hint{margin:0}
 @media (max-width:700px){.process-check-lists{grid-template-columns:1fr}}
+/* Standard catalogue against LeanIX (V16) */
+.process-check-heading{margin:24px 0 6px;font-size:1rem;color:#1f4255}.process-id{color:#6b8191;font-size:.75rem;white-space:nowrap}

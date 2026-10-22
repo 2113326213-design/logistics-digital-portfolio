@@ -59,14 +59,15 @@ test('V15: per application, processes in both, only in LeanIX and only in the to
  assert.equal(JSON.stringify(data),before);
  const row=id=>check.rows.find(r=>r.id===id);
  // '&' and 'and', case and spacing are the same name; RBCC is not in this export and is not a difference.
- assert.deepEqual(row('a1'),{id:'a1',name:'AGR w/ Camera',status:'matches',both:['BBM PM I2D Receive to Store L1','BBM PM I2D Identification & Booking L2'],onlyLeanix:[],onlyTool:[],notInExport:['RBCC | Warehouse Delivery'],sameName:1});
+ assert.deepEqual(row('a1'),{id:'a1',name:'AGR w/ Camera',status:'matches',both:['BBM PM I2D Receive to Store L1','BBM PM I2D Identification & Booking L2'],onlyLeanix:[],onlyTool:[],notInExport:['RBCC | Warehouse Delivery'],sameName:1,leanixNames:[],similar:[],standard:new Map()});
  assert.deepEqual([row('a2').status,row('a2').both,row('a2').onlyLeanix,row('a2').onlyTool],['differs',[],['BBM PM I2D Receive to Store L1'],['BBM PM I2D Warehouse to Consume L1']]);
  // HC entries belong to another company and are not compared.
  assert.deepEqual([row('a3').status,row('a3').notInExport],['not-in-export',['RBCC | Warehouse Delivery']]);
  assert.deepEqual(check.rows.map(r=>r.id),['a2','a1','a3','a4','a5']);
  assert.deepEqual(check.counts,{applications:5,differs:1,matches:1,notInExport:3});
  assert.deepEqual([row('a4').sameName,row('a5').sameName],[2,2]);
- assert.deepEqual(check.unknownApplications,[{name:'Unknown Tool',processes:1}]);
+ // Applications LeanIX names that are not in the tool are counted, not listed (V16 review: 10,230 in the real export).
+ assert.equal(check.otherApplications,1);
  assert.deepEqual([check.processes,check.linkedApplications,check.file],[4,3,'20261022_081706_inventory.xlsx']);
 });
 
@@ -80,7 +81,7 @@ test('V15: an export rebuilt from the bundled data, read as an .xlsx file, match
  const check=compareProcessLinks(bundled,readProcessLinks(sheets),{file:file.name});
  const withProcesses=bundled.apps.filter(app=>split(app.Processes).some(p=>!/^HC\./.test(p))).length;
  assert.deepEqual(check.counts,{applications:bundled.apps.length,differs:0,matches:withProcesses,notInExport:bundled.apps.length-withProcesses});
- assert.deepEqual(check.unknownApplications,[]);
+ assert.equal(check.otherApplications,0);
  // One link removed in LeanIX and one added: exactly those two show, for those two applications.
  const [first,second]=bundled.apps.filter(app=>split(app.Processes).length),moved=split(first.Processes)[0];
  const changed=records.map(r=>r[2]===moved?[...r.slice(0,7),split(r[7]).filter(n=>n!==first.Name).concat(second.Name).join(';'),...r.slice(8)]:r);
@@ -94,7 +95,7 @@ test('V15: Import data checks a process export before reading it as an inventory
  const run=app.slice(app.indexOf("$('importRun').onclick"),app.indexOf("$('importApply').onclick"));
  assert.ok(run.indexOf('isLeanixProcessLinks(sheets)')>0&&run.indexOf('isLeanixProcessLinks(sheets)')<run.indexOf('inventoryFromSheets('));
  const branch=run.slice(run.indexOf('if(linksFile){'),run.indexOf('return;',run.indexOf('if(linksFile){')));
- assert.ok(branch.includes('showProcessCheck(check)')&&!branch.includes('pendingImport'));
+ assert.ok(branch.includes('showProcessCheck(check,catalogue,')&&branch.includes('compareCatalogue(current,links,{processRows:base.processRows})')&&!branch.includes('pendingImport'));
  const show=app.slice(app.indexOf('function showProcessCheck('),app.indexOf("$('importRun').onclick"));
  assert.ok(show.includes("$('importApply').hidden=true")&&!/pendingImport|useData|autosave/.test(show));
 });
@@ -102,10 +103,10 @@ test('V15: Import data checks a process export before reading it as an inventory
 test('V15: the check exports as CSV with one row per application and process',()=>{
  const csv=processCheckCSV(compareProcessLinks(data,readProcessLinks(sheets),{file:'f.xlsx'})),lines=csv.slice(1).split('\r\n');
  assert.equal(csv[0],'﻿');
- assert.equal(lines[0],'"Application ID","Application","Process","Result","LeanIX export"');
- assert.ok(lines.includes('"a2","ARS","BBM PM I2D Receive to Store L1","Only in LeanIX","f.xlsx"'));
- assert.ok(lines.includes('"a2","ARS","BBM PM I2D Warehouse to Consume L1","Only in the tool","f.xlsx"'));
- assert.ok(lines.includes('"","Unknown Tool","","Application in LeanIX, not in the tool","f.xlsx"'));
- const formula=processCheckCSV({file:'',rows:[{id:'1',name:'=cmd',both:['+x'],onlyLeanix:[],onlyTool:[],notInExport:[]}],unknownApplications:[]});
+ assert.equal(lines[0],'"Application ID","Application","Process","Process ID","Process Name","Result","LeanIX export"');
+ assert.ok(lines.includes('"a2","ARS","BBM PM I2D Receive to Store L1","","","Only in LeanIX","f.xlsx"'));
+ assert.ok(lines.includes('"a2","ARS","BBM PM I2D Warehouse to Consume L1","","","Only in the tool","f.xlsx"'));
+ assert.ok(!csv.includes('Unknown Tool'),'other LeanIX applications are counted on the page, not listed');
+ const formula=processCheckCSV({file:'',rows:[{id:'1',name:'=cmd',both:['+x'],onlyLeanix:[],onlyTool:[],notInExport:[]}]});
  assert.ok(formula.includes(`"'=cmd","'+x"`));
 });

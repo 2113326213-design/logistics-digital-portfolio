@@ -322,6 +322,33 @@ function cleanAcceptedRecords(value2) {
 
 // public/model.mjs
 var level = (id) => id.split(".").length - 1;
+function processLookup(procs) {
+  const index = (key) => {
+    const map = /* @__PURE__ */ new Map();
+    for (const n of procs.values()) {
+      const k = key(n);
+      if (k === null) continue;
+      if (!map.has(k)) map.set(k, []);
+      map.get(k).push(n);
+    }
+    return map;
+  };
+  const leanixIndex = index((n) => n.nameStatus === "differs" && !n.ambiguous ? n.level + "|" + norm(n.leanix.name) : null);
+  const nameIndex = index((n) => n.ambiguous ? null : n.level + "|" + norm(n.label));
+  return (s) => {
+    const code = s.match(/\bM\.[A-Z0-9]+(?:\.\d+)*(?=\s|$)/)?.[0];
+    if (code && procs.has(code) && !procs.get(code).ambiguous) return { id: code, via: "code" };
+    const m = s.match(PROCESS_LEVEL);
+    if (!m) return { id: null, type: "\u6D41\u7A0B\u672A\u6807\u6CE8\u6807\u51C6\u5C42\u7EA7" };
+    const l = +m[1], name = s.replace(/^BBM\s+PM\s+[A-Z0-9]+\s+/i, "").replace(/\s+L[0-3]V?\s*$/i, "");
+    const snapshotNames = nameIndex.get(l + "|" + norm(name)) || [], leanixNames = (leanixIndex.get(l + "|" + norm(name)) || []).filter((n) => !snapshotNames.includes(n)), byName = [...snapshotNames, ...leanixNames];
+    let choices = byName;
+    const chain = s.match(/^BBM\s+PM\s+([A-Z0-9]+)/i)?.[1];
+    if (chain) choices = choices.filter((n) => n.id.split(".")[1] === chain);
+    if (choices.length === 1) return { id: choices[0].id, via: leanixNames.includes(choices[0]) ? "leanix-name" : "name" };
+    return { id: null, type: choices.length ? "\u6D41\u7A0B\u540D\u79F0\u5BF9\u5E94\u591A\u4E2A\u7F16\u53F7" : byName.length ? "\u6D41\u7A0B\u94FE\u7F16\u53F7\u5B58\u5728\u5DEE\u5F02" : "\u6D41\u7A0B\u672A\u5339\u914D\u5C42\u7EA7\u8868", candidates: (choices.length ? choices : byName).map((n) => ({ id: n.id, label: n.label })) };
+  };
+}
 function buildModel(data) {
   const caps = /* @__PURE__ */ new Map(), procs = /* @__PURE__ */ new Map(), capVersions = /* @__PURE__ */ new Map(), taxonomyIssues = [];
   function ensureCap(id, label, reference = false) {
@@ -355,20 +382,8 @@ function buildModel(data) {
     procs.set(String(id), { id: String(id), label: String(label), level: Number(l[1]), chain: String(chain), children: [], parent: l === "L0" ? null : String(id).slice(0, String(id).lastIndexOf(".")) });
   }
   const leanix = applyLeanixExport(procs, data.leanixProcessExport);
-  const leanixIndex = /* @__PURE__ */ new Map();
-  for (const n of procs.values()) if (n.nameStatus === "differs" && !n.ambiguous) {
-    const k = n.level + "|" + norm(n.leanix.name);
-    if (!leanixIndex.has(k)) leanixIndex.set(k, []);
-    leanixIndex.get(k).push(n);
-  }
-  const nameIndex = /* @__PURE__ */ new Map();
-  for (const n of procs.values()) {
-    if (n.parent && !procs.has(n.parent)) taxonomyIssues.push({ id: n.id, type: "\u6D41\u7A0B\u7F3A\u5C11\u7236\u7EA7\u8BB0\u5F55", value: n.parent });
-    if (n.ambiguous) continue;
-    const k = n.level + "|" + norm(n.label);
-    if (!nameIndex.has(k)) nameIndex.set(k, []);
-    nameIndex.get(k).push(n);
-  }
+  for (const n of procs.values()) if (n.parent && !procs.has(n.parent)) taxonomyIssues.push({ id: n.id, type: "\u6D41\u7A0B\u7F3A\u5C11\u7236\u7EA7\u8BB0\u5F55", value: n.parent });
+  const lookupProcess = processLookup(procs);
   const correctionLog = correctionStates(data), mappings = new Map(correctionLog.filter((c) => c.state === "Applied").map((c) => [recordKey(c), c.targetId]));
   const mapped = (appId, dimension, raw) => mappings.get(recordKey({ appId, dimension, raw }));
   const issues = [];
@@ -413,30 +428,14 @@ function buildModel(data) {
         a.processMatches.push({ raw: s, id: corrected, via: "mapping" });
         continue;
       }
-      const code = s.match(/\bM\.[A-Z0-9]+(?:\.\d+)+(?=\s|$)/)?.[0];
-      if (code && procs.has(code) && !procs.get(code).ambiguous) {
-        a.process.push(code);
-        a.processMatches.push({ raw: s, id: code, via: "code" });
+      const found = lookupProcess(s);
+      if (found.id) {
+        a.process.push(found.id);
+        a.processMatches.push({ raw: s, id: found.id, via: found.via });
         continue;
       }
-      const m = s.match(PROCESS_LEVEL);
-      if (!m) {
-        a.unmatched.push(s);
-        flag(a, "process", { appId: a.id, app: a.Name, type: "\u6D41\u7A0B\u672A\u6807\u6CE8\u6807\u51C6\u5C42\u7EA7", value: s });
-        continue;
-      }
-      const l = +m[1], name = s.replace(/^BBM\s+PM\s+[A-Z0-9]+\s+/i, "").replace(/\s+L[0-3]V?\s*$/i, "");
-      const snapshotNames = nameIndex.get(l + "|" + norm(name)) || [], leanixNames = (leanixIndex.get(l + "|" + norm(name)) || []).filter((n) => !snapshotNames.includes(n)), byName = [...snapshotNames, ...leanixNames];
-      let choices = byName;
-      const chain = s.match(/^BBM\s+PM\s+([A-Z0-9]+)/i)?.[1];
-      if (chain) choices = choices.filter((n) => n.id.split(".")[1] === chain);
-      if (choices.length === 1) {
-        a.process.push(choices[0].id);
-        a.processMatches.push({ raw: s, id: choices[0].id, via: leanixNames.includes(choices[0]) ? "leanix-name" : "name" });
-      } else {
-        a.unmatched.push(s);
-        flag(a, "process", { appId: a.id, app: a.Name, type: choices.length ? "\u6D41\u7A0B\u540D\u79F0\u5BF9\u5E94\u591A\u4E2A\u7F16\u53F7" : byName.length ? "\u6D41\u7A0B\u94FE\u7F16\u53F7\u5B58\u5728\u5DEE\u5F02" : "\u6D41\u7A0B\u672A\u5339\u914D\u5C42\u7EA7\u8868", value: s, candidates: (choices.length ? choices : byName).map((n) => ({ id: n.id, label: n.label })) });
-      }
+      a.unmatched.push(s);
+      flag(a, "process", { appId: a.id, app: a.Name, type: found.type, value: s, ...found.candidates ? { candidates: found.candidates } : {} });
     }
     if (!a.rawCap.length && mapped(id, "cap", "")) a.cap.push(mapped(id, "cap", ""));
     if (!a.rawProcess.length && mapped(id, "process", "")) a.process.push(mapped(id, "process", ""));

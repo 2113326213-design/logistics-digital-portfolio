@@ -20,7 +20,20 @@
 - **小版本**（V10.1、V10.2……）：修正、文字和显示调整。
 - 版本号写在 `program/scripts/release.mjs` 的 RELEASE_VERSION（小写，如 `v10`、`v10.1`）；文件名、发布 zip、部署脚本和 Release 标签（`v10-20261022`）都随它生成。导入预览的“变化明细”是新功能，所以这一版是 V10（原计划的 V9.20 没有发布）。
 
-## V15 当前状态（2026-10-22，优先于所有历史段落）
+## V16 当前状态（2026-10-22，优先于所有历史段落）
+
+- **用户需求（2026-10-22）**：“我还缺少 process process id processname”，随后说明 “business CAPABILITY + PROCESS那个表格 和我拉出来的新的 … 一些缺少的？我要去补齐的”——用标准流程目录（Business Capability + Process.xlsx，Data_RBW Process Structure）对照新的 LeanIX 流程导出，找出缺少的去补。新功能，按版本号规则为 V16。仍然只核对、不改数据；LeanIX 原始导出只在公司电脑上处理。例外（2026-10-22，用户明确同意）：主会话从用户个人 Google Drive 下载过两份导出各跑一次（20261022_081706_ZTcQF：完整视图；20261022_092746_RkrIq：加了 BBM Signavio ID 和 External ID），读完即删，只留下结果清单。结论：BBM Signavio ID 全为空，External ID 只在 BBM_PPM 和 ETAS 的流程上（ETAS 的是 M. 标准编号），BBM PM 流程只能按名称对应。以后仍不要主动要求把导出传到这台电脑。
+- **一条规则**（`public/model.mjs`）：`processLookup(procs)` 是从 buildModel 里原样抽出的名称对应规则（M. 编码优先；否则按末尾层级 L0–L3/L3V 和 “BBM PM <链>” 之后的名称，在该链内先找标准名称、再找与快照不同的 LeanIX 名称；唯一才算找到，否则返回类型和候选）。buildModel 改为调用它；抽取前后在真实数据、去掉映射、旧分类表、加了边界记录四种情况下模型输出逐项相同（`wl/tools/model-equiv.mjs`），并有测试逐条比对 370+ 条应用记录。
+- **目录对 LeanIX**（`public/leanix-process-check.mjs` 的 `compareCatalogue(model,links,{processRows})`）：每条 LeanIX 流程（HC 除外）用 processLookup 找标准流程，Name 找不到时用 Display Name，再找不到时用所有者对同一文字的映射（`processMatches` 里 via 'mapping'）。名称在目录里同一层级同一链下对应多个编号时，先用记录的 Parent（relToParent，同样规则找到的编号）与候选的父级比；判断不了的同名记录按组计：记录数 ≥ 未找到的候选数则都算找到（`via:'shared'`），否则这些候选为 `possibly-missing`。比较的流程链 = 找到的编号所在链 ∪ 导出里任何 “BBM PM <链>” 名称的链（只取目录里有的链代码）；其中没找到的标准流程为 `missing`；其他链为 `chain-not-in-export`；目录里一个编号两个名称的为 `ambiguous`，LeanIX 里这两个名称的流程给出点明该编号的原因。找不到的 LeanIX 流程分三类：以 L0–L3 结尾的进 `notInCatalogue`（带原因和候选），L3V 进 `variants`，没有层级的进 `otherNaming`；后两类只计数。应有名称 `expected` 合并空格。`catalogueNote` 说明多条、Parent、映射、同名分摊、只有 L3V、可能缺少。`catalogueCheckCSV`：全部标准流程按目录顺序（前四列同 Data_RBW Process Structure）+ 结果 + 应有名称 / 找到的名称和 ID / 说明，然后是三类目录外的 LeanIX 流程。
+- **按应用**（`compareProcessLinks(data,links,{model})`）：LeanIX 名称以版本结尾（v1，或用点/横线连接的数字，如 1.0、2025.02.28）时，也算前面那个名称的应用（真实导出里 4 个应用如此）；不在工具清单里的 LeanIX 应用只计数（`otherApplications`，真实导出 10230 个），不列出、不进 CSV；LeanIX 一个流程都没挂、但工具里登记了本导出中的流程的应用，给出最多 5 个相似的 LeanIX 名称（`similar`）。每行 `standard`：应用自己记录的流程用模型里的对应（含映射），其余用名称规则；按应用的 CSV 多 Process ID、Process Name 两列。
+- **model.mjs**：processLookup 的编号规则也接受链本身的 Level 0 编号（如 “M.I2D Intralogistics to Demand”，与 leanix-processes.mjs 的 processCode 一致）；四种数据下模型输出仍逐项相同。
+- **页面**（`app.js` 的 `showProcessCheck(check,catalogue,{catalogueSource})`）：顶部是导出信息；然后 “Standard catalogue against LeanIX”（四个计数、比较了哪些链及各缺几个、未比较的链、L3V 和其他命名的数量、可能缺少 / 只有 L3V / 编号两个名称的说明、Missing in LeanIX 表（含 Note 列，默认展开）、In LeanIX, not in the catalogue 表、Download catalogue check (CSV)）；再是按应用核对（每个流程旁有标准 Process ID，带版本的 LeanIX 名称和相似名称会注明，工具外应用只写数量）。一个都比较不了时写 “No standard process could be compared …”。Apply 仍隐藏，不碰工作区。
+- **测试**：`tests/v16-catalogue-check.test.mjs`（11 项：processLookup 与模型逐条一致；I2D 减 2 个恰好列出这 2 个；目录外原因、Display Name、L3V、HC；6 项 “review”：Parent 判断同名 / 可能缺少、按名称出现的链也比较、所有者映射、编号两个名称 / Level 0 编号 / 应有名称空格 / 一个都比较不了、L3V 和其他命名、带版本的应用名 / 工具外应用只计数 / 相似名称；目录 CSV；按应用的 Process ID）。6 项 review 测试在复核前的代码上全部失败。`v15-leanix-process-check` 按新的结果格式更新。
+- **复核**：两轮复核（小工作流）。第一轮 2 个复核者 + 1 个反驳者：确认 9 个问题（只按匹配到的流程判断链是否在导出里；目录同名流程都算找到；没用所有者映射；编号两个名称时原因误导；Level 0 编号不认；应有名称有双空格；一个都比较不了时写 “0 missing”；按应用的 Process ID 不含映射；同名流程未用 Parent），驳回 3 个。另外用真实导出跑一次又发现 3 个（应用名带版本号；1 万多个工具外应用被列出并警告；L3V 和其他命名混在 “not in the catalogue” 里）。全部修复并加测试，6 项新测试在修复前的代码上全部失败。第二轮 1 个复核者 + 1 个反驳者：提出 3 点，均判定为有意的设计，没有确认的问题。
+- **浏览器检查**：合成导出（按真实导出的特点：应用自己的流程和链接，其中一个应用名带 “ 1.0”，另挂一个工具外应用；I2D 全部标准流程带 Parent，去掉 3 个和两个 Register Truck 中的一个；2 个 L3V；BBM_PPM 和 ETAS 命名各 1 个；1 个目录外名称）：标准目录部分显示 Compared 1319 / In LeanIX 272 / Missing 1047 / not in the catalogue 9；I2D 缺 5 个，其中 Register Truck 由 Parent 判断出缺的是 M.I2D.030.070.020，两个 Stage Packaging Kits 标为可能缺少；“9 local variants (L3V) · 5 processes named otherwise” 只计数；Supply Chain Management System 显示 “in LeanIX as “Supply Chain Management System 1.0””，75 个应用全部一致；“LeanIX also links these processes to 1 application that is not in the tool's inventory”；Apply 隐藏。1280 宽度无横向溢出。测试后清除了本机测试地址上的浏览器记录。
+- 当前离线包：`offline/logistics-offline-20261022-v16.zip`（HTML + deploy-iis.bat）。验证记录见 `verification/v16-verification.md`。
+
+## V15 历史状态（2026-10-22，受顶部 V16 更新）
 
 - **用户决定（2026-10-22，选 A）**：“先只核对、不改数据。导入预览按应用列出 LeanIX 里挂的流程和工具里登记的流程哪些对得上、哪些只有一边有。” 新的数据来源和功能，按版本号规则为 V15。数据只在公司电脑上处理：只按截图里的版式（表头和前几行）写读取，测试用同样版式的合成文件；不要让用户把 LeanIX 导出发到这台电脑。
 - **导出版式**（视图 “BBM PM process”，3560 行）：工作表 “BBM PM process (Export 2026-…)”；第 1 行技术字段 id,type,name,displayName,description,processLifecycleStatus,relToParent,relProcessToApplication,fullName,updatedAt；第 2 行显示名（Applications 等）；第 3 行起每行一个流程；Applications 为分号分隔的应用名称；ReadMe 工作表有 “created at: … GMT”。
@@ -30,7 +43,7 @@
 - **浏览器检查**（本机 http，V15，合成导出：由内置数据重建 200 个流程，去掉 1 个链接、加 1 个链接、加 1 个不认识的应用）：预览显示 “Process check ready: 2 of 75 applications differ. Nothing was changed.”，75 / 2 / 73 / 0，200 个流程关联 76 个应用名，“1 application named in LeanIX is not in the tool”；AGR w/ Camera 展开为三栏（Only in the tool · 1）；Apply 隐藏；手机宽度单栏、无横向滚动。CSV 按钮未点击（会下载），由测试覆盖。
 - 当前离线包：`offline/logistics-offline-20261022-v15.zip`（HTML + deploy-iis.bat）。验证记录见 `verification/v15-verification.md`。
 
-## V14 历史状态（2026-10-22，受顶部 V15 更新）
+## V14 历史状态（2026-10-22，受 V15 更新）
 
 - **来历**：侧边会话（fork-11，“在 Bosch 内网 SAP LeanIX 里找到 Process 表”）和用户定了方案 A，开始做 V14；用户随后说“把这个任务一直到主对话框吧”，主会话接手、补完并发布。
 - **用户决定（2026-10-22）**：GitHub 私有仓库继续保存真实数据（data.json、latest-workspace.json、built/、每个 Release 的离线文件）；LeanIX 原始导出（`leanix_export/`、`leanix_processes*.csv`）永不提交、不进 MANIFEST（`.gitignore` 和 `.github/scripts/check-manifest.mjs` 已排除）。不清理历史。

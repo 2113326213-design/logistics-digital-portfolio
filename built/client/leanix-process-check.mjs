@@ -1,4 +1,5 @@
-import {split,otherCompanyRecord} from './codes.mjs';
+import {split,otherCompanyRecord,norm,PROCESS_LEVEL} from './codes.mjs';
+import {processLookup} from './model.mjs';
 
 // LeanIX process check (owner decision 2026-10-22, V15: "先只核对、不改数据"). The data steward exports the saved LeanIX view
 // "BBM PM process" (type Process, with the Applications column) on the company laptop and selects the file in Import data.
@@ -44,11 +45,20 @@ export function readProcessLinks(sheets){
  return {sheet,exportedAt,records};
 }
 
+// LeanIX names an application by its Display Name, which adds the release to the name ("Supply Chain Management System
+// 1.0", "Wuj HK AGV (recovered …) 2025.02.28"; real export 2026-10-22). A name that ends in a release (numbers with dots
+// or dashes, or v1) also counts for the application with the name before it.
+const RELEASE=/^(.*\S)\s+(v\d+|v?\d+(?:[.\-]\d+)+)$/i;
+const withoutRelease=name=>String(name??'').trim().match(RELEASE)?.[1]||null;
+
 // One row per application of the tool. A recorded process the export does not contain at all is outside this export
 // (the view covers BBM PM processes only) and is not a difference. HC entries belong to another company and are not
-// compared (V13.3). LeanIX links applications by name, so applications LeanIX names that the tool does not know, and
-// names the tool uses for more than one application, are listed for checking.
-export function compareProcessLinks(data,links,{file=''}={}){
+// compared (V13.3). LeanIX links applications by name (with or without the release). The processes are also linked to
+// many applications outside the tool's inventory (10,230 in the real export): they are counted, not compared; an
+// application of the tool that LeanIX links to nothing gets the LeanIX names that look like it, to check its name. With
+// the model, every process gets its standard Process ID and Process Name (V16): the tool's own match for the processes
+// the application records (owner mappings included), the shared name rule for the others.
+export function compareProcessLinks(data,links,{file='',model=null}={}){
  const apps=data?.apps||[],canonical=new Map(),linked=new Map();
  for(const record of links.records){
   if(otherCompanyRecord(record.name))continue;
@@ -59,9 +69,16 @@ export function compareProcessLinks(data,links,{file=''}={}){
    if(!linked.get(appKey).processes.has(key))linked.get(appKey).processes.set(key,record.name);
   }
  }
+ const known=new Set(apps.map(app=>nameKey(app.Name)));
+ // LeanIX names of each tool application: its exact name, and its name followed by a release.
+ const leanixNames=new Map();
+ for(const [key,v] of linked){const base=withoutRelease(v.name),target=known.has(key)?key:base&&known.has(nameKey(base))?nameKey(base):null;if(target){if(!leanixNames.has(target))leanixNames.set(target,[]);leanixNames.get(target).push(key);}}
  const sameName=new Map();for(const app of apps)sameName.set(nameKey(app.Name),(sameName.get(nameKey(app.Name))||0)+1);
+ const lookup=model?processLookup(model.procs):null,modelApps=new Map((model?.apps||[]).map(a=>[a.id,a]));
+ const standardOf=name=>{if(!lookup)return null;const id=lookup(name).id;return id?{id,name:model.procs.get(id).label}:null;};
+ const assigned=new Set([...leanixNames.values()].flat()),unknown=[...linked].filter(([key])=>!assigned.has(key));
  const rows=apps.map(app=>{
-  const fromLeanix=linked.get(nameKey(app.Name))?.processes||new Map(),found=new Set(),seen=new Set();
+  const keys=leanixNames.get(nameKey(app.Name))||[],fromLeanix=new Map(keys.flatMap(k=>[...linked.get(k).processes])),found=new Set(),seen=new Set();
   const both=[],onlyTool=[],notInExport=[];
   for(const process of split(app.Processes).filter(p=>!otherCompanyRecord(p))){
    const key=canonical.get(nameKey(process));
@@ -72,24 +89,121 @@ export function compareProcessLinks(data,links,{file=''}={}){
   }
   const onlyLeanix=[...fromLeanix].filter(([key])=>!found.has(key)).map(([,name])=>name);
   const status=onlyLeanix.length||onlyTool.length?'differs':both.length?'matches':'not-in-export';
-  return {id:app.ID,name:String(app.Name??''),status,both,onlyLeanix,onlyTool,notInExport,sameName:sameName.get(nameKey(app.Name))};
+  // The standard process of each process: the tool's own match for what the application records, the rule for the rest.
+  const matches=new Map((modelApps.get(String(app.ID??'').trim())?.processMatches||[]).map(m=>[m.raw,m.id]));
+  const standard=new Map();
+  if(model)for(const process of [...both,...onlyTool,...notInExport,...onlyLeanix]){const id=matches.get(process);standard.set(process,id?{id,name:model.procs.get(id)?.label??''}:standardOf(process));}
+  const names=keys.map(k=>linked.get(k).name).filter(n=>nameKey(n)!==nameKey(app.Name));
+  // An application LeanIX links to nothing although it records processes of this export: LeanIX names that look like it.
+  const stem=String(app.Name??'').toLowerCase().replace(/\(recovered[^)]*\)/g,'').replace(/[^a-z0-9]/g,'');
+  const similar=!keys.length&&onlyTool.length&&stem.length>=4?unknown.map(([,v])=>v.name).filter(n=>{const x=n.toLowerCase().replace(/[^a-z0-9]/g,'');return x.includes(stem)||x.length>=6&&stem.includes(x);}).slice(0,5):[];
+  return {id:app.ID,name:String(app.Name??''),status,both,onlyLeanix,onlyTool,notInExport,sameName:sameName.get(nameKey(app.Name)),leanixNames:names,similar,standard};
  });
  const order={differs:0,matches:1,'not-in-export':2};
  rows.sort((a,b)=>order[a.status]-order[b.status]||nameKey(a.name).localeCompare(nameKey(b.name))||String(a.id).localeCompare(String(b.id)));
- const known=new Set(apps.map(app=>nameKey(app.Name)));
- const unknownApplications=[...linked].filter(([key])=>!known.has(key)).map(([,v])=>({name:v.name,processes:v.processes.size})).sort((a,b)=>a.name.localeCompare(b.name));
  const count=status=>rows.filter(r=>r.status===status).length;
- return {file,sheet:links.sheet,exportedAt:links.exportedAt,processes:links.records.length,linkedApplications:linked.size,rows,unknownApplications,
+ return {file,sheet:links.sheet,exportedAt:links.exportedAt,processes:links.records.length,linkedApplications:linked.size,rows,otherApplications:unknown.length,
   counts:{applications:rows.length,differs:count('differs'),matches:count('matches'),notInExport:count('not-in-export')}};
 }
 
-// The check as CSV for Excel: one row per application and process. Values starting with a formula character are
-// prefixed with ' (as in the other CSV exports).
+// The standard process catalogue against the LeanIX export (owner request 2026-10-22, V16: "business CAPABILITY + PROCESS
+// 那个表格 和我拉出来的新的 … 一些缺少的？我要去补齐的"). The catalogue is the tool's process taxonomy (Business Capability +
+// Process.xlsx, sheet Data_RBW Process Structure: RBW E2E Process Chain, Process Level, Process ID, Process Name). Each
+// LeanIX process (HC entries left out, V13.3) finds its standard process by the rule the applications' records use
+// (processLookup in model.mjs; by the Display Name when the Name finds none), else by the owner's applied mapping of that
+// exact text. A name the catalogue gives several processes of a level and chain (e.g. Register Truck) is decided by the
+// record's Parent; when the Parent does not decide, the LeanIX processes of that name cover as many of those processes as
+// there are records, and the rest are possibly missing.
+// A process chain is compared when the export has a "BBM PM <chain>" name or a process found in it (review: a chain whose
+// names all differ is still in the export); in a compared chain, a standard process no LeanIX process finds is missing.
+// Chains the export does not name are not compared, nor is a Process ID the catalogue gives two names.
+// LeanIX processes that find no standard process: names ending in L0–L3 are listed with the reason (to correct or to
+// check); local variants (L3V, under an L2 in the real export) and names without a level (other naming, e.g. BBM_PPM_PM …)
+// are counted and kept in the CSV, since they are not meant to be in the catalogue.
+const SEVERAL='流程名称对应多个编号',NO_LEVEL='流程未标注标准层级';
+const LOOKUP_REASON={'流程未匹配层级表':'No standard process has this name at this level.','流程链编号存在差异':'The name is found only in another process chain.'};
+const chainCode=id=>String(id).split('.')[1]||'';
+const chainOfName=name=>String(name??'').match(/^BBM\s+PM\s+([A-Z0-9]+)\s/i)?.[1]?.toUpperCase()||'';
+const levelOf=name=>String(name??'').match(PROCESS_LEVEL);
+const bareName=name=>String(name??'').replace(/^BBM\s+PM\s+[A-Z0-9]+\s+/i,'').replace(/\s+L[0-3]V?\s*$/i,'');
+const expectedName=n=>`BBM PM ${chainCode(n.id)} ${n.label.replace(/\s+/g,' ').trim()} L${n.level}`;
+export function compareCatalogue(model,links,{processRows=[]}={}){
+ const lookup=processLookup(model.procs),found=new Map(),notInCatalogue=[],variants=[],otherNaming=[],groups=new Map();
+ const add=(id,record,how)=>{if(!found.has(id))found.set(id,[]);found.get(id).push({id:record.id,name:record.name,...how});};
+ // The owner's applied process mappings, by recorded text (one target only).
+ const mapped=new Map();for(const a of model.apps)for(const m of a.processMatches)if(m.via==='mapping'){const k=nameKey(m.raw);mapped.set(k,mapped.has(k)&&mapped.get(k)!==m.id?null:m.id);}
+ // Names of Process IDs the catalogue gives two names (left out of the name rule).
+ const ambiguous=new Map();for(const [,l,id,label] of processRows){const n=model.procs.get(String(id));if(n?.ambiguous)ambiguous.set(n.level+'|'+norm(label)+'|'+chainCode(n.id),n.id);}
+ const resolve=name=>{const hit=lookup(name);if(hit.id||hit.type===SEVERAL)return hit;const id=mapped.get(nameKey(name));return id&&model.procs.has(id)?{id,via:'mapping'}:hit;};
+ for(const record of links.records){
+  if(otherCompanyRecord(record.name))continue;
+  let hit=resolve(record.name);
+  if(!hit.id&&hit.type!==SEVERAL&&record.displayName&&nameKey(record.displayName)!==nameKey(record.name)){const byDisplayName=resolve(record.displayName);if(byDisplayName.id||byDisplayName.type===SEVERAL)hit=byDisplayName;}
+  const variant=/L3V\s*$/i.test(record.name);
+  if(hit.id){add(hit.id,record,{via:hit.via,variant});continue;}
+  if(hit.type===SEVERAL){
+   const parent=record.parent?resolve(record.parent).id:null,byParent=parent?hit.candidates.filter(c=>model.procs.get(c.id)?.parent===parent):[];
+   if(byParent.length===1){add(byParent[0].id,record,{via:'parent',variant});continue;}
+   const key=hit.candidates.map(c=>c.id).sort().join('|');
+   if(!groups.has(key))groups.set(key,{ids:hit.candidates.map(c=>c.id),records:[]});groups.get(key).records.push({id:record.id,name:record.name,variant});continue;
+  }
+  const m=levelOf(record.name),amb=m?ambiguous.get(+m[1]+'|'+norm(bareName(record.name))+'|'+(chainOfName(record.name)||'')):null;
+  if(amb){notInCatalogue.push({row:record.row,id:record.id,name:record.name,reason:`The catalogue gives this Process ID (${amb}) two names, so it is not compared.`,candidates:[]});continue;}
+  const entry={row:record.row,id:record.id,name:record.name,reason:LOOKUP_REASON[hit.type]||'The name does not end with a level (L0–L3).',candidates:hit.candidates||[]};
+  if(hit.type===NO_LEVEL)otherNaming.push(entry);else if(variant)variants.push(entry);else notInCatalogue.push(entry);
+ }
+ // Shared names the Parent did not decide: the LeanIX processes of that name cover as many catalogue processes.
+ const possibly=new Map();
+ for(const g of groups.values()){
+  const open=g.ids.filter(id=>!found.has(id));
+  if(g.records.length>=open.length)for(const id of open)for(const r of g.records)add(id,r,{via:'shared',shared:g.ids.length,variant:r.variant});
+  else for(const id of open)possibly.set(id,{shared:g.ids.length,records:g.records.length,names:g.records.map(r=>r.name)});
+ }
+ const catalogueChains=new Set([...model.procs.keys()].map(chainCode));
+ const reached=new Set([...found.keys(),...possibly.keys()].map(chainCode));
+ for(const record of links.records)if(!otherCompanyRecord(record.name)&&catalogueChains.has(chainOfName(record.name)))reached.add(chainOfName(record.name));
+ const rows=[...model.procs.values()].map(n=>{
+  const leanix=found.get(n.id)||[];
+  const status=n.ambiguous?'ambiguous':!reached.has(chainCode(n.id))?'chain-not-in-export':leanix.length?'in-leanix':possibly.has(n.id)?'possibly-missing':'missing';
+  return {chain:n.chain,level:'L'+n.level,id:n.id,name:n.label,expected:expectedName(n),status,leanix,variantOnly:!!leanix.length&&leanix.every(x=>x.variant),possibly:possibly.get(n.id)||null};
+ });
+ const chains=new Map();
+ for(const r of rows){const c=chains.get(r.chain)||{chain:r.chain,code:chainCode(r.id),reached:reached.has(chainCode(r.id)),processes:0,inLeanix:0,missing:0};c.processes++;if(r.status==='in-leanix')c.inLeanix++;if(r.status==='missing'||r.status==='possibly-missing')c.missing++;chains.set(r.chain,c);}
+ const count=status=>rows.filter(r=>r.status===status).length;
+ return {rows,missing:rows.filter(r=>r.status==='missing'||r.status==='possibly-missing'),notInCatalogue,variants,otherNaming,chains:[...chains.values()],
+  counts:{standard:rows.length,compared:count('in-leanix')+count('missing')+count('possibly-missing'),inLeanix:count('in-leanix'),missing:count('missing')+count('possibly-missing'),
+   possiblyMissing:count('possibly-missing'),variantOnly:rows.filter(r=>r.status==='in-leanix'&&r.variantOnly).length,notCompared:count('chain-not-in-export'),ambiguous:count('ambiguous'),
+   notInCatalogue:notInCatalogue.length,variants:variants.length,otherNaming:otherNaming.length}};
+}
+
+// The checks as CSV for Excel. Values starting with a formula character are prefixed with ' (as in the other CSV exports).
+const quote=x=>'"'+String(x??'').replace(/^(\s*[=+@\-\t\r])/u,"'$1").replaceAll('"','""')+'"';
+const csv=rows=>'﻿'+rows.map(row=>row.map(quote).join(',')).join('\r\n');
+// Per application: one row per application and process, with the standard Process ID and Process Name when found (V16).
 const RESULT_TEXT={both:'In both',onlyLeanix:'Only in LeanIX',onlyTool:'Only in the tool',notInExport:'Not in this export'};
 export function processCheckCSV(check){
- const quote=x=>'"'+String(x??'').replace(/^(\s*[=+@\-\t\r])/u,"'$1").replaceAll('"','""')+'"';
- const rows=[['Application ID','Application','Process','Result','LeanIX export'],
-  ...check.rows.flatMap(r=>Object.keys(RESULT_TEXT).flatMap(part=>r[part].map(process=>[r.id,r.name,process,RESULT_TEXT[part],check.file]))),
-  ...check.unknownApplications.map(a=>['',a.name,'','Application in LeanIX, not in the tool',check.file])];
- return '﻿'+rows.map(row=>row.map(quote).join(',')).join('\r\n');
+ return csv([['Application ID','Application','Process','Process ID','Process Name','Result','LeanIX export'],
+  ...check.rows.flatMap(r=>Object.keys(RESULT_TEXT).flatMap(part=>r[part].map(process=>{const s=r.standard?.get(process);return [r.id,r.name,process,s?.id,s?.name,RESULT_TEXT[part],check.file];})))]);
+}
+// What a catalogue row's result needs explained: several LeanIX processes, the Parent, the owner's mapping, a shared
+// name, a local variant only, or a possibly missing process.
+export const catalogueNote=r=>{
+ const own=r.leanix.filter(x=>x.via!=='shared'),shared=r.leanix.filter(x=>x.via==='shared');
+ return [own.length>1?`${own.length} LeanIX processes find this standard process.`:'',
+  r.leanix.some(x=>x.via==='mapping')?'Found through the owner\'s mapping of this LeanIX name.':'',
+  r.leanix.some(x=>x.via==='parent')?'The catalogue uses this name more than once; the LeanIX Parent decides which.':'',
+  shared.length?`The catalogue gives ${shared[0].shared} standard processes this name at this level and the LeanIX Parent does not decide which; the LeanIX processes of that name count for them.`:'',
+  r.variantOnly?'In LeanIX only as a local variant (L3V).':'',
+  r.possibly?`The catalogue gives ${r.possibly.shared} standard processes this name at this level, but LeanIX has only ${r.possibly.records} (${r.possibly.names.join('; ')}) and the Parent does not decide which: check whether this one is missing.`:''].filter(Boolean).join(' ');
+};
+// The catalogue: every standard process in catalogue order with its result (V16), then the LeanIX processes that are not
+// in it. The first four columns are those of the Data_RBW Process Structure sheet, so the rows can be filled in.
+const CATALOGUE_RESULT={'in-leanix':'In LeanIX','missing':'Missing in LeanIX','possibly-missing':'Possibly missing in LeanIX','chain-not-in-export':'Not compared: this process chain is not in the export','ambiguous':'Not compared: the catalogue gives this Process ID two names'};
+export function catalogueCheckCSV(catalogue,{file=''}={}){
+ const outside=(list,result)=>list.map(r=>['','','','',result,'',r.name,r.id,r.reason+(r.candidates.length?' Candidates: '+r.candidates.map(c=>`${c.id} ${c.label}`).join('; '):''),file]);
+ return csv([['RBW E2E Process Chain','Process Level','Process ID','Process Name','Result','Name expected in LeanIX','LeanIX name','LeanIX ID','Note','LeanIX export'],
+  ...catalogue.rows.map(r=>[r.chain,r.level,r.id,r.name,CATALOGUE_RESULT[r.status],r.status==='missing'||r.status==='possibly-missing'?r.expected:'',r.leanix.map(x=>x.name).join('\n'),r.leanix.map(x=>x.id).join('\n'),catalogueNote(r),file]),
+  ...outside(catalogue.notInCatalogue,'In LeanIX, not in the catalogue'),
+  ...outside(catalogue.variants,'In LeanIX as a local variant (L3V), not in the catalogue'),
+  ...outside(catalogue.otherNaming,'In LeanIX under other naming (no level L0–L3), not compared')]);
 }

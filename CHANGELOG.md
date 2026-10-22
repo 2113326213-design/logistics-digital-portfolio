@@ -2,6 +2,20 @@
 
 每个版本的离线包在 [Releases](https://github.com/2113326213-design/logistics-digital-portfolio/releases)；详细的修改说明和用户决定在 [`00_Claude先读.md`](00_Claude先读.md)，验证记录在 [`verification/`](verification/)。
 
+## [V16](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v16-20261022) · 2026-10-22
+
+- **标准流程目录对 LeanIX**（用户：“我还缺少 process process id processname”，随后 “business CAPABILITY + PROCESS那个表格 和我拉出来的新的 … 一些缺少的？我要去补齐的”）：在 Import data 选 LeanIX 流程导出后，预览先显示 **Standard catalogue against LeanIX**。工具的流程目录（Business Capability + Process.xlsx 的 Data_RBW Process Structure：RBW E2E Process Chain、Process Level、Process ID、Process Name）里的每个流程，按应用记录所用的同一条名称规则（“BBM PM <链> <名称> L<层级>”）在导出里找：
+  - **Missing in LeanIX**：导出涉及到的流程链里，标准目录有、LeanIX 没有的流程，列出 Process chain、Level、Process ID、Process Name 和 LeanIX 里应有的名称。
+  - **In LeanIX, not in the catalogue**：LeanIX 里以 L0–L3 结尾、但对不上目录的流程，并写明原因（该层级没有这个名称、只在别的流程链里有、目录里这个编号有两个名称）和候选。
+  - 所有者做过的流程映射照样算（例如 “BBM PM DM Data Management L0” → M.MDM）。目录里同一层级同一链下重名的流程（如 Register Truck）按 LeanIX 的 Parent 列判断是哪一个；Parent 判断不了时，LeanIX 里这个名称有几条就算几个，其余标为 **Possibly missing**（可能缺少，请核对）。
+  - 导出里出现了 “BBM PM <链>” 名称的流程链都比较（即使名称都对不上）；一个都没出现的链不比较，只列出链和流程数。目录里一个 Process ID 对应两个名称的（1 个）不比较。
+  - L3V 本地变体（在 L2 之下，不属于标准目录）和名称末尾没有 L0–L3 的流程（如 “BBM_PPM_PM …”、“ETAS.…”）只计数，放在 CSV 里，不算要改的名称；只以 L3V 形式出现的标准流程单独注明。
+  - **Download catalogue check (CSV)**：标准目录的全部流程按原表顺序，每行带结果（In LeanIX / Missing / Possibly missing / Not compared…）、LeanIX 应有名称（空格已整理）、找到的 LeanIX 名称和 ID、说明；然后是不在目录里的、L3V 和其他命名的 LeanIX 流程。前四列与 Data_RBW Process Structure 相同，方便逐行补齐。
+- **按应用的核对**：每个流程旁显示标准 Process ID（应用自己的记录用工具里的对应，含所有者映射）；**Download check (CSV)** 增加 Process ID 和 Process Name 两列。LeanIX 用 “名称 + 版本” 称呼应用（如 “Supply Chain Management System 1.0”），现在也能对上；LeanIX 还把这些流程挂到上万个工具以外的应用，只显示数量，不再逐个列出；工具里的应用在 LeanIX 里一个流程都没挂时，列出相似的 LeanIX 名称供核对。
+- **用真实导出验证过一次**（用户同意破例，读完即删）：3560 个流程；修正前比较 1567 个、LeanIX 有 1094、缺 473、对不上 2254（其中 1315 个 L3V、800 个其他命名）；75 个应用中 70 个一致，5 个差异里 4 个是应用名带版本号造成的误报。另一次导出确认 LeanIX 的 BBM Signavio ID 全为空、External ID 只出现在 BBM_PPM 和 ETAS 的流程上，所以 BBM PM 流程只能按名称对应。
+- 名称对应规则从 `model.mjs` 的 buildModel 里抽成 `processLookup`，应用记录和这次核对共用同一条规则；抽取前后模型输出逐项相同（真实数据和三种变体）。
+- 仍然只核对，不改任何数据，没有 Apply。
+
 ## [V15](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v15-20261022) · 2026-10-22
 
 - **LeanIX 流程核对**（用户选 A：“先只核对、不改数据。导入预览按应用列出 LeanIX 里挂的流程和工具里登记的流程哪些对得上、哪些只有一边有。”）：在 **Import data** 第 1 格选 LeanIX 流程导出（保存的视图 “BBM PM process”，必须带 **Applications** 列），**Preview changes** 显示 “LeanIX process check”：应用总数、有差异 / 一致 / 本导出里没有其流程的数量；有差异的应用排在前面并展开，每个应用分三栏列出 **Only in LeanIX**、**Only in the tool**、**In both**。
