@@ -58,7 +58,9 @@ import {createCorrection} from '../public/corrections.mjs';
 test('Plant rates count registered and valid applications separately with the same denominator',()=>{
  const m=buildModel(fixture()),r=maintenanceReport(m,{},'cap');
  assert.deepEqual(r.levelsAvailable,[1,2,3]);
- assert.deepEqual(r.levels.map(l=>[l.level,l.filled.length,l.valid.length]),[[1,1,1],[2,2,2],[3,2,1]]);
+ // V18.1 (fixed rule 2026-10-23): C records only the matching L2 B.06.1, so its L1 is full too.
+ assert.deepEqual(r.levels.map(l=>[l.level,l.filled.length,l.valid.length]),[[1,2,2],[2,2,2],[3,2,1]]);
+ assert.deepEqual(r.levels[0].inferred.map(a=>a.id),['C']);
  const ps=r.plants.find(p=>p.plant==='Plant A');assert.equal(ps.apps.length,2);assert.equal(ps.levels[2].filled.length,2);assert.equal(ps.levels[2].valid.length,1);
  const bOnly=maintenanceReport({...m,apps:m.apps.filter(a=>a.id==='B')},{},'cap');assert.equal(bOnly.levels[0].filled.length,0,'unknown descendants must not infer parent maintenance');
 });
@@ -110,7 +112,8 @@ test('L2 quality drill includes real gaps but accepts a confirmed L3 parent in i
   app('C','B.06.1.1 Detail','','PS'),app('D','','','PS')
  ];
  const report=maintenanceReport(buildModel(data),{division:'PS',entity:'Plant A'},'cap'),l2=report.levels.find(l=>l.level===2);
- assert.deepEqual([report.apps.length,l2.valid.length,l2.invalid.length,l2.missing.length,l2.uncovered.length],[4,1,2,2,1]);
+ // V18.1: C's matching L3 makes its L2 full, so only D is missing.
+ assert.deepEqual([report.apps.length,l2.valid.length,l2.invalid.length,l2.missing.length,l2.uncovered.length],[4,1,2,1,1]);
  assert.deepEqual(applicationsNotPassingLevelQuality(report,l2).map(a=>a.id),['A','B','D']);
  assert.match(maintenanceGapReasons(report,report,report.apps[0],[2])[0],/L2 · Unrecognized registration/);
  assert.deepEqual(maintenanceGapReasons(report,report,report.apps[2],[2]),[]);
@@ -120,7 +123,8 @@ test('Main Business Capability supplies L1 once when it repeats in the capabilit
  data.apps[1]['Business Capabilities']+=';B.06 Logistics';
  const report=maintenanceReport(buildModel(data),{},'cap');
  assert.equal(report.records.get('B').filter(record=>record.level===1).length,1);
- assert.equal(report.levels.find(level=>level.level===1).filled.length,2);
+ assert.equal(report.levels.find(level=>level.level===1).direct.length,2);
+ assert.equal(report.levels.find(level=>level.level===1).filled.length,3,'C is full at L1 through its matching L2 (V18.1)');
 });
 test('An empty-field capability mapping remains counted alongside a recorded main capability',()=>{
  const data=fixture();data.apps[1]['Business Capabilities']='';data.apps[1]['Main Business Capability']='B.06 Logistics';

@@ -44,10 +44,10 @@ test('scenarios: fixing one issue keeps the application; fixing all removes it',
  assert.deepEqual(step(FULL),[[],[]]);
 });
 
-test('Business Capability: explicit registrations stay distinct from confirmed L3 coverage of L2',()=>{
+test('Business Capability: a matching L3 makes the levels above it full; a recorded bad L3 stays an issue',()=>{
  const data=fixture([app('leafOnly',FULL,'B.06.1.1 Detail'),app('ok',FULL),app('outside',FULL,'B.06 Logistics;B.06.1 Branch;B.06.1.1 Detail;B.06.7.9 Unknown'),app('empty',FULL,'')]);
  const report=maintenanceReport(buildModel(data),{},'cap');
- assert.deepEqual(labels(report,'leafOnly'),['Level 1 missing'],'confirmed L3 covers L2 only; it does not create an L1 registration');
+ assert.deepEqual(labels(report,'leafOnly'),[],'its matching L3 makes L2 and L1 full (fixed rule 2026-10-23)');
  assert.deepEqual(labels(report,'ok'),[]);
  assert.deepEqual(labels(report,'outside'),['Level 3 match needs review: B.06.7.9 Unknown']);
  assert.equal(report.issues.get('outside')[0].text,REVIEW_TEXT.notInCatalogue,'a catalogue gap is a question, not a confirmed error');
@@ -102,7 +102,9 @@ test('bundled data: To review counts and the profile shows exactly the same issu
  // Plant L3 are confirmed as recorded. AUTO-RACK had no other process issue and leaves Process To review (23 → 22); RBCW Auto
  // Warehouse Management System keeps its traceable Level 0 / Level 1 entries. Both leave 'Level 3 to review' (20 → 18) and are
  // counted as confirmed; they still do not match the standard (Level 3 matches standard unchanged).
- assert.deepEqual([cap.needsReview.length,process.needsReview.length],[39,22],'V9.17: Capability −1 (360° Supplier dashboard); V9.18: Process −1 (AUTO-RACK confirmed)');
+ // V18.1 (fixed rule 2026-10-23): RBCW Auto Warehouse Management System's matching L2 (Material Consumption) makes its L0
+ // and L1 full, so it has no process issue left and leaves Process To review (22 → 21).
+ assert.deepEqual([cap.needsReview.length,process.needsReview.length],[39,21],'V9.17: Capability −1 (360° Supplier dashboard); V9.18: Process −1 (AUTO-RACK confirmed); V18.1: Process −1 (RBCW Auto Warehouse Management System)');
  assert.deepEqual([l3MaintenanceMetrics(cap).notPassing.length,l3MaintenanceMetrics(process).notPassing.length],[39,18],'Level 3 metrics follow the same applications');
  assert.deepEqual(l3MaintenanceMetrics(process).confirmed.map(a=>a.Name).sort(),['AUTO-RACK','RBCW Auto Warehouse Management System']);
  for(const a of model.apps){

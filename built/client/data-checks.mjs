@@ -2,9 +2,9 @@ import {annualCost} from './costs.mjs';
 import {capCode,norm,compareNatural} from './codes.mjs';
 import {displayCode,displayName} from './display.mjs';
 import {english} from './english.mjs';
-import {maintenanceGapReasons,maintenanceReport,applicationsToReviewAtLevel} from './overview.mjs';
+import {maintenanceReport} from './overview.mjs';
 import {scopeReason} from './display.mjs';
-import {displayMaintenanceGapReason} from './maintenance-labels.mjs';
+import {reviewIssues} from './review-issues.mjs';
 import {semanticConcerns} from './semantic-review.mjs';
 import {nameDifferenceRows} from './name-differences.mjs';
 import {acceptedText} from './accepted-records.mjs';
@@ -13,27 +13,31 @@ export {nameDifferenceRows};
 const applied=(model,appId,dimension,raw)=>model.correctionLog.some(c=>c.state==='Applied'&&c.appId===appId&&c.dimension===dimension&&c.raw===raw);
 // nameDifferenceRows lives in name-differences.mjs, shared with the To review issues.
 
-function addRow(rows,dimension,raw=''){
- const key=JSON.stringify([dimension,raw]);
+// A missing level has its own line per level; a record has one line, whatever is found about it.
+function addRow(rows,dimension,raw='',level){
+ const key=JSON.stringify(level===undefined?[dimension,raw]:[dimension,raw,level]);
  if(!rows.has(key))rows.set(key,{dimension,raw,primary:'',tags:[],details:[]});
  return rows.get(key);
 }
 function addTag(row,label,detail=''){
  if(!row.tags.some(tag=>tag.label===label&&tag.detail===detail))row.tags.push({label,detail});
 }
-function addPrimary(rows,app,dimension,report){
- // An application whose Level 3 records outside the standard were all confirmed by the owner (V9.18) is not to review,
- // so it gets no check here either (V17.5 audit); its confirmed records stay listed as information.
- const level=report.levels.find(l=>l.level===3);
- if(level&&!applicationsToReviewAtLevel(report,report,level).some(a=>a.id===app.id))return;
- const reason=maintenanceGapReasons(report,report,app,[3])[0];
- if(!reason)return;
- const primary=`${dimension==='cap'?'Business Capability':'Process'}: ${displayMaintenanceGapReason(reason)}`;
- const sourceRecords=dimension==='cap'?app.rawCap:app.rawProcess;
- const invalid=report.records.get(app.id)?.filter(record=>record.level===3&&!record.valid&&sourceRecords.includes(record.raw))||[];
- const sourceRows=invalid.map(record=>rows.get(JSON.stringify([dimension,record.raw]))).filter(Boolean);
- if(sourceRows.length)sourceRows.forEach(row=>{row.primary=primary;});
- else addRow(rows,dimension).primary=primary;
+// Data checks list exactly the issues of Issues to review (review-issues.mjs: every level, and the name and catalogue
+// questions), so the two parts of the application details never disagree (owner decision 2026-10-23, V18.1). Before,
+// only Level 3 was checked here. Records the owner confirmed as recorded are not issues there, so not here either.
+function addIssues(rows,model,app,dimension,report){
+ const name=dimension==='cap'?'Business Capability':'Process';
+ for(const issue of reviewIssues(model,report,app)){
+  const emptyField=!issue.record&&issue.level===null;
+  const row=issue.record?addRow(rows,dimension,issue.record):emptyField?addRow(rows,dimension,''):addRow(rows,dimension,'',issue.level);
+  row.issue=true;
+  // Already listed in the same words, or the empty field already listed by sourceRows.
+  if(row.tags.some(tag=>tag.label===issue.label)||emptyField&&row.tags.length)continue;
+  const label=emptyField?issue.text.replace(/\.$/,''):issue.label;
+  if(!row.primary)row.primary=`${name}: ${label}`;else addTag(row,label);
+  // The sentence says what was found where the label alone does not (a catalogue question, a traceable parent).
+  if((issue.kind==='catalogue'||issue.traced)&&!row.tags.some(tag=>tag.detail))row.details.push(issue.text);
+ }
 }
 
 function sourceRows(model,app){
@@ -96,11 +100,15 @@ export function dataChecksForApp(model,app,reports=null){
  // With the business capability standard as catalogue, a recorded name that differs from the standard name of its
  // code is a record to correct (owner decision 2026-10-19); otherwise the difference is shown as provenance only.
  if(model.standardCatalogue)for(const difference of nameDifferences)addTag(addRow(rows,'cap',difference.raw),'Name differs from standard',`Standard name: "${difference.standardName}". Correct the record in LeanIX; it is not changed automatically.`);
- addPrimary(rows,app,'cap',currentReports.cap);
- addPrimary(rows,app,'process',currentReports.process);
+ addIssues(rows,model,app,'cap',currentReports.cap);
+ addIssues(rows,model,app,'process',currentReports.process);
  // Out of scope (no score, or not still active): not counted in the cost totals, so no cost check (V17.5 audit).
  if(annualCost(app).score===1&&!scopeReason(app)){const row=addRow(rows,'cost','');addTag(row,'Cost score 1','Counted as ¥200,000 / year; plant to confirm.');}
- const checks=[...rows.values()].filter(row=>row.primary||row.tags.length).sort((a,b)=>['cap','process','cost'].indexOf(a.dimension)-['cap','process','cost'].indexOf(b.dimension)||a.raw.localeCompare(b.raw));
+ // Only issues of Issues to review, the cost check, and records the owner confirmed (shown, not counted) are listed. A
+ // record tagged here that Issues to review does not count (the same code recorded twice, a catalogued code outside
+ // B.06) is left out, so the two lists stay the same for any data (V18.1 review).
+ const confirmed=row=>row.tags.some(tag=>tag.label==='Confirmed by owner as recorded');
+ const checks=[...rows.values()].filter(row=>(row.primary||row.tags.length)&&(row.dimension==='cost'||row.issue||confirmed(row))).sort((a,b)=>['cap','process','cost'].indexOf(a.dimension)-['cap','process','cost'].indexOf(b.dimension)||a.raw.localeCompare(b.raw));
  const mappings=mappedRows(model,app);
  // A record the owner confirmed as recorded is shown, but it is not something to check (V17.5 audit).
  const toCheck=checks.filter(row=>row.primary||row.tags.some(tag=>tag.label!=='Confirmed by owner as recorded'));
@@ -157,7 +165,7 @@ function renderNameDifference(row,esc){
 }
 
 export function renderDataChecks(checks,esc){
- const checkList=checks.checks.length?`<ul class="app-check-list">${checks.checks.map(row=>`<li data-check-dimension="${row.dimension}"><div class="app-check-labels">${row.primary?`<strong class="app-check-primary">${esc(row.primary)}</strong>`:''}${row.tags.map(tag=>`<span class="app-check-tag">${esc(tag.label)}</span>`).join('')}</div>${row.raw?`<span class="app-check-raw">${esc(row.raw)}</span>`:''}${row.tags.filter(tag=>tag.detail).map(tag=>`<span class="app-check-detail">${esc(tag.detail)}</span>`).join('')}</li>`).join('')}</ul>`:'';
+ const checkList=checks.checks.length?`<ul class="app-check-list">${checks.checks.map(row=>`<li data-check-dimension="${row.dimension}"><div class="app-check-labels">${row.primary?`<strong class="app-check-primary">${esc(row.primary)}</strong>`:''}${row.tags.map(tag=>`<span class="app-check-tag">${esc(tag.label)}</span>`).join('')}</div>${row.raw?`<span class="app-check-raw">${esc(row.raw)}</span>`:''}${row.tags.filter(tag=>tag.detail).map(tag=>`<span class="app-check-detail">${esc(tag.detail)}</span>`).join('')}${(row.details||[]).map(text=>`<span class="app-check-detail">${esc(text)}</span>`).join('')}</li>`).join('')}</ul>`:'';
  const mappingList=checks.mappings.length?`<section class="app-mapped-list"><h4>Applied mappings</h4><ul class="app-mapping-cards">${checks.mappings.map(row=>`
   <li class="app-mapping-card">
    <div class="app-mapping-heading"><span>${row.dimension==='cap'?'Business Capability':'Process'} mapping</span><span class="app-mapping-status">Applied</span></div>

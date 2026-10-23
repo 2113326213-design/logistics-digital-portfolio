@@ -20,7 +20,18 @@
 - **小版本**（V10.1、V10.2……）：修正、文字和显示调整。
 - 版本号写在 `program/scripts/release.mjs` 的 RELEASE_VERSION（小写，如 `v10`、`v10.1`）；文件名、发布 zip、部署脚本和 Release 标签（`v10-20261022`）都随它生成。导入预览的“变化明细”是新功能，所以这一版是 V10（原计划的 V9.20 没有发布）。
 
-## V18 当前状态（2026-10-23，优先于所有历史段落）
+## V18.1 当前状态（2026-10-23，优先于所有历史段落）
+
+- **固定规则（用户 2026-10-23：“这个是死规定”，不得更改）**：某一层没有登记时，只要更深的一层的记录全部符合标准、且它们在这一层的上级在目录里，这一层就算 filled 和 matches standard（满分）。Process（L0–L3）和 Business Capability（L1–L3）都适用。已登记的层只看自己的记录（符合标准的 L3 不掩盖登记错的 L2）。代码：`review-issues.mjs` 的 `ancestorCoverage`（旧的 capabilityLevel2Coverage / processAncestorCoverage / level2Coverage 名字保留，都调用它）；`overview.mjs` 每层 `filled = direct ∪ inferred`，`direct` 是直接登记。以前的 “covered 不算 filled”（V9.2/V9.5）和 “名称有疑问不能带上层” 已废止。测试锁住：`tests/v18-1-data-checks-and-levels.test.mjs`。
+- **Data checks = Issues to review**（用户选 “同一份问题清单（所有层级 + 名称不一致）”）：`data-checks.mjs` 的 `addIssues` 用 `reviewIssues`（和 Issues to review 同一函数）给每个问题一行：有记录的挂在该记录行（已有同名标签就不重复），缺的层每层一行，空字段沿用 “Missing process” 一行；目录问题和可追溯的上级附一句说明（row.details）。以前只看 Level 3 的 addPrimary 删除。75 个应用、两个测试数据集逐个相同；"N to check" = 问题数 + 成本检查。
+- **页面不显示版本号**：`scripts/export-offline.mjs` 不再插入顶部 `aside#releaseNotice`（及 data-offline-only 文字），改为 `<meta name="release" content="V18.1 · 2026-10-22">`。
+- **更新提示**：`public/whats-new.mjs`（WHATS_NEW {id,date,items}，键 `logistics-portfolio:update-seen`）。`app.js` 在读数据前用 `updateNoticeDue(localStorage)` 判断（浏览器里有 logistics-portfolio 开头的键 = 用过；第一次用的人直接记为已看），数据加载后 `showUpdateNotice` 显示在 `#updateNotice`（和 packageNotice 同样式），Close 记住。**以后每次发布有工厂用户看得到的变化，要改 WHATS_NEW 的 id 和文字**（简单英文、不写版本号）。
+- **不显示版本号的其他地方**：`offline-save.mjs` 的 keptWorkText 仍比较 release，但提示里不写（“This file is another version of the tool”）；`server-upload.mjs` 的 404/405/501 提示改为 “run the latest deploy-iis.bat”；总览 Show all levels 的说明改为新规则（两个维度都显示）。
+- **复核（1 个复核者 + 1 个反驳者）**：确认 3 处（上面这条、少见数据下 Data checks 多出行、旧的 Level 2 说明）均已修正并加测试；Data checks 只列带 issue 的行、成本检查和负责人确认的记录（row.issue）。驳回 1 条：版本号应升 V19（用户指定 V18.1）。
+- 测试 558 项通过；deploy:sim 14 / 14。浏览器：BMLP_Nexeed_IAS@WxP 两处都是 Level 2 / Level 3 missing（2 to check）；总览 Process 显示全部层级 Total：L0 97.3%、L1 94.7%、L2 89.3%、L3 filled 89.3% / matches 73.3%，To review 21；用过的浏览器显示更新提示，Close 后刷新不再出现；清空的浏览器不显示；页面没有版本号。
+- 当前离线包：`offline/logistics-offline-20261022-v18.1.zip`。验证记录见 `verification/v18.1-verification.md`。
+
+## V18 状态（2026-10-23，受顶部 V18.1 更新）
 
 - **用户需求**：“客户自己做完后覆盖然后在上传到服务器给大家看”；选了“工具里一键上传”；“你直接写好我在安装进去”（没有先跑服务器检查脚本）。由旁支会话（fork）在副本里写好，原会话空闲后应用到共享文件夹并发布。新功能 + 部署脚本改动，V18。
 - **页面**：`public/server-upload.mjs`：`uploadToServer(text,{request,protocol})` 先 GET 服务器上的 logistics-data.json（同 id → same；服务器数据日期更新 → older，不传），有旧文件就 PUT 成 `logistics-data.previous.json`，再 PUT 新文件，最后 GET 读回核对 id；`uploadMessage` 给出简单英文提示（401 登录、403 权限、404/405/501 服务器没打开上传、网络、读回不一致）。`canUpload` 只在 http/https。`app.js` 的 Upload to server 按钮（离线文件里隐藏），`index.html` 的 “Share this data with everyone” 一节（简单用词）。

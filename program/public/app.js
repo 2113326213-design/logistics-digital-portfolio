@@ -24,6 +24,7 @@ import {dataAsOf,dataAsOfText} from './data-as-of.mjs';
 import {DATA_PACKAGE_FILE,readDataPackage,applyDataPackage,packageIsNew,packageNotOlder,dataPackageText} from './data-package.mjs';
 import {uploadToServer,uploadMessage,canUpload} from './server-upload.mjs';
 import {createAppSearch} from './app-search.mjs';
+import {updateNoticeDue,markUpdateSeen,updateNoticeHTML} from './whats-new.mjs';
 import {isLeanixProcessLinks,processExportWithoutLinks,readProcessLinks,compareProcessLinks,processCheckCSV,compareCatalogue,catalogueCheckCSV,catalogueNote,localProcessesFrom,NO_APPLICATIONS_COLUMN} from './leanix-process-check.mjs';
 import './fullscreen.mjs';
 const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -176,6 +177,12 @@ function showPackageNotice(){
  $('packagePreview').onclick=previewDataPackage;
  $('packageLater').onclick=()=>{try{localStorage.setItem(PACKAGE_DISMISSED_KEY,pkg.id);}catch{}notice.hidden=true;};
 }
+// Owner request 2026-10-23: tell people who used the tool before, once, what changed in this update (whats-new.mjs).
+function showUpdateNotice(due){
+ const notice=$('updateNotice');if(!due||!notice)return;
+ notice.innerHTML=updateNoticeHTML(esc);notice.hidden=false;
+ $('updateNoticeClose').onclick=()=>{let storage=null;try{storage=window.localStorage;}catch{}markUpdateSeen(storage);notice.hidden=true;notice.innerHTML='';};
+}
 function previewDataPackage(){
  const pkg=serverPackage;if(!pkg||!data)return;
  if(!$('importDialog').open)$('importDialog').showModal();
@@ -276,6 +283,8 @@ $('matrix').addEventListener('scroll',saveView,{passive:true});
 window.addEventListener('pagehide',()=>{if(!initializing&&model&&!data.isAcceptanceSample)try{writeView(localStorage,savedViewState());}catch{}});
 window.addEventListener('beforeunload',event=>{if(autosave.hasUnsaved()){event.preventDefault();event.returnValue='';}});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')autosave.flush();});
-try{const response=await fetch('./data.json');if(!response.ok)throw Error('Application data is unavailable.');initialData=workspaceData(await response.json());useData(initialData);let saved;try{saved=readView(localStorage);}catch{}restoreView(saved);startupView=saved;startupRenderedView=captureView();initializing=false;lastNavTab=activeTab();scrollActiveTab();await autosave.load();checkDataPackage();const linked=appFromSearch(location.search);if(linked){if(model.apps.some(a=>a.id===linked))showApp(linked);else{$('sessionStatus').textContent=`The linked application (${linked}) is not in this data.`;setAppParam('');}}}catch(e){initializing=false;$('matrix').innerHTML=`<p class="fatal">${esc(english(e.message))}. Refresh the page and try again.</p>`;$('overviewWorkspace').innerHTML=$('matrix').innerHTML;}
+// Read before the page saves anything, so that a first visit is not taken for a returning one.
+let updateDue=false;try{updateDue=updateNoticeDue(window.localStorage);}catch{}
+try{const response=await fetch('./data.json');if(!response.ok)throw Error('Application data is unavailable.');initialData=workspaceData(await response.json());useData(initialData);let saved;try{saved=readView(localStorage);}catch{}restoreView(saved);startupView=saved;startupRenderedView=captureView();initializing=false;lastNavTab=activeTab();scrollActiveTab();await autosave.load();checkDataPackage();showUpdateNotice(updateDue);const linked=appFromSearch(location.search);if(linked){if(model.apps.some(a=>a.id===linked))showApp(linked);else{$('sessionStatus').textContent=`The linked application (${linked}) is not in this data.`;setAppParam('');}}}catch(e){initializing=false;$('matrix').innerHTML=`<p class="fatal">${esc(english(e.message))}. Refresh the page and try again.</p>`;$('overviewWorkspace').innerHTML=$('matrix').innerHTML;}
 
 if(model&&document.modelContext?.registerTool){const controller=new AbortController();window.addEventListener('pagehide',()=>controller.abort(),{once:true});try{Promise.resolve(document.modelContext.registerTool({name:'set_portfolio_view',title:'Switch landscape view',description:'Switch between capability and process views, group by GB or plant, and expand or collapse the hierarchy.',inputSchema:{type:'object',properties:{dimension:{type:'string',enum:['cap','process']},groupBy:{type:'string',enum:['Division','Entity']},expandAll:{type:'boolean'}},required:['dimension','groupBy','expandAll'],additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:true},execute(input){if(!input||!['cap','process'].includes(input.dimension)||!['Division','Entity'].includes(input.groupBy)||typeof input.expandAll!=='boolean')throw Error('Invalid view options');view=input.dimension;group=input.groupBy;filters={query:'',division:'',entity:'',branch:''};$('group').value=group;expanded=input.expandAll?new Set((view==='cap'?model.caps:model.procs).keys()):new Set();render();return{dimension:view,groupBy:group,applications:model.apps.length,columns:columns(model,view,expanded).length};}},{signal:controller.signal})).catch(()=>{});}catch{}}

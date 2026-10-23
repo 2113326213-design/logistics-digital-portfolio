@@ -71,7 +71,7 @@ test('matching: and / & equivalent, a meaningful name difference kept, ambiguous
  assert.match(report.issues.get('load').find(i=>i.kind==='match').detail,/Process code: not identified .*does not show that the process does not exist/);
 });
 
-test('To review: a passing Level 3 does not hide other issues; one application, all issues; a confirmed L3 covers L2, traced L0/L1 are not filled',()=>{
+test('To review: a passing Level 3 does not hide other issues; one application, all issues; a matching L3 makes L0–L2 full (fixed rule 2026-10-23)',()=>{
  const model=buildModel(fixture([app('ok',FULL),app('noLevel',FULL+';BBM PM I2D Something'),app('several','BBM PM I2D Pack Detail L3;BBM PM I2D Something')]));
  const report=maintenanceReport(model,{},'process'),l3=new Set(l3MaintenanceMetrics(report).quality.map(a=>a.id));
  assert(l3.has('noLevel'));assert(report.needsReview.some(a=>a.id==='noLevel'),'Level 3 passes, another record has no level: still To review');
@@ -79,8 +79,9 @@ test('To review: a passing Level 3 does not hide other issues; one application, 
  assert.equal(report.needsReview.filter(a=>a.id==='several').length,1);
  const several=report.issues.get('several');
  assert.deepEqual(several.map(i=>i.label),['Process level not specified'],'Levels 0–2 are covered by confirmed Level 3 (V9.5)');
- assert(several.filter(i=>i.kind==='missing').every(i=>i.traced&&/can be traced.*not counted as filled and is not a hierarchy error/.test(i.text)));
- assert.equal(report.levels.find(l=>l.level===2).filled.some(a=>a.id==='several'),false,'a traced parent is not counted as filled');
+ assert(several.filter(i=>i.kind==='missing').every(i=>i.traced&&/can be traced.*counts as filled once every record at that deeper level matches the standard/.test(i.text)));
+ assert.equal(report.levels.find(l=>l.level===2).filled.some(a=>a.id==='several'),true,'a covered parent counts as filled (V18.1)');
+ assert.equal(report.levels.find(l=>l.level===2).direct.some(a=>a.id==='several'),false,'but it is not a direct registration');
  // Show all levels changes columns only: the issue set and the count come from the same report.
  assert.deepEqual(maintenanceReport(model,{},'process').needsReview.map(a=>a.id),report.needsReview.map(a=>a.id));
 });

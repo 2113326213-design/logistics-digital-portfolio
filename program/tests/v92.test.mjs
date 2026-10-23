@@ -31,11 +31,12 @@ test('one status vocabulary: the old labels are gone from every page and export'
  }
 });
 
-test('bundled data: Process Level 2 is covered by confirmed Level 3 records for 21 applications; filled and source records unchanged',()=>{
+test('bundled data: Process Level 2 is full through matching Level 3 records for 21 applications; source records unchanged',()=>{
  const data=bundled(),before=JSON.stringify(data.apps),model=buildModel(data),report=maintenanceReport(model,{},'process'),l2=report.levels.find(l=>l.level===2);
  // 2026-10-21 (V9.16 export merge): VMCN_CONNEX gained the confirmed L3 record "BBM PM P2F Prepare demand forecasting L3" (Processes
  // were empty), so it joined the inferred list (20 → 21, valid 67 → 68) and left Process To review (24 → 23); recomputed from data.json.
- assert.deepEqual([l2.filled.length,l2.inferred.length,l2.valid.length],[47,21,68]);
+ // V18.1 (fixed rule 2026-10-23): the 21 covered applications count as filled too (direct registrations stay 47).
+ assert.deepEqual([l2.filled.length,l2.direct.length,l2.inferred.length,l2.valid.length],[68,47,21,68]);
  assert.equal([...report.issues.values()].filter(list=>list.some(i=>i.level===2&&i.kind==='missing')).length,8);
  assert.equal(report.needsReview.length,23);
  assert.equal(JSON.stringify(data.apps),before,'source records are not changed');

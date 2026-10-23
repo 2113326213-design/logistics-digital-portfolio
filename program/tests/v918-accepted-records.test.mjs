@@ -57,10 +57,12 @@ test('a confirmed record is not an issue anywhere, and it still does not match t
   assert.deepEqual(check.tags.map(t=>t.label),['Confirmed by owner as recorded']);
   assert.match(maintenanceGapReasons(process,process,a,[3]).join(' | '),new RegExp(`L3 · Confirmed by owner as recorded \\(not in the catalogue\\): ${record.raw.replace(/[()]/g,'\\$&')}`));
  }
- // AUTO-RACK had no other process issue: it leaves Process To review. RBCW keeps its traceable Level 0 / Level 1 entries.
+ // AUTO-RACK had no other process issue: it leaves Process To review. RBCW's Level 0 / Level 1 are full through its
+ // matching L2 (fixed rule 2026-10-23, V18.1), so it has no process issue left either.
  assert.deepEqual(reviewIssues(model,process,app(AUTORACK)),[]);
- assert.deepEqual(reviewIssues(model,process,app(RBCW)).map(i=>i.label),['Level 0 missing','Level 1 missing']);
- assert.deepEqual([before.needsReview.length,process.needsReview.length],[23,22]);
+ assert.deepEqual(reviewIssues(model,process,app(RBCW)),[]);
+ // Both leave Process To review once confirmed: 23 → 21 (RBCW kept its Level 0 / Level 1 gaps until V18.1).
+ assert.deepEqual([before.needsReview.length,process.needsReview.length],[23,21]);
  const [l3,l3Before]=[l3MaintenanceMetrics(process),l3MaintenanceMetrics(before)];
  assert.deepEqual([l3Before.quality.length,l3.quality.length],[55,55],'Level 3 matches standard does not change');
  assert.deepEqual([l3Before.notPassing.length,l3.notPassing.length,l3.confirmed.length],[20,18,2]);

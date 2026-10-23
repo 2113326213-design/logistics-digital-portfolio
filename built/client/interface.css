@@ -380,6 +380,7 @@ html:has(body.portfolio-fullscreen){scrollbar-gutter:auto}
 .package-notice{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 12px;padding:10px 14px;border:1px solid #9cc7de;border-left:4px solid #007bc0;border-radius:8px;background:#eef6fb;color:#173f55}
 .package-notice span{flex:1 1 260px}
 .package-notice button{white-space:nowrap}
+.update-notice ul{margin:4px 0 0;padding-left:18px}
 .package-publish{margin:14px 0 4px;padding:10px 14px;border:1px solid #dce6ed;border-radius:8px;background:#fafcfd}
 .package-publish summary{cursor:pointer;font-weight:600;color:#1f4255}
 .package-publish p{margin:8px 0}

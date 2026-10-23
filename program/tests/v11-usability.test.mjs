@@ -65,13 +65,14 @@ test('on opening: kept work that differs from the file asks; continue restores i
  storage.setItem(LOCAL_SAVE_KEY,'{not json');assert.equal(readKeptWork(storage),null);assert.equal(storage.m.has(LOCAL_SAVE_KEY),false);
 });
 
-test('the restore question says when the work was kept and warns when the file is a newer release',()=>{
+// V18.1: the page shows no version number (owner decision 2026-10-23); the release is compared but not named.
+test('the restore question says when the work was kept and warns when the file is another release, without a version number',()=>{
  const kept={savedAt:'2026-10-22T03:15:00.000Z',release:'V11',source:'20261021_logistic_inventory.xlsx'};
  const same=keptWorkText(kept,{release:'V11',source:'20261021_logistic_inventory.xlsx'});
- assert.match(same.text,/^This browser keeps work from .*2026.* \(V11, data from 20261021_logistic_inventory\.xlsx\)\. Continue it, or start from the data in this file and delete the kept work\.$/);
+ assert.match(same.text,/^This browser keeps work from .*2026.* \(data from 20261021_logistic_inventory\.xlsx\)\. Continue it, or start from the data in this file and delete the kept work\.$/);
  assert.equal(same.warning,'');
  const newer=keptWorkText(kept,{release:'V12',source:'20261201_logistic_inventory.xlsx'});
- assert.equal(newer.warning,'This file is V12 with data from 20261201_logistic_inventory.xlsx. Continuing keeps your earlier data and changes; the data in this file may be newer. Export the kept work first if you are unsure.');
+ assert.equal(newer.warning,'This file is another version of the tool, with data from 20261201_logistic_inventory.xlsx. Continuing keeps your earlier data and changes; the data in this file may be newer. Export the kept work first if you are unsure.');
  const html=source('index.html');
  for(const id of ['localRestore','localRestoreText','localRestoreWarning','localRestoreExport','localRestoreFresh','localRestoreContinue'])assert(html.includes(`id="${id}"`),id);
  assert(readFileSync(new URL('../scripts/export-offline.mjs',import.meta.url),'utf8').includes("`autosave=createOfflineAutosave({release:${JSON.stringify(RELEASE_VERSION.toUpperCase())},`"));
@@ -82,9 +83,10 @@ test('To review exports every open issue of the filtered applications, one row p
  const cap=maintenanceReport(model,{},'cap'),process=maintenanceReport(model,{},'process');
  const expected=[...cap.needsReview.map(a=>cap.issues.get(a.id).length),...process.needsReview.map(a=>process.issues.get(a.id).length)].reduce((x,y)=>x+y,0);
  assert.equal(rows.length,expected);
- assert.deepEqual([new Set(rows.filter(r=>r.dimension==='Business Capability').map(r=>r.appId)).size,new Set(rows.filter(r=>r.dimension==='Process').map(r=>r.appId)).size],[39,22]);
+ assert.deepEqual([new Set(rows.filter(r=>r.dimension==='Business Capability').map(r=>r.appId)).size,new Set(rows.filter(r=>r.dimension==='Process').map(r=>r.appId)).size],[39,21]);
  const rbcw=rows.filter(r=>r.application==='RBCW Auto Warehouse Management System'&&r.dimension==='Process');
- assert.deepEqual(rbcw.map(r=>[r.level,r.issue,r.record]),[['Level 0','Level 0 missing',''],['Level 1','Level 1 missing','']]);
+ // V18.1 (fixed rule 2026-10-23): its matching L2 makes L0 and L1 full; its L3 is confirmed as recorded: nothing to review.
+ assert.deepEqual(rbcw,[]);
  assert.equal(rows.some(r=>r.application==='AUTO-RACK'&&r.dimension==='Process'),false,'confirmed as recorded, not to review');
  const plant=toReviewRows(model,{entity:'RBCW'});
  assert(plant.length>0&&plant.every(r=>r.plant==='RBCW'));

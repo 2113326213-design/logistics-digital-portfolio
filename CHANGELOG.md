@@ -2,6 +2,16 @@
 
 每个版本的离线包在 [Releases](https://github.com/2113326213-design/logistics-digital-portfolio/releases)；详细的修改说明和用户决定在 [`00_Claude先读.md`](00_Claude先读.md)，验证记录在 [`verification/`](verification/)。
 
+## [V18.1](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v18.1-20261022) · 2026-10-23
+
+用户：“datacheck 里面为什么 issues to review 有两个……data checks 只有一个”，“pls double check the correct way in the app, seriously”。
+1. **Data checks = Issues to review**（用户选 “按你的建议：Data checks 用和 Issues to review 同一份问题清单（所有层级 + 名称不一致），加测试锁住”）：以前 Data checks 只检查 Level 3，14 个应用两边对不上（12 个少了 Level 0/1/2 missing，2 个少了 “Process name differs between sources”）。现在 Data checks 直接用 Issues to review 的同一份清单，75 个应用逐个相同；"N to check" 只多出成本检查（Cost score 1）。
+2. **固定规则：最深一级符合标准，上面的层级都算满分**（用户：“只要是最大级满分 小于他的子级全部满分”，“这个是死规定”；选 “Process 和 Business Capability 都用”）：某一层没有登记时，只要更深的一层的记录全部符合标准、且它们在这一层的上级在目录里，这一层就算 filled 和 matches standard。已登记但不符合的层仍是问题。总览 Process：Level 0 filled 47 → 73、Level 1 54 → 71、Level 2 47 → 67（matches standard 67 → 73、68 → 71、67 → 67）；Level 3 不变；Process To review 22 → 21（RBCW Auto Warehouse Management System 的 Level 0/1 由符合标准的 Level 2 补满）。以前名称有疑问的记录不能带上层，现在只看是否符合标准（名称问题仍单独列出）。
+3. **页面不显示版本号**（用户：“pls remove the topic of v 17.5 thsi sentences; i dont want user seem it”；选 “整句删掉，哪里都不显示版本”）：顶部 “V… · 日期 · Your changes are kept in this browser…” 一行删除；版本只写在文件的 `<meta name="release">` 里，供维护时查看。
+4. **更新提示**（用户：“if we are update new 版本 pls let's them know”）：以前用过工具的浏览器第一次打开新版本时，上方显示一次 “The tool was updated on 23 October 2026.” 和改动要点（简单英文，没有版本号），点 Close 后这次更新不再显示；第一次使用的人不显示。内容在 `public/whats-new.mjs`，以后每次有工厂用户看得到的变化要改 id 和文字。
+5. **发布前复核**（1 个复核者 + 1 个反驳者）确认 3 处并已修正：继续本机保存的工作时的提示（“(V18, data from …)”、“This file is V18.1”）和一条上传失败提示（“deploy-iis.bat of V18 or later”）还显示版本号 → 改成不写版本（“This file is another version of the tool”、“the latest deploy-iis.bat”）；少见的数据（同一能力编码登记两次、主能力与列表同一编码、目录里有的 B.06 以外编码）会让 Data checks 多出 Issues to review 没有的行 → 只列 Issues to review 的问题、成本检查和负责人确认的记录；总览 “Show all levels” 下的说明还写着 Level 2 filled 只数直接登记 → 改成新规则。驳回 1 条：按版本号规则应升 V19（用户指定 V18.1）。
+- 新增 `tests/v18-1-data-checks-and-levels.test.mjs`（9 项；前 5 项在 V17.5 代码上全部失败，最后 2 项在复核前的 V18.1 代码上失败）。按旧规则写的 11 个测试文件按新规则更新（每处写明原因），另有 v11-usability、v14-data-package、v18-upload 的提示文字随 “不显示版本号” 更新。顺带修正：没有 details 的检查行在列表里不再出错。
+
 ## [V18](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v18-20261022) · 2026-10-23
 
 - **一键上传**（用户：“客户自己做完后覆盖然后在上传到服务器给大家看”，“你直接写好我在安装进去”）：Import data 对话框底部改为 **Share this data with everyone**，多了 **Upload to server** 按钮（只在内网网址打开时出现，双击打开的文件里没有）。点它会：

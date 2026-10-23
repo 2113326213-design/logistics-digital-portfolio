@@ -6,11 +6,9 @@ import {STANDARD_SNAPSHOT,matchSource} from './leanix-processes.mjs';
 
 // One issue result per application and dimension (owner specification 2026-10-20). The Overview To review counts,
 // the To review list and the application detail all use it.
-// Every applicable level is checked on the records actually registered (Business Capability L1–L3, Process L0–L3;
-// explicit registration is kept distinct from coverage by a confirmed child):
-//  - an unregistered L2 (Capability, and Process since V9.2) is covered when all recorded L3 entries and their
-//    standard L2 parents are confirmed (owner decisions 2026-10-20); it is not counted as a directly filled L2;
-//  - Process L0/L1 also accept confirmed L3 ancestor coverage (V9.5); other missing levels remain issues;
+// Every applicable level is checked on the records actually registered (Business Capability L1–L3, Process L0–L3):
+//  - a level without a record is full when a deeper level fully matches the standard (ancestorCoverage, fixed rule
+//    2026-10-23); otherwise it is 'Level X missing';
 //  - every record at a level that does not pass the standard match is its own 'Level X match needs review' issue,
 //    even when another record at that level passes.
 // Open questions that are not tied to a level are added: records without a level or with an unreadable code, and,
@@ -63,7 +61,7 @@ function processDetail(model,app,raw,kind){
  return `${code} · Checked against: ${checkedAgainst(model)} · Next: ${next}`;
 }
 // A level the application did not record can still be traceable from a confirmed deeper record (a code's Level L
-// ancestor is its first L+2 code parts). That is not 'filled' and is not a hierarchy error.
+// ancestor is its first L+2 code parts). It is full only through ancestorCoverage; this only names the parent.
 function traceableParent(model,app,level){
  for(const id of app.process){const n=model.procs.get(id);if(!n||n.level<=level)continue;const parent=id.split('.').slice(0,level+2).join('.');if(model.procs.has(parent))return {parent,from:n};}
  return null;
@@ -73,52 +71,36 @@ function orphanParent(model,app,level){
  return null;
 }
 
-// An application may satisfy Capability L2 through its confirmed L3 entries without registering L2 again.
-// Every L3 must pass, including open name/meaning questions, and every parent must be a real standard record.
-// Never use inferred category-tree placeholders, an unrelated parent, or a good L3 to hide a bad direct L2.
-// The returned evidence describes coverage only: source records and the explicit registration counts stay intact.
-export function capabilityLevel2Coverage(model,report,app){
- if(report.dimension!=='cap')return [];
- const records=report.records.get(app.id)||[];
- if(records.some(r=>r.level===2))return [];
- const level3=records.filter(r=>r.level===3);
- if(!level3.length||level3.some(r=>!r.valid))return [];
- const unresolved=new Set([
-  ...(model.standardCatalogue?nameDifferenceRows(model,app):[]),
-  ...semanticConcerns(app,model.correctionLog,model.caps)
- ].filter(r=>r.code.split('.').length-1===3).map(r=>r.code));
- if(unresolved.size)return [];
- const mappings=model.correctionLog.filter(c=>c.state==='Applied'&&c.appId===app.id&&c.dimension==='cap');
- const evidence=level3.map(r=>{
-  const code=mappings.find(c=>c.raw===r.raw)?.targetId||capCode(r.raw),node=model.caps.get(code);
-  const parent=code?.split('.').slice(0,-1).join('.'),parentNode=model.caps.get(parent);
-  return node?.reference&&node.level===3&&parentNode?.reference&&parentNode.level===2
-   ?{raw:r.raw,code,parent}:null;
- });
- return evidence.every(Boolean)?evidence:[];
+// Fixed rule (owner, 2026-10-23, V18.1; "只要是最大级满分 小于他的子级全部满分"): a level with no record of its own
+// counts as filled and matching the standard when a deeper level has records that all match the standard and the
+// parent of each of them at this level is in the catalogue. Example: Level 1 missing and Level 2 matching → Level 1
+// full; Level 2 missing and Level 3 matching → Levels 2, 1 and 0 full. Both Business Capability (L1–L3) and Process
+// (L0–L3). A level with its own records is judged on them only: a matching deeper record never hides a failing direct
+// one. The parent is the code's first parts (Capability B.06.1.4 → L2 B.06.1; Process M.I2D.010.050.020 → L0 M.I2D).
+// Returns the evidence (record, code, parent) or [] when the level is not covered.
+export function ancestorCoverage(model,report,app,level){
+ const isCap=report.dimension==='cap',records=report.records.get(app.id)||[];
+ if(!Number.isInteger(level)||records.some(r=>r.level===level))return [];
+ const map=isCap?model.caps:model.procs,matched=new Map((app.processMatches||[]).map(m=>[m.raw,m.id]));
+ const mappings=model.correctionLog.filter(c=>c.state==='Applied'&&c.appId===app.id&&c.dimension===report.dimension);
+ const codeOf=r=>mappings.find(c=>c.raw===r.raw)?.targetId||(isCap?capCode(r.raw):matched.get(r.raw));
+ const inCatalogue=(node,at)=>!!node&&node.level===at&&(isCap?!!node.reference:!node.ambiguous);
+ for(let deeper=level+1;deeper<=3;deeper++){
+  const atDeeper=records.filter(r=>r.level===deeper);
+  if(!atDeeper.length||atDeeper.some(r=>!r.valid))continue;
+  const evidence=atDeeper.map(r=>{
+   const code=codeOf(r),parent=code?.split('.').slice(0,isCap?level+1:level+2).join('.');
+   return inCatalogue(map.get(code),deeper)&&inCatalogue(map.get(parent),level)?{raw:r.raw,code,parent}:null;
+  });
+  if(evidence.every(Boolean))return evidence;
+ }
+ return [];
 }
-
-// V9.5 extends this coverage rule to Process Levels 0 and 1.
-// Process Level 2 follows the same rule (owner decision 2026-10-20): an unregistered Process L2 is covered when every
-// recorded L3 process is confirmed (matched, unambiguous, no open name question) and each one's L2 parent is a real
-// catalogue process. Coverage is not a direct registration: filled counts and source records stay as they are.
-export function processAncestorCoverage(model,report,app,level){
- if(report.dimension!=='process'||![0,1,2].includes(level))return [];
- const records=report.records.get(app.id)||[];
- if(records.some(r=>r.level===level))return [];
- const level3=records.filter(r=>r.level===3);
- if(!level3.length||level3.some(r=>!r.valid))return [];
- const matched=new Map((app.processMatches||[]).map(m=>[m.raw,m.id]));
- const mappings=model.correctionLog.filter(c=>c.state==='Applied'&&c.appId===app.id&&c.dimension==='process');
- const evidence=level3.map(r=>{
-  const code=matched.get(r.raw)||mappings.find(c=>c.raw===r.raw)?.targetId,node=model.procs.get(code);
-  const parent=code?.split('.').slice(0,level+2).join('.'),parentNode=model.procs.get(parent);
-  return node&&node.level===3&&!node.ambiguous&&node.nameStatus!=='differs'&&parentNode&&parentNode.level===level&&!parentNode.ambiguous?{raw:r.raw,code,parent}:null;
- });
- return evidence.every(Boolean)?evidence:[];
-}
+// Earlier names, kept for their callers: the same rule.
+export const capabilityLevel2Coverage=(model,report,app)=>report.dimension==='cap'?ancestorCoverage(model,report,app,2):[];
+export const processAncestorCoverage=(model,report,app,level)=>report.dimension==='process'?ancestorCoverage(model,report,app,level):[];
 export const processLevel2Coverage=(model,report,app)=>processAncestorCoverage(model,report,app,2);
-export const level2Coverage=(model,report,app)=>report.dimension==='cap'?capabilityLevel2Coverage(model,report,app):processLevel2Coverage(model,report,app);
+export const level2Coverage=(model,report,app)=>ancestorCoverage(model,report,app,2);
 
 // report: a maintenanceReport (or {records, levelsAvailable, dimension}) for the same model and dimension.
 export function reviewIssues(model,report,app){
@@ -129,11 +111,10 @@ export function reviewIssues(model,report,app){
  for(const level of report.levelsAvailable){
   const atLevel=records.filter(r=>r.level===level);
   if(!atLevel.length){
-   if(level===2&&(report.level2Coverage?.get(app.id)||level2Coverage(model,report,app)).length)continue;
-   if(!isCap&&level<2&&processAncestorCoverage(model,report,app,level).length)continue;
+   if(ancestorCoverage(model,report,app,level).length)continue;
    const traced=!isCap&&traceableParent(model,app,level),orphan=!isCap&&!traced&&orphanParent(model,app,level);
    if(orphan){issues.push({dimension,level,kind:'catalogue',record:'',label:`Level ${level} parent not in catalogue`,text:`The recorded process ${codeName(model,orphan.from.id)} has no Level ${level} parent (${orphan.parent}) in the catalogue, so the relationship cannot be confirmed. This is a catalogue question, not an application error.`,detail:`Checked against: ${checkedAgainst(model)} · Next: Confirm the parent in the valid process catalogue.`});continue;}
-   issues.push({dimension,level,kind:'missing',record:'',label:`Level ${level} missing`,text:traced?`No Level ${level} process recorded directly. A Level ${level} parent can be traced: ${codeName(model,traced.parent)}, from the recorded ${codeName(model,traced.from.id)}. It is not counted as filled and is not a hierarchy error.`:missingText(dimension,level),...(isCap?{}:{traced:!!traced,detail:`Checked against: ${checkedAgainst(model)} · Next: ${traced?`Confirm whether a direct Level ${level} record is required.`:`Add the Level ${level} process if it applies.`}`})});
+   issues.push({dimension,level,kind:'missing',record:'',label:`Level ${level} missing`,text:traced?`No Level ${level} process recorded directly. A Level ${level} parent can be traced: ${codeName(model,traced.parent)}, from the recorded ${codeName(model,traced.from.id)}. It counts as filled once every record at that deeper level matches the standard.`:missingText(dimension,level),...(isCap?{}:{traced:!!traced,detail:`Checked against: ${checkedAgainst(model)} · Next: ${traced?`Confirm whether a direct Level ${level} record is required.`:`Add the Level ${level} process if it applies.`}`})});
    continue;
   }
   for(const r of atLevel)if(!r.valid&&!r.accepted)issues.push({dimension,level,kind:'match',record:r.raw,label:`Level ${level} match needs review`,text:textFor(r.raw),...(isCap?{}:{detail:processDetail(model,app,r.raw)})});

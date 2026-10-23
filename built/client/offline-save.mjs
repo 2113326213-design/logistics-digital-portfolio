@@ -29,18 +29,19 @@ export function readKeptWork(storage){
  catch{try{storage.removeItem(LOCAL_SAVE_KEY);}catch{}return null;}
 }
 const when=iso=>{const date=new Date(iso);return Number.isNaN(date.getTime())?'an earlier session':date.toLocaleString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});};
-// What the restore question says (the dialog shows it; tests check it).
+// What the restore question says (the dialog shows it; tests check it). The release is compared but never shown: the page
+// shows no version number (owner decision 2026-10-23, V18.1).
 export function keptWorkText(kept,{release='',source='',dataAsOf=''}={}){
  const pkg=kept.data?.dataPackage;
- const from=[kept.release,kept.source?`data from ${kept.source}`:'',pkg?`published on the intranet server${pkg.dataAsOf?`, as of ${pkg.dataAsOf}`:''}`:''].filter(Boolean).join(', ');
+ const from=[kept.source?`data from ${kept.source}`:'',pkg?`published on the intranet server${pkg.dataAsOf?`, as of ${pkg.dataAsOf}`:''}`:''].filter(Boolean).join(', ');
  const text=`This browser keeps work from ${when(kept.savedAt)}${from?` (${from})`:''}. Continue it, or start from the data in this file and delete the kept work.`;
  const newer=(kept.release&&release&&kept.release!==release)||(kept.source&&source&&kept.source!==source);
  // V14 review: kept work from a server data package that is not older than this file's data is not "earlier data".
  if(packageNotOlder(pkg,dataAsOf)){
   const otherRelease=kept.release&&release&&kept.release!==release;
-  return {text,warning:otherRelease?`This file is ${release}. Continuing keeps the data published on the intranet server${pkg.dataAsOf?` (as of ${pkg.dataAsOf})`:''} and your changes. Export the kept work first if you are unsure.`:''};
+  return {text,warning:otherRelease?`This file is another version of the tool. Continuing keeps the data published on the intranet server${pkg.dataAsOf?` (as of ${pkg.dataAsOf})`:''} and your changes. Export the kept work first if you are unsure.`:''};
  }
- return {text,warning:newer?`This file is ${release||'a newer release'}${source?` with data from ${source}`:''}. Continuing keeps your earlier data and changes; the data in this file may be newer. Export the kept work first if you are unsure.`:''};
+ return {text,warning:newer?`This file ${kept.release&&release&&kept.release!==release?`is another version of the tool${source?`, with data from ${source}`:''}`:`has data from ${source}`}. Continuing keeps your earlier data and changes; the data in this file may be newer. Export the kept work first if you are unsure.`:''};
 }
 // The restore question in the page's dialog (index.html #localRestore). Closing it keeps the work.
 function chooseInDialog(kept,info){

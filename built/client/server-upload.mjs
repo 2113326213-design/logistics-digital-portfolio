@@ -49,7 +49,7 @@ export function uploadMessage(result){
   case 'http':
    if(result.code===401)return 'The server did not accept your Windows sign-in. Nothing was uploaded.';
    if(result.code===403)return 'Your Windows account may not upload to this server. Ask the server admin. Nothing was uploaded.';
-   if([404,405,501].includes(result.code))return 'This server does not take uploads yet. The server admin needs to run deploy-iis.bat of V18 or later. Nothing was uploaded.';
+   if([404,405,501].includes(result.code))return 'This server does not take uploads yet. The server admin needs to run the latest deploy-iis.bat. Nothing was uploaded.';
    return `The server answered with error ${result.code}. Nothing was uploaded.`;
   default:return 'Nothing was uploaded.';
  }

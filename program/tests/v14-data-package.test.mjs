@@ -158,7 +158,7 @@ test('review: kept work from a server package is not called earlier data when th
  const same=keptWorkText(kept,file);
  assert.match(same.text,/published on the intranet server, as of 2026-11-05/);assert.equal(same.warning,'');
  const update=keptWorkText(kept,{...file,release:'V14.1'});
- assert.match(update.warning,/^This file is V14\.1\. Continuing keeps the data published on the intranet server \(as of 2026-11-05\) and your changes\./);
+ assert.match(update.warning,/^This file is another version of the tool\. Continuing keeps the data published on the intranet server \(as of 2026-11-05\) and your changes\./);
  assert.doesNotMatch(update.warning,/may be newer/);
  const older=keptWorkText({...kept,data:{dataPackage:{...kept.data.dataPackage,dataAsOf:'2026-10-01'}}},file);
  assert.match(older.warning,/the data in this file may be newer/,'an older package is earlier data');

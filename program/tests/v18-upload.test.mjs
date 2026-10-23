@@ -51,7 +51,7 @@ test('V18: newer data on the server is never replaced, the same data is not sent
 });
 
 test('V18: a server that refuses or is not set up gets a plain message, and nothing is written',async()=>{
- for(const [code,text] of [[401,/Windows sign-in/],[403,/may not upload/],[405,/does not take uploads yet.*deploy-iis\.bat of V18/],[501,/does not take uploads yet/],[500,/error 500/]]){
+ for(const [code,text] of [[401,/Windows sign-in/],[403,/may not upload/],[405,/does not take uploads yet.*the latest deploy-iis\.bat/],[501,/does not take uploads yet/],[500,/error 500/]]){
   const s=server({putStatus:code});const result=await uploadToServer(ours,{request:s.request,protocol:'http:'});
   assert.deepEqual(result,{status:'http',code});assert.match(uploadMessage(result),text);assert.match(uploadMessage(result),/Nothing was uploaded\./);
   assert.equal(s.files[DATA_PACKAGE_FILE],undefined);

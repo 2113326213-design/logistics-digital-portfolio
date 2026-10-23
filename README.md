@@ -53,11 +53,11 @@
 
 不在内网，或想自己保留一份时用：
 
-1. 下载 [**logistics-offline-20261022-v18.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest)。
+1. 下载 [**logistics-offline-20261022-v18.1.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest)。
 2. 右键 → **Extract all**。
 3. 用 Chrome 打开里面的 HTML（同一个 zip 里的 `deploy-iis.bat` 是给内网服务器部署用的，自己用时不用管）。
 
-页面顶部显示 **V18** 就对了。
+解压出来的文件名里带 **v18.1** 就对了（页面上不再显示版本号）。
 
 </td>
 </tr>
@@ -68,7 +68,7 @@
     <td align="center" width="25%"><h3>75</h3><sub>应用 · 10 个工厂 · 5 个业务部门</sub></td>
     <td align="center" width="25%"><h3>2,775</h3><sub>组两两比较 · 9 组得分 ≥ 50</sub></td>
     <td align="center" width="25%"><h3>22 / 39</h3><sub>Process / Capability 待处理应用</sub></td>
-    <td align="center" width="25%"><h3>V18</h3><sub>2026-10-23 · 549 项测试通过</sub></td>
+    <td align="center" width="25%"><h3>V18.1</h3><sub>2026-10-23 · 558 项测试通过</sub></td>
   </tr>
 </table>
 
@@ -145,9 +145,9 @@
 </details>
 
 <details>
-<summary><b>页面打开了，但不是 V18，或者显示不全？</b></summary>
+<summary><b>页面打开了，但不是最新的，或者显示不全？</b></summary>
 <br>
-按 <b>Ctrl + F5</b> 强制刷新（浏览器可能缓存了旧版本）。工具在 Chrome 上测试过，请优先用 Chrome。
+按 <b>Ctrl + F5</b> 强制刷新（浏览器可能缓存了旧版本）。页面上不显示版本号；工具更新后，以前用过的人第一次打开会在上方看到 “The tool was updated on …” 提示。工具在 Chrome 上测试过，请优先用 Chrome。
 </details>
 
 <details>
@@ -177,7 +177,9 @@
 
 完整更新日志见 [`CHANGELOG.md`](CHANGELOG.md)。
 
-**V18（当前，2026-10-23）**：一键上传：更新完数据的人在 Import data 底部点 Upload to server，数据就直接放到服务器上，大家打开工具就能拿到；用 Windows 账号登录，服务器上原来的那份自动留作备份，比服务器上旧的数据不让传。部署脚本会在服务器上打开这项功能（只允许登录的人覆盖这两个数据文件）。
+**V18.1（当前，2026-10-23）**：Data checks 和 Issues to review 列同样的问题（以前 Data checks 只看 Level 3，14 个应用两边对不上）；固定规则：某一层没登记时，只要更深的一层全部符合标准，这一层就算满分（例如 Level 3 符合 → Level 2、1、0 都算满分；Process 和 Business Capability 都适用）；页面顶部不再显示版本号那一行；工具有更新时，以前用过的人打开后会看到一次 “The tool was updated on …” 提示，点 Close 后不再出现。
+
+**V18（2026-10-23）**：一键上传：更新完数据的人在 Import data 底部点 Upload to server，数据就直接放到服务器上，大家打开工具就能拿到；用 Windows 账号登录，服务器上原来的那份自动留作备份，比服务器上旧的数据不让传。部署脚本会在服务器上打开这项功能（只允许登录的人覆盖这两个数据文件）。
 
 **V17.5（2026-10-23）**：修正检查发现的 5 处前后不一致：总览按工厂表的 Level 3 待处理名单与上方卡片一致（不再多列负责人已确认的 2 个应用，18 而不是 20）；不在范围内的应用不再提示 “Cost score 1 — Counted as ¥200,000”；负责人确认的记录不再算 “to check”；导入工作区备份时和重新打开一样保留负责人的决定；加入 LeanIX 流程在历史里记为分类表更新。
 
@@ -227,6 +229,7 @@
 
 | 版本 | 主要变化 |
 |---|---|
+| [V18.1](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v18.1-20261022) | Data checks 和 Issues to review 列同样的问题（以前 Data checks 只看 Level 3，14 个应用两边对不上）；固定规则：某一层没登记时，只要更深的一层全部符合标准，这一层就算满分（例如 Level 3 符合 → Level 2、1、0 都算满分；Process 和 Business Capability 都适用）；页面顶部不再显示版本号那一行；工具有更新时，以前用过的人打开后会看到一次 “The tool was updated on …” 提示，点 Close 后不再出现 |
 | [V18](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v18-20261022) | 一键上传：更新完数据的人在 Import data 底部点 Upload to server，数据就直接放到服务器上，大家打开工具就能拿到；用 Windows 账号登录，服务器上原来的那份自动留作备份，比服务器上旧的数据不让传。部署脚本会在服务器上打开这项功能（只允许登录的人覆盖这两个数据文件） |
 | [V17.5](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v17.5-20261022) | 修正检查发现的 5 处前后不一致：总览按工厂表的 Level 3 待处理名单与上方卡片一致（不再多列负责人已确认的 2 个应用，18 而不是 20）；不在范围内的应用不再提示 “Cost score 1 — Counted as ¥200,000”；负责人确认的记录不再算 “to check”；导入工作区备份时和重新打开一样保留负责人的决定；加入 LeanIX 流程在历史里记为分类表更新 |
 | [V17.4](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v17.4-20261022) | 更通俗的英文：Import data 底部那一节叫 “Admin only: share this data with everyone”，按钮叫 “Download file for the server”；导入里 “本地流程” 一节和来源说明也改成大白话（不用 catalogue、layer、steward 等词） |
@@ -389,7 +392,7 @@ flowchart LR
 | 导入 / 导出（Excel、工作区、CSV） | `program/public/xlsx.mjs`、`program/public/import-review.mjs`、`program/public/workspace.mjs`、`program/public/exports.mjs`、`program/public/score-settings.mjs`（阈值随备份）、`program/public/offline-save.mjs`（离线导出提示）；应用搜索在 `program/public/app-search.mjs`（6 个搜索框共用 matchesApplication 和同一个名称、提示） |
 | 样式 | `program/public/*.css` |
 | 构建和离线单文件 | `program/scripts/build.mjs`、`program/scripts/export-offline.mjs` |
-| 测试（`npm test`，当前 549 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v18-test-results.txt` |
+| 测试（`npm test`，当前 558 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v18.1-test-results.txt` |
 | 离线单文件版 | `offline/` |
 | IIS 部署脚本（每次发布自动生成） | `offline/deploy-iis.bat`（同一份脚本也在发布 zip `offline/logistics-offline-<日期>-<版本>.zip` 里，部署只需下载这个 zip）；生成器 `program/scripts/deploy-script.mjs`，模板 `program/scripts/deploy-iis.template.bat`，发布打包 `program/scripts/release-files.mjs`（`npm run release:files`），检查 `program/tests/deploy-script.test.mjs`，本机模拟 `program/scripts/deploy-sim.mjs`（`npm run deploy:sim`） |
 | 构建输出、文件校验清单 | `built/`、`MANIFEST.sha256` |

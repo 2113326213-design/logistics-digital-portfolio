@@ -64,8 +64,14 @@ assert.equal(model.standardCatalogue,false);
 // 113 checks in all: 111 outside Szh5_ASRS_WCS_WMS plus its 2 (2026-10-21: 109 - 3 VMCN_CONNEX - 1 Material Requistion Digitalization
 // B.06.4 meaning + 4 'Level 3 missing' + 2 B.06.5.7 'Verify in LeanIX' + 1 B.06.4 meaning each for BMLP_Nexeed_IAS@WxP and
 // VMCN_Digital Dynamic Supermarket; RBCW Auto Warehouse Management System swapped 'Level 3 missing' for an unmatched L3 record).
-assert.equal(all.filter(([app])=>app.Name!==l3vMovedRowApp).reduce((sum,[,checks])=>sum+checks.n,0),111);
-assert.equal(all.reduce((sum,[,checks])=>sum+checks.n,0),113);
+// V18.1 (owner decision 2026-10-23): Data checks list every Issues to review item, not only Level 3: +16 checks →
+// 127 + 2 = 129. 14 missing Level 0–2 without a matching deeper level (BMLP_Nexeed_IAS@WxP L2; CDR_EM L1, L2;
+// RBAC_ME_i-Warehouse L2; RBCD LOM Scrap Management Platform L2; RBCD WI management system L0–L2; RBCW E-Queue system L0–L2;
+// VMCN_Packaging Data System L2; 360° Supplier dashboard L1, L2) and 2 'Process name differs between sources'
+// (RBAC_ME_Szh5 Intralogistics control system, VM-CN_WACOS_Szh5). Five capability L2 records keep their tag and gain
+// the 'Level 2 match needs review' line of Issues to review (same count).
+assert.equal(all.filter(([app])=>app.Name!==l3vMovedRowApp).reduce((sum,[,checks])=>sum+checks.n,0),127);
+assert.equal(all.reduce((sum,[,checks])=>sum+checks.n,0),129);
 assert.deepEqual(sorted(l3vRows(all)),sorted(unmatchedL3VRows),'only the 7 unmatched L3V records are checks, each tagged like any unmatched process record');
 assert(!all.some(([,checks])=>checks.checks.some(row=>row.tags.some(tag=>tag.label.startsWith('L3V')))),'no L3V-specific tag remains');
 {
@@ -110,8 +116,10 @@ coversEveryGap(model,reports);
  assert.deepEqual([current.rawCap,current.rawProcess,currentChecks.n],[['B.06.2.3 Demand Planning','B.06.2.6 Procurement Planning'],['BBM PM P2F Prepare demand forecasting L3'],0]);
  assert(!l3Gap(reports.cap).includes(current)&&!l3Gap(reports.process).includes(current),'VMCN_CONNEX left both gaps with the export');
  const [app,checks]=checked(preExport({...data,capabilityRows:old.capabilityRows,taxonomySource:old.taxonomySource})).find('VMCN_CONNEX');
- assert.equal(checks.checks.filter(row=>row.primary==='Process: Level 3 missing').length,1);
- assert(checks.checks.some(row=>row.dimension==='process'&&row.tags.some(tag=>tag.label==='Missing process')));
+ // An empty Processes field is one issue in Issues to review ('Processes'), so one line here: 'Missing process' (V18.1;
+ // before, the same line also carried 'Process: Level 3 missing').
+ assert.equal(checks.checks.filter(row=>row.primary==='Process: Level 3 missing').length,0);
+ assert.deepEqual(checks.checks.filter(row=>row.dimension==='process').map(row=>row.tags.map(tag=>tag.label)),[['Missing process']]);
  // HC records belong to another company (owner decision 2026-10-22; on 2026-10-19 they still got an Outside B.06 review
  // scope row): no data-check row at all, and the application lists them as not used.
  assert.deepEqual(checks.checks.filter(row=>row.raw.startsWith('HC.')),[]);
@@ -179,8 +187,10 @@ assert(!all.some(([,checks])=>checks.checks.some(row=>row.tags.some(tag=>tag.lab
  assert.equal(l3Gap(reports.process).length,20);
  assert.equal(all.reduce((sum,[,checks])=>sum+checks.m,0),12);
  assert.equal(model.standardCatalogue,true,'the bundled catalogue is the business capability standard');
- assert.equal(all.filter(([app])=>app.Name!==l3vMovedRowApp).reduce((sum,[,checks])=>sum+checks.n,0),81);
- assert.equal(all.reduce((sum,[,checks])=>sum+checks.n,0),83);
+ // V18.1: the same 14 missing Level 0–2 and 2 'Process name differs between sources' lines as with the legacy catalogue
+ // above (+16): 97 + 2 = 99. ShzP_ALICE's B.05.2 row gains the 'Level 2 match needs review' line of Issues to review.
+ assert.equal(all.filter(([app])=>app.Name!==l3vMovedRowApp).reduce((sum,[,checks])=>sum+checks.n,0),97);
+ assert.equal(all.reduce((sum,[,checks])=>sum+checks.n,0),99);
  assert.deepEqual(sorted(l3vRows(all)),sorted(unmatchedL3VRows),'the capability catalogue does not change the L3V process checks');
  assert.equal(all.reduce((sum,[,checks])=>sum+checks.k,0),2);
  // The coverage note in the detail panel agrees with the 'Not in standard' check.
@@ -188,7 +198,8 @@ assert(!all.some(([,checks])=>checks.checks.some(row=>row.tags.some(tag=>tag.lab
  assert.equal(capabilityCatalogueNotice('B.06.4.4 Physical Inventory Management'),'Not found in the current catalogue — verify the code and catalogue coverage. No error is confirmed.');
  {
   const [dashboard,checks]=find('360'+String.fromCharCode(176)+' Supplier dashboard');
-  assert.equal(dataChecksSummary(checks),'3 to check');
+  // V18.1: plus its Process 'Level 1 missing' and 'Level 2 missing', listed in Issues to review too.
+  assert.equal(dataChecksSummary(checks),'5 to check');
   assert(renderDataChecks(checks,value=>String(value)).includes('Each is listed above as a check: correct the record in LeanIX.'));
   // A capability mapping applied to a record resolves it: no name-difference check remains for that record.
   const mapped={...model,correctionLog:[...model.correctionLog,{state:'Applied',appId:dashboard.id,dimension:'cap',raw:'B.06.8.2 Supply Chain (Logistics) Visualization and Tracking Mgmt.',targetId:'B.06.8.2',reviewer:'Test'}]};
@@ -229,7 +240,8 @@ assert(!all.some(([,checks])=>checks.checks.some(row=>row.tags.some(tag=>tag.lab
   const pre=checked(preExport(data)),[app,checks]=pre.find('VMCN_CONNEX');
   assert(app['Business Capabilities'].includes('HC.06.01.01 Demand Planning')&&app['Business Capabilities'].includes('HC.06.01.05 Detailed Production Scheduling'),'source HC records are untouched');
   assert.deepEqual([app.rawCap,app.otherCompany],[[],['HC.06.01.01 Demand Planning','HC.06.01.05 Detailed Production Scheduling']]);
-  assert.equal(checks.checks.filter(row=>row.primary==='Process: Level 3 missing').length,1);
+  // Its empty Processes field is one line, as in Issues to review (V18.1; before, it also carried 'Process: Level 3 missing').
+  assert.deepEqual(checks.checks.filter(row=>row.dimension==='process').map(row=>[row.primary,row.tags.map(tag=>tag.label)]),[['',['Missing process']]]);
   assert.deepEqual(checks.checks.filter(row=>row.raw.startsWith('HC.')),[],'no row for another company\'s records');
   assert(l3Gap(pre.reports.cap).includes(app));
   assert.equal(checks.k,0,'an HC record has no standard name to compare');
@@ -272,12 +284,13 @@ assert.equal(dataChecksSummary({n:0,m:0,k:2}),'0 to check');
 const escaped=renderDataChecks({checks:[{dimension:'cap',raw:'A<&',primary:'Business Capability: Level 3 missing',tags:[{label:'Verify in LeanIX',detail:'Check <record>'}]}],mappings:[],nameDifferences:[],n:1,m:0,k:0},value=>String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'));
 assert.match(escaped,/A&lt;&amp;/);
 assert.match(escaped,/Check &lt;record&gt;/);
-console.log('PASS: v3 Data checks use the corrected model, cover every Overview L3 gap, preserve 12 mappings, match the legacy 89-row/67-app name-difference baseline, and with the standard show the 2 name-difference checks and (pre-export registration) B.06.4.4 marked Not in standard; HC records are only tagged Outside B.06 review scope; L3V records are matched by name like L3 and the 7 unmatched ones are ordinary No confirmed standard match checks.');
+console.log('PASS: v3 Data checks use the corrected model, cover every Overview L3 gap (and since V18.1 every Issues to review item), preserve 12 mappings, match the legacy 89-row/67-app name-difference baseline, and with the standard show the 2 name-difference checks and (pre-export registration) B.06.4.4 marked Not in standard; HC records are only tagged Outside B.06 review scope; L3V records are matched by name like L3 and the 7 unmatched ones are ordinary No confirmed standard match checks.');
 
 // L3V is Level 3 (owner decision 2026-10-19): an unmatched L3V record is a Level 3 gap with both catalogues.
 // 2026-10-21 (V9.16 export): legacy total 109 → 113 (see above; the standard total stays 83), Process gap 21 → 20 (VMCN_CONNEX left).
+// V18.1: Data checks list every Issues to review item: legacy 113 → 129, standard 83 → 99 (see above).
 test('Unmatched L3V records are Level 3 gaps in Data checks',()=>{
- for(const [source,total] of [[{...data,capabilityRows:old.capabilityRows,taxonomySource:old.taxonomySource},113],[data,83]]){
+ for(const [source,total] of [[{...data,capabilityRows:old.capabilityRows,taxonomySource:old.taxonomySource},129],[data,99]]){
   const {reports,all,find}=checked(source);
   assert.equal(l3Gap(reports.process).length,20);
   for(const name of new Set(unmatchedL3V.map(([name])=>name)))assert(l3Gap(reports.process).some(app=>app.Name===name),`${name} needs Level 3 review`);
