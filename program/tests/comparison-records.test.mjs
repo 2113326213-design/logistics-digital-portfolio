@@ -61,11 +61,13 @@ test('L0 detail gaps, out-of-scope capabilities and unmatched L3V records have s
  {ID:'B',Name:'B','Business Capabilities':'B.05.2 Material Field Management',Processes:'BBM PM T Root L0'}];
  const fixture=buildModel({apps,capabilityRows:[['B.05.2 Material Field Management']],processRows:[['T','L0','M.T','Root']]});
  const args=pair(fixture,'A','B'),evidence=comparisonRecordEvidence(fixture,args.process,args.processBack);
- assert.equal(evidence.exact.length,0);assert.equal(evidence.gaps.length,2);
+ // V19.2 (owner 2026-10-23: "如果一遍有一遍没有就是有"): A's L3V is a LeanIX process of chain T, so A does not stop at L0; only B
+ // does (until V19.1 both sides had an L0 gap).
+ assert.equal(evidence.exact.length,0);assert.deepEqual(evidence.gaps.map(gap=>gap.side),[1]);
  // L3V is Level 3 (owner decision 2026-10-19): with no standard L3 of that name the record is unmatched, like an L3.
  // V19.1 union (owner 2026-10-23, "也按并集"): a record with a level is in LeanIX, so it is no longer pending in the
- // comparison (it was "Records not yet confirmed (1)" with status needs-review). It adds no code, so both directions rest
- // on the shared L0 chain alone: "More detail needed", not "Needs confirmation".
+ // comparison (it was "Records not yet confirmed (1)" with status needs-review). Since V19.2 it is compared by its LeanIX
+ // name; B records only the L0 chain, so the pair still needs more detail: "More detail needed", not "Needs confirmation".
  assert.deepEqual(fixture.apps.find(app=>app.id==='A').inLeanix.map(record=>[record.raw,record.level]),[['BBM PM T Variant L3V',3]]);
  assert.deepEqual(evidence.sides[0].unconfirmed,[]);
  assert.deepEqual(evidence.sides[0].excluded,[]);assert.deepEqual(evidence.sides[1].unconfirmed,[]);

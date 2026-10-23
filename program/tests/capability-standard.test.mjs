@@ -994,7 +994,9 @@ test('similarity decision 2026-10-19 (a): only name and description fields with 
   [W0,{[`incomplete/${NC} -> confirmed/Below threshold`]:216,[`incomplete/${NC} -> confirmed/Potential overlap`]:2,[`incomplete/${NC} -> incomplete/More detail needed`]:49,
    [`investigation/${NC} -> investigation/No shared registrations`]:165,[`investigation/${NC} -> investigation/More detail needed`]:50,[`investigation/${NC} -> investigation/No complete score`]:61}],
   [ND,{[`incomplete/${NC} -> confirmed/Below threshold`]:78,[`incomplete/${NC} -> confirmed/Potential overlap`]:1,[`incomplete/${NC} -> incomplete/More detail needed`]:10,
-   [`investigation/${NC} -> investigation/No shared registrations`]:271,[`investigation/${NC} -> investigation/More detail needed`]:89,[`investigation/${NC} -> investigation/No complete score`]:94}],
+   // V19.2: RBCD WI management system and ShzP_DAVIS both record the LeanIX process "I2D Load Truck L3", which now counts
+   // as shared (both directions): No shared registrations 271 → 269, No complete score 94 → 96.
+   [`investigation/${NC} -> investigation/No shared registrations`]:269,[`investigation/${NC} -> investigation/More detail needed`]:89,[`investigation/${NC} -> investigation/No complete score`]:96}],
   [CODE_ONLY,{[`incomplete/${NC} -> confirmed/Below threshold`]:438,[`incomplete/${NC} -> confirmed/Potential overlap`]:6,[`incomplete/${NC} -> incomplete/More detail needed`]:99}]]){
   const changes=unionChanges('standard',weights);
   assert.deepEqual(changes.map(({p})=>pairName(p)).sort(),defaultChanges,JSON.stringify(weights));

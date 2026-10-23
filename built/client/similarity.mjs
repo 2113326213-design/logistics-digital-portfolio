@@ -9,6 +9,14 @@ export function createSimilarity(model,dimension){
  const ancestor=(a,b)=>a===b||b.startsWith(a+'.');
  const byId=(a,b)=>compareNatural(a.id,b.id);
  const scopes=new Map(),cache=new Map();
+ // A process in LeanIX but not in the Signavio list (union, V19.2), as a comparison record: its LeanIX name without "BBM PM"
+ // and the level suffix (L3V is L3), so the same LeanIX process has the same id in every application.
+ // chainRoot: the Signavio Level 0 of its process chain ("BBM PM I2D …" → M.I2D), when the list has it.
+ const leanixNode=x=>{
+  const name=String(x.raw).replace(/^\s*BBM\s+PM\s+/i,'').replace(/\s*\bL[0-3]V?\s*$/i,'').replace(/\s+/g,' ').trim();
+  const chain=String(x.raw).match(/^\s*BBM\s+PM\s+([A-Z0-9]+)/i)?.[1]?.toUpperCase(),root=chain&&map.get('M.'+chain)?.level===0?'M.'+chain:null;
+  return {id:`LeanIX · ${name}`,label:String(x.raw).trim(),level:x.level,inLeanix:true,raw:x.raw,chainRoot:root};
+ };
  function atLevel(node,level){
   const seen=new Set();
   while(node&&node.level>level&&!seen.has(node.id)&&!node.ambiguous){seen.add(node.id);node=map.get(node.parent);}
@@ -43,6 +51,17 @@ export function createSimilarity(model,dimension){
   const inLeanix=new Set(dimension==='process'?(app.inLeanix||[]).map(x=>x.raw):[]);
   for(const issue of model.issues.filter(i=>i.appId===app.id&&i.type.startsWith(dimension==='cap'?'业务能力':'流程')&&!inLeanix.has(i.value))){
    pending.push({value:issue.value,reason:issue.type,candidates:issue.candidates||[],chain:issue.value.match(/^BBM\s+PM\s+([A-Z0-9]+)/i)?.[1]});
+  }
+  // V19.2: it is comparison evidence by its LeanIX name, so two applications that record the same LeanIX process share it.
+  // It has no Signavio code or parent, so it is compared only with the same LeanIX process at its own level. Before, it
+  // added no evidence: an application with only such processes looked as if it had none, and one with a Signavio L0 and
+  // a LeanIX-only L3 looked as if it stopped at L0.
+  if(dimension==='process'){
+   for(const x of app.inLeanix||[]){const node=leanixNode(x);if(!known.some(n=>n.id===node.id))known.push(node);}
+   // Like a Signavio process under it, a deeper LeanIX process of the same chain means the chain's Level 0 record is not
+   // the application's only record there ("recorded only at Level 0" would be wrong).
+   const roots=new Set(known.filter(n=>n.inLeanix&&n.chainRoot&&n.level>0).map(n=>n.chainRoot));
+   for(let i=known.length-1;i>=0;i--)if(!known[i].inLeanix&&roots.has(known[i].id))known.splice(i,1);
   }
   const levels=[...new Set(known.map(n=>n.level))].sort();
   scopes.set(app.id,{app,known,pending,outside,levels,deepest:Math.max(-1,...levels),coarse:levels.some(l=>l<3),branches:partitions(known),semanticConcerns:concerns});
@@ -84,7 +103,13 @@ export function createSimilarity(model,dimension){
   const key=JSON.stringify([targetId,peerId]);if(cache.has(key))return cache.get(key);
   const target=scopes.get(targetId),peer=scopes.get(peerId);
   if(!target||!peer)throw Error('请选择有效应用');
-  const alignment=align(target,peer),{comparedTarget,comparedPeer,projectionIssues}=alignment;
+  const alignment=align(target,peer);
+  // V19.2 (owner 2026-10-23, chose "不算，两个 E-Queue 算重合"): a LeanIX-only process counts when the other application records
+  // the same LeanIX process; one the other does not have is left out, so it never lowers the score. Only when the
+  // application has nothing else to compare are they kept (then it shows no shared registrations, not no records).
+  const peerIds=new Set(alignment.comparedPeer.map(n=>n.id)),kept=alignment.comparedTarget.filter(n=>!n.inLeanix||peerIds.has(n.id));
+  if(kept.length)alignment.comparedTarget=kept;
+  const {comparedTarget,comparedPeer,projectionIssues}=alignment;
   const branches=partitions(comparedTarget).map(branch=>{
    const projected=new Map();
    for(const n of comparedPeer){const p=atLevel(n,branch.level);if(p&&ancestor(branch.id,p.id)){if(!projected.has(p.id))projected.set(p.id,{...p,sources:[]});projected.get(p.id).sources.push(...n.sources);}}

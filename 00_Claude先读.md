@@ -20,7 +20,16 @@
 - **小版本**（V10.1、V10.2……）：修正、文字和显示调整。
 - 版本号写在 `program/scripts/release.mjs` 的 RELEASE_VERSION（小写，如 `v10`、`v10.1`）；文件名、发布 zip、部署脚本和 Release 标签（`v10-20261022`）都随它生成。导入预览的“变化明细”是新功能，所以这一版是 V10（原计划的 V9.20 没有发布）。
 
-## V19.1 当前状态（2026-10-23，优先于所有历史段落）
+## V19.2 当前状态（2026-10-23，优先于所有历史段落）
+
+- **并集规则（用户 2026-10-23）**：“如果一遍有一遍没有就是有，如果都没有就算没有”——流程或它的上一级，在 Signavio 清单或 LeanIX 里有一边有就算有。
+- **Similarity（similarity.mjs）**：`leanixNode` 把 app.inLeanix 的记录变成比较记录（id “LeanIX · <名称>”，去掉 “BBM PM” 和层级后缀；chainRoot = 流程链的 Signavio Level 0，例如 M.I2D）。同一链有更深的 LeanIX 流程时，这条链的 Level 0 记录不再单独算（不再 “recorded only at Level 0”）。compare() 里目标方只在 LeanIX、对方没有的流程不计入（不拉低分数，用户选 “不算，两个 E-Queue 算重合”），只有目标没有别的可比较时才保留（覆盖率 0 = 没有共同登记）。similarity-readiness 的 recordsForNode 对这些记录显示原名。
+- **补满上面的层级（review-issues.mjs ancestorCoverage）**：流程的上一级不在 Signavio 清单时，按并集算在 LeanIX 里，返回 {parent:null,parentInLeanix:true}；能力仍须在标准里。
+- 现在的数据：总览、To review、默认权重的相似度结果与 V19.1 相同；WHATS_NEW 不变（id 2026-10-23-2）。
+- 测试 554 项通过；deploy:sim 14 / 14。浏览器：离线版 V19.2 的 Similarity check 显示 “13 pairs to review”，有两个 E-Queue 和 AUTO-RACK 的配对；页面没有版本号。
+- 当前离线包：`offline/logistics-offline-20261022-v19.2.zip`。验证记录见 `verification/v19.2-verification.md`。
+
+## V19.1 状态（2026-10-23，受顶部 V19.2 更新）
 
 - **用户决定**：“其实没有标准表”（工具里叫 standard 的只是 Signavio 2025-02-21 的快照）；“要并集的看”；两种做法里选 “应用登记的就算”（另一种是导入 LeanIX 流程导出来补充，没选）。规则改动按小版本，V19.1。
 - **规则**：流程在 Signavio 清单里或在 LeanIX 里都算符合。`model.mjs`：带层级（PROCESS_LEVEL）但不是唯一一个 Signavio 流程的记录（未找到、多个编号、别的链）放进 `app.inLeanix`（raw、level、type、candidates）。`overview.mjs` maintenanceReport：这些记录 valid=true、accepted=null、reason “In LeanIX, not in the Signavio list”。`review-issues.mjs`：不再出 “Process name differs between sources”；ancestorCoverage 把 inLeanix 记录算作更深一层的证据（code/parent 为 null）。`data-checks.mjs` 跳过这些记录；`app.js` 详情里不再显示被取代的“已确认按原样登记”（confirmedShown）。

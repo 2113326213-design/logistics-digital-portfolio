@@ -95,9 +95,11 @@ test('L3V records are Level 3 registrations in the maintenance report',()=>{
  assert.deepEqual(p.records.get('B').map(r=>[r.raw,r.level,r.valid]),[['BBM PM T Stage L1',1,true],['BBM PM T Detail L3V',3,true]]);
  assert.deepEqual([p.levels[3].filled.map(a=>a.id),p.levels[3].valid.map(a=>a.id)],[['A','B'],['A','B']]);
  assert.deepEqual(p.unknown,[]);assert.deepEqual(p.quality.map(a=>a.id),['A','B']);assert.deepEqual(l3MaintenanceMetrics(p).notPassing.map(a=>a.id),['C']);
- // To review covers every level (owner specification 2026-10-20): A has no L2, B no L0 and no L2, C no process at all.
- assert.deepEqual(p.needsReview.map(a=>a.id),['A','B','C']);
- assert.deepEqual(p.issues.get('B').map(i=>i.label),['Level 2 parent not in catalogue'],'the fixture catalogue has no Level 2 parent for the L3V record: a catalogue question (2026-10-20)');
+ // To review covers every level (owner specification 2026-10-20). V19.2 (owner 2026-10-23: "如果一遍有一遍没有就是有，如果都
+ // 没有就算没有"): the Level 2 parent that this fixture's list lacks is in LeanIX, like the matching L3 / L3V process itself,
+ // so A and B are full at Level 2 (until V19.1: "Level 2 parent not in catalogue"); C has no process at all.
+ assert.deepEqual(p.needsReview.map(a=>a.id),['C']);
+ assert.deepEqual(p.issues.get('B'),[]);
  const data=fixture();data.apps[1].Processes='BBM PM T Stage L1;BBM PM T Unlisted L3V';
  const u=maintenanceReport(buildModel(data),{},'process'),b=u.apps.find(a=>a.id==='B');
  assert.deepEqual(u.records.get('B').find(r=>r.raw==='BBM PM T Unlisted L3V').level,3);

@@ -5,6 +5,7 @@ const pendingKinds=new Set(DATA_TO_CONFIRM);
 const related=(a,b)=>a===b||a.startsWith(b+'.')||b.startsWith(a+'.');
 const sourceRecords=(scope,dimension)=>scope.app?.[dimension==='cap'?'rawCap':'rawProcess'];
 function recordsForNode(scope,dimension,node){
+ if(node.inLeanix)return [node.raw];
  const raw=sourceRecords(scope,dimension)||[];
  const matches=dimension==='cap'?raw.filter(value=>capCode(value)===node.id)
   :(scope.app.processMatches||[]).filter(match=>match.id===node.id).map(match=>match.raw);

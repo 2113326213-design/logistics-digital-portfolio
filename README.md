@@ -53,11 +53,11 @@
 
 不在内网，或想自己保留一份时用：
 
-1. 下载 [**logistics-offline-20261022-v19.1.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest)。
+1. 下载 [**logistics-offline-20261022-v19.2.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest)。
 2. 右键 → **Extract all**。
 3. 用 Chrome 打开里面的 HTML（同一个 zip 里的 `deploy-iis.bat` 是给内网服务器部署用的，自己用时不用管）。
 
-解压出来的文件名里带 **v19.1** 就对了（页面上不再显示版本号）。
+解压出来的文件名里带 **v19.2** 就对了（页面上不再显示版本号）。
 
 </td>
 </tr>
@@ -68,7 +68,7 @@
     <td align="center" width="25%"><h3>75</h3><sub>应用 · 10 个工厂 · 5 个业务部门</sub></td>
     <td align="center" width="25%"><h3>2,775</h3><sub>组两两比较 · 9 组得分 ≥ 50</sub></td>
     <td align="center" width="25%"><h3>22 / 39</h3><sub>Process / Capability 待处理应用</sub></td>
-    <td align="center" width="25%"><h3>V19.1</h3><sub>2026-10-23 · 550 项测试通过</sub></td>
+    <td align="center" width="25%"><h3>V19.2</h3><sub>2026-10-23 · 554 项测试通过</sub></td>
   </tr>
 </table>
 
@@ -174,7 +174,9 @@
 
 完整更新日志见 [`CHANGELOG.md`](CHANGELOG.md)。
 
-**V19.1（当前，2026-10-23）**：流程按并集判断（用户：“其实没有标准表”，“要并集的看”，选“应用登记的就算”）：流程在 Signavio 清单里或在 LeanIX 里都算符合；应用登记的流程都来自 LeanIX，所以只要名字带层级（L0–L3，L3V 就是 L3）就算符合，只有没写层级的和某一层没登记的还要处理。AUTO-RACK、Load Truck 等 19 条不再是问题；Process 待处理 21 → 11 个应用，Level 3 符合 55 → 67。Similarity check 也按并集（用户选“也按并集”）：这些记录不再算 Needs confirmation，468 对结果变化，多出 3 对 Potential overlap（如 AUTO-RACK ↔ Szh5_ASRS_WCS_WMS）。能力（Capability）不变。
+**V19.2（当前，2026-10-23）**：补上 V19.1 并集规则的 3 个小缺口：只在 LeanIX 里的流程在 Similarity check 里按 LeanIX 名称比较（两边都有算重合，只有一边有的不拉低分数），只登记了 LeanIX 流程的应用不再被当成“没有流程记录”，Signavio 的 Level 0 加 LeanIX 的 Level 3 不再显示 “recorded only at Level 0”；Signavio 流程的上一级不在清单里时也算有。用现在的数据，总览和相似度结果与 V19.1 相同。
+
+**V19.1（2026-10-23）**：流程按并集判断（用户：“其实没有标准表”，“要并集的看”，选“应用登记的就算”）：流程在 Signavio 清单里或在 LeanIX 里都算符合；应用登记的流程都来自 LeanIX，所以只要名字带层级（L0–L3，L3V 就是 L3）就算符合，只有没写层级的和某一层没登记的还要处理。AUTO-RACK、Load Truck 等 19 条不再是问题；Process 待处理 21 → 11 个应用，Level 3 符合 55 → 67。Similarity check 也按并集（用户选“也按并集”）：这些记录不再算 Needs confirmation，468 对结果变化，多出 3 对 Potential overlap（如 AUTO-RACK ↔ Szh5_ASRS_WCS_WMS）。能力（Capability）不变。
 
 **V19（2026-10-23）**：删掉不用的功能（用户：“这个提取的功能还有 leanix 抓数据的功能都删掉吧”）：Import data 里的 LeanIX 流程对比（V15 流程核对、V16 标准目录对比、V17 把 BBM PM 流程加进目录）、“Download file for the server” 按钮、`tools/leanix` 两个脚本。误选 LeanIX 流程导出时提示一句、不改数据；已经加进数据的 BBM PM 流程保留。工厂反馈功能不做。
 
@@ -230,6 +232,7 @@
 
 | 版本 | 主要变化 |
 |---|---|
+| [V19.2](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v19.2-20261022) | 补上 V19.1 并集规则的 3 个小缺口：只在 LeanIX 里的流程在 Similarity check 里按 LeanIX 名称比较（两边都有算重合，只有一边有的不拉低分数），只登记了 LeanIX 流程的应用不再被当成“没有流程记录”，Signavio 的 Level 0 加 LeanIX 的 Level 3 不再显示 “recorded only at Level 0”；Signavio 流程的上一级不在清单里时也算有。用现在的数据，总览和相似度结果与 V19.1 相同 |
 | [V19.1](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v19.1-20261022) | 流程按并集判断（用户：“其实没有标准表”，“要并集的看”，选“应用登记的就算”）：流程在 Signavio 清单里或在 LeanIX 里都算符合；应用登记的流程都来自 LeanIX，所以只要名字带层级（L0–L3，L3V 就是 L3）就算符合，只有没写层级的和某一层没登记的还要处理。AUTO-RACK、Load Truck 等 19 条不再是问题；Process 待处理 21 → 11 个应用，Level 3 符合 55 → 67。Similarity check 也按并集（用户选“也按并集”）：这些记录不再算 Needs confirmation，468 对结果变化，多出 3 对 Potential overlap（如 AUTO-RACK ↔ Szh5_ASRS_WCS_WMS）。能力（Capability）不变 |
 | [V19](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v19-20261022) | 删掉不用的功能（用户：“这个提取的功能还有 leanix 抓数据的功能都删掉吧”）：Import data 里的 LeanIX 流程对比（V15 流程核对、V16 标准目录对比、V17 把 BBM PM 流程加进目录）、“Download file for the server” 按钮、`tools/leanix` 两个脚本。误选 LeanIX 流程导出时提示一句、不改数据；已经加进数据的 BBM PM 流程保留。工厂反馈功能不做 |
 | [V18.1](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v18.1-20261022) | Data checks 和 Issues to review 列同样的问题（以前 Data checks 只看 Level 3，14 个应用两边对不上）；固定规则：某一层没登记时，只要更深的一层全部符合标准，这一层就算满分（例如 Level 3 符合 → Level 2、1、0 都算满分；Process 和 Business Capability 都适用）；页面顶部不再显示版本号那一行；工具有更新时，以前用过的人打开后会看到一次 “The tool was updated on …” 提示，点 Close 后不再出现 |
@@ -394,7 +397,7 @@ flowchart LR
 | 导入 / 导出（Excel、工作区、CSV） | `program/public/xlsx.mjs`、`program/public/import-review.mjs`、`program/public/workspace.mjs`、`program/public/exports.mjs`、`program/public/score-settings.mjs`（阈值随备份）、`program/public/offline-save.mjs`（离线导出提示）；应用搜索在 `program/public/app-search.mjs`（6 个搜索框共用 matchesApplication 和同一个名称、提示） |
 | 样式 | `program/public/*.css` |
 | 构建和离线单文件 | `program/scripts/build.mjs`、`program/scripts/export-offline.mjs` |
-| 测试（`npm test`，当前 550 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v19.1-test-results.txt` |
+| 测试（`npm test`，当前 554 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v19.2-test-results.txt` |
 | 离线单文件版 | `offline/` |
 | IIS 部署脚本（每次发布自动生成） | `offline/deploy-iis.bat`（同一份脚本也在发布 zip `offline/logistics-offline-<日期>-<版本>.zip` 里，部署只需下载这个 zip）；生成器 `program/scripts/deploy-script.mjs`，模板 `program/scripts/deploy-iis.template.bat`，发布打包 `program/scripts/release-files.mjs`（`npm run release:files`），检查 `program/tests/deploy-script.test.mjs`，本机模拟 `program/scripts/deploy-sim.mjs`（`npm run deploy:sim`） |
 | 构建输出、文件校验清单 | `built/`、`MANIFEST.sha256` |

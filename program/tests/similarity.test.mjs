@@ -74,7 +74,9 @@ const variantModel=buildModel(variantData),variantIndex=createSimilarity(variant
 assert.deepEqual(variantModel.issues.map(i=>[i.app,i.type,i.value]),[['Variant','流程未匹配层级表','BBM PM T Unknown variant L3V']]);
 assert.deepEqual(variantModel.apps.find(a=>a.id==='Variant').inLeanix.map(x=>[x.raw,x.level]),[['BBM PM T Unknown variant L3V',3]]);
 assert.deepEqual(variantIndex.scopes.get('Variant').pending,[]);
-assert.deepEqual(variantIndex.scopes.get('Variant').known.map(n=>n.id),['M.T.1']);
+// V19.2: the LeanIX record is a comparison record by its LeanIX name; Standard does not record it, so it is left out of
+// this direction and does not lower the score (owner 2026-10-23, "不算，两个 E-Queue 算重合").
+assert.deepEqual(variantIndex.scopes.get('Variant').known.map(n=>n.id),['M.T.1','LeanIX · T Unknown variant']);
 assert.equal(variantIndex.compare('Variant','Standard').coverage,1);
 assert.equal(variantIndex.compare('Variant','Standard').status,'comparable');
 assert.equal(variantIndex.compare('Variant','Standard').targetCount,1,'the LeanIX record adds no code to the denominator');

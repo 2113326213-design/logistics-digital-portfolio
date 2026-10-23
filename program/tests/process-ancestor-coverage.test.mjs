@@ -29,13 +29,15 @@ test('a matching L3 makes the unrecorded L0–L2 full without changing source da
  assert(model.apps.filter(union).every(a=>report.levels.find(r=>r.level===3).valid.includes(a)));
  assert.equal(JSON.stringify(data),before);
 });
-test('unconfirmed L3, absent ancestor and invalid directly registered ancestor stay reviewable',()=>{
+// V19.2 (owner 2026-10-23: "如果一遍有一遍没有就是有，如果都没有就算没有"): an ancestor the Signavio list lacks is in LeanIX, like the
+// matching process itself, so it still fills the level (until V19.1 it was a "parent not in catalogue" question).
+test('an ancestor missing from the Signavio list still fills; an unconfirmed L3 or a bad direct ancestor stays reviewable',()=>{
  for(const level of [0,1]){
   const {model,report,app}=setup();
   const evidence=processAncestorCoverage(model,report,app,level);assert(evidence.length);
   model.procs.delete(evidence[0].parent);
-  assert.deepEqual(processAncestorCoverage(model,report,app,level),[]);
-  assert(reviewIssues(model,report,app).some(i=>i.level===level&&i.kind==='catalogue'));
+  assert.deepEqual(processAncestorCoverage(model,report,app,level).map(e=>[e.parent,e.parentInLeanix]),[[null,true]]);
+  assert(!reviewIssues(model,report,app).some(i=>i.level===level));
  }
  for(const level of [0,1]){
   const {model,report,app}=setup();report.records.get(app.id).push({raw:'bad ancestor',level,valid:false});

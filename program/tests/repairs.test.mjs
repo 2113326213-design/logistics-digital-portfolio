@@ -51,14 +51,17 @@ const fixture=()=>workspaceData({source:'inventory.xlsx',taxonomySource:'taxonom
 function mapping(data){const item=reviewItems(buildModel({...data,corrections:[]})).find(i=>i.category==='流程匹配'&&i.appIds.includes('a')&&i.raw===l3vRaw);return createCorrection(data,{appId:'a',dimension:'process',raw:l3vRaw,targetId:'M.I2D.010.010.010',reviewer:'Reviewer',reason:'Business confirmed the standard process',reviewKey:item.key});}
 test('explicit mapping affects only the chosen source, updates similarity, retains raw data/history and can be revoked',()=>{
  const data=fixture(),before=buildModel(data),original=JSON.stringify(data.apps),c=mapping(data),next={...data,corrections:[c]},after=buildModel(next);
- assert.equal(createSimilarity(before,'process').compare('a','b').coverage,null);assert.equal(createSimilarity(after,'process').compare('a','b').coverage,1);
+ // V19.2: before the mapping, a's only process is a LeanIX process that b does not record: a real comparison with nothing
+ // shared (0), no longer "no score" (until V19.1 a looked as if it had no process record at all).
+ assert.equal(createSimilarity(before,'process').compare('a','b').coverage,0);assert.equal(createSimilarity(after,'process').compare('a','b').coverage,1);
  // Before the mapping the L3V record is an ordinary unmatched Level 3 record: no variant hold, actionable in review.
  assert.deepEqual(before.issues.filter(i=>i.appId==='a').map(i=>[i.type,i.value]),[['流程未匹配层级表',l3vRaw]]);assert(!before.issues.some(i=>/L3V/.test(i.type)),'no L3V variant issue type');
  // V19.1 union (owner 2026-10-23, "也按并集"): the L3V record has a level, so it is in LeanIX and is not pending in the
  // similarity check (until V19 it was pending as '流程未匹配层级表'). It has no Signavio code either, so a has no process
  // record to compare: the direction still has no score until the mapping gives the record its code.
  assert.deepEqual(createSimilarity(before,'process').scopes.get('a').pending,[]);
- const unmapped=createSimilarity(before,'process').compare('a','b');assert.deepEqual([unmapped.status,unmapped.reason,unmapped.coverage],['needs-review','目标没有可比较的登记。',null]);
+ // V19.2 (gap 1): its LeanIX process is now its comparison record, so the direction is comparable with nothing shared.
+ const unmapped=createSimilarity(before,'process').compare('a','b');assert.deepEqual([unmapped.status,unmapped.reason,unmapped.coverage],['comparable','',0]);
  assert.deepEqual(createSimilarity(after,'process').scopes.get('a').pending,[]);assert.equal(createSimilarity(after,'process').compare('a','b').status,'comparable');
  // A mapping still resolves a pending record: the same record without a level ('Process level not specified') is pending
  // until the owner maps it, then the direction is scored like the L3V record above.
@@ -77,7 +80,7 @@ test('explicit mapping affects only the chosen source, updates similarity, retai
  const afterChecks=dataChecksForApp(after,after.apps[0]);assert(!afterChecks.checks.some(r=>r.raw===l3vRaw),'the mapped record is no longer a data check');assert.deepEqual(afterChecks.mappings.map(m=>[m.raw,m.targetId]),[[l3vRaw,'M.I2D.010.010.010']]);
  assert.equal(after.issues.filter(i=>i.appId==='a').length,0);assert.equal(after.issues.filter(i=>i.appId==='c').length,1);assert.equal(JSON.stringify(next.apps),original);
  assert(reviewItems(buildModel({...next,corrections:[]})).some(i=>i.key===c.reviewKey),'raw checklist key remains accessible');
- const revoked=revokeCorrection(next,c.id);assert.equal(correctionStates(revoked)[0].state,'Revoked');assert.equal(createSimilarity(buildModel(revoked),'process').compare('a','b').coverage,null);
+ const revoked=revokeCorrection(next,c.id);assert.equal(correctionStates(revoked)[0].state,'Revoked');assert.equal(createSimilarity(buildModel(revoked),'process').compare('a','b').coverage,0,'revoked: back to its LeanIX process, nothing shared (V19.2)');
  assert.deepEqual(importWorkspace(exportWorkspace(next)),next);assert.deepEqual(acceptanceSample(initial).corrections,[]);
 });
 test('reviewed bundled mappings migrate only into unchanged saved workspaces',()=>{

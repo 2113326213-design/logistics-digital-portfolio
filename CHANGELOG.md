@@ -2,6 +2,16 @@
 
 每个版本的离线包在 [Releases](https://github.com/2113326213-design/logistics-digital-portfolio/releases)；详细的修改说明和用户决定在 [`00_Claude先读.md`](00_Claude先读.md)，验证记录在 [`verification/`](verification/)。
 
+## [V19.2](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v19.2-20261022) · 2026-10-23
+
+用户：“我们现在来做那三个小问题的补救把”；“如果一遍有一遍没有就是有，如果都没有就算没有”；Similarity 里只在 LeanIX、对方没有的流程选 “不算，两个 E-Queue 算重合”。
+1. **只登记了 LeanIX 流程的应用**：Similarity check 以前把它当成没有流程记录（“No process records supplied”、Needs confirmation）。现在只在 LeanIX 里的流程按 LeanIX 名称（去掉 “BBM PM” 和层级后缀，L3V 就是 L3）作为比较记录，两个应用登记同一个 LeanIX 流程就算重合。
+2. **Signavio 的 Level 0 加只在 LeanIX 的 Level 3**：以前显示 “recorded only at Level 0”。现在同一流程链里的 LeanIX 流程说明这条链不只到 Level 0。
+3. **Signavio 流程的上一级不在清单里**：以前它不能补满上面的层级（还列 “Level N parent not in catalogue”），比只在 LeanIX 的流程算得差。现在上一级不在 Signavio 就看 LeanIX：一边有就算有，所以和只在 LeanIX 的流程一样补满上面的层级。能力（Capability）的上一级仍须在能力标准里。
+- **用户决定**：只在 LeanIX、对方没有的流程不拉低分数（两边都有才算重合）；一个应用除了这些流程没有别的可比较时才算进去（显示“没有共同的登记”，不是“没有流程记录”）。按完整计算的话 Potential overlap 会从 13 掉到 9（两个 E-Queue、AUTO-RACK 与两个自动仓库），所以没有这样做。
+- 现在的数据：总览各层、To review 和默认权重下的相似度结果都和 V19.1 相同（Potential overlap 13）；名称权重 0.1、描述权重 0 时，RBCD WI management system 和 ShzP_DAVIS 都登记了 LeanIX 流程 “I2D Load Truck L3”，从 “No shared registrations” 变为 “No complete score”。更新提示（WHATS_NEW）不变，因为工厂用户现在看不到差别。
+- 新增 `tests/v19-2-union-gaps.test.mjs`（4 项；前 3 项在 V19.1 代码上全部失败）；按旧行为写的 6 个测试按新规则更新（每处写明原因）：overview、process-ancestor-coverage、comparison-records、similarity、repairs、capability-standard。
+
 ## [V19.1](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v19.1-20261022) · 2026-10-23
 
 用户：“其实没有标准表”，“要并集的看”；在两种做法里选了“应用登记的就算”。

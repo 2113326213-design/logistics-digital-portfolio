@@ -1,10 +1,10 @@
 @echo off
 setlocal EnableExtensions
 rem ======================================================================
-rem  Logistics Tool V19.1 - one-click IIS deploy (static single HTML file)
+rem  Logistics Tool V19.2 - one-click IIS deploy (static single HTML file)
 rem  Generated for this release by program/scripts/deploy-script.mjs from deploy-iis.template.bat. Do not edit by hand.
 rem
-rem  One download: logistics-offline-20261022-v19.1.zip holds the HTML and this script. Save it in
+rem  One download: logistics-offline-20261022-v19.2.zip holds the HTML and this script. Save it in
 rem  %USERPROFILE%\Downloads on the IIS server (Windows Server 2016+), open it
 rem  and double-click deploy-iis.bat; it asks for Administrator rights itself.
 rem
@@ -27,15 +27,15 @@ set "TARGET=D:\logistics-tool"
 if not "%~1"=="" set "PORT=%~1"
 if not "%~2"=="" set "TARGET=%~2"
 
-set "ZIPNAME=logistics-offline-20261022-v19.1.zip"
-set "EXPECT_SHA256=063a054b8be028c67698ef131040050c2f5922c7c50bcf965b1f0a86c886733e"
+set "ZIPNAME=logistics-offline-20261022-v19.2.zip"
+set "EXPECT_SHA256=b44efcc158d6d7078e30fb8c4d3947dd2775c9f5338e137d9f20c7224673ea00"
 set "INETSRV=%windir%\system32\inetsrv"
 set "APPCMD=%INETSRV%\appcmd.exe"
-set "TMPX=%TEMP%\logistics-v19.1-extract"
+set "TMPX=%TEMP%\logistics-v19.2-extract"
 set "BACKUP=%TARGET%_backup"
 
 echo.
-echo === Logistics Tool V19.1 : IIS deploy ===
+echo === Logistics Tool V19.2 : IIS deploy ===
 echo Site: %SITE%   Port: %PORT%
 echo Dir : %TARGET%
 echo.
@@ -43,14 +43,14 @@ echo.
 rem ---- [1/6] pre-checks -------------------------------------------------
 rem The deploy always continues in a window that stays open (cmd /k), so every message can be read, also when this
 rem script was started as Administrator. Explorer deletes files opened from inside a zip once this window exits, so
-rem the new window runs a stable copy in Downloads, next to the V19.1 zip that holds this script.
+rem the new window runs a stable copy in Downloads, next to the V19.2 zip that holds this script.
 if /i "%~3"=="ELEVATED" goto :inwindow
 set "SELF=%USERPROFILE%\Downloads\deploy-iis.bat"
 if /i not "%~f0"=="%SELF%" copy /y "%~f0" "%SELF%" >nul
 if not exist "%SELF%" set "SELF=%~f0"
 fltmc >nul 2>&1
 if errorlevel 1 goto :elevate
-start "Logistics Tool V19.1 : IIS deploy" cmd.exe /k call "%SELF%" %PORT% "%TARGET%" ELEVATED
+start "Logistics Tool V19.2 : IIS deploy" cmd.exe /k call "%SELF%" %PORT% "%TARGET%" ELEVATED
 exit /b 0
 :elevate
 echo Not elevated - asking Windows for Administrator rights ^(click Yes on the UAC prompt^)...
@@ -73,7 +73,7 @@ if not exist "%INETSRV%\appcmd.exe" (
 )
 pushd "%INETSRV%"
 
-rem The script ships inside logistics-offline-20261022-v19.1.zip (one download). Double-clicked there, it runs from a temporary folder; the copy
+rem The script ships inside logistics-offline-20261022-v19.2.zip (one download). Double-clicked there, it runs from a temporary folder; the copy
 rem in Downloads that runs here finds the zip next to it.
 set "ZIP="
 if exist "%~dp0%ZIPNAME%" set "ZIP=%~dp0%ZIPNAME%"
@@ -127,8 +127,8 @@ if not defined SRC (
 )
 powershell -NoProfile -ExecutionPolicy Bypass -Command "if ((Get-FileHash -Algorithm SHA256 -LiteralPath $env:SRC).Hash -ne $env:EXPECT_SHA256) { exit 1 }"
 if errorlevel 1 (
-  echo [X] SHA-256 mismatch - the HTML in the zip named at [1/6] is not the expected V19.1 build ^(logistics-offline-20261022-v19.1.zip^).
-  echo     Delete that zip, save logistics-offline-20261022-v19.1.zip from the GitHub release in Downloads again, open it and double-click deploy-iis.bat inside it. Stopping.
+  echo [X] SHA-256 mismatch - the HTML in the zip named at [1/6] is not the expected V19.2 build ^(logistics-offline-20261022-v19.2.zip^).
+  echo     Delete that zip, save logistics-offline-20261022-v19.2.zip from the GitHub release in Downloads again, open it and double-click deploy-iis.bat inside it. Stopping.
   goto :fail
 )
 echo [2/6] OK  extracted and SHA-256 verified

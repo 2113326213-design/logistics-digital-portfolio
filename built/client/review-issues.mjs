@@ -77,6 +77,8 @@ function orphanParent(model,app,level){
 // full; Level 2 missing and Level 3 matching → Levels 2, 1 and 0 full. Both Business Capability (L1–L3) and Process
 // (L0–L3). A level with its own records is judged on them only: a matching deeper record never hides a failing direct
 // one. The parent is the code's first parts (Capability B.06.1.4 → L2 B.06.1; Process M.I2D.010.050.020 → L0 M.I2D).
+// Process (union, V19.1/V19.2): a LeanIX-only process, or a Signavio process whose parent the list lacks, still fills the
+// levels above; only a capability needs its parent in the standard.
 // Returns the evidence (record, code, parent) or [] when the level is not covered.
 export function ancestorCoverage(model,report,app,level){
  const isCap=report.dimension==='cap',records=report.records.get(app.id)||[];
@@ -93,7 +95,11 @@ export function ancestorCoverage(model,report,app,level){
   const evidence=atDeeper.map(r=>{
    if(inLeanix.has(r.raw))return {raw:r.raw,code:null,parent:null,inLeanix:true};
    const code=codeOf(r),parent=code?.split('.').slice(0,isCap?level+1:level+2).join('.');
-   return inCatalogue(map.get(code),deeper)&&inCatalogue(map.get(parent),level)?{raw:r.raw,code,parent}:null;
+   if(!inCatalogue(map.get(code),deeper))return null;
+   if(inCatalogue(map.get(parent),level))return {raw:r.raw,code,parent};
+   // Union (V19.2): the parent of a matching process that the Signavio list lacks is in LeanIX, like the process itself,
+   // so it fills this level just as a LeanIX-only process does. A capability's parent must be in the capability standard.
+   return isCap?null:{raw:r.raw,code,parent:null,parentInLeanix:true};
   });
   if(evidence.every(Boolean))return evidence;
  }
