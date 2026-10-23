@@ -93,7 +93,8 @@ export function previewImport(current,incoming,raw=incoming){
  for(const [id,a] of before)if(!after.has(id))removed.push(a);
  const states=correctionStates(next);
  const beforeActivity=reviewAuditEvents(current),afterActivity=reviewAuditEvents(next),retained=new Set(afterActivity.map(e=>e.id));
- const taxonomyChanged=JSON.stringify([current.capabilityRows,current.processRows])!==JSON.stringify([next.capabilityRows,next.processRows]);
+ // The LeanIX local process layer is part of the process catalogue (V17).
+ const taxonomyChanged=JSON.stringify([current.capabilityRows,current.processRows,current.localProcesses??[]])!==JSON.stringify([next.capabilityRows,next.processRows,next.localProcesses??[]]);
  const pairReviews=pairReviewChanges(current.pairReviews,next.pairReviews);
  const workspaceChanged=pairReviews.total>0||['reviews','corrections','reviewHistory','applicationEvents','importHistory','similarityWeights','similarityThreshold','inventoryExport','acceptedRecords','dataPackage'].some(key=>JSON.stringify(current[key]??null)!==JSON.stringify(next[key]??null));
  const costScoresRemoved=updated.filter(app=>cleanCostScore(before.get(String(app.ID).trim())?.operationCostScore)!==null&&cleanCostScore(app.operationCostScore)===null).length;

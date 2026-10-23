@@ -2,6 +2,16 @@
 
 每个版本的离线包在 [Releases](https://github.com/2113326213-design/logistics-digital-portfolio/releases)；详细的修改说明和用户决定在 [`00_Claude先读.md`](00_Claude先读.md)，验证记录在 [`verification/`](verification/)。
 
+## [V17](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v17-20261022) · 2026-10-23
+
+- **LeanIX 本地流程层**（用户 2026-10-23：“Signavio 标准为主，LeanIX 的 BBM PM 本地流程作为单独标注的一层加进流程目录，导入时先预览再 Apply”）。工具的流程目录仍是 Signavio 标准（Business Capability + Process 表）；在 Import data 选 LeanIX 流程导出后，流程核对里多了 **LeanIX local processes** 一节：
+  - 能加入的：名称是 “BBM PM <链> <名称> L1–L3 / L3V”、标准里找不到（名称规则、所有者映射、同名、一编号两名称都对不上）的流程，挂在 LeanIX Parent 之下（Parent 是标准流程，或本次一起加入的本地流程）。
+  - 不能加入的列出原因：没有 Parent、Parent 找不到、Parent 在别的链、层级不对、标准里这个名称在别的链等。
+  - **Preview the local process layer** 打开普通的导入预览（Taxonomy · Changed），**Apply** 后才生效，可 Undo；再导入新的导出时整层替换。
+- 本地流程的编号是 “上级编号 + .L + LeanIX Fact Sheet ID 前 8 位”（如 M.I2D.030.070.L1a2b3c4d），所以层级、Level 3 判断等照常；名称后标注 “(LeanIX local)”，来源写明 “LeanIX export (local process, not in the Signavio standard)”。同名时 Signavio 标准优先。
+- 应用登记了本地流程的，不再列为 “流程未匹配层级表”；标准对 LeanIX 的核对（V16）只比较 Signavio 标准，本地层的 LeanIX 流程单独计数。
+- 本地流程层随工作区保存、导出，也随数据包发布到服务器。没有本地流程层时，所有结果与 V16 完全相同（四组数据逐项比对）。
+
 ## [V16](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v16-20261022) · 2026-10-22
 
 - **标准流程目录对 LeanIX**（用户：“我还缺少 process process id processname”，随后 “business CAPABILITY + PROCESS那个表格 和我拉出来的新的 … 一些缺少的？我要去补齐的”）：在 Import data 选 LeanIX 流程导出后，预览先显示 **Standard catalogue against LeanIX**。工具的流程目录（Business Capability + Process.xlsx 的 Data_RBW Process Structure：RBW E2E Process Chain、Process Level、Process ID、Process Name）里的每个流程，按应用记录所用的同一条名称规则（“BBM PM <链> <名称> L<层级>”）在导出里找：

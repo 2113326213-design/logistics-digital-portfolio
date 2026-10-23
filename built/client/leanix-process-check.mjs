@@ -1,5 +1,5 @@
 import {split,otherCompanyRecord,norm,PROCESS_LEVEL} from './codes.mjs';
-import {processLookup} from './model.mjs';
+import {processLookup,buildModel} from './model.mjs';
 
 // LeanIX process check (owner decision 2026-10-22, V15: "先只核对、不改数据"). The data steward exports the saved LeanIX view
 // "BBM PM process" (type Process, with the Applications column) on the company laptop and selects the file in Import data.
@@ -127,19 +127,28 @@ const chainOfName=name=>String(name??'').match(/^BBM\s+PM\s+([A-Z0-9]+)\s/i)?.[1
 const levelOf=name=>String(name??'').match(PROCESS_LEVEL);
 const bareName=name=>String(name??'').replace(/^BBM\s+PM\s+[A-Z0-9]+\s+/i,'').replace(/\s+L[0-3]V?\s*$/i,'');
 const expectedName=n=>`BBM PM ${chainCode(n.id)} ${n.label.replace(/\s+/g,' ').trim()} L${n.level}`;
-export function compareCatalogue(model,links,{processRows=[]}={}){
- const lookup=processLookup(model.procs),found=new Map(),notInCatalogue=[],variants=[],otherNaming=[],groups=new Map();
- const add=(id,record,how)=>{if(!found.has(id))found.set(id,[]);found.get(id).push({id:record.id,name:record.name,...how});};
+// How a LeanIX process finds its catalogue process: the name rule (processLookup), then the owner's applied mapping of
+// that exact text, by Name and then by Display Name; and which names belong to a Process ID the catalogue gives two names.
+function resolver(model,processRows){
+ const lookup=processLookup(model.procs);
  // The owner's applied process mappings, by recorded text (one target only).
  const mapped=new Map();for(const a of model.apps)for(const m of a.processMatches)if(m.via==='mapping'){const k=nameKey(m.raw);mapped.set(k,mapped.has(k)&&mapped.get(k)!==m.id?null:m.id);}
  // Names of Process IDs the catalogue gives two names (left out of the name rule).
  const ambiguous=new Map();for(const [,l,id,label] of processRows){const n=model.procs.get(String(id));if(n?.ambiguous)ambiguous.set(n.level+'|'+norm(label)+'|'+chainCode(n.id),n.id);}
  const resolve=name=>{const hit=lookup(name);if(hit.id||hit.type===SEVERAL)return hit;const id=mapped.get(nameKey(name));return id&&model.procs.has(id)?{id,via:'mapping'}:hit;};
+ const find=record=>{let hit=resolve(record.name);if(!hit.id&&hit.type!==SEVERAL&&record.displayName&&nameKey(record.displayName)!==nameKey(record.name)){const byDisplayName=resolve(record.displayName);if(byDisplayName.id||byDisplayName.type===SEVERAL)hit=byDisplayName;}return hit;};
+ const ambiguousId=name=>{const m=levelOf(name);return m?ambiguous.get(+m[1]+'|'+norm(bareName(name))+'|'+(chainOfName(name)||''))||null:null;};
+ return {resolve,find,ambiguousId};
+}
+export function compareCatalogue(model,links,{processRows=[]}={}){
+ const {resolve,find,ambiguousId}=resolver(model,processRows),found=new Map(),notInCatalogue=[],variants=[],otherNaming=[],groups=new Map(),local=[];
+ const add=(id,record,how)=>{if(!found.has(id))found.set(id,[]);found.get(id).push({id:record.id,name:record.name,...how});};
  for(const record of links.records){
   if(otherCompanyRecord(record.name))continue;
-  let hit=resolve(record.name);
-  if(!hit.id&&hit.type!==SEVERAL&&record.displayName&&nameKey(record.displayName)!==nameKey(record.name)){const byDisplayName=resolve(record.displayName);if(byDisplayName.id||byDisplayName.type===SEVERAL)hit=byDisplayName;}
+  const hit=find(record);
   const variant=/L3V\s*$/i.test(record.name);
+  // A process of the LeanIX local layer (V17) is in the catalogue, but not in the Signavio standard: counted apart.
+  if(hit.id&&model.procs.get(hit.id)?.local){local.push({id:record.id,name:record.name,localId:hit.id});continue;}
   if(hit.id){add(hit.id,record,{via:hit.via,variant});continue;}
   if(hit.type===SEVERAL){
    const parent=record.parent?resolve(record.parent).id:null,byParent=parent?hit.candidates.filter(c=>model.procs.get(c.id)?.parent===parent):[];
@@ -147,7 +156,7 @@ export function compareCatalogue(model,links,{processRows=[]}={}){
    const key=hit.candidates.map(c=>c.id).sort().join('|');
    if(!groups.has(key))groups.set(key,{ids:hit.candidates.map(c=>c.id),records:[]});groups.get(key).records.push({id:record.id,name:record.name,variant});continue;
   }
-  const m=levelOf(record.name),amb=m?ambiguous.get(+m[1]+'|'+norm(bareName(record.name))+'|'+(chainOfName(record.name)||'')):null;
+  const amb=ambiguousId(record.name);
   if(amb){notInCatalogue.push({row:record.row,id:record.id,name:record.name,reason:`The catalogue gives this Process ID (${amb}) two names, so it is not compared.`,candidates:[]});continue;}
   const entry={row:record.row,id:record.id,name:record.name,reason:LOOKUP_REASON[hit.type]||'The name does not end with a level (L0–L3).',candidates:hit.candidates||[]};
   if(hit.type===NO_LEVEL)otherNaming.push(entry);else if(variant)variants.push(entry);else notInCatalogue.push(entry);
@@ -162,7 +171,7 @@ export function compareCatalogue(model,links,{processRows=[]}={}){
  const catalogueChains=new Set([...model.procs.keys()].map(chainCode));
  const reached=new Set([...found.keys(),...possibly.keys()].map(chainCode));
  for(const record of links.records)if(!otherCompanyRecord(record.name)&&catalogueChains.has(chainOfName(record.name)))reached.add(chainOfName(record.name));
- const rows=[...model.procs.values()].map(n=>{
+ const rows=[...model.procs.values()].filter(n=>!n.local).map(n=>{
   const leanix=found.get(n.id)||[];
   const status=n.ambiguous?'ambiguous':!reached.has(chainCode(n.id))?'chain-not-in-export':leanix.length?'in-leanix':possibly.has(n.id)?'possibly-missing':'missing';
   return {chain:n.chain,level:'L'+n.level,id:n.id,name:n.label,expected:expectedName(n),status,leanix,variantOnly:!!leanix.length&&leanix.every(x=>x.variant),possibly:possibly.get(n.id)||null};
@@ -170,10 +179,53 @@ export function compareCatalogue(model,links,{processRows=[]}={}){
  const chains=new Map();
  for(const r of rows){const c=chains.get(r.chain)||{chain:r.chain,code:chainCode(r.id),reached:reached.has(chainCode(r.id)),processes:0,inLeanix:0,missing:0};c.processes++;if(r.status==='in-leanix')c.inLeanix++;if(r.status==='missing'||r.status==='possibly-missing')c.missing++;chains.set(r.chain,c);}
  const count=status=>rows.filter(r=>r.status===status).length;
- return {rows,missing:rows.filter(r=>r.status==='missing'||r.status==='possibly-missing'),notInCatalogue,variants,otherNaming,chains:[...chains.values()],
+ return {rows,missing:rows.filter(r=>r.status==='missing'||r.status==='possibly-missing'),notInCatalogue,variants,otherNaming,local,chains:[...chains.values()],
   counts:{standard:rows.length,compared:count('in-leanix')+count('missing')+count('possibly-missing'),inLeanix:count('in-leanix'),missing:count('missing')+count('possibly-missing'),
    possiblyMissing:count('possibly-missing'),variantOnly:rows.filter(r=>r.status==='in-leanix'&&r.variantOnly).length,notCompared:count('chain-not-in-export'),ambiguous:count('ambiguous'),
-   notInCatalogue:notInCatalogue.length,variants:variants.length,otherNaming:otherNaming.length}};
+   notInCatalogue:notInCatalogue.length,variants:variants.length,otherNaming:otherNaming.length,local:local.length}};
+}
+
+// The LeanIX local process layer this export gives (V17, local-layer.mjs). Candidates are BBM PM processes ("BBM PM
+// <chain> <name> L0–L3/L3V", a chain of the catalogue, HC left out) that the Signavio standard does not have: neither the
+// name rule, the owner's mappings, a shared catalogue name nor a catalogue ID with two names finds them. Each hangs under
+// its LeanIX Parent: a standard process found by the same rule, or another local process of this export. A candidate
+// whose name the standard has in another chain, without a Parent, whose Parent is not found, is in another chain or is
+// not one level above, is not added and is listed with the reason. The layer is computed against the Signavio standard
+// alone, so a newer export replaces the whole layer.
+export function localProcessesFrom(data,links){
+ const model=buildModel({...data,localProcesses:[]}),{resolve,find,ambiguousId}=resolver(model,data?.processRows||[]);
+ const catalogueChains=new Set([...model.procs.keys()].map(chainCode)),candidates=[],skipped=[];
+ const skip=(record,reason)=>skipped.push({id:record.id,name:record.name,reason});
+ for(const record of links.records){
+  if(otherCompanyRecord(record.name))continue;
+  const chain=chainOfName(record.name),m=levelOf(record.name);
+  if(!chain||!catalogueChains.has(chain)||!m)continue;
+  const hit=find(record);
+  if(hit.id||hit.type===SEVERAL||ambiguousId(record.name))continue;
+  if(hit.type==='流程链编号存在差异'){skip(record,'The Signavio standard has this name in another process chain.');continue;}
+  if(+m[1]<1){skip(record,'A Level 0 process is a process chain; only the standard chains are used.');continue;}
+  candidates.push({record,chain,level:+m[1],name:bareName(record.name).replace(/\s+/g,' ').trim(),variant:/L3V\s*$/i.test(record.name)});
+ }
+ const waiting=new Set(candidates.map(c=>nameKey(c.record.name))),placed=new Map(),ids=new Set(),keys=new Set(),added=[];
+ let pending=candidates;
+ for(let pass=0;pending.length&&pass<4;pass++)pending=pending.filter(c=>{
+  if(!c.record.parent){skip(c.record,'No Parent in LeanIX.');return false;}
+  const standard=resolve(c.record.parent).id,parentNode=standard?model.procs.get(standard):placed.get(nameKey(c.record.parent));
+  if(!parentNode){if(waiting.has(nameKey(c.record.parent))&&pass<3)return true;skip(c.record,'Its LeanIX Parent is neither in the Signavio standard nor added here.');return false;}
+  if(chainCode(parentNode.id)!==c.chain){skip(c.record,'Its LeanIX Parent is in another process chain.');return false;}
+  if(parentNode.level!==c.level-1){skip(c.record,`Its LeanIX Parent is Level ${parentNode.level}, not Level ${c.level-1}.`);return false;}
+  const key=parentNode.id+'|'+c.level+'|'+norm(c.name);
+  if(keys.has(key)){skip(c.record,'The same name under the same Parent is already added.');return false;}
+  const hex=String(c.record.id).replace(/[^0-9a-f]/gi,'').toLowerCase();let id=`${parentNode.id}.L${hex.slice(0,8)}`;
+  for(let n=12;ids.has(id)&&n<=hex.length;n+=4)id=`${parentNode.id}.L${hex.slice(0,n)}`;
+  if(hex.length<8||ids.has(id)){skip(c.record,'No usable LeanIX Fact Sheet ID.');return false;}
+  ids.add(id);keys.add(key);
+  const entry={id,name:c.name,level:c.level,parent:parentNode.id,variant:c.variant,leanixId:c.record.id,leanixName:c.record.name};
+  added.push(entry);placed.set(nameKey(c.record.name),entry);return false;
+ });
+ for(const c of pending)skip(c.record,'Its LeanIX Parent is neither in the Signavio standard nor added here.');
+ added.sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:0);
+ return {added,skipped};
 }
 
 // The checks as CSV for Excel. Values starting with a formula character are prefixed with ' (as in the other CSV exports).

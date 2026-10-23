@@ -20,7 +20,19 @@
 - **小版本**（V10.1、V10.2……）：修正、文字和显示调整。
 - 版本号写在 `program/scripts/release.mjs` 的 RELEASE_VERSION（小写，如 `v10`、`v10.1`）；文件名、发布 zip、部署脚本和 Release 标签（`v10-20261022`）都随它生成。导入预览的“变化明细”是新功能，所以这一版是 V10（原计划的 V9.20 没有发布）。
 
-## V16 当前状态（2026-10-22，优先于所有历史段落）
+## V17 当前状态（2026-10-23，优先于所有历史段落）
+
+- **用户决定（2026-10-23）**：最初的流程数据（Business Capability + Process 表）来自 Signavio，不是 LeanIX；“Signavio 标准为主，LeanIX 的 BBM PM 本地流程作为单独标注的一层加进流程目录，导入时先预览再 Apply”。新功能，V17。当天下午要给工厂用，用户要求赶出；工厂当天先用 V16。
+- **数据**：`data.localProcesses` = [{id,name,level(1–3),parent,variant,leanixId,leanixName}]（`public/local-layer.mjs`：`cleanLocalProcesses`、`addLocalProcesses`、`LOCAL_TAG=' (LeanIX local)'`、`LOCAL_ID`）。id = 上级 id + “.L” + LeanIX Fact Sheet ID 的 8 位十六进制（冲突时加长），保证按编号前缀判断层级的所有规则照常；标签 = 名称 + “ (LeanIX local)”，`matchName` 是原名。workspace.mjs 只在非空时保留该字段；data-package.mjs 的 payload 带上它、applyDataPackage 按包替换；import-review.mjs 的 taxonomyChanged 包含它。内置 data.json 不带本地层。
+- **模型**：buildModel 在 Signavio 标准和旧 LeanIX 导出之后调用 addLocalProcesses（父级不在目录或层级不符的跳过）；processLookup 用 `matchName` 建索引，同名时标准优先；matchSource 对本地流程写明来源。无本地层时模型输出与 V16 逐项相同（`wl/tools/model-equiv.mjs`，四组数据）。
+- **生成**：`leanix-process-check.mjs` 的 `localProcessesFrom(data,links)` 以不含本地层的模型计算（所以新导出整层替换）；候选 = BBM PM 命名、目录里有的链、L1–L3/L3V、按 V16 的 resolver（名称规则 → 所有者映射，Name → Display Name）找不到、不是同名多编号、不是一编号两名称；“只在别的链”的不加入。Parent 先按同一规则找标准流程，再找本次的本地流程（最多 4 轮）；链不同、层级不是上一级、同一 Parent 下同名、没有可用的 Fact Sheet ID 的不加入，都带原因。`compareCatalogue` 的行只含标准流程，命中本地层的 LeanIX 流程计入 `counts.local`。
+- **页面**：流程核对里 “LeanIX local processes” 一节（Can be added / Cannot be added / In the catalogue now、不能加入的原因表、Preview the local process layer）；`previewLocalLayer` 用 previewImport 和普通的 Apply（历史里记为 “<文件> (LeanIX local processes)”），并清掉 dataPackage 标记。
+- **测试**：`tests/v17-local-processes.test.mjs`（5 项：生成与原因、模型标注 / 层级 / 应用匹配 / 标准优先、预览 Apply 保存与数据包、目录核对分开计数、页面接线）；`v16-catalogue-check` 的计数加 local。
+- **浏览器检查**（本机 http，V17，合成导出）：可加入 4、不能加入 14（原因正确）；Preview the local process layer → “Taxonomy · Changed”、Added 0 / Updated 0 / Removed 0；Apply 后 “Level 3 to review” 18 → 16，保存的工作区带 4 个本地流程（如 M.I2D.010.020.L0000012c）。
+- **复核**：本地层没有时与 V16 完全相同（四组数据逐项比对，含全部 533 项测试）。发布前启动了一轮快速复核（1 个复核者 + 1 个反驳者），用户当天急用，复核结果在发布后补充；如有确认的问题，修正为 V17.1。
+- 当前离线包：`offline/logistics-offline-20261022-v17.zip`。验证记录见 `verification/v17-verification.md`。
+
+## V16 历史状态（2026-10-22，受顶部 V17 更新）
 
 - **用户需求（2026-10-22）**：“我还缺少 process process id processname”，随后说明 “business CAPABILITY + PROCESS那个表格 和我拉出来的新的 … 一些缺少的？我要去补齐的”——用标准流程目录（Business Capability + Process.xlsx，Data_RBW Process Structure）对照新的 LeanIX 流程导出，找出缺少的去补。新功能，按版本号规则为 V16。仍然只核对、不改数据；LeanIX 原始导出只在公司电脑上处理。例外（2026-10-22，用户明确同意）：主会话从用户个人 Google Drive 下载过两份导出各跑一次（20261022_081706_ZTcQF：完整视图；20261022_092746_RkrIq：加了 BBM Signavio ID 和 External ID），读完即删，只留下结果清单。结论：BBM Signavio ID 全为空，External ID 只在 BBM_PPM 和 ETAS 的流程上（ETAS 的是 M. 标准编号），BBM PM 流程只能按名称对应。以后仍不要主动要求把导出传到这台电脑。
 - **一条规则**（`public/model.mjs`）：`processLookup(procs)` 是从 buildModel 里原样抽出的名称对应规则（M. 编码优先；否则按末尾层级 L0–L3/L3V 和 “BBM PM <链>” 之后的名称，在该链内先找标准名称、再找与快照不同的 LeanIX 名称；唯一才算找到，否则返回类型和候选）。buildModel 改为调用它；抽取前后在真实数据、去掉映射、旧分类表、加了边界记录四种情况下模型输出逐项相同（`wl/tools/model-equiv.mjs`），并有测试逐条比对 370+ 条应用记录。
@@ -33,7 +45,7 @@
 - **浏览器检查**：合成导出（按真实导出的特点：应用自己的流程和链接，其中一个应用名带 “ 1.0”，另挂一个工具外应用；I2D 全部标准流程带 Parent，去掉 3 个和两个 Register Truck 中的一个；2 个 L3V；BBM_PPM 和 ETAS 命名各 1 个；1 个目录外名称）：标准目录部分显示 Compared 1319 / In LeanIX 272 / Missing 1047 / not in the catalogue 9；I2D 缺 5 个，其中 Register Truck 由 Parent 判断出缺的是 M.I2D.030.070.020，两个 Stage Packaging Kits 标为可能缺少；“9 local variants (L3V) · 5 processes named otherwise” 只计数；Supply Chain Management System 显示 “in LeanIX as “Supply Chain Management System 1.0””，75 个应用全部一致；“LeanIX also links these processes to 1 application that is not in the tool's inventory”；Apply 隐藏。1280 宽度无横向溢出。测试后清除了本机测试地址上的浏览器记录。
 - 当前离线包：`offline/logistics-offline-20261022-v16.zip`（HTML + deploy-iis.bat）。验证记录见 `verification/v16-verification.md`。
 
-## V15 历史状态（2026-10-22，受顶部 V16 更新）
+## V15 历史状态（2026-10-22，受 V16 更新）
 
 - **用户决定（2026-10-22，选 A）**：“先只核对、不改数据。导入预览按应用列出 LeanIX 里挂的流程和工具里登记的流程哪些对得上、哪些只有一边有。” 新的数据来源和功能，按版本号规则为 V15。数据只在公司电脑上处理：只按截图里的版式（表头和前几行）写读取，测试用同样版式的合成文件；不要让用户把 LeanIX 导出发到这台电脑。
 - **导出版式**（视图 “BBM PM process”，3560 行）：工作表 “BBM PM process (Export 2026-…)”；第 1 行技术字段 id,type,name,displayName,description,processLifecycleStatus,relToParent,relProcessToApplication,fullName,updatedAt；第 2 行显示名（Applications 等）；第 3 行起每行一个流程；Applications 为分号分隔的应用名称；ReadMe 工作表有 “created at: … GMT”。

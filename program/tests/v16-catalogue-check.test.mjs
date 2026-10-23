@@ -46,7 +46,7 @@ test('V16: standard processes of a chain in the export that LeanIX lacks are lis
  const [gone1,gone2]=unique.filter(n=>n.level===3).slice(0,2);
  const result=compare(i2d.filter(n=>n!==gone1&&n!==gone2).map((n,i)=>record('p'+i,leanixName(n),'',{parent:n.parent?parentName(n):''})));
  assert.deepEqual(result.missing.map(r=>[r.chain,r.level,r.id,r.name,r.expected]),[gone1,gone2].map(n=>['Intralogistics to Demand (I2D)','L3',n.id,n.label,leanixName(n)]));
- assert.deepEqual(result.counts,{standard:model.procs.size,compared:i2d.length,inLeanix:i2d.length-2,missing:2,possiblyMissing:0,variantOnly:0,notCompared:model.procs.size-i2d.length-1,ambiguous:1,notInCatalogue:0,variants:0,otherNaming:0});
+ assert.deepEqual(result.counts,{standard:model.procs.size,compared:i2d.length,inLeanix:i2d.length-2,missing:2,possiblyMissing:0,variantOnly:0,notCompared:model.procs.size-i2d.length-1,ambiguous:1,notInCatalogue:0,variants:0,otherNaming:0,local:0});
  const b2p=result.chains.find(c=>c.code==='B2P');assert.deepEqual([b2p.reached,b2p.inLeanix,b2p.missing,b2p.processes>100],[false,0,0,true]);
  assert.deepEqual(result.chains.filter(c=>c.reached).map(c=>[c.code,c.processes,c.inLeanix,c.missing]),[['I2D',i2d.length,i2d.length-2,2]]);
  assert.deepEqual(result.rows.map(r=>r.id),[...model.procs.keys()],'catalogue order');

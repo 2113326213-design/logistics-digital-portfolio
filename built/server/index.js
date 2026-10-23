@@ -79,6 +79,32 @@ function english(value2) {
   return text2.replace(/^第 (\d+) 行缺少 ID 或 Name$/, "Row $1 is missing ID or Name.").replace(/^应用 ID 重复：(.+)$/, "Duplicate application ID: $1").replace(/^Excel 中缺少 (.+)$/, "Missing Excel entry: $1").replace(/^应用清单缺少列：(.+)$/, "Missing inventory column: $1").replace(/^层级表缺少 (.+)$/, "Missing taxonomy column: $1").replace(/ 名称存在差异（(\d+) 种）$/, " \u2014 $1 name variants");
 }
 
+// public/local-layer.mjs
+var LOCAL_TAG = " (LeanIX local)";
+var LOCAL_ID = /^M\.[A-Z0-9]+(?:\.\d+)*(?:\.L[0-9a-f]{8,32})+$/;
+function cleanLocalProcesses(value2) {
+  if (!Array.isArray(value2)) return [];
+  const seen = /* @__PURE__ */ new Set();
+  return value2.flatMap((p) => {
+    if (!p || typeof p !== "object" || Array.isArray(p)) return [];
+    const id = String(p.id ?? "").trim(), parent = String(p.parent ?? "").trim(), name = String(p.name ?? "").replace(/\s+/g, " ").trim(), level2 = Number(p.level);
+    if (!LOCAL_ID.test(id) || !parent || !id.startsWith(parent + ".L") || id.slice(parent.length + 1).includes(".") || !name || ![1, 2, 3].includes(level2) || seen.has(id)) return [];
+    seen.add(id);
+    return [{ id, name, level: level2, parent, variant: p.variant === true, leanixId: String(p.leanixId ?? ""), leanixName: String(p.leanixName ?? "") }];
+  });
+}
+function addLocalProcesses(procs, list) {
+  let pending = cleanLocalProcesses(list);
+  for (let pass = 0; pending.length && pass < 4; pass++) pending = pending.filter((p) => {
+    if (procs.has(p.id)) return false;
+    const parent = procs.get(p.parent);
+    if (!parent) return true;
+    if (parent.level !== p.level - 1) return false;
+    procs.set(p.id, { id: p.id, label: p.name + LOCAL_TAG, matchName: p.name, level: p.level, chain: parent.chain, children: [], parent: p.parent, local: true, variant: p.variant, leanixLocal: { factSheetId: p.leanixId, name: p.leanixName } });
+    return false;
+  });
+}
+
 // public/annual-benefit.mjs
 function cleanAnnualBenefit(value2) {
   if (value2 == null || typeof value2 === "string" && value2.trim() === "") return null;
@@ -334,7 +360,7 @@ function processLookup(procs) {
     return map;
   };
   const leanixIndex = index((n) => n.nameStatus === "differs" && !n.ambiguous ? n.level + "|" + norm(n.leanix.name) : null);
-  const nameIndex = index((n) => n.ambiguous ? null : n.level + "|" + norm(n.label));
+  const nameIndex = index((n) => n.ambiguous ? null : n.level + "|" + norm(n.matchName ?? n.label));
   return (s) => {
     const code = s.match(/\bM\.[A-Z0-9]+(?:\.\d+)*(?=\s|$)/)?.[0];
     if (code && procs.has(code) && !procs.get(code).ambiguous) return { id: code, via: "code" };
@@ -345,6 +371,7 @@ function processLookup(procs) {
     let choices = byName;
     const chain = s.match(/^BBM\s+PM\s+([A-Z0-9]+)/i)?.[1];
     if (chain) choices = choices.filter((n) => n.id.split(".")[1] === chain);
+    if (choices.some((n) => n.local) && choices.some((n) => !n.local)) choices = choices.filter((n) => !n.local);
     if (choices.length === 1) return { id: choices[0].id, via: leanixNames.includes(choices[0]) ? "leanix-name" : "name" };
     return { id: null, type: choices.length ? "\u6D41\u7A0B\u540D\u79F0\u5BF9\u5E94\u591A\u4E2A\u7F16\u53F7" : byName.length ? "\u6D41\u7A0B\u94FE\u7F16\u53F7\u5B58\u5728\u5DEE\u5F02" : "\u6D41\u7A0B\u672A\u5339\u914D\u5C42\u7EA7\u8868", candidates: (choices.length ? choices : byName).map((n) => ({ id: n.id, label: n.label })) };
   };
@@ -382,6 +409,7 @@ function buildModel(data) {
     procs.set(String(id), { id: String(id), label: String(label), level: Number(l[1]), chain: String(chain), children: [], parent: l === "L0" ? null : String(id).slice(0, String(id).lastIndexOf(".")) });
   }
   const leanix = applyLeanixExport(procs, data.leanixProcessExport);
+  addLocalProcesses(procs, data.localProcesses);
   for (const n of procs.values()) if (n.parent && !procs.has(n.parent)) taxonomyIssues.push({ id: n.id, type: "\u6D41\u7A0B\u7F3A\u5C11\u7236\u7EA7\u8BB0\u5F55", value: n.parent });
   const lookupProcess = processLookup(procs);
   const correctionLog = correctionStates(data), mappings = new Map(correctionLog.filter((c) => c.state === "Applied").map((c) => [recordKey(c), c.targetId]));
@@ -553,6 +581,10 @@ function workspaceWeights(data) {
   const shown = weightPercentages(weights);
   return Object.fromEntries(Object.keys(weights).map((key) => [key, shown[key] / 100]));
 }
+var localProcessesField = (value2) => {
+  const list = cleanLocalProcesses(value2);
+  return list.length ? { localProcesses: list } : {};
+};
 function dataPackageField(value2) {
   if (!value2 || typeof value2 !== "object" || Array.isArray(value2) || !/^[0-9a-f]{16}$/.test(String(value2.id ?? ""))) return {};
   const mappingIds = [...new Set((Array.isArray(value2.mappingIds) ? value2.mappingIds : []).map((v) => String(v ?? "").trim()).filter(Boolean))];
@@ -566,7 +598,7 @@ function inventoryExportField(value2) {
 function workspaceData(data) {
   if (!data || !Array.isArray(data.apps) || !data.apps.length || !Array.isArray(data.capabilityRows) || !Array.isArray(data.processRows)) throw Error("\u5DE5\u4F5C\u533A\u7F3A\u5C11\u5E94\u7528\u6E05\u5355\u6216\u5206\u7C7B\u8868");
   if (!data.apps.every((a) => a && typeof a === "object" && !Array.isArray(a)) || !data.capabilityRows.every(Array.isArray) || !data.processRows.every(Array.isArray)) throw Error("\u5DE5\u4F5C\u533A\u6570\u636E\u7ED3\u6784\u65E0\u6548");
-  return { similarityWeights: workspaceWeights(data), similarityWeightsVersion: 2, ...thresholdField(data), source: String(data.source || "Imported workspace"), taxonomySource: String(data.taxonomySource || "Workspace taxonomy"), ...inventoryExportField(data.inventoryExport), ...dataPackageField(data.dataPackage), isAcceptanceSample: data.isAcceptanceSample === true, apps: data.apps.map((a) => {
+  return { similarityWeights: workspaceWeights(data), similarityWeightsVersion: 2, ...thresholdField(data), source: String(data.source || "Imported workspace"), taxonomySource: String(data.taxonomySource || "Workspace taxonomy"), ...inventoryExportField(data.inventoryExport), ...localProcessesField(data.localProcesses), ...dataPackageField(data.dataPackage), isAcceptanceSample: data.isAcceptanceSample === true, apps: data.apps.map((a) => {
     const app = Object.fromEntries(fields2.map((k) => [k, String(a[k] ?? "")]));
     if (Object.hasOwn(a, mainCapabilityField)) app[mainCapabilityField] = String(a[mainCapabilityField] ?? "");
     if (Object.hasOwn(a, "scopeNote")) {

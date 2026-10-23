@@ -27,7 +27,7 @@ export function fingerprint(text){
 export function packagePayload(data){
  const clean=workspaceData(data),mappingIds=new Set(clean.corrections.map(c=>c.id));
  return {source:clean.source,taxonomySource:clean.taxonomySource,...(clean.inventoryExport?{inventoryExport:clean.inventoryExport}:{}),
-  apps:clean.apps,capabilityRows:clean.capabilityRows,processRows:clean.processRows,corrections:clean.corrections,acceptedRecords:clean.acceptedRecords,
+  apps:clean.apps,capabilityRows:clean.capabilityRows,processRows:clean.processRows,...(clean.localProcesses?{localProcesses:clean.localProcesses}:{}),corrections:clean.corrections,acceptedRecords:clean.acceptedRecords,
   mappingNotes:cleanReviewHistory(data?.mappingNotes??clean.reviewHistory).filter(note=>note.action==='revoke'&&mappingIds.has(note.mappingId))};
 }
 export const packageId=payload=>fingerprint(JSON.stringify(payload));
@@ -78,6 +78,8 @@ export function applyDataPackage(current,pkg,{releaseIds=[]}={}){
   reviewHistory:[...base.reviewHistory,...cleanReviewHistory(payload.mappingNotes).filter(n=>n.action==='revoke'&&!noteIds.has(n.id))],
   isAcceptanceSample:false,dataPackage:{id:pkg.id,publishedAt:pkg.publishedAt,dataAsOf:pkg.dataAsOf,mappingIds:published.map(c=>c.id)}};
  delete next.inventoryExport;if(payload.inventoryExport)next.inventoryExport=payload.inventoryExport;
+ // The local process layer is part of the catalogue: it follows the package (V17).
+ delete next.localProcesses;if(payload.localProcesses?.length)next.localProcesses=payload.localProcesses;
  return workspaceData(next);
 }
 

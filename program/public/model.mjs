@@ -2,6 +2,7 @@ import {split,norm,capCode,PROCESS_LEVEL,compareNatural,otherCompanyRecord} from
 export {split,norm,capCode} from './codes.mjs';
 import {correctionStates,recordKey} from './corrections.mjs';
 import {applyLeanixExport} from './leanix-processes.mjs';
+import {addLocalProcesses} from './local-layer.mjs';
 import {cleanAcceptedRecords,acceptedKey} from './accepted-records.mjs';
 const level=id=>id.split('.').length-1;
 // How a recorded process name finds its standard process (V16: one rule for the applications and the LeanIX catalogue
@@ -12,7 +13,7 @@ const level=id=>id.split('.').length-1;
 export function processLookup(procs){
  const index=key=>{const map=new Map();for(const n of procs.values()){const k=key(n);if(k===null)continue;if(!map.has(k))map.set(k,[]);map.get(k).push(n);}return map;};
  const leanixIndex=index(n=>n.nameStatus==='differs'&&!n.ambiguous?n.level+'|'+norm(n.leanix.name):null);
- const nameIndex=index(n=>n.ambiguous?null:n.level+'|'+norm(n.label));
+ const nameIndex=index(n=>n.ambiguous?null:n.level+'|'+norm(n.matchName??n.label));
  return s=>{
   // A code may be a chain's own (Level 0) code, M.I2D, as LeanIX writes it (V16 review; same form as processCode).
   const code=s.match(/\bM\.[A-Z0-9]+(?:\.\d+)*(?=\s|$)/)?.[0];
@@ -21,6 +22,8 @@ export function processLookup(procs){
   const l=+m[1],name=s.replace(/^BBM\s+PM\s+[A-Z0-9]+\s+/i,'').replace(/\s+L[0-3]V?\s*$/i,'');
   const snapshotNames=nameIndex.get(l+'|'+norm(name))||[],leanixNames=(leanixIndex.get(l+'|'+norm(name))||[]).filter(n=>!snapshotNames.includes(n)),byName=[...snapshotNames,...leanixNames];
   let choices=byName;const chain=s.match(/^BBM\s+PM\s+([A-Z0-9]+)/i)?.[1];if(chain)choices=choices.filter(n=>n.id.split('.')[1]===chain);
+  // The Signavio standard wins over a LeanIX local process of the same name (V17).
+  if(choices.some(n=>n.local)&&choices.some(n=>!n.local))choices=choices.filter(n=>!n.local);
   if(choices.length===1)return {id:choices[0].id,via:leanixNames.includes(choices[0])?'leanix-name':'name'};
   return {id:null,type:choices.length?'流程名称对应多个编号':byName.length?'流程链编号存在差异':'流程未匹配层级表',candidates:(choices.length?choices:byName).map(n=>({id:n.id,label:n.label}))};
  };
@@ -32,6 +35,8 @@ export function buildModel(data){
  for(const r of data.processRows){const [chain,l,id,label]=r;if(!/^L[0-3]$/.test(l)||!id)continue;if(procs.has(String(id))){const n=procs.get(String(id));if(n.label!==String(label)){n.ambiguous=true;taxonomyIssues.push({id:String(id),type:'同一流程编号对应不同名称',value:n.label+' / '+String(label)});}continue;}procs.set(String(id),{id:String(id),label:String(label),level:Number(l[1]),chain:String(chain),children:[],parent:l==='L0'?null:String(id).slice(0,String(id).lastIndexOf('.'))});}
  // The latest LeanIX export is applied to the snapshot by code; it adds names and Fact Sheet IDs, never levels.
  const leanix=applyLeanixExport(procs,data.leanixProcessExport);
+ // The LeanIX local process layer (V17) after the Signavio standard; local processes are marked (local-layer.mjs).
+ addLocalProcesses(procs,data.localProcesses);
  for(const n of procs.values())if(n.parent&&!procs.has(n.parent))taxonomyIssues.push({id:n.id,type:'流程缺少父级记录',value:n.parent});
  const lookupProcess=processLookup(procs);
  const correctionLog=correctionStates(data),mappings=new Map(correctionLog.filter(c=>c.state==='Applied').map(c=>[recordKey(c),c.targetId]));
