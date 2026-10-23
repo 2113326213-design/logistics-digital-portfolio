@@ -22,6 +22,7 @@ import {tabFromSearch,searchForTab,appFromSearch,searchWithApp,appLink} from './
 import {toReviewCSV,toReviewFileName} from './to-review-export.mjs';
 import {dataAsOf,dataAsOfText} from './data-as-of.mjs';
 import {DATA_PACKAGE_FILE,readDataPackage,applyDataPackage,packageIsNew,packageNotOlder,dataPackageText} from './data-package.mjs';
+import {uploadToServer,uploadMessage,canUpload} from './server-upload.mjs';
 import {createAppSearch} from './app-search.mjs';
 import {isLeanixProcessLinks,processExportWithoutLinks,readProcessLinks,compareProcessLinks,processCheckCSV,compareCatalogue,catalogueCheckCSV,catalogueNote,localProcessesFrom,NO_APPLICATIONS_COLUMN} from './leanix-process-check.mjs';
 import './fullscreen.mjs';
@@ -185,6 +186,9 @@ function previewDataPackage(){
 }
 $('serverPackagePreview').onclick=previewDataPackage;
 // The steward's export: the shared data of this workspace as logistics-data.json for the IIS server.
+// Upload to server (V18): the same file as the download, sent to the IIS server; only on the intranet page.
+$('uploadToServer').hidden=!canUpload();
+$('uploadToServer').onclick=async()=>{if(!data)return;const button=$('uploadToServer');button.disabled=true;$('uploadToServerStatus').textContent='Uploading…';try{$('uploadToServerStatus').textContent=uploadMessage(await uploadToServer(dataPackageText(data)));}catch(error){$('uploadToServerStatus').textContent='Nothing was uploaded: '+english(error.message);}finally{button.disabled=false;}};
 $('exportDataPackage').onclick=()=>{if(!data)return;try{const text=dataPackageText(data),pkg=JSON.parse(text);downloadText(text,DATA_PACKAGE_FILE,'application/json');$('exportDataPackageStatus').textContent=`Downloaded ${DATA_PACKAGE_FILE} (${pkg.applications} applications${pkg.dataAsOf?`, data from ${pkg.dataAsOf}`:''}). Put it on the server next to index.html.`;}catch(error){$('exportDataPackageStatus').textContent='Download failed: '+english(error.message);}};
 // LeanIX process check (V15, owner decision 2026-10-22: compare only). V16 puts the standard catalogue first: the
 // catalogue's processes LeanIX lacks, with Process ID, Process Name and the name expected in LeanIX, so the owner can

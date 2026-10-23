@@ -20,7 +20,17 @@
 - **小版本**（V10.1、V10.2……）：修正、文字和显示调整。
 - 版本号写在 `program/scripts/release.mjs` 的 RELEASE_VERSION（小写，如 `v10`、`v10.1`）；文件名、发布 zip、部署脚本和 Release 标签（`v10-20261022`）都随它生成。导入预览的“变化明细”是新功能，所以这一版是 V10（原计划的 V9.20 没有发布）。
 
-## V17.5 当前状态（2026-10-23，优先于所有历史段落）
+## V18 当前状态（2026-10-23，优先于所有历史段落）
+
+- **用户需求**：“客户自己做完后覆盖然后在上传到服务器给大家看”；选了“工具里一键上传”；“你直接写好我在安装进去”（没有先跑服务器检查脚本）。由旁支会话（fork）在副本里写好，原会话空闲后应用到共享文件夹并发布。新功能 + 部署脚本改动，V18。
+- **页面**：`public/server-upload.mjs`：`uploadToServer(text,{request,protocol})` 先 GET 服务器上的 logistics-data.json（同 id → same；服务器数据日期更新 → older，不传），有旧文件就 PUT 成 `logistics-data.previous.json`，再 PUT 新文件，最后 GET 读回核对 id；`uploadMessage` 给出简单英文提示（401 登录、403 权限、404/405/501 服务器没打开上传、网络、读回不一致）。`canUpload` 只在 http/https。`app.js` 的 Upload to server 按钮（离线文件里隐藏），`index.html` 的 “Share this data with everyone” 一节（简单用词）。
+- **用户确认（2026-10-23）**：谁能上传 = “公司账号都可以”（所有登录的公司 Windows 账号，只能覆盖两个数据文件）。原会话提醒：改服务器安全设置要用户明确同意，并且限制设不上时不能打开写入。
+- **部署脚本**（`deploy-iis.template.bat`，第 5 步之后 “Upload to server (V18)” 一段）：`call "%DISM%" /online /enable-feature /featurename:IIS-WebDAV /featurename:IIS-WindowsAuthentication /featurename:IIS-URLAuthorization /all /norestart /quiet`（3010 = 需要重启，算成功并提示）。先用 dism /get-featureinfo 记下 IIS-WebDAV 原来是否已装（WEBDAV_WAS_ON）。原来没装：装完后把全局 handlers 的 WebDAV 和 modules 的 WebDAVModule 删掉，再只在站点 location 加回（handlers 用 @start 放最前）；全局删除失败 → :webdavglobal 用 DISM /disable-feature 卸掉 IIS-WebDAV 并关闭上传。然后顺序：站点 windowsAuthentication 打开 → authorization 拒绝匿名用户的 PUT/DELETE/MKCOL/COPY/MOVE/PROPPATCH/LOCK/UNLOCK（匿名照常读）→ authoringRules 只给 users='*' 两个文件 Read, Write → icacls 给 Authenticated Users（S-1-5-11）这个文件夹修改权限 → **最后** webdav/authoring 打开。任一步失败：`goto :uploadoff`，把 webdav/authoring 设为 false，显示 “[!] Upload to server was NOT turned on: <原因>. Nobody can upload; the tool works as before.”，部署继续。是否在域里用 PowerShell 判断并提示。DISM 用 call 调用，deploy:sim 用 dism-ok.cmd / dism-fail.cmd 替身：第 4 种（没有这些功能）上传不打开仍完成部署，第 5、8、9 种显示 “Upload to server: on”，**第 11 种**（功能在但 “不登录不能写” 设不上）上传不打开、写入从未打开且被关掉、网站照常部署；**第 12 种**（WebDAV 原来就装着）不动全局列表；**第 13 种**（全局列表删不掉）卸掉 WebDAV、上传不打开；**第 5b 种**（新装）从全局去掉并加到本站。appcmd 调用 8 + 13 = 21 次（测试里固定）。**未在真实服务器上验证**：WebDAV 与匿名并存时的登录质询、域账号能否写入，要在服务器上部署后实际点一次确认。
+- **测试**：`tests/v18-upload.test.mjs`（5 项：上传顺序与备份、更新的数据不覆盖 / 同样的不重传 / 离线不上传、各种失败的说明且不写入、部署脚本只放开两个文件给登录用户、页面按钮与用词）；`deploy-script` 的 appcmd 次数 8 → 16，V9.15 对比去掉上传一段；离线包网络规则从 1 个 fetch 改为 2 个（服务器数据的 GET 和上传模块）。
+- **复核**：发布前小复核（1 个复核者 + 1 个反驳者）：确认 1 个严重问题——IIS-WebDAV 是整台服务器的功能，装上后会让同一台服务器上其他网站的 PUT/DELETE 报 405；已改为只加到本站（原来没装时从全局列表去掉再加到本站，做不到就卸掉），并加模拟部署第 12、13、5b 种。驳回 2 条：部分失败时写入仍开着（当前代码已先设限制、最后才打开写入，失败会关掉）；按钮没有 catch（实际很难触发，仍顺手加上出错提示）。此前原会话提醒：改服务器安全设置要用户明确同意（用户已确认 “公司账号都可以”），且限制设不上时不能打开写入（已实现，第 11 种）。
+- 当前离线包：`offline/logistics-offline-20261022-v18.zip`。验证记录见 `verification/v18-verification.md`。
+
+## V17.5 状态（2026-10-23，受顶部 V18 更新）
 
 - 用户问 “还有其他的问题吗？”：一轮检查工作流（规则 / 数字 / 数据流转三个角度 + 反驳者）确认 5 处、驳回 4 处（V16 按应用的 Process ID 设计、To review 与 Data checks 的有意差别、HC 映射不可达、内置确认记录只并入同来源）。用户：“这 5 个问题全部修，做成 V17.5 发布。”
 - 修正：overview.mjs 新增 `applicationsToReviewAtLevel(report,group,level)`（去掉某层未通过记录全部为负责人确认的应用），卡片（l3MaintenanceMetrics）和按工厂表共用；data-checks.mjs 的 addPrimary 对不在待处理的应用不加检查行、"to check" 计数不含只有 “Confirmed by owner as recorded” 标签的行（行仍显示）、成本 1 分检查只对 scopeReason 为空的应用；app.js 导入 JSON 备份先 `mergeBundledCorrections(importWorkspace(text),initialData).data`（与 onRestore 一致）；previewLocalLayer 以 taxonomyFile 记录。

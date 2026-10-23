@@ -175,6 +175,97 @@ if "%SITE_EXISTS%"=="0" (
 "%APPCMD%" start site /name:"%SITE%" >nul 2>&1
 echo [5/6] OK  IIS site %SITE% is configured
 
+rem ---- Upload to server (V18) --------------------------------------------
+rem The tool's "Upload to server" button sends logistics-data.json with an HTTP PUT, and first the file it replaces as
+rem logistics-data.previous.json. Owner decision 2026-10-23: every signed-in company Windows account may upload, only
+rem these two files; everyone keeps reading without signing in. The limits are set first and writing is switched on
+rem last, only when every limit is in place; if any limit cannot be set, writing is switched off and the deploy goes on.
+rem WebDAV Publishing is a server-wide IIS feature: added to the whole server it would answer PUT and DELETE of the other
+rem sites on this server with 405 (V18 review). When it was not on before, it is taken out of the server-wide lists
+rem again and added to this site only; if that cannot be done, the feature is removed again and upload stays off.
+rem DISM is called with "call" so that deploy:sim can stand in for it.
+set "DISM=%SystemRoot%\System32\dism.exe"
+set "FINDSTR=%SystemRoot%\System32\findstr.exe"
+set "ICACLS=%SystemRoot%\System32\icacls.exe"
+set "PSH=%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe"
+set "UPLOADSTEP="
+set "WEBDAV_WAS_ON=0"
+for /f "delims=" %%S in ('call "%DISM%" /online /English /get-featureinfo /featurename:IIS-WebDAV 2^>nul ^| "%FINDSTR%" /c:"State : Enabled"') do set "WEBDAV_WAS_ON=1"
+echo       Turning on Upload to server ^(IIS features; the first time this can take a few minutes^)...
+call "%DISM%" /online /enable-feature /featurename:IIS-WebDAV /featurename:IIS-WindowsAuthentication /featurename:IIS-URLAuthorization /all /norestart /quiet >nul 2>&1
+set "DISMRC=%errorlevel%"
+if not "%DISMRC%"=="0" if not "%DISMRC%"=="3010" (
+  set "UPLOADSTEP=the IIS features WebDAV Publishing, Windows Authentication and URL Authorization could not be added"
+  goto :uploadoff
+)
+if "%WEBDAV_WAS_ON%"=="1" goto :webdavscoped
+"%APPCMD%" set config /section:system.webServer/handlers /-"[name='WebDAV']" /commit:apphost >nul 2>&1
+if errorlevel 1 goto :webdavglobal
+"%APPCMD%" set config /section:system.webServer/modules /-"[name='WebDAVModule']" /commit:apphost >nul 2>&1
+if errorlevel 1 goto :webdavglobal
+"%APPCMD%" set config "%SITE%" /section:system.webServer/modules /+"[name='WebDAVModule']" /commit:apphost >nul 2>&1
+if errorlevel 1 (
+  set "UPLOADSTEP=WebDAV could not be added to this site"
+  goto :uploadoff
+)
+"%APPCMD%" set config "%SITE%" /section:system.webServer/handlers /+"[@start,name='WebDAV',path='*',verb='PROPFIND,PROPPATCH,MKCOL,PUT,COPY,DELETE,MOVE,LOCK,UNLOCK',modules='WebDAVModule',resourceType='Unspecified',requireAccess='None']" /commit:apphost >nul 2>&1
+if errorlevel 1 (
+  set "UPLOADSTEP=WebDAV could not be added to this site"
+  goto :uploadoff
+)
+goto :webdavscoped
+:webdavglobal
+call "%DISM%" /online /disable-feature /featurename:IIS-WebDAV /norestart /quiet >nul 2>&1
+set "UPLOADSTEP=WebDAV could not be limited to this site, so it was removed again"
+goto :uploadoff
+:webdavscoped
+"%APPCMD%" set config "%SITE%" /section:system.webServer/security/authentication/windowsAuthentication /enabled:true /commit:apphost >nul 2>&1
+if errorlevel 1 (
+  set "UPLOADSTEP=Windows sign-in could not be turned on"
+  goto :uploadoff
+)
+"%APPCMD%" set config "%SITE%" /section:system.webServer/security/authorization /-"[accessType='Deny',users='?',verbs='PUT,DELETE,MKCOL,COPY,MOVE,PROPPATCH,LOCK,UNLOCK']" /commit:apphost >nul 2>&1
+"%APPCMD%" set config "%SITE%" /section:system.webServer/security/authorization /+"[accessType='Deny',users='?',verbs='PUT,DELETE,MKCOL,COPY,MOVE,PROPPATCH,LOCK,UNLOCK']" /commit:apphost >nul 2>&1
+if errorlevel 1 (
+  set "UPLOADSTEP=writing could not be limited to signed-in users"
+  goto :uploadoff
+)
+"%APPCMD%" set config "%SITE%" /section:system.webServer/webdav/authoringRules /-"[users='*',path='logistics-data.json']" /commit:apphost >nul 2>&1
+"%APPCMD%" set config "%SITE%" /section:system.webServer/webdav/authoringRules /+"[users='*',path='logistics-data.json',access='Read, Write']" /commit:apphost >nul 2>&1
+if errorlevel 1 (
+  set "UPLOADSTEP=writing could not be limited to the two data files"
+  goto :uploadoff
+)
+"%APPCMD%" set config "%SITE%" /section:system.webServer/webdav/authoringRules /-"[users='*',path='logistics-data.previous.json']" /commit:apphost >nul 2>&1
+"%APPCMD%" set config "%SITE%" /section:system.webServer/webdav/authoringRules /+"[users='*',path='logistics-data.previous.json',access='Read, Write']" /commit:apphost >nul 2>&1
+if errorlevel 1 (
+  set "UPLOADSTEP=writing could not be limited to the two data files"
+  goto :uploadoff
+)
+"%ICACLS%" "%TARGET%" /grant "*S-1-5-11:(OI)(CI)M" >nul 2>&1
+if errorlevel 1 (
+  set "UPLOADSTEP=signed-in users could not be allowed to change the files in %TARGET%"
+  goto :uploadoff
+)
+"%APPCMD%" set config "%SITE%" /section:system.webServer/webdav/authoring /enabled:true /commit:apphost >nul 2>&1
+if errorlevel 1 (
+  set "UPLOADSTEP=WebDAV writing could not be switched on"
+  goto :uploadoff
+)
+set "INDOMAIN="
+for /f %%D in ('call "%PSH%" -NoProfile -Command "(Get-CimInstance Win32_ComputerSystem).PartOfDomain"') do set "INDOMAIN=%%D"
+echo       Upload to server: on ^(any signed-in company Windows account may replace logistics-data.json^)
+if "%WEBDAV_WAS_ON%"=="0" echo       WebDAV is on for site %SITE% only; other IIS sites on this server are not changed.
+if /i not "%INDOMAIN%"=="True" echo [!] This server is not in a company domain: only Windows accounts of this server can sign in to upload.
+if "%DISMRC%"=="3010" echo [!] Windows wants a restart to finish the IIS features. Restart the server when convenient; until then the upload may not work.
+echo       To stop uploads later: %INETSRV%\appcmd.exe set config "%SITE%" /section:system.webServer/webdav/authoring /enabled:false /commit:apphost
+goto :uploaddone
+:uploadoff
+"%APPCMD%" set config "%SITE%" /section:system.webServer/webdav/authoring /enabled:false /commit:apphost >nul 2>&1
+echo [!] Upload to server was NOT turned on: %UPLOADSTEP%. Nobody can upload; the tool works as before.
+echo     Download file for the server still works. The server owner can fix this and run this script again.
+:uploaddone
+
 rem ---- [6/6] smoke test --------------------------------------------------
 set "PORT_FOR_TEST=%PORT%"
 if "%SITE_EXISTS%"=="1" (

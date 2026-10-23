@@ -2,6 +2,16 @@
 
 每个版本的离线包在 [Releases](https://github.com/2113326213-design/logistics-digital-portfolio/releases)；详细的修改说明和用户决定在 [`00_Claude先读.md`](00_Claude先读.md)，验证记录在 [`verification/`](verification/)。
 
+## [V18](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v18-20261022) · 2026-10-23
+
+- **一键上传**（用户：“客户自己做完后覆盖然后在上传到服务器给大家看”，“你直接写好我在安装进去”）：Import data 对话框底部改为 **Share this data with everyone**，多了 **Upload to server** 按钮（只在内网网址打开时出现，双击打开的文件里没有）。点它会：
+  1. 先看服务器上现在的数据：一样就不传；服务器上的更新就不传，并提示先用 “Preview server data” 拿下来；
+  2. 把服务器上原来那份存成 `logistics-data.previous.json`（可以换回去）；
+  3. 上传新的 `logistics-data.json`，再读回来核对。
+  失败时用简单的话说明原因：Windows 登录没通过、账号没有权限、服务器还没打开上传、连不上服务器。
+- **部署脚本**（第 5 步之后）在服务器上打开上传（用户 2026-10-23 确认：所有用公司 Windows 账号登录的人都能上传，只能覆盖这两个数据文件）：用 DISM 装 IIS 的 WebDAV Publishing、Windows Authentication、URL Authorization；**先设好全部限制**——打开 Windows 登录、不登录的人不能写、只允许写 `logistics-data.json` 和 `logistics-data.previous.json`、给登录用户这个文件夹的修改权限——**最后才打开写入**。任何一项设不上，就明确关掉写入并说明原因（“Upload to server was NOT turned on: …”），网站照常部署；所有人照常不登录就能看。服务器不在公司域里时提醒只有本机账号能登录；Windows 要求重启时会提示。WebDAV 是整台服务器的功能（复核发现：装到整台服务器会让同一台服务器上其他网站的上传、删除请求报 405）：原来没装的，装完立刻从整台服务器的列表里去掉、只加到这个网站；做不到就把功能卸掉还原，上传不打开；原来就装着的不去动它。模拟部署增加第 11、12、13 和 5b 种，共 14 种。
+- 仍然可以 **Download file for the server** 手动放文件。
+
 ## [V17.5](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v17.5-20261022) · 2026-10-23
 
 用户问 “还有其他的问题吗？”，一轮检查（3 个查找者 + 1 个反驳者）确认 5 处问题、驳回 4 处（有意的设计）。用户：“这 5 个问题全部修，做成 V17.5 发布。”

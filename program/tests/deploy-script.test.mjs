@@ -40,7 +40,9 @@ test('steps 2 to 6 are the V9.15 script tested on the server, with appcmd by ful
  assert.equal(sha256(readFileSync(html)),'a1af36d4e87b6eb3cea4673cef29a9f1ba129241e4e9e296320242ee2b6a6658','the hash the V9.15 script checks');
  const clearer='echo [X] SHA-256 mismatch - the HTML in the zip named at [1/6] is not the expected V9.15 build ^(logistics-offline-20261020-v9.15.zip^).\r\n'+
   '  echo     Delete that zip, save logistics-offline-20261020-v9.15.zip from the GitHub release in Downloads again, open it and double-click deploy-iis-v9.15.bat inside it. Stopping.';
- assert.equal(fromStep2(generated).replace(clearer,'echo [X] SHA-256 mismatch - the zip is not the expected V9.15 build. Stopping.').replace(DEPLOY_TIME,''),fullPathAppcmd(fromStep2(expected)));
+ // The V18 upload block between [5/6] and [6/6] is new; the rest of steps 2 to 6 is unchanged.
+ const upload=text=>text.slice(text.indexOf('rem ---- Upload to server (V18)'),text.indexOf('rem ---- [6/6]'));
+ assert.equal(fromStep2(generated).replace(upload(generated),'').replace(clearer,'echo [X] SHA-256 mismatch - the zip is not the expected V9.15 build. Stopping.').replace(DEPLOY_TIME,''),fullPathAppcmd(fromStep2(expected)));
  // The settings block and the header are unchanged apart from the generated note, APPCMD and the one-download note.
  const head=text=>text.slice(0,text.indexOf('rem ---- [1/6]'));
  const oneDownload='rem  One download: logistics-offline-20261020-v9.15.zip holds the HTML and this script. Save it in\r\n'+
@@ -56,7 +58,8 @@ test('owner report 2026-10-22 (the window closed on the server): every run stays
  // ended the script right after "[1/6] OK zip" without a message (reproduced 2026-10-22).
  assert.match(script,/^set "APPCMD=%INETSRV%\\appcmd\.exe"\r$/m);
  assert.doesNotMatch(script,/^\s*(?:if [^\r\n]*?\s)?appcmd\s/m,'no bare appcmd call');
- assert.equal(script.match(/"%APPCMD%" /g).length,8);
+ // 8 calls of the V9.15 steps and 13 in the V18 upload block.
+ assert.equal(script.match(/"%APPCMD%" /g).length,21);
  // Not Administrator: UAC opens a cmd /k window; a cancelled or blocked request is reported and waits for a key.
  assert.match(script,/Start-Process -FilePath cmd\.exe -Verb RunAs -ErrorAction Stop -ArgumentList \('\/k call \\"' \+ \$env:SELF/);
  assert.match(script,/if not errorlevel 1 exit \/b 0\r\necho \[X\] Windows did not open the Administrator window[^\r]*\r\necho [^\r]*Run as administrator[^\r]*\r\necho Press any key to close this window\.\.\.\r\npause >nul\r\nexit \/b 1\r\n/);

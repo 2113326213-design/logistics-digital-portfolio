@@ -240,7 +240,8 @@ test('the offline file uses the shared save adapter and its messages',async()=>{
   assert(!script.includes('Workspace exported.')&&!script.includes('Offline changes: export workspace to keep a backup.'),'the old messages are gone');
   assert.match(script,/exportStarted/);
   // V14 (data package): the only network request is a guarded GET of logistics-data.json on the intranet page.
-  assert.equal((script.match(/\bfetch\b/g)||[]).length,1,'exactly one fetch in the offline bundle');
+  // Two fetch calls (V18): the guarded GET of the server data, and the Upload to server module (GET/PUT of the two data files).
+  assert.equal((script.match(/\bfetch\b/g)||[]).length,2,'two fetch calls in the offline bundle');
   const guarded=script.match(/if\(!\/\^https\?:\$\/\.test\(location\.protocol\)\)return;let ([\w$]+);try\{\1=await fetch\(([\w$]+),\{cache:"no-store"\}\)\}/);
   assert(guarded,'the fetch runs only on an http/https page, as a plain GET with no-store');
   assert(new RegExp('\\b'+guarded[2].replace(/\$/g,'\\$')+'="logistics-data\\.json"').test(script),'and requests only logistics-data.json');

@@ -1,10 +1,10 @@
 @echo off
 setlocal EnableExtensions
 rem ======================================================================
-rem  Logistics Tool V17.5 - one-click IIS deploy (static single HTML file)
+rem  Logistics Tool V18 - one-click IIS deploy (static single HTML file)
 rem  Generated for this release by program/scripts/deploy-script.mjs from deploy-iis.template.bat. Do not edit by hand.
 rem
-rem  One download: logistics-offline-20261022-v17.5.zip holds the HTML and this script. Save it in
+rem  One download: logistics-offline-20261022-v18.zip holds the HTML and this script. Save it in
 rem  %USERPROFILE%\Downloads on the IIS server (Windows Server 2016+), open it
 rem  and double-click deploy-iis.bat; it asks for Administrator rights itself.
 rem
@@ -27,15 +27,15 @@ set "TARGET=D:\logistics-tool"
 if not "%~1"=="" set "PORT=%~1"
 if not "%~2"=="" set "TARGET=%~2"
 
-set "ZIPNAME=logistics-offline-20261022-v17.5.zip"
-set "EXPECT_SHA256=840d3067f7bd863dcb5906897ce856b3d984d485699483389a8e7d5518106488"
+set "ZIPNAME=logistics-offline-20261022-v18.zip"
+set "EXPECT_SHA256=d9e38f2713626f420e28226957a0b50628000d8b4d1cbc3e92449451a3cb819e"
 set "INETSRV=%windir%\system32\inetsrv"
 set "APPCMD=%INETSRV%\appcmd.exe"
-set "TMPX=%TEMP%\logistics-v17.5-extract"
+set "TMPX=%TEMP%\logistics-v18-extract"
 set "BACKUP=%TARGET%_backup"
 
 echo.
-echo === Logistics Tool V17.5 : IIS deploy ===
+echo === Logistics Tool V18 : IIS deploy ===
 echo Site: %SITE%   Port: %PORT%
 echo Dir : %TARGET%
 echo.
@@ -43,14 +43,14 @@ echo.
 rem ---- [1/6] pre-checks -------------------------------------------------
 rem The deploy always continues in a window that stays open (cmd /k), so every message can be read, also when this
 rem script was started as Administrator. Explorer deletes files opened from inside a zip once this window exits, so
-rem the new window runs a stable copy in Downloads, next to the V17.5 zip that holds this script.
+rem the new window runs a stable copy in Downloads, next to the V18 zip that holds this script.
 if /i "%~3"=="ELEVATED" goto :inwindow
 set "SELF=%USERPROFILE%\Downloads\deploy-iis.bat"
 if /i not "%~f0"=="%SELF%" copy /y "%~f0" "%SELF%" >nul
 if not exist "%SELF%" set "SELF=%~f0"
 fltmc >nul 2>&1
 if errorlevel 1 goto :elevate
-start "Logistics Tool V17.5 : IIS deploy" cmd.exe /k call "%SELF%" %PORT% "%TARGET%" ELEVATED
+start "Logistics Tool V18 : IIS deploy" cmd.exe /k call "%SELF%" %PORT% "%TARGET%" ELEVATED
 exit /b 0
 :elevate
 echo Not elevated - asking Windows for Administrator rights ^(click Yes on the UAC prompt^)...
@@ -73,7 +73,7 @@ if not exist "%INETSRV%\appcmd.exe" (
 )
 pushd "%INETSRV%"
 
-rem The script ships inside logistics-offline-20261022-v17.5.zip (one download). Double-clicked there, it runs from a temporary folder; the copy
+rem The script ships inside logistics-offline-20261022-v18.zip (one download). Double-clicked there, it runs from a temporary folder; the copy
 rem in Downloads that runs here finds the zip next to it.
 set "ZIP="
 if exist "%~dp0%ZIPNAME%" set "ZIP=%~dp0%ZIPNAME%"
@@ -127,8 +127,8 @@ if not defined SRC (
 )
 powershell -NoProfile -ExecutionPolicy Bypass -Command "if ((Get-FileHash -Algorithm SHA256 -LiteralPath $env:SRC).Hash -ne $env:EXPECT_SHA256) { exit 1 }"
 if errorlevel 1 (
-  echo [X] SHA-256 mismatch - the HTML in the zip named at [1/6] is not the expected V17.5 build ^(logistics-offline-20261022-v17.5.zip^).
-  echo     Delete that zip, save logistics-offline-20261022-v17.5.zip from the GitHub release in Downloads again, open it and double-click deploy-iis.bat inside it. Stopping.
+  echo [X] SHA-256 mismatch - the HTML in the zip named at [1/6] is not the expected V18 build ^(logistics-offline-20261022-v18.zip^).
+  echo     Delete that zip, save logistics-offline-20261022-v18.zip from the GitHub release in Downloads again, open it and double-click deploy-iis.bat inside it. Stopping.
   goto :fail
 )
 echo [2/6] OK  extracted and SHA-256 verified
@@ -174,6 +174,97 @@ if "%SITE_EXISTS%"=="0" (
 )
 "%APPCMD%" start site /name:"%SITE%" >nul 2>&1
 echo [5/6] OK  IIS site %SITE% is configured
+
+rem ---- Upload to server (V18) --------------------------------------------
+rem The tool's "Upload to server" button sends logistics-data.json with an HTTP PUT, and first the file it replaces as
+rem logistics-data.previous.json. Owner decision 2026-10-23: every signed-in company Windows account may upload, only
+rem these two files; everyone keeps reading without signing in. The limits are set first and writing is switched on
+rem last, only when every limit is in place; if any limit cannot be set, writing is switched off and the deploy goes on.
+rem WebDAV Publishing is a server-wide IIS feature: added to the whole server it would answer PUT and DELETE of the other
+rem sites on this server with 405 (V18 review). When it was not on before, it is taken out of the server-wide lists
+rem again and added to this site only; if that cannot be done, the feature is removed again and upload stays off.
+rem DISM is called with "call" so that deploy:sim can stand in for it.
+set "DISM=%SystemRoot%\System32\dism.exe"
+set "FINDSTR=%SystemRoot%\System32\findstr.exe"
+set "ICACLS=%SystemRoot%\System32\icacls.exe"
+set "PSH=%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe"
+set "UPLOADSTEP="
+set "WEBDAV_WAS_ON=0"
+for /f "delims=" %%S in ('call "%DISM%" /online /English /get-featureinfo /featurename:IIS-WebDAV 2^>nul ^| "%FINDSTR%" /c:"State : Enabled"') do set "WEBDAV_WAS_ON=1"
+echo       Turning on Upload to server ^(IIS features; the first time this can take a few minutes^)...
+call "%DISM%" /online /enable-feature /featurename:IIS-WebDAV /featurename:IIS-WindowsAuthentication /featurename:IIS-URLAuthorization /all /norestart /quiet >nul 2>&1
+set "DISMRC=%errorlevel%"
+if not "%DISMRC%"=="0" if not "%DISMRC%"=="3010" (
+  set "UPLOADSTEP=the IIS features WebDAV Publishing, Windows Authentication and URL Authorization could not be added"
+  goto :uploadoff
+)
+if "%WEBDAV_WAS_ON%"=="1" goto :webdavscoped
+"%APPCMD%" set config /section:system.webServer/handlers /-"[name='WebDAV']" /commit:apphost >nul 2>&1
+if errorlevel 1 goto :webdavglobal
+"%APPCMD%" set config /section:system.webServer/modules /-"[name='WebDAVModule']" /commit:apphost >nul 2>&1
+if errorlevel 1 goto :webdavglobal
+"%APPCMD%" set config "%SITE%" /section:system.webServer/modules /+"[name='WebDAVModule']" /commit:apphost >nul 2>&1
+if errorlevel 1 (
+  set "UPLOADSTEP=WebDAV could not be added to this site"
+  goto :uploadoff
+)
+"%APPCMD%" set config "%SITE%" /section:system.webServer/handlers /+"[@start,name='WebDAV',path='*',verb='PROPFIND,PROPPATCH,MKCOL,PUT,COPY,DELETE,MOVE,LOCK,UNLOCK',modules='WebDAVModule',resourceType='Unspecified',requireAccess='None']" /commit:apphost >nul 2>&1
+if errorlevel 1 (
+  set "UPLOADSTEP=WebDAV could not be added to this site"
+  goto :uploadoff
+)
+goto :webdavscoped
+:webdavglobal
+call "%DISM%" /online /disable-feature /featurename:IIS-WebDAV /norestart /quiet >nul 2>&1
+set "UPLOADSTEP=WebDAV could not be limited to this site, so it was removed again"
+goto :uploadoff
+:webdavscoped
+"%APPCMD%" set config "%SITE%" /section:system.webServer/security/authentication/windowsAuthentication /enabled:true /commit:apphost >nul 2>&1
+if errorlevel 1 (
+  set "UPLOADSTEP=Windows sign-in could not be turned on"
+  goto :uploadoff
+)
+"%APPCMD%" set config "%SITE%" /section:system.webServer/security/authorization /-"[accessType='Deny',users='?',verbs='PUT,DELETE,MKCOL,COPY,MOVE,PROPPATCH,LOCK,UNLOCK']" /commit:apphost >nul 2>&1
+"%APPCMD%" set config "%SITE%" /section:system.webServer/security/authorization /+"[accessType='Deny',users='?',verbs='PUT,DELETE,MKCOL,COPY,MOVE,PROPPATCH,LOCK,UNLOCK']" /commit:apphost >nul 2>&1
+if errorlevel 1 (
+  set "UPLOADSTEP=writing could not be limited to signed-in users"
+  goto :uploadoff
+)
+"%APPCMD%" set config "%SITE%" /section:system.webServer/webdav/authoringRules /-"[users='*',path='logistics-data.json']" /commit:apphost >nul 2>&1
+"%APPCMD%" set config "%SITE%" /section:system.webServer/webdav/authoringRules /+"[users='*',path='logistics-data.json',access='Read, Write']" /commit:apphost >nul 2>&1
+if errorlevel 1 (
+  set "UPLOADSTEP=writing could not be limited to the two data files"
+  goto :uploadoff
+)
+"%APPCMD%" set config "%SITE%" /section:system.webServer/webdav/authoringRules /-"[users='*',path='logistics-data.previous.json']" /commit:apphost >nul 2>&1
+"%APPCMD%" set config "%SITE%" /section:system.webServer/webdav/authoringRules /+"[users='*',path='logistics-data.previous.json',access='Read, Write']" /commit:apphost >nul 2>&1
+if errorlevel 1 (
+  set "UPLOADSTEP=writing could not be limited to the two data files"
+  goto :uploadoff
+)
+"%ICACLS%" "%TARGET%" /grant "*S-1-5-11:(OI)(CI)M" >nul 2>&1
+if errorlevel 1 (
+  set "UPLOADSTEP=signed-in users could not be allowed to change the files in %TARGET%"
+  goto :uploadoff
+)
+"%APPCMD%" set config "%SITE%" /section:system.webServer/webdav/authoring /enabled:true /commit:apphost >nul 2>&1
+if errorlevel 1 (
+  set "UPLOADSTEP=WebDAV writing could not be switched on"
+  goto :uploadoff
+)
+set "INDOMAIN="
+for /f %%D in ('call "%PSH%" -NoProfile -Command "(Get-CimInstance Win32_ComputerSystem).PartOfDomain"') do set "INDOMAIN=%%D"
+echo       Upload to server: on ^(any signed-in company Windows account may replace logistics-data.json^)
+if "%WEBDAV_WAS_ON%"=="0" echo       WebDAV is on for site %SITE% only; other IIS sites on this server are not changed.
+if /i not "%INDOMAIN%"=="True" echo [!] This server is not in a company domain: only Windows accounts of this server can sign in to upload.
+if "%DISMRC%"=="3010" echo [!] Windows wants a restart to finish the IIS features. Restart the server when convenient; until then the upload may not work.
+echo       To stop uploads later: %INETSRV%\appcmd.exe set config "%SITE%" /section:system.webServer/webdav/authoring /enabled:false /commit:apphost
+goto :uploaddone
+:uploadoff
+"%APPCMD%" set config "%SITE%" /section:system.webServer/webdav/authoring /enabled:false /commit:apphost >nul 2>&1
+echo [!] Upload to server was NOT turned on: %UPLOADSTEP%. Nobody can upload; the tool works as before.
+echo     Download file for the server still works. The server owner can fix this and run this script again.
+:uploaddone
 
 rem ---- [6/6] smoke test --------------------------------------------------
 set "PORT_FOR_TEST=%PORT%"
