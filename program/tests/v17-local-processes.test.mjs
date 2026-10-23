@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {buildModel,processLookup} from '../public/model.mjs';
 import {readProcessLinks,localProcessesFrom,compareCatalogue} from '../public/leanix-process-check.mjs';
-import {cleanLocalProcesses,LOCAL_TAG} from '../public/local-layer.mjs';
+import {cleanLocalProcesses} from '../public/local-layer.mjs';
 import {workspaceData} from '../public/workspace.mjs';
 import {previewImport} from '../public/import-review.mjs';
 import {recordImport} from '../public/application-history.mjs';
@@ -52,14 +52,14 @@ test('V17: the local layer holds the BBM PM processes the Signavio standard lack
 test('V17: with the layer, the model marks local processes, keeps the hierarchy and matches application records — the standard still wins',()=>{
  const {added}=localProcessesFrom(data,sample()),withLayer=buildModel({...data,localProcesses:added});
  const truck=withLayer.procs.get('M.I2D.030.070.Laaaaaaaa');
- assert.deepEqual([truck.label,truck.local,truck.level,truck.chain],['Load Truck'+LOCAL_TAG,true,3,'Intralogistics to Demand (I2D)']);
+ assert.deepEqual([truck.label,truck.local,truck.level,truck.chain],['Load Truck',true,3,'Intralogistics to Demand (I2D)']);
  assert(withLayer.procs.get('M.I2D.030.070').children.includes(truck.id));
  // Three applications record "BBM PM I2D Load Truck L3": unmatched before, matched to the local process now.
  const recorders=model.apps.filter(a=>a.unmatched.includes('BBM PM I2D Load Truck L3'));assert.equal(recorders.length,3);
  for(const a of recorders){const b=withLayer.apps.find(x=>x.id===a.id);assert(b.process.includes(truck.id));assert(!b.unmatched.includes('BBM PM I2D Load Truck L3'));assert(!withLayer.issues.some(i=>i.appId===a.id&&i.value==='BBM PM I2D Load Truck L3'));}
  assert.equal(withLayer.issues.length,model.issues.length-3);
  // The source of a local match says so.
- assert.match(matchSource(withLayer,truck.id,'name').sources[0],/local process, not in the Signavio standard/);
+ assert.match(matchSource(withLayer,truck.id,'name').sources[0],/BBM PM process, not in the Signavio standard/);
  // A local process with a standard name never takes the standard's records.
  const clash=buildModel({...data,localProcesses:[{id:'M.I2D.010.Laaaaaaaa',name:'Pre-Processing',level:2,parent:'M.I2D.010'}]});
  assert.equal(processLookup(clash.procs)('BBM PM I2D Receive to Store L1').id,'M.I2D.010');

@@ -20,7 +20,13 @@
 - **小版本**（V10.1、V10.2……）：修正、文字和显示调整。
 - 版本号写在 `program/scripts/release.mjs` 的 RELEASE_VERSION（小写，如 `v10`、`v10.1`）；文件名、发布 zip、部署脚本和 Release 标签（`v10-20261022`）都随它生成。导入预览的“变化明细”是新功能，所以这一版是 V10（原计划的 V9.20 没有发布）。
 
-## V17.2 当前状态（2026-10-23，优先于所有历史段落）
+## V17.3 当前状态（2026-10-23，优先于所有历史段落）
+
+- 用户（经侧边会话转达，原话 “第一个可以 第二个我感觉不要显示 第三个别显示第五个不用显示”；第五条确认为 “不用加那句说明”）：(1) 发布一节明确只给数据维护人；(2) 总览不显示 “confirmed as recorded”；(3) 不显示 “(LeanIX local)” 标注和 “L3V” 说法；(4) 总览数字不改；(5) 服务器提示不改。
+- 改动：index.html 的 `#packagePublish` 标题与首句；overview.mjs 去掉 “· N confirmed as recorded”；local-layer.mjs 去掉 `LOCAL_TAG`（标签就是名称，`matchName` 照常）；leanix-processes.mjs 的本地来源说明；app.js 两处说明去掉 “(LeanIX local)”。这推翻了 V17 “单独标注” 的显示方式（数据层仍是单独一层，按编号 “.L…” 可区分）。
+- 539 项测试通过；deploy:sim 10 / 10。当前离线包：`offline/logistics-offline-20261022-v17.3.zip`。验证记录见 `verification/v17.3-verification.md`。
+
+## V17.2 状态（2026-10-23，受顶部 V17.3 更新）
 
 - **固定规则：L3V 就是 L3**（用户 2026-10-23：“之后要把这个写入死，不要变了 L3v就是L3”；最早 2026-10-19 已定）。PROCESS_LEVEL（`codes.mjs`）把 L0–L3 和 L3V 读成层级，L3V = 3；名称规则（processLookup）去掉 “L[0-3]V?” 后对应。**不得再加任何单独处理 L3V 的代码**：`tests/l3v-is-l3.test.mjs` 会失败（数据全写 L3 与全写 L3V 的匹配、待处理、提示文字、总览、相似度、LeanIX 核对必须相同；public 代码里除注释外不得出现 “L3V”）。
 - 本版去掉的 3 处区别：review-issues.mjs 的 `notMatchedL3V` 文字；leanix-process-check.mjs 的 `variants` / `variantOnly`（L3V 名称并入 `notInCatalogue`，计数和 CSV 不再有 “local variant” 结果）；local-layer.mjs / localProcessesFrom / matchSource 的 `variant`。页面同步去掉 L3V 的单独说明。

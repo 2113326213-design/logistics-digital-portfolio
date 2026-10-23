@@ -2,9 +2,9 @@
 // 流程目录，导入时先预览再 Apply"). The process catalogue stays the Signavio standard (processRows). BBM PM processes of the
 // LeanIX export that are not in it can be added as a separate layer (data.localProcesses): each local process hangs
 // under its LeanIX Parent, and its ID is the parent's ID followed by ".L" and the start of its LeanIX Fact Sheet ID, so
-// every rule that reads the hierarchy from the ID prefix keeps working. Its name carries "(LeanIX local)" wherever it
-// is shown. This module has no imports, so the model and the workspace can both use it.
-export const LOCAL_TAG=' (LeanIX local)';
+// every rule that reads the hierarchy from the ID prefix keeps working. Its name is shown as in LeanIX, without a tag
+// (owner 2026-10-23: plant users should not see "(LeanIX local)"). This module has no imports, so the model and the
+// workspace can both use it.
 export const LOCAL_ID=/^M\.[A-Z0-9]+(?:\.\d+)*(?:\.L[0-9a-f]{8,32})+$/;
 
 export function cleanLocalProcesses(value){
@@ -27,7 +27,7 @@ export function addLocalProcesses(procs,list){
   if(procs.has(p.id))return false;
   const parent=procs.get(p.parent);if(!parent)return true;
   if(parent.level!==p.level-1)return false;
-  procs.set(p.id,{id:p.id,label:p.name+LOCAL_TAG,matchName:p.name,level:p.level,chain:parent.chain,children:[],parent:p.parent,local:true,leanixLocal:{factSheetId:p.leanixId,name:p.leanixName}});
+  procs.set(p.id,{id:p.id,label:p.name,matchName:p.name,level:p.level,chain:parent.chain,children:[],parent:p.parent,local:true,leanixLocal:{factSheetId:p.leanixId,name:p.leanixName}});
   return false;
  });
 }

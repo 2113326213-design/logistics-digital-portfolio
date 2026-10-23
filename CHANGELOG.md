@@ -2,6 +2,14 @@
 
 每个版本的离线包在 [Releases](https://github.com/2113326213-design/logistics-digital-portfolio/releases)；详细的修改说明和用户决定在 [`00_Claude先读.md`](00_Claude先读.md)，验证记录在 [`verification/`](verification/)。
 
+## [V17.3](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v17.3-20261022) · 2026-10-23
+
+- 给工厂用户的措辞（用户经侧边会话 2026-10-23：“第一个可以 第二个我感觉不要显示 第三个别显示第五个不用显示”）：
+  - Import data 底部的发布一节标题改为 **Only for the data maintainer: publish this data to the intranet server**，第一句 “Plant users do not need this.”。
+  - 总览 “Level 3 to review” 旁不再显示 “· N confirmed as recorded”（确认为原样登记的记录仍照常不算待处理，应用详情里仍可看到）。
+  - 本地流程（V17）名称后不再标注 “(LeanIX local)”；来源说明改为 “LeanIX export (BBM PM process, not in the Signavio standard)”。“L3V” 的单独说法 V17.2 已去掉，原始记录里的 “L3V” 是原文，不改。
+  - 总览数字和服务器新数据提示不变。
+
 ## [V17.2](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v17.2-20261022) · 2026-10-23
 
 - **L3V 就是 L3，写死**（用户：“L3和L3V看做统一等级 … 之后要把这个写入死，不要变了 L3v就是L3”）。检查全部代码后，有 3 处把 L3V 当成和 L3 不同：

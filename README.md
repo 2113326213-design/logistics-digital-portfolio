@@ -53,11 +53,11 @@
 
 不在内网，或想自己保留一份时用：
 
-1. 下载 [**logistics-offline-20261022-v17.2.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest)。
+1. 下载 [**logistics-offline-20261022-v17.3.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest)。
 2. 右键 → **Extract all**。
 3. 用 Chrome 打开里面的 HTML（同一个 zip 里的 `deploy-iis.bat` 是给内网服务器部署用的，自己用时不用管）。
 
-页面顶部显示 **V17.2** 就对了。
+页面顶部显示 **V17.3** 就对了。
 
 </td>
 </tr>
@@ -68,7 +68,7 @@
     <td align="center" width="25%"><h3>75</h3><sub>应用 · 10 个工厂 · 5 个业务部门</sub></td>
     <td align="center" width="25%"><h3>2,775</h3><sub>组两两比较 · 9 组得分 ≥ 50</sub></td>
     <td align="center" width="25%"><h3>22 / 39</h3><sub>Process / Capability 待处理应用</sub></td>
-    <td align="center" width="25%"><h3>V17.2</h3><sub>2026-10-23 · 539 项测试通过</sub></td>
+    <td align="center" width="25%"><h3>V17.3</h3><sub>2026-10-23 · 539 项测试通过</sub></td>
   </tr>
 </table>
 
@@ -101,7 +101,7 @@
 | 调整打分标准 | **Similarity check** 顶部 | **Score settings** → **Edit settings**，改权重和 **Minimum score** |
 | 保存我的调整，下次接着用 | 任意页面 | 自动保存在这台电脑的浏览器里，下次打开选 **Continue kept work**；要备份或发给别人用 **Export workspace** |
 | 把待处理清单发给工厂 | **Overview** | 选工厂 → **Export To review (CSV)**，用 Excel 打开 |
-| 把 LeanIX 的新数据发给所有人（数据管家） | **Import data** | 导入新的导出并 Apply → 对话框底部 **For the data steward** → **Export data package**，把 `logistics-data.json` 复制到服务器 `D:\logistics-tool\`；见下方“给维护者 → 发布新数据” |
+| 把 LeanIX 的新数据发给所有人（数据管家） | **Import data** | 导入新的导出并 Apply → 对话框底部 **Only for the data maintainer** → **Export data package**，把 `logistics-data.json` 复制到服务器 `D:\logistics-tool\`；见下方“给维护者 → 发布新数据” |
 | 把 LeanIX 里 BBM PM 的本地流程加进流程目录（数据管家） | **Import data** | 选 LeanIX 流程导出 → **Preview changes** → **LeanIX local processes** 一节看 “Can be added / Cannot be added” → **Preview the local process layer** → 看预览后 **Apply**。Signavio 标准不变，本地流程名称后有 “(LeanIX local)”；再导入新的导出时整层替换 |
 | 找出 LeanIX 里缺少的标准流程，去补齐 | **Import data** | 同上选 LeanIX 流程导出 → **Preview changes**，看 **Standard catalogue against LeanIX**：**Missing in LeanIX** 表列出标准表（Business Capability + Process）里有、LeanIX 导出里没有的流程（Process chain、Level、Process ID、Process Name，以及 LeanIX 里应有的名称 “BBM PM <链> <名称> L<层级>”）；**In LeanIX, not in the catalogue** 列出 LeanIX 里名称对不上目录的流程和原因。**Download catalogue check (CSV)** 存成表格逐行补齐 |
 | 核对 LeanIX 里应用挂的流程和工具里登记的是否一致 | **Import data** | 在公司电脑上从 LeanIX 视图 “BBM PM process” 导出 Excel（要带 **Applications** 列），在第 1 格选这个文件 → **Preview changes**：按应用列出对得上的、只在 LeanIX 的、只在工具里的流程；**Download check (CSV)** 可存成表格。只核对，不改数据，也没有 Apply |
@@ -145,7 +145,7 @@
 </details>
 
 <details>
-<summary><b>页面打开了，但不是 V17.2，或者显示不全？</b></summary>
+<summary><b>页面打开了，但不是 V17.3，或者显示不全？</b></summary>
 <br>
 按 <b>Ctrl + F5</b> 强制刷新（浏览器可能缓存了旧版本）。工具在 Chrome 上测试过，请优先用 Chrome。
 </details>
@@ -177,7 +177,9 @@
 
 完整更新日志见 [`CHANGELOG.md`](CHANGELOG.md)。
 
-**V17.2（当前，2026-10-23）**：L3V 就是 L3（固定规则）：工具里不再有任何地方把 L3V 和 L3 区别对待——L3V 没对上标准表时的提示与 L3 相同（不再写 “Recorded as L3V … Confirmation is required.”），标准表对 LeanIX 的核对不再把 L3V 单独算 “本地变体”，本地流程层也不再区分；新增锁定测试，以后任何代码单独处理 L3V 都会报错。
+**V17.3（当前，2026-10-23）**：给工厂用户的措辞：Import data 底部发布数据的一节改成 “Only for the data maintainer …” 并注明工厂用户不需要；总览不再显示 “confirmed as recorded”；本地流程不再标注 “(LeanIX local)”；数字和规则不变。
+
+**V17.2（2026-10-23）**：L3V 就是 L3（固定规则）：工具里不再有任何地方把 L3V 和 L3 区别对待——L3V 没对上标准表时的提示与 L3 相同（不再写 “Recorded as L3V … Confirmation is required.”），标准表对 LeanIX 的核对不再把 L3V 单独算 “本地变体”，本地流程层也不再区分；新增锁定测试，以后任何代码单独处理 L3V 都会报错。
 
 **V17.1（2026-10-23）**：修正：LeanIX 里两个本地流程同名（在不同上级下）时，挂在这个名称下的子流程不再按导出行的先后随便挂到其中一个，而是不加入并写明原因（复核发现）。
 
@@ -219,6 +221,7 @@
 
 | 版本 | 主要变化 |
 |---|---|
+| [V17.3](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v17.3-20261022) | 给工厂用户的措辞：Import data 底部发布数据的一节改成 “Only for the data maintainer …” 并注明工厂用户不需要；总览不再显示 “confirmed as recorded”；本地流程不再标注 “(LeanIX local)”；数字和规则不变 |
 | [V17.2](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v17.2-20261022) | L3V 就是 L3（固定规则）：工具里不再有任何地方把 L3V 和 L3 区别对待——L3V 没对上标准表时的提示与 L3 相同（不再写 “Recorded as L3V … Confirmation is required.”），标准表对 LeanIX 的核对不再把 L3V 单独算 “本地变体”，本地流程层也不再区分；新增锁定测试，以后任何代码单独处理 L3V 都会报错 |
 | [V17.1](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v17.1-20261022) | 修正：LeanIX 里两个本地流程同名（在不同上级下）时，挂在这个名称下的子流程不再按导出行的先后随便挂到其中一个，而是不加入并写明原因（复核发现） |
 | [V17](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v17-20261022) | LeanIX 本地流程层：流程目录以 Signavio 标准为主，LeanIX 里 BBM PM 的本地流程（标准里没有的，含 L3V）可在 Import data 的流程核对里预览后 Apply，作为单独一层加进目录，名称标注 “(LeanIX local)”，挂在 LeanIX 的 Parent 之下；应用里登记了这些流程的不再算 “未匹配” |
@@ -297,7 +300,7 @@
 V14 起，新数据不必等新版本：
 
 1. 在工具里点 **Import data**，导入新的 LeanIX 导出（或工作簿），看完预览后点 **Apply**。
-2. 在同一个对话框底部展开 **For the data steward: publish this data to the intranet server**，点 **Export data package (logistics-data.json)**。
+2. 在同一个对话框底部展开 **Only for the data maintainer: publish this data to the intranet server**，点 **Export data package (logistics-data.json)**。
 3. 远程登录服务器，把 `logistics-data.json` 复制到 `D:\logistics-tool\`（和 `index.html` 同一个文件夹，有旧的就替换）。
 4. 在服务器的浏览器打开 `http://localhost:8083/logistics-data.json`，能看到一大段文字就说明 IIS 已经能提供它。如果显示 404.3，说明 .json 类型没开，请告诉维护人。
 5. 大家用内网网址打开工具时，标题下会出现 “New data on the server · as of <日期> · published <日期>”：点 **Preview changes** 先看变化再 **Apply**。**Hide this update** 只隐藏这条提示，以后仍可在 **Import data** 对话框顶部点 **Preview server data** 打开。
@@ -377,7 +380,7 @@ flowchart LR
 | 导入 / 导出（Excel、工作区、CSV） | `program/public/xlsx.mjs`、`program/public/import-review.mjs`、`program/public/workspace.mjs`、`program/public/exports.mjs`、`program/public/score-settings.mjs`（阈值随备份）、`program/public/offline-save.mjs`（离线导出提示）；应用搜索在 `program/public/app-search.mjs`（6 个搜索框共用 matchesApplication 和同一个名称、提示） |
 | 样式 | `program/public/*.css` |
 | 构建和离线单文件 | `program/scripts/build.mjs`、`program/scripts/export-offline.mjs` |
-| 测试（`npm test`，当前 539 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v17.2-test-results.txt` |
+| 测试（`npm test`，当前 539 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v17.3-test-results.txt` |
 | 离线单文件版 | `offline/` |
 | IIS 部署脚本（每次发布自动生成） | `offline/deploy-iis.bat`（同一份脚本也在发布 zip `offline/logistics-offline-<日期>-<版本>.zip` 里，部署只需下载这个 zip）；生成器 `program/scripts/deploy-script.mjs`，模板 `program/scripts/deploy-iis.template.bat`，发布打包 `program/scripts/release-files.mjs`（`npm run release:files`），检查 `program/tests/deploy-script.test.mjs`，本机模拟 `program/scripts/deploy-sim.mjs`（`npm run deploy:sim`） |
 | 构建输出、文件校验清单 | `built/`、`MANIFEST.sha256` |

@@ -86,5 +86,6 @@ test('the decisions travel with the workspace, imports and rebuilds',()=>{
  const profile=readFileSync(new URL('../public/app.js',import.meta.url),'utf8');
  assert(profile.includes('<p class="hint profile-confirmed">${a.accepted.map(d=>esc(`${d.dimension===\'cap\'?\'Business Capability\':\'Process\'} · ${d.raw} — ${acceptedText(d)}`)).join(\'<br>\')}</p>'));
  const overview=readFileSync(new URL('../public/overview.mjs',import.meta.url),'utf8');
- assert(overview.includes("${l3.confirmed.length?` <small>· ${l3.confirmed.length} confirmed as recorded</small>`:''}"));
+ // V17.3 (owner 2026-10-23): the Overview no longer shows the count of records confirmed as recorded.
+ assert(!overview.includes('confirmed as recorded</small>'));
 });

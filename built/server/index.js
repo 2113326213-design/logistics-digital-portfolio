@@ -80,7 +80,6 @@ function english(value2) {
 }
 
 // public/local-layer.mjs
-var LOCAL_TAG = " (LeanIX local)";
 var LOCAL_ID = /^M\.[A-Z0-9]+(?:\.\d+)*(?:\.L[0-9a-f]{8,32})+$/;
 function cleanLocalProcesses(value2) {
   if (!Array.isArray(value2)) return [];
@@ -100,7 +99,7 @@ function addLocalProcesses(procs, list) {
     const parent = procs.get(p.parent);
     if (!parent) return true;
     if (parent.level !== p.level - 1) return false;
-    procs.set(p.id, { id: p.id, label: p.name + LOCAL_TAG, matchName: p.name, level: p.level, chain: parent.chain, children: [], parent: p.parent, local: true, leanixLocal: { factSheetId: p.leanixId, name: p.leanixName } });
+    procs.set(p.id, { id: p.id, label: p.name, matchName: p.name, level: p.level, chain: parent.chain, children: [], parent: p.parent, local: true, leanixLocal: { factSheetId: p.leanixId, name: p.leanixName } });
     return false;
   });
 }
