@@ -118,8 +118,8 @@ export function compareProcessLinks(data,links,{file='',model=null}={}){
 // names all differ is still in the export); in a compared chain, a standard process no LeanIX process finds is missing.
 // Chains the export does not name are not compared, nor is a Process ID the catalogue gives two names.
 // LeanIX processes that find no standard process: names ending in L0–L3 are listed with the reason (to correct or to
-// check); local variants (L3V, under an L2 in the real export) and names without a level (other naming, e.g. BBM_PPM_PM …)
-// are counted and kept in the CSV, since they are not meant to be in the catalogue.
+// check; L3V is L3, owner rule fixed 2026-10-23, so an L3V name is listed like an L3 name); names without a level (other
+// naming, e.g. BBM_PPM_PM …) are counted and kept in the CSV, since they are not meant to be in the catalogue.
 const SEVERAL='流程名称对应多个编号',NO_LEVEL='流程未标注标准层级';
 const LOOKUP_REASON={'流程未匹配层级表':'No standard process has this name at this level.','流程链编号存在差异':'The name is found only in another process chain.'};
 const chainCode=id=>String(id).split('.')[1]||'';
@@ -141,31 +141,30 @@ function resolver(model,processRows){
  return {resolve,find,ambiguousId};
 }
 export function compareCatalogue(model,links,{processRows=[]}={}){
- const {resolve,find,ambiguousId}=resolver(model,processRows),found=new Map(),notInCatalogue=[],variants=[],otherNaming=[],groups=new Map(),local=[];
+ const {resolve,find,ambiguousId}=resolver(model,processRows),found=new Map(),notInCatalogue=[],otherNaming=[],groups=new Map(),local=[];
  const add=(id,record,how)=>{if(!found.has(id))found.set(id,[]);found.get(id).push({id:record.id,name:record.name,...how});};
  for(const record of links.records){
   if(otherCompanyRecord(record.name))continue;
   const hit=find(record);
-  const variant=/L3V\s*$/i.test(record.name);
   // A process of the LeanIX local layer (V17) is in the catalogue, but not in the Signavio standard: counted apart.
   if(hit.id&&model.procs.get(hit.id)?.local){local.push({id:record.id,name:record.name,localId:hit.id});continue;}
-  if(hit.id){add(hit.id,record,{via:hit.via,variant});continue;}
+  if(hit.id){add(hit.id,record,{via:hit.via});continue;}
   if(hit.type===SEVERAL){
    const parent=record.parent?resolve(record.parent).id:null,byParent=parent?hit.candidates.filter(c=>model.procs.get(c.id)?.parent===parent):[];
-   if(byParent.length===1){add(byParent[0].id,record,{via:'parent',variant});continue;}
+   if(byParent.length===1){add(byParent[0].id,record,{via:'parent'});continue;}
    const key=hit.candidates.map(c=>c.id).sort().join('|');
-   if(!groups.has(key))groups.set(key,{ids:hit.candidates.map(c=>c.id),records:[]});groups.get(key).records.push({id:record.id,name:record.name,variant});continue;
+   if(!groups.has(key))groups.set(key,{ids:hit.candidates.map(c=>c.id),records:[]});groups.get(key).records.push({id:record.id,name:record.name});continue;
   }
   const amb=ambiguousId(record.name);
   if(amb){notInCatalogue.push({row:record.row,id:record.id,name:record.name,reason:`The catalogue gives this Process ID (${amb}) two names, so it is not compared.`,candidates:[]});continue;}
   const entry={row:record.row,id:record.id,name:record.name,reason:LOOKUP_REASON[hit.type]||'The name does not end with a level (L0–L3).',candidates:hit.candidates||[]};
-  if(hit.type===NO_LEVEL)otherNaming.push(entry);else if(variant)variants.push(entry);else notInCatalogue.push(entry);
+  if(hit.type===NO_LEVEL)otherNaming.push(entry);else notInCatalogue.push(entry);
  }
  // Shared names the Parent did not decide: the LeanIX processes of that name cover as many catalogue processes.
  const possibly=new Map();
  for(const g of groups.values()){
   const open=g.ids.filter(id=>!found.has(id));
-  if(g.records.length>=open.length)for(const id of open)for(const r of g.records)add(id,r,{via:'shared',shared:g.ids.length,variant:r.variant});
+  if(g.records.length>=open.length)for(const id of open)for(const r of g.records)add(id,r,{via:'shared',shared:g.ids.length});
   else for(const id of open)possibly.set(id,{shared:g.ids.length,records:g.records.length,names:g.records.map(r=>r.name)});
  }
  const catalogueChains=new Set([...model.procs.keys()].map(chainCode));
@@ -174,15 +173,15 @@ export function compareCatalogue(model,links,{processRows=[]}={}){
  const rows=[...model.procs.values()].filter(n=>!n.local).map(n=>{
   const leanix=found.get(n.id)||[];
   const status=n.ambiguous?'ambiguous':!reached.has(chainCode(n.id))?'chain-not-in-export':leanix.length?'in-leanix':possibly.has(n.id)?'possibly-missing':'missing';
-  return {chain:n.chain,level:'L'+n.level,id:n.id,name:n.label,expected:expectedName(n),status,leanix,variantOnly:!!leanix.length&&leanix.every(x=>x.variant),possibly:possibly.get(n.id)||null};
+  return {chain:n.chain,level:'L'+n.level,id:n.id,name:n.label,expected:expectedName(n),status,leanix,possibly:possibly.get(n.id)||null};
  });
  const chains=new Map();
  for(const r of rows){const c=chains.get(r.chain)||{chain:r.chain,code:chainCode(r.id),reached:reached.has(chainCode(r.id)),processes:0,inLeanix:0,missing:0};c.processes++;if(r.status==='in-leanix')c.inLeanix++;if(r.status==='missing'||r.status==='possibly-missing')c.missing++;chains.set(r.chain,c);}
  const count=status=>rows.filter(r=>r.status===status).length;
- return {rows,missing:rows.filter(r=>r.status==='missing'||r.status==='possibly-missing'),notInCatalogue,variants,otherNaming,local,chains:[...chains.values()],
+ return {rows,missing:rows.filter(r=>r.status==='missing'||r.status==='possibly-missing'),notInCatalogue,otherNaming,local,chains:[...chains.values()],
   counts:{standard:rows.length,compared:count('in-leanix')+count('missing')+count('possibly-missing'),inLeanix:count('in-leanix'),missing:count('missing')+count('possibly-missing'),
-   possiblyMissing:count('possibly-missing'),variantOnly:rows.filter(r=>r.status==='in-leanix'&&r.variantOnly).length,notCompared:count('chain-not-in-export'),ambiguous:count('ambiguous'),
-   notInCatalogue:notInCatalogue.length,variants:variants.length,otherNaming:otherNaming.length,local:local.length}};
+   possiblyMissing:count('possibly-missing'),notCompared:count('chain-not-in-export'),ambiguous:count('ambiguous'),
+   notInCatalogue:notInCatalogue.length,otherNaming:otherNaming.length,local:local.length}};
 }
 
 // The LeanIX local process layer this export gives (V17, local-layer.mjs). Candidates are BBM PM processes ("BBM PM
@@ -204,7 +203,7 @@ export function localProcessesFrom(data,links){
   if(hit.id||hit.type===SEVERAL||ambiguousId(record.name))continue;
   if(hit.type==='流程链编号存在差异'){skip(record,'The Signavio standard has this name in another process chain.');continue;}
   if(+m[1]<1){skip(record,'A Level 0 process is a process chain; only the standard chains are used.');continue;}
-  candidates.push({record,chain,level:+m[1],name:bareName(record.name).replace(/\s+/g,' ').trim(),variant:/L3V\s*$/i.test(record.name)});
+  candidates.push({record,chain,level:+m[1],name:bareName(record.name).replace(/\s+/g,' ').trim()});
  }
  const waiting=new Set(candidates.map(c=>nameKey(c.record.name))),placed=new Map(),ids=new Set(),keys=new Set(),added=[];
  // The Parents each local name is found under (one name under two Parents is two processes).
@@ -225,7 +224,7 @@ export function localProcessesFrom(data,links){
   for(let n=12;ids.has(id)&&n<=hex.length;n+=4)id=`${parentNode.id}.L${hex.slice(0,n)}`;
   if(hex.length<8||ids.has(id)){skip(c.record,'No usable LeanIX Fact Sheet ID.');return false;}
   ids.add(id);keys.add(key);
-  const entry={id,name:c.name,level:c.level,parent:parentNode.id,variant:c.variant,leanixId:c.record.id,leanixName:c.record.name};
+  const entry={id,name:c.name,level:c.level,parent:parentNode.id,leanixId:c.record.id,leanixName:c.record.name};
   added.push(entry);placed.set(nameKey(c.record.name),entry);return false;
  });
  for(const c of pending)skip(c.record,'Its LeanIX Parent is neither in the Signavio standard nor added here.');
@@ -243,14 +242,13 @@ export function processCheckCSV(check){
   ...check.rows.flatMap(r=>Object.keys(RESULT_TEXT).flatMap(part=>r[part].map(process=>{const s=r.standard?.get(process);return [r.id,r.name,process,s?.id,s?.name,RESULT_TEXT[part],check.file];})))]);
 }
 // What a catalogue row's result needs explained: several LeanIX processes, the Parent, the owner's mapping, a shared
-// name, a local variant only, or a possibly missing process.
+// name, or a possibly missing process.
 export const catalogueNote=r=>{
  const own=r.leanix.filter(x=>x.via!=='shared'),shared=r.leanix.filter(x=>x.via==='shared');
  return [own.length>1?`${own.length} LeanIX processes find this standard process.`:'',
   r.leanix.some(x=>x.via==='mapping')?'Found through the owner\'s mapping of this LeanIX name.':'',
   r.leanix.some(x=>x.via==='parent')?'The catalogue uses this name more than once; the LeanIX Parent decides which.':'',
   shared.length?`The catalogue gives ${shared[0].shared} standard processes this name at this level and the LeanIX Parent does not decide which; the LeanIX processes of that name count for them.`:'',
-  r.variantOnly?'In LeanIX only as a local variant (L3V).':'',
   r.possibly?`The catalogue gives ${r.possibly.shared} standard processes this name at this level, but LeanIX has only ${r.possibly.records} (${r.possibly.names.join('; ')}) and the Parent does not decide which: check whether this one is missing.`:''].filter(Boolean).join(' ');
 };
 // The catalogue: every standard process in catalogue order with its result (V16), then the LeanIX processes that are not
@@ -261,6 +259,5 @@ export function catalogueCheckCSV(catalogue,{file=''}={}){
  return csv([['RBW E2E Process Chain','Process Level','Process ID','Process Name','Result','Name expected in LeanIX','LeanIX name','LeanIX ID','Note','LeanIX export'],
   ...catalogue.rows.map(r=>[r.chain,r.level,r.id,r.name,CATALOGUE_RESULT[r.status],r.status==='missing'||r.status==='possibly-missing'?r.expected:'',r.leanix.map(x=>x.name).join('\n'),r.leanix.map(x=>x.id).join('\n'),catalogueNote(r),file]),
   ...outside(catalogue.notInCatalogue,'In LeanIX, not in the catalogue'),
-  ...outside(catalogue.variants,'In LeanIX as a local variant (L3V), not in the catalogue'),
   ...outside(catalogue.otherNaming,'In LeanIX under other naming (no level L0–L3), not compared')]);
 }

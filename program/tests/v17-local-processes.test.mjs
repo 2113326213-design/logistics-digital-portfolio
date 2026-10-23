@@ -35,11 +35,11 @@ const sample=()=>links([
 
 test('V17: the local layer holds the BBM PM processes the Signavio standard lacks, under their LeanIX Parent, with the reason for the rest',()=>{
  const {added,skipped}=localProcessesFrom(data,sample());
- assert.deepEqual(added.map(p=>[p.id,p.name,p.level,p.parent,p.variant]),[
-  ['M.I2D.010.020.Lbbbbbbbb','Special Truck Check',3,'M.I2D.010.020',true],
-  ['M.I2D.030.070.Laaaaaaaa','Load Truck',3,'M.I2D.030.070',false],
-  ['M.I2D.030.Lcccccccc','Local Area',2,'M.I2D.030',false],
-  ['M.I2D.030.Lcccccccc.Ldddddddd','Local Step',3,'M.I2D.030.Lcccccccc',false]]);
+ assert.deepEqual(added.map(p=>[p.id,p.name,p.level,p.parent]),[
+  ['M.I2D.010.020.Lbbbbbbbb','Special Truck Check',3,'M.I2D.010.020'],
+  ['M.I2D.030.070.Laaaaaaaa','Load Truck',3,'M.I2D.030.070'],
+  ['M.I2D.030.Lcccccccc','Local Area',2,'M.I2D.030'],
+  ['M.I2D.030.Lcccccccc.Ldddddddd','Local Step',3,'M.I2D.030.Lcccccccc']]);
  assert.deepEqual(skipped.map(s=>[s.name,s.reason]),[
   ['BBM PM I2D Orphan Step L3','No Parent in LeanIX.'],
   ['BBM PM I2D Wrong Level L3','Its LeanIX Parent is Level 0, not Level 2.'],
@@ -88,7 +88,7 @@ test('V17: the catalogue check counts LeanIX processes of the local layer apart 
  assert.equal(after.counts.local,4);
  assert.equal(after.rows.length,before.rows.length,'the local layer is not part of the standard rows');
  assert(!after.rows.some(r=>/\.L[0-9a-f]{8}/.test(r.id)));
- assert(after.counts.notInCatalogue+after.counts.variants<before.counts.notInCatalogue+before.counts.variants);
+ assert(after.counts.notInCatalogue<before.counts.notInCatalogue);
 });
 
 test('V17: the page offers the layer as a preview from the process check and changes nothing before Apply',()=>{

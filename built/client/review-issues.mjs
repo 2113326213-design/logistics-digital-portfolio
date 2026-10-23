@@ -20,7 +20,6 @@ import {STANDARD_SNAPSHOT,matchSource} from './leanix-processes.mjs';
 // catalogue does not contain is a question to confirm, not a confirmed error, unless the owner decided otherwise.
 export const REVIEW_TEXT=Object.freeze({
  notMatched:'No confirmed match in the current process catalogue.',
- notMatchedL3V:'Recorded as L3V; no Level 3 process of this name in the current catalogue. Confirmation is required.',
  multiple:'Multiple possible matches. Confirmation is required.',
  otherChain:'The name matches a process in another process chain. Confirmation is required.',
  noLevel:'No process level (L0–L3) recorded.',
@@ -39,7 +38,8 @@ function processText(model,app,raw){
  if(!issue)return REVIEW_TEXT.notMatched;
  if(issue.type==='流程未标注标准层级')return REVIEW_TEXT.noLevel;
  if(issue.type==='流程名称对应多个编号'||issue.candidates?.length>1)return REVIEW_TEXT.multiple;
- if(issue.type==='流程未匹配层级表')return /\bL3V\s*$/i.test(raw)?REVIEW_TEXT.notMatchedL3V:REVIEW_TEXT.notMatched;
+ // L3V is L3 (owner rule 2026-10-19, fixed 2026-10-23): the same text for both.
+ if(issue.type==='流程未匹配层级表')return REVIEW_TEXT.notMatched;
  return REVIEW_TEXT.otherChain;
 }
 function capabilityText(model,raw){

@@ -2,6 +2,15 @@
 
 每个版本的离线包在 [Releases](https://github.com/2113326213-design/logistics-digital-portfolio/releases)；详细的修改说明和用户决定在 [`00_Claude先读.md`](00_Claude先读.md)，验证记录在 [`verification/`](verification/)。
 
+## [V17.2](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v17.2-20261022) · 2026-10-23
+
+- **L3V 就是 L3，写死**（用户：“L3和L3V看做统一等级 … 之后要把这个写入死，不要变了 L3v就是L3”）。检查全部代码后，有 3 处把 L3V 当成和 L3 不同：
+  - 待处理提示：L3V 没对上标准表时写 “Recorded as L3V; no Level 3 process of this name in the current catalogue. Confirmation is required.”，L3 写 “No confirmed match in the current process catalogue.”——现在两者相同（后者）。
+  - 标准表对 LeanIX 的核对（V16）：L3V 名称对不上时单独算 “local variants (L3V)”、只以 L3V 出现的标准流程单独注明——现在 L3V 与 L3 一样列在 “In LeanIX, not in the catalogue”，不再单独计数和注明。
+  - 本地流程层（V17）：不再区分 L3V（不存 variant，说明文字相同）。
+- 新增 `tests/l3v-is-l3.test.mjs`（锁定）：同一份数据把所有 Level 3 写成 L3 或 L3V，匹配、待处理、待处理提示、总览数字、2775 个相似度配对、LeanIX 两项核对必须完全相同；且程序代码（注释除外）不得出现 “L3V”。这些测试在 V17.1 的代码上有 3 项失败。
+- **AUTO-RACK 的 “Needs confirmation”**：AUTO-RACK 自己的 6 条流程记录都已对上或已由所有者确认为原样登记；它有 12 个配对显示 “Needs confirmation”，原因是**对方**应用有标准表里没有的流程（如 “Load Truck L3”、几条 L3V、“BBM_P2S_LE …” 等）。这些在 Import data 里应用 LeanIX 本地流程层（V17）后大多能对上。
+
 ## [V17.1](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v17.1-20261022) · 2026-10-23
 
 - 修正：LeanIX 里两个本地流程同名（在不同上级下）时，挂在这个名称下的子流程不再按导出行的先后随便挂到其中一个，而是不加入并写明原因（复核发现）。例：LeanIX 里 “BBM PM I2D Dup Area L2” 分别在两个上级下各有一条，另一条流程的 Parent 写的是这个名称——以前会挂到导出里排在后面的那一个（换个顺序结果就变），现在不加入，原因 “Its LeanIX Parent name is used by several local processes, so the Parent is not clear.”。同一个本地流程在同一上级下重复出现时仍算一个，子流程照常加入。与标准流程同名多编号时不按顺序决定的规则一致。

@@ -15,7 +15,7 @@ export function cleanLocalProcesses(value){
   const id=String(p.id??'').trim(),parent=String(p.parent??'').trim(),name=String(p.name??'').replace(/\s+/g,' ').trim(),level=Number(p.level);
   if(!LOCAL_ID.test(id)||!parent||!id.startsWith(parent+'.L')||id.slice(parent.length+1).includes('.')||!name||![1,2,3].includes(level)||seen.has(id))return [];
   seen.add(id);
-  return [{id,name,level,parent,variant:p.variant===true,leanixId:String(p.leanixId??''),leanixName:String(p.leanixName??'')}];
+  return [{id,name,level,parent,leanixId:String(p.leanixId??''),leanixName:String(p.leanixName??'')}];
  });
 }
 
@@ -27,7 +27,7 @@ export function addLocalProcesses(procs,list){
   if(procs.has(p.id))return false;
   const parent=procs.get(p.parent);if(!parent)return true;
   if(parent.level!==p.level-1)return false;
-  procs.set(p.id,{id:p.id,label:p.name+LOCAL_TAG,matchName:p.name,level:p.level,chain:parent.chain,children:[],parent:p.parent,local:true,variant:p.variant,leanixLocal:{factSheetId:p.leanixId,name:p.leanixName}});
+  procs.set(p.id,{id:p.id,label:p.name+LOCAL_TAG,matchName:p.name,level:p.level,chain:parent.chain,children:[],parent:p.parent,local:true,leanixLocal:{factSheetId:p.leanixId,name:p.leanixName}});
   return false;
  });
 }

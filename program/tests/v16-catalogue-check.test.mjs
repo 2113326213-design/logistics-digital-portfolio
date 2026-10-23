@@ -3,7 +3,7 @@
 // export, by the name rule the applications' records use; and the standard Process ID / Process Name next to every process
 // of the per-application check. Synthetic exports in the layout of the saved view "BBM PM process" (screenshots
 // 2026-10-22). The "review:" tests come from the V16 review and from one run on the owner's real export (owner approved,
-// file deleted afterwards): L3V local variants under an L2, other naming, application names with a release, and
+// file deleted afterwards): other naming, application names with a release, and
 // 10,230 other applications.
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -46,7 +46,7 @@ test('V16: standard processes of a chain in the export that LeanIX lacks are lis
  const [gone1,gone2]=unique.filter(n=>n.level===3).slice(0,2);
  const result=compare(i2d.filter(n=>n!==gone1&&n!==gone2).map((n,i)=>record('p'+i,leanixName(n),'',{parent:n.parent?parentName(n):''})));
  assert.deepEqual(result.missing.map(r=>[r.chain,r.level,r.id,r.name,r.expected]),[gone1,gone2].map(n=>['Intralogistics to Demand (I2D)','L3',n.id,n.label,leanixName(n)]));
- assert.deepEqual(result.counts,{standard:model.procs.size,compared:i2d.length,inLeanix:i2d.length-2,missing:2,possiblyMissing:0,variantOnly:0,notCompared:model.procs.size-i2d.length-1,ambiguous:1,notInCatalogue:0,variants:0,otherNaming:0,local:0});
+ assert.deepEqual(result.counts,{standard:model.procs.size,compared:i2d.length,inLeanix:i2d.length-2,missing:2,possiblyMissing:0,notCompared:model.procs.size-i2d.length-1,ambiguous:1,notInCatalogue:0,otherNaming:0,local:0});
  const b2p=result.chains.find(c=>c.code==='B2P');assert.deepEqual([b2p.reached,b2p.inLeanix,b2p.missing,b2p.processes>100],[false,0,0,true]);
  assert.deepEqual(result.chains.filter(c=>c.reached).map(c=>[c.code,c.processes,c.inLeanix,c.missing]),[['I2D',i2d.length,i2d.length-2,2]]);
  assert.deepEqual(result.rows.map(r=>r.id),[...model.procs.keys()],'catalogue order');
@@ -98,8 +98,8 @@ test("V16 review: the owner's mappings count — a LeanIX name the owner mapped 
  const mdm=result.rows.find(r=>r.id==='M.MDM');
  assert.deepEqual([mdm.status,mdm.leanix.map(x=>[x.id,x.via])],['in-leanix',[['m1','mapping']]]);
  assert.match(catalogueNote(mdm),/owner's mapping/);
- const kit=result.rows.find(r=>r.id==='M.I2D.020.010.050');assert.deepEqual([kit.status,kit.variantOnly],['in-leanix',true]);
- assert.equal(result.counts.variantOnly,1);assert.deepEqual(result.notInCatalogue,[]);
+ const kit=result.rows.find(r=>r.id==='M.I2D.020.010.050');assert.equal(kit.status,'in-leanix');
+ assert.deepEqual(result.notInCatalogue,[]);
  // Per application: RBAC_ME_Logistics Data Platform records 'BBM PM DM Data Management L0'; the tool maps it to M.MDM.
  const app=data.apps.find(a=>a.Name==='RBAC_ME_Logistics Data Platform');
  const check=compareProcessLinks(data,links(split(app.Processes).map((p,i)=>record('a'+i,p,app.Name))),{model});
@@ -119,12 +119,12 @@ test('V16 review: the catalogue Process ID with two names, the Level 0 code and 
  assert.match(readFileSync(new URL('../public/app.js',import.meta.url),'utf8'),/no standard process could be compared/);
 });
 
-test('V16 review (real export): local variants and other naming are counted and kept in the CSV, not listed as names to correct',()=>{
+test('V16 review (real export): an L3V name outside the catalogue is listed like an L3 name (L3V is L3); other naming is counted and kept in the CSV',()=>{
  const result=compare([...i2d.map((n,i)=>record('p'+i,leanixName(n),'',{parent:n.parent?parentName(n):''})),
   record('v1','BBM PM D2M Confirm Component Development L3V','',{parent:'BBM PM D2M Process Sample Orders L2'}),record('o1','BBM_PPM_PM Project Management'),record('o2','PMT Plan release'),record('x1','BBM PM I2D Invented step L3')]);
- assert.deepEqual([result.counts.variants,result.counts.otherNaming,result.counts.notInCatalogue],[1,2,1]);
+ assert.deepEqual([result.counts.otherNaming,result.counts.notInCatalogue],[2,2]);
  const lines=catalogueCheckCSV(result,{file:'f.xlsx'}).slice(1).split('\r\n');
- assert(lines.some(l=>l.includes('"In LeanIX as a local variant (L3V), not in the catalogue","","BBM PM D2M Confirm Component Development L3V","v1"')));
+ assert(lines.some(l=>l.includes('"In LeanIX, not in the catalogue","","BBM PM D2M Confirm Component Development L3V","v1"')));
  assert(lines.some(l=>l.includes('"In LeanIX under other naming (no level L0–L3), not compared","","BBM_PPM_PM Project Management","o1"')));
  assert(lines.some(l=>l.includes('"In LeanIX, not in the catalogue","","BBM PM I2D Invented step L3","x1"')));
 });

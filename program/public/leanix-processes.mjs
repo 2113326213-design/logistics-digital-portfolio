@@ -86,7 +86,7 @@ export const EXPORT_STATUS_TEXT=Object.freeze({
 // Where a confirmed process match comes from: the record, the code, the level and the sources that support it.
 export function matchSource(model,id,via){
  const node=model.procs.get(id);if(!node)return null;
- if(node.local)return {id,level:node.level,name:node.label,via,sources:['LeanIX export (local process, not in the Signavio standard)'],note:node.variant?'Local variant (L3V) of BBM PM in LeanIX, added as a LeanIX local process.':'BBM PM process in LeanIX that is not in the Signavio standard, added as a LeanIX local process.'};
+ if(node.local)return {id,level:node.level,name:node.label,via,sources:['LeanIX export (local process, not in the Signavio standard)'],note:'BBM PM process in LeanIX that is not in the Signavio standard, added as a LeanIX local process.'};
  const leanix=model.leanix?.label||'LeanIX export',snapshot=STANDARD_SNAPSHOT.label;
  const sources=via==='leanix-name'?[leanix]:node.exportStatus==='included'?[snapshot,leanix]:[snapshot];
  const note=via==='mapping'?'Applied mapping (owner decision).':node.exportStatus==='included'?(node.nameStatus==='differs'?`Names differ between sources: snapshot "${node.snapshotName}", LeanIX "${node.leanix.name}".`:node.nameStatus==='equivalent'?`Equivalent spelling in LeanIX: "${node.leanix.name}".`:'Same name in LeanIX.'):EXPORT_STATUS_TEXT[node.exportStatus]||'Standard snapshot only; not covered by the LeanIX export.';

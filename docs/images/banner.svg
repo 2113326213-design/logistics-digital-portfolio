@@ -71,6 +71,6 @@
   <!-- version tag -->
   <g transform="translate(1056 34)" font-family="'Segoe UI', Helvetica, Arial, sans-serif">
     <rect x="0" y="0" width="96" height="30" rx="15" fill="#34d399" fill-opacity="0.16" stroke="#34d399" stroke-opacity="0.7"/>
-    <text x="48" y="20" text-anchor="middle" fill="#a7f3d0" font-size="14" font-weight="600">V17.1</text>
+    <text x="48" y="20" text-anchor="middle" fill="#a7f3d0" font-size="14" font-weight="600">V17.2</text>
   </g>
 </svg>

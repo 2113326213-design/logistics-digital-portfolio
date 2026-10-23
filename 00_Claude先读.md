@@ -20,7 +20,14 @@
 - **小版本**（V10.1、V10.2……）：修正、文字和显示调整。
 - 版本号写在 `program/scripts/release.mjs` 的 RELEASE_VERSION（小写，如 `v10`、`v10.1`）；文件名、发布 zip、部署脚本和 Release 标签（`v10-20261022`）都随它生成。导入预览的“变化明细”是新功能，所以这一版是 V10（原计划的 V9.20 没有发布）。
 
-## V17.1 当前状态（2026-10-23，优先于所有历史段落）
+## V17.2 当前状态（2026-10-23，优先于所有历史段落）
+
+- **固定规则：L3V 就是 L3**（用户 2026-10-23：“之后要把这个写入死，不要变了 L3v就是L3”；最早 2026-10-19 已定）。PROCESS_LEVEL（`codes.mjs`）把 L0–L3 和 L3V 读成层级，L3V = 3；名称规则（processLookup）去掉 “L[0-3]V?” 后对应。**不得再加任何单独处理 L3V 的代码**：`tests/l3v-is-l3.test.mjs` 会失败（数据全写 L3 与全写 L3V 的匹配、待处理、提示文字、总览、相似度、LeanIX 核对必须相同；public 代码里除注释外不得出现 “L3V”）。
+- 本版去掉的 3 处区别：review-issues.mjs 的 `notMatchedL3V` 文字；leanix-process-check.mjs 的 `variants` / `variantOnly`（L3V 名称并入 `notInCatalogue`，计数和 CSV 不再有 “local variant” 结果）；local-layer.mjs / localProcessesFrom / matchSource 的 `variant`。页面同步去掉 L3V 的单独说明。
+- 用户问 AUTO-RACK 的 “Need to confirm”：查明是相似度配对状态 “Needs confirmation”，12 个配对全因对方应用有未匹配的流程记录（AUTO-RACK 自己无待确认记录）。说明见 CHANGELOG。
+- 539 项测试通过；deploy:sim 10 / 10。当前离线包：`offline/logistics-offline-20261022-v17.2.zip`。验证记录见 `verification/v17.2-verification.md`。
+
+## V17.1 状态（2026-10-23，受顶部 V17.2 更新）
 
 - V17 发布后的快速复核（1 个复核者 + 1 个反驳者）确认 1 个问题、驳回 1 个：`localProcessesFrom` 里 `placed` 按名称记录本地流程，同名的后一个覆盖前一个，子流程的 Parent 名称于是按导出行的先后决定。修正：先统计每个本地名称出现在哪些 Parent 下（`homes`），一个名称在两个以上 Parent 下时，以它为 Parent 的子流程不加入并写明原因；同一 Parent 下重复的仍算一个。用户：“不要重要去除吧”。驳回的一条：命中多个本地流程的 LeanIX 记录在 `counts.local` 里少算，但页面和 CSV 都不显示这个数，无可见影响。
 - 新增测试 “V17 review: a Parent name that two local processes share …”（两种行顺序结果相同；同一 Parent 下重复照常），在 V17 的代码上失败。534 项测试通过；deploy:sim 10 / 10。

@@ -90,7 +90,7 @@ function cleanLocalProcesses(value2) {
     const id = String(p.id ?? "").trim(), parent = String(p.parent ?? "").trim(), name = String(p.name ?? "").replace(/\s+/g, " ").trim(), level2 = Number(p.level);
     if (!LOCAL_ID.test(id) || !parent || !id.startsWith(parent + ".L") || id.slice(parent.length + 1).includes(".") || !name || ![1, 2, 3].includes(level2) || seen.has(id)) return [];
     seen.add(id);
-    return [{ id, name, level: level2, parent, variant: p.variant === true, leanixId: String(p.leanixId ?? ""), leanixName: String(p.leanixName ?? "") }];
+    return [{ id, name, level: level2, parent, leanixId: String(p.leanixId ?? ""), leanixName: String(p.leanixName ?? "") }];
   });
 }
 function addLocalProcesses(procs, list) {
@@ -100,7 +100,7 @@ function addLocalProcesses(procs, list) {
     const parent = procs.get(p.parent);
     if (!parent) return true;
     if (parent.level !== p.level - 1) return false;
-    procs.set(p.id, { id: p.id, label: p.name + LOCAL_TAG, matchName: p.name, level: p.level, chain: parent.chain, children: [], parent: p.parent, local: true, variant: p.variant, leanixLocal: { factSheetId: p.leanixId, name: p.leanixName } });
+    procs.set(p.id, { id: p.id, label: p.name + LOCAL_TAG, matchName: p.name, level: p.level, chain: parent.chain, children: [], parent: p.parent, local: true, leanixLocal: { factSheetId: p.leanixId, name: p.leanixName } });
     return false;
   });
 }
