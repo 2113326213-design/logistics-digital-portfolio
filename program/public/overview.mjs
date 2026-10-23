@@ -109,13 +109,18 @@ export function maintenanceGapReasons(report,group,app,onlyLevels=null){
  });
 }
 
+// Applications whose only records outside the standard at a level were confirmed by the owner as recorded (V9.18) are
+// not 'to review'; they still do not match the standard. One rule for the summary card and the plant table (V17.5 audit:
+// the plant table listed them under 'To review', 20 against the card's 18).
+const confirmedOnlyAtLevel=(report,app,level)=>{const failing=(report.records.get(app.id)||[]).filter(r=>r.level===level&&!r.valid);return failing.length>0&&failing.every(r=>r.accepted);};
+export function applicationsToReviewAtLevel(report,group,level){
+ return applicationsNotPassingLevelQuality(group,level).filter(app=>!confirmedOnlyAtLevel(report,app,level.level));
+}
+
 export function l3MaintenanceMetrics(report){
  const level=report.levels.find(l=>l.level===3);
- // Applications whose only Level 3 records outside the standard were confirmed by the owner as recorded (V9.18) are
- // not 'to review'; they still do not match the standard.
- const failing=app=>(report.records.get(app.id)||[]).filter(r=>r.level===3&&!r.valid);
- const confirmed=level.invalid.filter(app=>failing(app).length&&failing(app).every(r=>r.accepted));
- return {complete:level.filled,quality:level.valid,notPassing:applicationsNotPassingLevelQuality(report,level).filter(app=>!confirmed.includes(app)),confirmed,missing:level.missing};
+ const confirmed=level.invalid.filter(app=>confirmedOnlyAtLevel(report,app,3));
+ return {complete:level.filled,quality:level.valid,notPassing:applicationsToReviewAtLevel(report,report,level),confirmed,missing:level.missing};
 }
 
 export function createOverviewUI({getModel,escape:esc,onApp,onStateChange=()=>{}}){
@@ -153,7 +158,7 @@ export function createOverviewUI({getModel,escape:esc,onApp,onStateChange=()=>{}
   function row(r,key,label,isTotal=false){
    const appDrill=drill(key+'apps',label+' · Applications',r.apps);
    const levels=r.levels.filter(l=>cols.includes(l.level)).map(l=>{
-    const notPassing=applicationsNotPassingLevelQuality(r,l),note=(l.level===2||(dimension==='process'&&l.level<2))?`Check unresolved Level ${l.level} records and catalogue coverage. A separate Level ${l.level} entry is not required when all registered Level 3 records are confirmed and their Level ${l.level} parents match the standard.`:`Check Level ${l.level} records and catalogue coverage; add missing details or update confirmed errors.`;
+    const notPassing=applicationsToReviewAtLevel(report,r,l),note=(l.level===2||(dimension==='process'&&l.level<2))?`Check unresolved Level ${l.level} records and catalogue coverage. A separate Level ${l.level} entry is not required when all registered Level 3 records are confirmed and their Level ${l.level} parents match the standard.`:`Check Level ${l.level} records and catalogue coverage; add missing details or update confirmed errors.`;
     return `<td data-label="Level ${l.level} filled">${cell(key+'l'+l.level+'c',label+' · Level '+l.level+' filled',l.filled,r.apps.length,'completion')}</td><td data-label="Level ${l.level} matches standard">${cell(key+'l'+l.level+'q',label+' · Level '+l.level+' matches standard',l.valid,r.apps.length,'quality',notPassing,label+' · To review',note,{group:r,levels:[l.level]})}</td>`;
    }).join('');
    return `<tr ${isTotal?'class="maintenance-total"':''}><th scope="row">${isTotal?esc(label):`<button class="plant-table-link" ${appDrill}>${esc(label)} <span aria-hidden="true">↗</span></button>`}</th><td data-label="Applications"><button class="plant-number" ${appDrill}>${r.apps.length}</button></td>${levels}<td data-label="To review">${r.needsReview.length?`<button class="plant-review has-issues" ${drill(key+'review',label+' · To review',r.needsReview,`Applications with at least one open issue at any level: ${r.needsReview.length} ${r.needsReview.length===1?'application':'applications'}, ${r.needsReview.reduce((n,a)=>n+report.issues.get(a.id).length,0)} issues in total (issue count, not applications). Each application is listed once. Select View details to see its issues.`,true,{issues:true})}>${r.needsReview.length}</button>`:'<span class="plant-complete">✓</span>'}</td>${costCell(r.apps,key,label)}</tr>`;

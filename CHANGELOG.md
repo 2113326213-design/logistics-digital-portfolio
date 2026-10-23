@@ -2,6 +2,16 @@
 
 每个版本的离线包在 [Releases](https://github.com/2113326213-design/logistics-digital-portfolio/releases)；详细的修改说明和用户决定在 [`00_Claude先读.md`](00_Claude先读.md)，验证记录在 [`verification/`](verification/)。
 
+## [V17.5](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v17.5-20261022) · 2026-10-23
+
+用户问 “还有其他的问题吗？”，一轮检查（3 个查找者 + 1 个反驳者）确认 5 处问题、驳回 4 处（有意的设计）。用户：“这 5 个问题全部修，做成 V17.5 发布。”
+1. **总览按工厂表**：“Level 3 matches standard” 下钻名为 “To review”，却把负责人已确认按原样登记的应用也列进去（Total 20，卡片 18；RBCD 5 对 4；RBCW 2 对 1）。现在用同一条规则（`applicationsToReviewAtLevel`），表格和卡片一致。
+2. **Data checks**：不在范围内（没有分数或不再使用）的应用不再显示 “Cost score 1 — Counted as ¥200,000 / year”，因为它本来就不计入成本合计。
+3. **Data checks**：负责人确认按原样登记的记录照常列出，但不再算作 “to check”（AUTO-RACK 从 “1 to check” 变为 “0 to check”）。
+4. **导入工作区备份**：和重新打开已保存的工作一样，带上本版的负责人决定（以前导入旧备份会丢掉 “按原样登记” 的决定，重新打开又回来）。
+5. **加入 LeanIX 流程**（V17）：历史里记为分类表更新，不再给每个应用记一条 “Inventory imported”。
+- 新增 `tests/v17-5-audit-fixes.test.mjs`（5 项，在 V17.4 的代码上全部失败）。
+
 ## [V17.4](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v17.4-20261022) · 2026-10-23
 
 - 用户：“能不能别改的那么让人看不懂？我感觉你的单词用的很奇特。”——认可的写法 “就这样通俗易懂的说”：

@@ -20,7 +20,14 @@
 - **小版本**（V10.1、V10.2……）：修正、文字和显示调整。
 - 版本号写在 `program/scripts/release.mjs` 的 RELEASE_VERSION（小写，如 `v10`、`v10.1`）；文件名、发布 zip、部署脚本和 Release 标签（`v10-20261022`）都随它生成。导入预览的“变化明细”是新功能，所以这一版是 V10（原计划的 V9.20 没有发布）。
 
-## V17.4 当前状态（2026-10-23，优先于所有历史段落）
+## V17.5 当前状态（2026-10-23，优先于所有历史段落）
+
+- 用户问 “还有其他的问题吗？”：一轮检查工作流（规则 / 数字 / 数据流转三个角度 + 反驳者）确认 5 处、驳回 4 处（V16 按应用的 Process ID 设计、To review 与 Data checks 的有意差别、HC 映射不可达、内置确认记录只并入同来源）。用户：“这 5 个问题全部修，做成 V17.5 发布。”
+- 修正：overview.mjs 新增 `applicationsToReviewAtLevel(report,group,level)`（去掉某层未通过记录全部为负责人确认的应用），卡片（l3MaintenanceMetrics）和按工厂表共用；data-checks.mjs 的 addPrimary 对不在待处理的应用不加检查行、"to check" 计数不含只有 “Confirmed by owner as recorded” 标签的行（行仍显示）、成本 1 分检查只对 scopeReason 为空的应用；app.js 导入 JSON 备份先 `mergeBundledCorrections(importWorkspace(text),initialData).data`（与 onRestore 一致）；previewLocalLayer 以 taxonomyFile 记录。
+- 测试 `tests/v17-5-audit-fixes.test.mjs`（5 项，在 V17.4 代码上全部失败）；`import-safety` 按新的导入写法更新。544 项测试通过；deploy:sim 10 / 10。浏览器：总览 Total 行 “Level 3 matches standard” 下钻 “Total · To review” 18 个应用（以前 20），不含 AUTO-RACK 和 RBCW Auto Warehouse。
+- 当前离线包：`offline/logistics-offline-20261022-v17.5.zip`。验证记录见 `verification/v17.5-verification.md`。
+
+## V17.4 状态（2026-10-23，受顶部 V17.5 更新）
 
 - **用词规则（用户 2026-10-23）**：“能不能别改的那么让人看不懂？我感觉你的单词用的很奇特。”工厂用户看到的英文要通俗：用 admin、share、download、file、server、standard list 这类词，不用 steward、publish、package、catalogue、taxonomy、layer、recorded、variant。本版按用户认可的原文改了 Import data 底部一节（标题、说明、按钮、下载提示）和 LeanIX 流程一节（标题、计数、按钮、预览说明、来源说明）。元素 id（`#packagePublish`、`#exportDataPackage`、`#previewLocalLayer`）不变。
 - 539 项测试通过；deploy:sim 10 / 10。当前离线包：`offline/logistics-offline-20261022-v17.4.zip`。验证记录见 `verification/v17.4-verification.md`。

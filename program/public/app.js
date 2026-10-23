@@ -196,8 +196,9 @@ function previewLocalLayer(local,file){
  const next={...base,localProcesses:local.added};delete next.dataPackage;
  resetImportPreview();
  const preview=previewImport(base,next),name=file+' (BBM PM processes not in the standard list)',n=local.added.length;
- pendingImport={...preview,base,inventoryFile:name,taxonomyFile:''};
- showImportPreview(preview,{inventoryFile:name,note:`Adds ${n} BBM PM ${n===1?'process':'processes'} from LeanIX that ${n===1?'is':'are'} not in the standard list, each under its parent process in LeanIX. The standard list does not change. Applications that use ${n===1?'this process':'these processes'} are no longer shown as not matched.`});
+ // A change of the process list, not of the inventory: History records it as a taxonomy update (V17.5 audit).
+ pendingImport={...preview,base,inventoryFile:'',taxonomyFile:name};
+ showImportPreview(preview,{taxonomyFile:name,note:`Adds ${n} BBM PM ${n===1?'process':'processes'} from LeanIX that ${n===1?'is':'are'} not in the standard list, each under its parent process in LeanIX. The standard list does not change. Applications that use ${n===1?'this process':'these processes'} are no longer shown as not matched.`});
 }
 function showProcessCheck(check,catalogue,{catalogueSource='',local=null,currentLocal=0}={}){
  const items=(list,r)=>list.length?`<ul>${list.map(p=>{const id=r.standard?.get(p)?.id;return `<li>${esc(p)}${id?` <span class="process-id">${esc(id)}</span>`:''}</li>`;}).join('')}</ul>`:'<p class="hint">None</p>';
@@ -236,7 +237,8 @@ $('importRun').onclick=async()=>{
   }
   if([inventorySheets,taxonomySheets].some(sheets=>sheets&&processExportWithoutLinks(sheets)))throw Error(NO_APPLICATIONS_COLUMN);
   let next=base,raw;
-  let inventorySheet=null;if(inventory){if(/\.json$/i.test(inventory.name)){const text=await inventory.text();next=importWorkspace(text);raw=JSON.parse(text).data;}else{const read=inventoryFromSheets(inventorySheets);inventorySheet=read.inventorySheet||null;next=applyInventory(base,read,inventory.name);}}
+  // A workspace backup gets the release's owner decisions the same way as reopening kept work (V17.5 audit).
+  let inventorySheet=null;if(inventory){if(/\.json$/i.test(inventory.name)){const text=await inventory.text();next=mergeBundledCorrections(importWorkspace(text),initialData).data;raw=JSON.parse(text).data;}else{const read=inventoryFromSheets(inventorySheets);inventorySheet=read.inventorySheet||null;next=applyInventory(base,read,inventory.name);}}
   if(taxonomy){const rows=taxonomyFromSheets(taxonomySheets);next={...next,...rows,taxonomySource:rows.processRows?taxonomy.name:taxonomySourceName(processTaxonomySource(next.taxonomySource),taxonomy.name)};delete next.dataPackage;}
   if(generation!==importGeneration)return;
   const preview=previewImport(base,next,raw||next);pendingImport={...preview,base,inventoryFile:inventory?.name||'',taxonomyFile:taxonomy?.name||''};

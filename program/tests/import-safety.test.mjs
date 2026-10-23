@@ -122,7 +122,8 @@ test('the owner-approved Manufacturing removal is reported in the preview and ke
  assert.deepEqual(previewImport(data,data).ownerDecisions,[],'no note when the imported value was not rewritten');
  const olderJson=JSON.stringify({format:'logistics-portfolio-workspace',version:4,data:{...data,apps:data.apps.map(app=>app.ID===id?{...app,Processes:original}:app)}});
  assert.equal(previewImport(data,importWorkspace(olderJson),JSON.parse(olderJson).data).ownerDecisions.length,1,'older workspace JSON files are reported too');
- assert.match(appSource,/next=importWorkspace\(text\);raw=JSON\.parse\(text\)\.data;/);assert.match(appSource,/previewImport\(base,next,raw\|\|next\)/);
+ // V17.5: the backup also gets the release's owner decisions, as reopening kept work does; the file's raw data stays the comparison source.
+ assert.match(appSource,/next=mergeBundledCorrections\(importWorkspace\(text\),initialData\)\.data;raw=JSON\.parse\(text\)\.data;/);assert.match(appSource,/previewImport\(base,next,raw\|\|next\)/);
  assert.match(appSource,/decisions:pendingImport\.ownerDecisions/,'applying the import records the decision');
  const recorded=workspaceData(recordImport(data,preview.next,{inventoryFile:'owner-source.xlsx',decisions:preview.ownerDecisions}));
  assert.equal(recorded.importHistory.at(-1).decisions[0].before,original,'original source string is traceable');

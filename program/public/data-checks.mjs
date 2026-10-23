@@ -2,7 +2,8 @@ import {annualCost} from './costs.mjs';
 import {capCode,norm,compareNatural} from './codes.mjs';
 import {displayCode,displayName} from './display.mjs';
 import {english} from './english.mjs';
-import {maintenanceGapReasons,maintenanceReport} from './overview.mjs';
+import {maintenanceGapReasons,maintenanceReport,applicationsToReviewAtLevel} from './overview.mjs';
+import {scopeReason} from './display.mjs';
 import {displayMaintenanceGapReason} from './maintenance-labels.mjs';
 import {semanticConcerns} from './semantic-review.mjs';
 import {nameDifferenceRows} from './name-differences.mjs';
@@ -21,6 +22,10 @@ function addTag(row,label,detail=''){
  if(!row.tags.some(tag=>tag.label===label&&tag.detail===detail))row.tags.push({label,detail});
 }
 function addPrimary(rows,app,dimension,report){
+ // An application whose Level 3 records outside the standard were all confirmed by the owner (V9.18) is not to review,
+ // so it gets no check here either (V17.5 audit); its confirmed records stay listed as information.
+ const level=report.levels.find(l=>l.level===3);
+ if(level&&!applicationsToReviewAtLevel(report,report,level).some(a=>a.id===app.id))return;
  const reason=maintenanceGapReasons(report,report,app,[3])[0];
  if(!reason)return;
  const primary=`${dimension==='cap'?'Business Capability':'Process'}: ${displayMaintenanceGapReason(reason)}`;
@@ -93,14 +98,17 @@ export function dataChecksForApp(model,app,reports=null){
  if(model.standardCatalogue)for(const difference of nameDifferences)addTag(addRow(rows,'cap',difference.raw),'Name differs from standard',`Standard name: "${difference.standardName}". Correct the record in LeanIX; it is not changed automatically.`);
  addPrimary(rows,app,'cap',currentReports.cap);
  addPrimary(rows,app,'process',currentReports.process);
- if(annualCost(app).score===1){const row=addRow(rows,'cost','');addTag(row,'Cost score 1','Counted as ¥200,000 / year; plant to confirm.');}
+ // Out of scope (no score, or not still active): not counted in the cost totals, so no cost check (V17.5 audit).
+ if(annualCost(app).score===1&&!scopeReason(app)){const row=addRow(rows,'cost','');addTag(row,'Cost score 1','Counted as ¥200,000 / year; plant to confirm.');}
  const checks=[...rows.values()].filter(row=>row.primary||row.tags.length).sort((a,b)=>['cap','process','cost'].indexOf(a.dimension)-['cap','process','cost'].indexOf(b.dimension)||a.raw.localeCompare(b.raw));
  const mappings=mappedRows(model,app);
- return {checks,mappings,nameDifferences,n:checks.length,m:mappings.length,k:nameDifferences.length,standard:!!model.standardCatalogue};
+ // A record the owner confirmed as recorded is shown, but it is not something to check (V17.5 audit).
+ const toCheck=checks.filter(row=>row.primary||row.tags.some(tag=>tag.label!=='Confirmed by owner as recorded'));
+ return {checks,mappings,nameDifferences,n:toCheck.length,m:mappings.length,k:nameDifferences.length,standard:!!model.standardCatalogue};
 }
 
 export function dataChecksSummary(checks){
- if(checks.n===0&&checks.m===0&&checks.k===0)return '';
+ if(checks.n===0&&checks.m===0&&checks.k===0&&!checks.checks?.length)return '';
  return `${checks.n} to check${checks.m?` · ${checks.m} mapped`:''}`;
 }
 
