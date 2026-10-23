@@ -10,7 +10,7 @@ import {filterLandscape,landscapeColumns,landscapeHeaderCell,openOneLevel,closeC
 import {processIssues,renderProcessIssues,capabilityIssues,renderCapabilityIssues,focusApplicationIssue} from './process-issues.mjs';
 import {english} from './english.mjs';
 import {buildModel,columns} from './model.mjs';
-import {readXlsx,inventoryFromSheets,taxonomyFromSheets,taxonomySourceName,processTaxonomySource} from './xlsx.mjs';
+import {readXlsx,inventoryFromSheets,taxonomyFromSheets,taxonomySourceName,processTaxonomySource,isLeanixProcessExport,LEANIX_PROCESS_EXPORT} from './xlsx.mjs';
 import {createComparisonUI} from './similarity-ui.mjs';
 import {exportWorkspace,importWorkspace,mergeBundledCorrections,workspaceData} from './workspace.mjs';
 import {createAutosave,readView,writeView,viewForDatasetRestore} from './autosave.mjs';
@@ -25,7 +25,6 @@ import {DATA_PACKAGE_FILE,readDataPackage,applyDataPackage,packageIsNew,packageN
 import {uploadToServer,uploadMessage,canUpload} from './server-upload.mjs';
 import {createAppSearch} from './app-search.mjs';
 import {updateNoticeDue,markUpdateSeen,updateNoticeHTML} from './whats-new.mjs';
-import {isLeanixProcessLinks,processExportWithoutLinks,readProcessLinks,compareProcessLinks,processCheckCSV,compareCatalogue,catalogueCheckCSV,catalogueNote,localProcessesFrom,NO_APPLICATIONS_COLUMN} from './leanix-process-check.mjs';
 import './fullscreen.mjs';
 const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // Keep the supplied taxonomy text intact; tidy repeated ellipses in menu labels only.
@@ -192,44 +191,10 @@ function previewDataPackage(){
  showImportPreview(preview,{inventoryFile:file,note:'Data published by the data steward on the intranet server. Applying it replaces the application inventory, the catalogues and the owner decisions (mappings, including those the steward revoked, and records confirmed as recorded); your review notes, pair reviews, score settings and own mappings are kept.'});
 }
 $('serverPackagePreview').onclick=previewDataPackage;
-// The steward's export: the shared data of this workspace as logistics-data.json for the IIS server.
-// Upload to server (V18): the same file as the download, sent to the IIS server; only on the intranet page.
-$('uploadToServer').hidden=!canUpload();
+// Upload to server (V18): the shared data of this workspace as logistics-data.json, sent to the IIS server. Only the
+// intranet page shows it; the download for the server admin was removed in V19 (owner decision 2026-10-23).
+$('packagePublish').hidden=!canUpload();
 $('uploadToServer').onclick=async()=>{if(!data)return;const button=$('uploadToServer');button.disabled=true;$('uploadToServerStatus').textContent='Uploading…';try{$('uploadToServerStatus').textContent=uploadMessage(await uploadToServer(dataPackageText(data)));}catch(error){$('uploadToServerStatus').textContent='Nothing was uploaded: '+english(error.message);}finally{button.disabled=false;}};
-$('exportDataPackage').onclick=()=>{if(!data)return;try{const text=dataPackageText(data),pkg=JSON.parse(text);downloadText(text,DATA_PACKAGE_FILE,'application/json');$('exportDataPackageStatus').textContent=`Downloaded ${DATA_PACKAGE_FILE} (${pkg.applications} applications${pkg.dataAsOf?`, data from ${pkg.dataAsOf}`:''}). Put it on the server next to index.html.`;}catch(error){$('exportDataPackageStatus').textContent='Download failed: '+english(error.message);}};
-// LeanIX process check (V15, owner decision 2026-10-22: compare only). V16 puts the standard catalogue first: the
-// catalogue's processes LeanIX lacks, with Process ID, Process Name and the name expected in LeanIX, so the owner can
-// fill them in. Then the applications: those that differ come first and are open. There is nothing to apply, so the
-// Apply button stays hidden and the current data is never changed.
-// V17: the LeanIX local process layer of the selected export as an import preview; Apply records it like any import.
-function previewLocalLayer(local,file){
- const base=data;if(!base||!local)return;
- const next={...base,localProcesses:local.added};delete next.dataPackage;
- resetImportPreview();
- const preview=previewImport(base,next),name=file+' (BBM PM processes not in the standard list)',n=local.added.length;
- // A change of the process list, not of the inventory: History records it as a taxonomy update (V17.5 audit).
- pendingImport={...preview,base,inventoryFile:'',taxonomyFile:name};
- showImportPreview(preview,{taxonomyFile:name,note:`Adds ${n} BBM PM ${n===1?'process':'processes'} from LeanIX that ${n===1?'is':'are'} not in the standard list, each under its parent process in LeanIX. The standard list does not change. Applications that use ${n===1?'this process':'these processes'} are no longer shown as not matched.`});
-}
-function showProcessCheck(check,catalogue,{catalogueSource='',local=null,currentLocal=0}={}){
- const items=(list,r)=>list.length?`<ul>${list.map(p=>{const id=r.standard?.get(p)?.id;return `<li>${esc(p)}${id?` <span class="process-id">${esc(id)}</span>`:''}</li>`;}).join('')}</ul>`:'<p class="hint">None</p>';
- const counts=tiles=>`<div class="import-counts">${tiles.map(([label,n])=>`<div><span>${label}</span><strong>${n}</strong></div>`).join('')}</div>`;
- const table=(heads,rows)=>`<div class="import-changes-scroll"><table class="import-changes-table"><thead><tr>${heads.map(h=>`<th scope="col">${h}</th>`).join('')}</tr></thead><tbody>${rows.map(row=>`<tr>${row.map(cell=>`<td>${esc(cell)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
- const c=catalogue.counts,reached=catalogue.chains.filter(x=>x.reached),notReached=catalogue.chains.filter(x=>!x.reached),plural=(n,one,many)=>`${n} ${n===1?one:many}`;
- const source=esc(catalogueSource||'the process taxonomy');
- const catalogueHtml=`<h4 class="process-check-heading">Standard catalogue against LeanIX</h4>${c.compared?`<p class="hint">The standard processes (Process ID and Process Name from ${source}) of the process chains this export names, found by the name rule the applications use: “BBM PM &lt;chain&gt; &lt;name&gt; L&lt;level&gt;”. Fill in the missing ones in LeanIX, or correct the LeanIX names that are not in the catalogue.</p>`:`<p class="review-reason">No standard process could be compared: no LeanIX name in this export matches the process catalogue (${source}).</p>`}${counts([['Compared',c.compared],['In LeanIX',c.inLeanix],['Missing in LeanIX',c.missing],['In LeanIX, not in the catalogue',c.notInCatalogue]])}<dl class="source-records"><dt>Chains compared</dt><dd>${reached.map(x=>`${esc(x.code)}: ${x.missing} of ${x.inLeanix+x.missing} missing`).join(' · ')||'None'}</dd><dt>Not in this export</dt><dd>${notReached.length?`${notReached.map(x=>`${esc(x.code)} (${x.processes})`).join(' · ')} — not compared`:'None'}</dd>${c.otherNaming?`<dt>Not compared</dt><dd>${plural(c.otherNaming,'process named otherwise (no level L0–L3)','processes named otherwise (no level L0–L3)')} — not part of the catalogue; listed in the CSV</dd>`:''}</dl>${c.possiblyMissing?`<p class="hint">${plural(c.possiblyMissing,'process is','processes are')} possibly missing: the catalogue uses ${c.possiblyMissing===1?'its name':'their names'} more than once, LeanIX has fewer processes of that name and their Parent does not tell which.</p>`:''}${c.ambiguous?`<p class="hint">${plural(c.ambiguous,'Process ID has','Process IDs have')} two names in the catalogue and ${c.ambiguous===1?'is':'are'} not compared.</p>`:''}${catalogue.missing.length?`<details class="import-changes" open><summary>Missing in LeanIX · ${catalogue.missing.length}</summary>${table(['Process chain','Level','Process ID','Process Name','Name expected in LeanIX','Note'],catalogue.missing.map(r=>[r.chain,r.level,r.id,r.name,r.expected,r.status==='possibly-missing'?'Possibly missing: '+catalogueNote(r):'']))}</details>`:''}${catalogue.notInCatalogue.length?`<details class="import-changes"><summary>In LeanIX, not in the catalogue · ${catalogue.notInCatalogue.length}</summary>${table(['LeanIX name','Why'],catalogue.notInCatalogue.map(r=>[r.name,r.reason+(r.candidates.length?' Candidates: '+r.candidates.map(x=>`${x.id} ${x.label}`).join('; '):'')]))}</details>`:''}<p><button type="button" id="exportCatalogueCheck">Download catalogue check (CSV)</button></p>`;
- const localHtml=local?`<h4 class="process-check-heading">BBM PM processes not in the standard list</h4><p class="hint">These BBM PM processes are in LeanIX but not in the standard list. You can add them to the tool, each under its parent process in LeanIX. Nothing changes until you check the preview and click Apply.</p>${counts([['Can be added',local.added.length],['Cannot be added',local.skipped.length],['Already in the tool',currentLocal]])}${local.skipped.length?`<details class="import-changes"><summary>Cannot be added · ${local.skipped.length}</summary>${table(['LeanIX name','Why'],local.skipped.map(r=>[r.name,r.reason]))}</details>`:''}<p><button type="button" id="previewLocalLayer"${local.added.length||currentLocal?'':' disabled'}>Preview adding them</button></p>`:'';
- const app=r=>`<details class="process-check-app"><summary><strong>${esc(r.name)}</strong> · ${r.both.length} in both · ${r.onlyLeanix.length} only in LeanIX · ${r.onlyTool.length} only in the tool${r.leanixNames.length?` · in LeanIX as ${r.leanixNames.map(n=>`“${esc(n)}”`).join(', ')}`:''}${r.sameName>1?` · <span class="review-reason">${r.sameName} applications in the tool have this name</span>`:''}</summary><div class="process-check-lists"><section><h4>Only in LeanIX · ${r.onlyLeanix.length}</h4>${items(r.onlyLeanix,r)}</section><section><h4>Only in the tool · ${r.onlyTool.length}</h4>${items(r.onlyTool,r)}</section><section><h4>In both · ${r.both.length}</h4>${items(r.both,r)}</section></div>${r.similar.length?`<p class="review-reason">LeanIX links no process to this name. Similar LeanIX names: ${r.similar.map(n=>`“${esc(n)}”`).join(', ')}.</p>`:''}${r.notInExport.length?`<p class="hint">Recorded in the tool but not in this export (not compared): ${r.notInExport.map(esc).join('; ')}</p>`:''}</details>`;
- const by=status=>check.rows.filter(r=>r.status===status);
- const group=(title,rows,open)=>rows.length?`<details class="import-changes"${open?' open':''}><summary>${title} · ${rows.length}</summary>${rows.map(app).join('')}</details>`:'';
- const none=by('not-in-export');
- $('importPreview').innerHTML=`<div class="import-summary"><h3>LeanIX process check</h3><p class="hint">Compared only: the standard process catalogue and the applications' processes against this LeanIX export. Nothing is changed and there is nothing to apply.</p><dl class="source-records"><dt>LeanIX export</dt><dd>${esc(check.file)} · sheet ${esc(check.sheet)}${check.exportedAt?` · exported ${esc(check.exportedAt)}`:''}</dd><dt>Processes</dt><dd>${check.processes} in this export · linked to ${check.linkedApplications} applications by name</dd></dl></div>${catalogueHtml}${localHtml}<h4 class="process-check-heading">Applications against LeanIX</h4><p class="hint">For each application, the processes LeanIX links to it and the processes recorded in the tool, with the standard Process ID of each.${check.otherApplications?` LeanIX also links these processes to ${plural(check.otherApplications,'application that is','applications that are')} not in the tool's inventory; they are not compared.`:''}</p>${counts([['Applications',check.counts.applications],['Differ',check.counts.differs],['Match',check.counts.matches],['No processes in this export',check.counts.notInExport]])}${group('Applications that differ',by('differs'),true)}${group('Applications that match',by('matches'),false)}${none.length?`<details class="import-changes"><summary>No processes in this export · ${none.length}</summary><ul>${none.map(r=>`<li>${esc(r.name)}${r.notInExport.length?` · ${r.notInExport.length} recorded ${r.notInExport.length===1?'process':'processes'} outside this export`:''}</li>`).join('')}</ul></details>`:''}<p><button type="button" id="exportProcessCheck">Download check (CSV)</button></p>`;
- $('exportProcessCheck').onclick=()=>downloadText(processCheckCSV(check),'LeanIX_process_check_'+new Date().toISOString().slice(0,10)+'.csv','text/csv;charset=utf-8');
- $('exportCatalogueCheck').onclick=()=>downloadText(catalogueCheckCSV(catalogue,{file:check.file}),'LeanIX_catalogue_check_'+new Date().toISOString().slice(0,10)+'.csv','text/csv;charset=utf-8');
- if($('previewLocalLayer'))$('previewLocalLayer').onclick=()=>previewLocalLayer(local,check.file);
- $('importPreview').hidden=false;$('importApply').hidden=true;
- $('importStatus').textContent=`Process check ready: ${c.compared?`${c.missing} standard ${c.missing===1?'process is':'processes are'} missing in LeanIX`:'no standard process could be compared'}; ${check.counts.differs} of ${check.counts.applications} applications differ. Nothing was changed.`;
-}
 $('importRun').onclick=async()=>{
  const inventory=$('inventoryFile').files[0],taxonomy=$('taxonomyFile').files[0];resetImportPreview();
  if(!inventory&&!taxonomy){$('importStatus').textContent='Select an inventory, saved workspace or taxonomy.';return;}
@@ -237,16 +202,8 @@ $('importRun').onclick=async()=>{
  try{
   for(const file of [inventory,taxonomy])if(file&&file.size>30*1024*1024)throw Error('File exceeds 30 MB');
   const inventorySheets=inventory&&!/\.json$/i.test(inventory.name)?await readXlsx(inventory):null,taxonomySheets=taxonomy?await readXlsx(taxonomy):null;
-  // A LeanIX process export with the Applications column (V15) is only compared with the current data.
-  const linksFile=[[inventory,inventorySheets],[taxonomy,taxonomySheets]].find(([,sheets])=>sheets&&isLeanixProcessLinks(sheets));
-  if(linksFile){
-   if(inventory&&taxonomy)throw Error('A LeanIX process export is only compared with the current data. Select it on its own, without a second file.');
-   const links=readProcessLinks(linksFile[1]),current=buildModel(base);
-   const check=compareProcessLinks(base,links,{file:linksFile[0].name,model:current}),catalogue=compareCatalogue(current,links,{processRows:base.processRows}),local=localProcessesFrom(base,links);
-   if(generation===importGeneration)showProcessCheck(check,catalogue,{catalogueSource:processTaxonomySource(base.taxonomySource),local,currentLocal:(base.localProcesses||[]).length});
-   return;
-  }
-  if([inventorySheets,taxonomySheets].some(sheets=>sheets&&processExportWithoutLinks(sheets)))throw Error(NO_APPLICATIONS_COLUMN);
+  // A LeanIX process export is refused: the LeanIX comparison that read it was removed in V19 (owner decision 2026-10-23).
+  if([inventorySheets,taxonomySheets].some(sheets=>sheets&&isLeanixProcessExport(sheets)))throw Error(LEANIX_PROCESS_EXPORT);
   let next=base,raw;
   // A workspace backup gets the release's owner decisions the same way as reopening kept work (V17.5 audit).
   let inventorySheet=null;if(inventory){if(/\.json$/i.test(inventory.name)){const text=await inventory.text();next=mergeBundledCorrections(importWorkspace(text),initialData).data;raw=JSON.parse(text).data;}else{const read=inventoryFromSheets(inventorySheets);inventorySheet=read.inventorySheet||null;next=applyInventory(base,read,inventory.name);}}

@@ -263,7 +263,7 @@ goto :uploaddone
 :uploadoff
 "%APPCMD%" set config "%SITE%" /section:system.webServer/webdav/authoring /enabled:false /commit:apphost >nul 2>&1
 echo [!] Upload to server was NOT turned on: %UPLOADSTEP%. Nobody can upload; the tool works as before.
-echo     Download file for the server still works. The server owner can fix this and run this script again.
+echo     The server owner can fix this and run this script again.
 :uploaddone
 
 rem ---- [6/6] smoke test --------------------------------------------------

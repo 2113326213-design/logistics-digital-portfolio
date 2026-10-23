@@ -92,15 +92,14 @@ test('a package with older data than the page shows is not offered (a server fil
  assert.equal(packageIsNew(user,{...newer,dataAsOf:''}),true,'a package without a date is judged by its content only');
 });
 
-test('the page wiring: only the intranet page looks for the package; Not now remembers the package; the steward exports it',()=>{
+test('the page wiring: only the intranet page looks for the package; Not now remembers the package; it is shared by Upload to server (V19: no download)',()=>{
  const app=source('app.js'),html=source('index.html');
  assert(app.includes("async function checkDataPackage(){\n if(!/^https?:$/.test(location.protocol))return;\n let response;try{response=await fetch(DATA_PACKAGE_FILE,{cache:'no-store'});}catch{return;}\n if(!response.ok)return;"),'http/https only, no cache, a missing file is silent');
  assert(app.includes('await autosave.load();checkDataPackage();'),'checked once the page has its data');
  assert(app.includes('render();showPackageNotice();}'),'the notice follows every data change');
  assert(app.includes("localStorage.setItem(PACKAGE_DISMISSED_KEY,pkg.id)")&&app.includes("dismissed===pkg.id"),'Not now hides this package only');
  assert(app.includes('previewImport(base,applyDataPackage(base,pkg,packageOptions()))'),'the same preview and Apply as a file import');
- assert(app.includes("downloadText(text,DATA_PACKAGE_FILE,'application/json')"));
- assert(html.includes('<div id="packageNotice" class="package-notice" role="status" hidden></div>')&&html.includes('id="exportDataPackage"'));
+ assert(html.includes('<div id="packageNotice" class="package-notice" role="status" hidden></div>')&&html.includes('id="uploadToServer"')&&!html.includes('id="exportDataPackage"'));
 });
 
 // Review findings (V14, before release) — each case is the scenario the review reproduced.

@@ -1,3 +1,5 @@
+// V19 (owner decision 2026-10-23): the tool no longer adds local processes (the LeanIX comparison that offered them was
+// removed). A layer already in saved work, a workspace backup or the server data is kept and used as before.
 // LeanIX local processes (V17, owner decision 2026-10-23: "Signavio 标准为主，LeanIX 的 BBM PM 本地流程作为单独标注的一层加进
 // 流程目录，导入时先预览再 Apply"). The process catalogue stays the Signavio standard (processRows). BBM PM processes of the
 // LeanIX export that are not in it can be added as a separate layer (data.localProcesses): each local process hangs

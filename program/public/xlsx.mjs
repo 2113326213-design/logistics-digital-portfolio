@@ -28,6 +28,16 @@ export async function readXlsx(file){
  for(const sheet of tags(wb,'sheet')){const rid=sheet.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships','id')||sheet.getAttribute('r:id');const target=relationships.get(rid);if(!target)continue;const doc=await xml(partPath(target));const rows=[];let rowIndex=-1;for(const row of tags(doc,'row')){const out=[];let col=0;const rowRef=Number(row.getAttribute('r'));rowIndex=Number.isInteger(rowRef)&&rowRef>0?rowRef-1:rowIndex+1;for(const cell of tags(row,'c')){const letters=cell.getAttribute('r')?.match(/^[A-Z]+/)?.[0];if(letters){col=0;for(const char of letters)col=col*26+char.charCodeAt(0)-64;}else col++;const type=cell.getAttribute('t'),value=tags(cell,'v')[0]?.textContent;out[col-1]=type==='s'?shared(value,sheet.getAttribute('name'),cell.getAttribute('r')||columnName(col)+(rowIndex+1)):type==='inlineStr'?text(cell):type==='b'?(value==='1'?'TRUE':value==='0'?'FALSE':(value??'')):(value??'');}rows[rowIndex]=Array.from(out,x=>x??'');}result[sheet.getAttribute('name')]=rows;}
  return result;
 }
+// A LeanIX process export (field names id, type, name in row 1; records of type Process) is neither an inventory nor a
+// taxonomy. The LeanIX comparison that read it was removed in V19 (owner decision 2026-10-23), so it is refused.
+export const LEANIX_PROCESS_EXPORT='This is a LeanIX process export. The tool no longer reads these files. Select an application inventory, a saved workspace or a taxonomy file.';
+export function isLeanixProcessExport(sheets){
+ return Object.entries(sheets||{}).some(([name,rows])=>{
+  if(/^readme$/i.test(name)||!Array.isArray(rows)||!Array.isArray(rows[0]))return false;
+  const head=rows[0].map(v=>String(v??'').trim()),type=head.indexOf('type');
+  return type>=0&&head.includes('id')&&head.includes('name')&&rows.slice(1).some(r=>String(r?.[type]??'').trim()==='Process');
+ });
+}
 export function inventoryFromSheets(sheets){
  // Which sheet is the inventory (V13, owner request 2026-10-22): a sheet named exactly 'Logistic Apps'; else, among the
  // sheets with ID and Name columns, the newest 'Logistic Apps_<date>' (YYYYMMDD, or MMDD within one year, as in

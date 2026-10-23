@@ -98,10 +98,10 @@ test('V18: the deploy script lets only signed-in Windows users write only the tw
  assert.match(block,/echo \[!\] Upload to server was NOT turned on: %UPLOADSTEP%\. Nobody can upload; the tool works as before\./);
 });
 
-test('V18: the page shows Upload to server only on the intranet page, next to the download, in plain words',()=>{
+test('V18: the page shows Upload to server only on the intranet page, in plain words (V19: without the download)',()=>{
  const html=readFileSync(new URL('../public/index.html',import.meta.url),'utf8'),app=readFileSync(new URL('../public/app.js',import.meta.url),'utf8');
- assert.match(html,/<summary>Share this data with everyone<\/summary>.*<button type="button" id="uploadToServer">Upload to server<\/button><p id="uploadToServerStatus" class="hint" role="status"><\/p><button type="button" id="exportDataPackage">Download file for the server<\/button>/s);
+ assert.match(html,/<summary>Share this data with everyone<\/summary>.*<button type="button" id="uploadToServer">Upload to server<\/button><p id="uploadToServerStatus" class="hint" role="status"><\/p><\/details>/s);
  assert.doesNotMatch(html,/steward|data package/i);
- assert(app.includes("$('uploadToServer').hidden=!canUpload();"));
+ assert(app.includes("$('packagePublish').hidden=!canUpload();"));
  assert(app.includes('uploadMessage(await uploadToServer(dataPackageText(data)))'));
 });

@@ -2,6 +2,16 @@
 
 每个版本的离线包在 [Releases](https://github.com/2113326213-design/logistics-digital-portfolio/releases)；详细的修改说明和用户决定在 [`00_Claude先读.md`](00_Claude先读.md)，验证记录在 [`verification/`](verification/)。
 
+## [V19](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v19-20261022) · 2026-10-23
+
+用户：“现在不需要这个他们填入信息去更改的功能，这个提取的功能还有 leanix 抓数据的功能都删掉吧”。确认后（逐项选择）：
+1. **工厂反馈功能不做**（当时只在设计，没有写代码）。
+2. **删掉 Import data 里的 LeanIX 流程对比**：V15 流程核对（按应用比对 LeanIX 挂的流程）、V16 标准目录对比（Missing in LeanIX）、V17 “Preview adding them”（把 BBM PM 流程加进目录）。误选 LeanIX 流程导出时显示 “This is a LeanIX process export. The tool no longer reads these files. …”，数据不变。LeanIX 的应用清单导出照样能导入。已经加进工作区或服务器数据的 BBM PM 流程保留，照常使用，只是不能再新加。
+3. **删掉 “Download file for the server” 按钮**：“Share this data with everyone” 只剩 **Upload to server**，双击打开的离线文件里整节不显示。部署脚本里关闭上传时的提示也不再提这个按钮。
+4. **删掉 `tools/leanix/`**（`find-processes.mjs`、`summarize-export.mjs` 等）。`leanix_export/`、`leanix_processes*.csv` 仍在 `.gitignore` 里，LeanIX 原始数据永远不提交。
+5. 以前用过工具的浏览器会看到一次更新提示（新的 id，保留 V18.1 的两条，加两条这次的说明，不写版本号）。
+6. 复核：复核流程（1 个复核者读代码并实际运行检查，含误拒正常工作簿的风险）：没有发现问题。
+
 ## [V18.1](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v18.1-20261022) · 2026-10-23
 
 用户：“datacheck 里面为什么 issues to review 有两个……data checks 只有一个”，“pls double check the correct way in the app, seriously”。

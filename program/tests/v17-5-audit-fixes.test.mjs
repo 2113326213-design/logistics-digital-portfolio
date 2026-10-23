@@ -56,9 +56,8 @@ test('V17.5 (4): importing a workspace backup keeps the release\'s owner decisio
  assert(appJs.includes('next=mergeBundledCorrections(importWorkspace(text),initialData).data;'));
 });
 
-test('V17.5 (5): adding the BBM PM processes from LeanIX is recorded in History as a taxonomy update, not an inventory import',()=>{
- const fn=appJs.slice(appJs.indexOf('function previewLocalLayer('),appJs.indexOf('function showProcessCheck('));
- assert(fn.includes("pendingImport={...preview,base,inventoryFile:'',taxonomyFile:name};"));
+// V19: the page no longer adds BBM PM processes from LeanIX; History still records a process list update this way.
+test('V17.5 (5): a process list update is recorded in History as a taxonomy update, not an inventory import',()=>{
  const applied=recordImport(data,{...data,localProcesses:[{id:'M.I2D.030.070.Laaaaaaaa',name:'Load Truck',level:3,parent:'M.I2D.030.070'}]},{inventoryFile:'',taxonomyFile:'export.xlsx (BBM PM processes not in the standard list)'});
  assert.equal(applied.importHistory.at(-1).kind,'taxonomy');
 });

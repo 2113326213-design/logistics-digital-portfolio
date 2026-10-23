@@ -20,7 +20,17 @@
 - **小版本**（V10.1、V10.2……）：修正、文字和显示调整。
 - 版本号写在 `program/scripts/release.mjs` 的 RELEASE_VERSION（小写，如 `v10`、`v10.1`）；文件名、发布 zip、部署脚本和 Release 标签（`v10-20261022`）都随它生成。导入预览的“变化明细”是新功能，所以这一版是 V10（原计划的 V9.20 没有发布）。
 
-## V18.1 当前状态（2026-10-23，优先于所有历史段落）
+## V19 当前状态（2026-10-23，优先于所有历史段落）
+
+- **用户需求**：“现在不需要这个他们填入信息去更改的功能，这个提取的功能还有 leanix 抓数据的功能都删掉吧”。用 AskUserQuestion 确认：填写功能 = 工厂反馈（还没做，停止）；提取功能 = Import data 里的 LeanIX 对比 + Download file for the server；LeanIX 抓数据 = `tools/leanix` 两个脚本。删功能属于页面结构变化，按版本号规则是大版本 V19。由旁支会话在 git worktree（分支 v19-remove-leanix-check）里做，V18.1 发布后 rebase 上去。
+- **删除**：`public/leanix-process-check.mjs`；`app.js` 的 `previewLocalLayer`、`showProcessCheck`、Preview changes 里的 LeanIX 分支和 `exportDataPackage` 按钮处理；`index.html` 第 1 格的 LeanIX 说明和 Download 按钮；`interface.css` 的 process-check 样式；测试 v15、v16 全部，v17 只留“已有本地流程照常使用、存进工作区和数据包”的 2 项，l3v-is-l3 去掉 LeanIX 对比那一项；`tools/leanix/` 整个目录。
+- **保留**：`local-layer.mjs`（数据里已有的 localProcesses 照常读、存、随数据包走，只是页面不能再新加）；Upload to server（V18）；LeanIX **应用**导出作为清单导入；`leanix-processes.mjs` / `leanix-process-export.mjs`（内置的 2026-10-20 流程快照）。
+- **新加**：`xlsx.mjs` 的 `isLeanixProcessExport`（第 1 行有 id、type、name 且有 type = Process 的记录）和 `LEANIX_PROCESS_EXPORT` 提示；`app.js` 在读清单之前拒绝，走原来的 “Import failed: … Current data has not changed.”。“Share this data with everyone” 整节 `$('packagePublish').hidden=!canUpload()`。部署脚本关闭上传时第二行改为 “The server owner can fix this and run this script again.”。`whats-new.mjs` 新 id `2026-10-23-2`，保留 V18.1 两条并加两条（LeanIX 流程导出不再读、只剩 Upload to server）。
+- **测试**：`tests/v19-removed.test.mjs`（5 项）；其余按删除改写（capability-standard 的 import 行、v14、v17.5 第 5 项、v18-upload 页面一项）。`npm test` 540 项通过；`deploy:sim` 14 / 14。
+- **复核**：复核流程（1 个复核者读代码并实际运行检查，含误拒正常工作簿的风险）：没有发现问题。
+- 当前离线包：`offline/logistics-offline-20261022-v19.zip`。验证记录见 `verification/v19-verification.md`。
+
+## V18.1 状态（2026-10-23，受顶部 V19 更新）
 
 - **固定规则（用户 2026-10-23：“这个是死规定”，不得更改）**：某一层没有登记时，只要更深的一层的记录全部符合标准、且它们在这一层的上级在目录里，这一层就算 filled 和 matches standard（满分）。Process（L0–L3）和 Business Capability（L1–L3）都适用。已登记的层只看自己的记录（符合标准的 L3 不掩盖登记错的 L2）。代码：`review-issues.mjs` 的 `ancestorCoverage`（旧的 capabilityLevel2Coverage / processAncestorCoverage / level2Coverage 名字保留，都调用它）；`overview.mjs` 每层 `filled = direct ∪ inferred`，`direct` 是直接登记。以前的 “covered 不算 filled”（V9.2/V9.5）和 “名称有疑问不能带上层” 已废止。测试锁住：`tests/v18-1-data-checks-and-levels.test.mjs`。
 - **Data checks = Issues to review**（用户选 “同一份问题清单（所有层级 + 名称不一致）”）：`data-checks.mjs` 的 `addIssues` 用 `reviewIssues`（和 Issues to review 同一函数）给每个问题一行：有记录的挂在该记录行（已有同名标签就不重复），缺的层每层一行，空字段沿用 “Missing process” 一行；目录问题和可追溯的上级附一句说明（row.details）。以前只看 Level 3 的 addPrimary 删除。75 个应用、两个测试数据集逐个相同；"N to check" = 问题数 + 成本检查。

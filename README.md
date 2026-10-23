@@ -53,11 +53,11 @@
 
 不在内网，或想自己保留一份时用：
 
-1. 下载 [**logistics-offline-20261022-v18.1.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest)。
+1. 下载 [**logistics-offline-20261022-v19.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest)。
 2. 右键 → **Extract all**。
 3. 用 Chrome 打开里面的 HTML（同一个 zip 里的 `deploy-iis.bat` 是给内网服务器部署用的，自己用时不用管）。
 
-解压出来的文件名里带 **v18.1** 就对了（页面上不再显示版本号）。
+解压出来的文件名里带 **v19** 就对了（页面上不再显示版本号）。
 
 </td>
 </tr>
@@ -68,7 +68,7 @@
     <td align="center" width="25%"><h3>75</h3><sub>应用 · 10 个工厂 · 5 个业务部门</sub></td>
     <td align="center" width="25%"><h3>2,775</h3><sub>组两两比较 · 9 组得分 ≥ 50</sub></td>
     <td align="center" width="25%"><h3>22 / 39</h3><sub>Process / Capability 待处理应用</sub></td>
-    <td align="center" width="25%"><h3>V18.1</h3><sub>2026-10-23 · 558 项测试通过</sub></td>
+    <td align="center" width="25%"><h3>V19</h3><sub>2026-10-23 · 540 项测试通过</sub></td>
   </tr>
 </table>
 
@@ -101,10 +101,7 @@
 | 调整打分标准 | **Similarity check** 顶部 | **Score settings** → **Edit settings**，改权重和 **Minimum score** |
 | 保存我的调整，下次接着用 | 任意页面 | 自动保存在这台电脑的浏览器里，下次打开选 **Continue kept work**；要备份或发给别人用 **Export workspace** |
 | 把待处理清单发给工厂 | **Overview** | 选工厂 → **Export To review (CSV)**，用 Excel 打开 |
-| 把更新好的数据发给所有人 | **Import data** | 导入新的导出并 Apply → 对话框底部 **Share this data with everyone** → **Upload to server**（Windows 可能要求登录）。服务器还没打开上传时，点 **Download file for the server**，把 `logistics-data.json` 交给服务器管理员放到 `D:\logistics-tool\`；见下方“给维护者 → 发布新数据” |
-| 把 LeanIX 里 BBM PM 的本地流程加进流程目录（数据管家） | **Import data** | 选 LeanIX 流程导出 → **Preview changes** → **LeanIX local processes** 一节看 “Can be added / Cannot be added” → **Preview the local process layer** → 看预览后 **Apply**。Signavio 标准不变，本地流程名称后有 “(LeanIX local)”；再导入新的导出时整层替换 |
-| 找出 LeanIX 里缺少的标准流程，去补齐 | **Import data** | 同上选 LeanIX 流程导出 → **Preview changes**，看 **Standard catalogue against LeanIX**：**Missing in LeanIX** 表列出标准表（Business Capability + Process）里有、LeanIX 导出里没有的流程（Process chain、Level、Process ID、Process Name，以及 LeanIX 里应有的名称 “BBM PM <链> <名称> L<层级>”）；**In LeanIX, not in the catalogue** 列出 LeanIX 里名称对不上目录的流程和原因。**Download catalogue check (CSV)** 存成表格逐行补齐 |
-| 核对 LeanIX 里应用挂的流程和工具里登记的是否一致 | **Import data** | 在公司电脑上从 LeanIX 视图 “BBM PM process” 导出 Excel（要带 **Applications** 列），在第 1 格选这个文件 → **Preview changes**：按应用列出对得上的、只在 LeanIX 的、只在工具里的流程；**Download check (CSV)** 可存成表格。只核对，不改数据，也没有 Apply |
+| 把更新好的数据发给所有人 | **Import data** | 导入新的导出并 Apply → 对话框底部 **Share this data with everyone** → **Upload to server**（Windows 可能要求登录；这一节只在内网网址打开时出现）；见下方“给维护者 → 发布新数据” |
 | 把某个应用发给同事 | 应用详情 | **Copy link to this application**，对方打开链接直接看到这个应用 |
 
 ## 常见问题
@@ -177,7 +174,9 @@
 
 完整更新日志见 [`CHANGELOG.md`](CHANGELOG.md)。
 
-**V18.1（当前，2026-10-23）**：Data checks 和 Issues to review 列同样的问题（以前 Data checks 只看 Level 3，14 个应用两边对不上）；固定规则：某一层没登记时，只要更深的一层全部符合标准，这一层就算满分（例如 Level 3 符合 → Level 2、1、0 都算满分；Process 和 Business Capability 都适用）；页面顶部不再显示版本号那一行；工具有更新时，以前用过的人打开后会看到一次 “The tool was updated on …” 提示，点 Close 后不再出现。
+**V19（当前，2026-10-23）**：删掉不用的功能（用户：“这个提取的功能还有 leanix 抓数据的功能都删掉吧”）：Import data 里的 LeanIX 流程对比（V15 流程核对、V16 标准目录对比、V17 把 BBM PM 流程加进目录）、“Download file for the server” 按钮、`tools/leanix` 两个脚本。误选 LeanIX 流程导出时提示一句、不改数据；已经加进数据的 BBM PM 流程保留。工厂反馈功能不做。
+
+**V18.1（2026-10-23）**：Data checks 和 Issues to review 列同样的问题（以前 Data checks 只看 Level 3，14 个应用两边对不上）；固定规则：某一层没登记时，只要更深的一层全部符合标准，这一层就算满分（例如 Level 3 符合 → Level 2、1、0 都算满分；Process 和 Business Capability 都适用）；页面顶部不再显示版本号那一行；工具有更新时，以前用过的人打开后会看到一次 “The tool was updated on …” 提示，点 Close 后不再出现。
 
 **V18（2026-10-23）**：一键上传：更新完数据的人在 Import data 底部点 Upload to server，数据就直接放到服务器上，大家打开工具就能拿到；用 Windows 账号登录，服务器上原来的那份自动留作备份，比服务器上旧的数据不让传。部署脚本会在服务器上打开这项功能（只允许登录的人覆盖这两个数据文件）。
 
@@ -229,6 +228,7 @@
 
 | 版本 | 主要变化 |
 |---|---|
+| [V19](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v19-20261022) | 删掉不用的功能（用户：“这个提取的功能还有 leanix 抓数据的功能都删掉吧”）：Import data 里的 LeanIX 流程对比（V15 流程核对、V16 标准目录对比、V17 把 BBM PM 流程加进目录）、“Download file for the server” 按钮、`tools/leanix` 两个脚本。误选 LeanIX 流程导出时提示一句、不改数据；已经加进数据的 BBM PM 流程保留。工厂反馈功能不做 |
 | [V18.1](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v18.1-20261022) | Data checks 和 Issues to review 列同样的问题（以前 Data checks 只看 Level 3，14 个应用两边对不上）；固定规则：某一层没登记时，只要更深的一层全部符合标准，这一层就算满分（例如 Level 3 符合 → Level 2、1、0 都算满分；Process 和 Business Capability 都适用）；页面顶部不再显示版本号那一行；工具有更新时，以前用过的人打开后会看到一次 “The tool was updated on …” 提示，点 Close 后不再出现 |
 | [V18](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v18-20261022) | 一键上传：更新完数据的人在 Import data 底部点 Upload to server，数据就直接放到服务器上，大家打开工具就能拿到；用 Windows 账号登录，服务器上原来的那份自动留作备份，比服务器上旧的数据不让传。部署脚本会在服务器上打开这项功能（只允许登录的人覆盖这两个数据文件） |
 | [V17.5](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v17.5-20261022) | 修正检查发现的 5 处前后不一致：总览按工厂表的 Level 3 待处理名单与上方卡片一致（不再多列负责人已确认的 2 个应用，18 而不是 20）；不在范围内的应用不再提示 “Cost score 1 — Counted as ¥200,000”；负责人确认的记录不再算 “to check”；导入工作区备份时和重新打开一样保留负责人的决定；加入 LeanIX 流程在历史里记为分类表更新 |
@@ -313,7 +313,7 @@ V14 起，新数据不必等新版本：
 
 1. 在工具里点 **Import data**，导入新的 LeanIX 导出（或工作簿），看完预览后点 **Apply**。
 2. 在同一个对话框底部展开 **Share this data with everyone**，点 **Upload to server**。Windows 可能要求用公司账号登录。看到 “Uploaded. Everyone who opens the tool now gets this data” 就完成了；服务器上原来那份自动存成 `logistics-data.previous.json`，可以找服务器管理员换回去。服务器上的数据比你的新时不会上传。
-3. 服务器还没打开上传（显示 “This server does not take uploads yet”）时：在服务器上运行 V18 或更新版本的 deploy-iis.bat；或者先点 **Download file for the server**，远程登录服务器，把 `logistics-data.json` 复制到 `D:\logistics-tool\`（和 `index.html` 同一个文件夹，有旧的就替换）。
+3. 服务器还没打开上传（显示 “This server does not take uploads yet”）时：请服务器管理员在服务器上运行最新的 deploy-iis.bat，然后再点一次 **Upload to server**。
 4. 在服务器的浏览器打开 `http://localhost:8083/logistics-data.json`，能看到一大段文字就说明 IIS 已经能提供它。如果显示 404.3，说明 .json 类型没开，请告诉维护人。
 5. 大家用内网网址打开工具时，标题下会出现 “New data on the server · as of <日期> · published <日期>”：点 **Preview changes** 先看变化再 **Apply**。**Hide this update** 只隐藏这条提示，以后仍可在 **Import data** 对话框顶部点 **Preview server data** 打开。
 
@@ -376,9 +376,8 @@ flowchart LR
 |---|---|
 | 当前状态、改动记录、用户决定 | `00_Claude先读.md`、`program/README.md` |
 | 内置数据（75 个应用、能力和流程目录） | `program/public/data.json`（2026-10-21 自有工作簿 Logistic Apps_1021，经 Import data 同一路径合并；`statusNote` 记录 Status in Oct）；`program/scripts/prepare-data.mjs` 只能重建 8 月格式的工作簿（不读 Status 列），可从原始 Excel 重建 |
-| LeanIX 流程核对（V15、V16） | `program/public/leanix-process-check.mjs`（识别导出、按应用比较、标准目录对 LeanIX、两种 CSV）；名称对应规则 `program/public/model.mjs` 的 `processLookup`（应用记录和核对共用）；测试另有 `program/tests/v16-catalogue-check.test.mjs`；页面接线 `program/public/app.js` 的 `showProcessCheck`；测试 `program/tests/v15-leanix-process-check.test.mjs` |
 | 数据包（V14） | `program/public/data-package.mjs`（生成、校验、应用数据包）；页面接线在 `program/public/app.js`；测试 `program/tests/v14-data-package.test.mjs` |
-| LeanIX 导出整理工具 | `tools/leanix/`（说明见其中 README；`summarize-export.mjs` 整理导出文件；`find-processes.mjs` 需要 LeanIX API token，目前用不上）。LeanIX 原始导出放 `leanix_export/`，永远不提交、不进 MANIFEST |
+| LeanIX 原始导出 | 放 `leanix_export/`，永远不提交、不进 MANIFEST（`.gitignore` 已排除）。V19 起 `tools/leanix/` 已删除，工具也不再读 LeanIX 流程导出 |
 | LeanIX 流程导出（2026-10-20，26 条） | `program/public/leanix-process-export.mjs`（原样数据）、`program/public/leanix-processes.mjs`（按编号合并、名称差异、来源） |
 | 数据模型：读入应用、匹配能力和流程 | `program/public/model.mjs`、`program/public/codes.mjs` |
 | 页面入口和整体渲染 | `program/public/index.html`、`program/public/app.js` |
@@ -392,7 +391,7 @@ flowchart LR
 | 导入 / 导出（Excel、工作区、CSV） | `program/public/xlsx.mjs`、`program/public/import-review.mjs`、`program/public/workspace.mjs`、`program/public/exports.mjs`、`program/public/score-settings.mjs`（阈值随备份）、`program/public/offline-save.mjs`（离线导出提示）；应用搜索在 `program/public/app-search.mjs`（6 个搜索框共用 matchesApplication 和同一个名称、提示） |
 | 样式 | `program/public/*.css` |
 | 构建和离线单文件 | `program/scripts/build.mjs`、`program/scripts/export-offline.mjs` |
-| 测试（`npm test`，当前 558 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v18.1-test-results.txt` |
+| 测试（`npm test`，当前 540 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v19-test-results.txt` |
 | 离线单文件版 | `offline/` |
 | IIS 部署脚本（每次发布自动生成） | `offline/deploy-iis.bat`（同一份脚本也在发布 zip `offline/logistics-offline-<日期>-<版本>.zip` 里，部署只需下载这个 zip）；生成器 `program/scripts/deploy-script.mjs`，模板 `program/scripts/deploy-iis.template.bat`，发布打包 `program/scripts/release-files.mjs`（`npm run release:files`），检查 `program/tests/deploy-script.test.mjs`，本机模拟 `program/scripts/deploy-sim.mjs`（`npm run deploy:sim`） |
 | 构建输出、文件校验清单 | `built/`、`MANIFEST.sha256` |

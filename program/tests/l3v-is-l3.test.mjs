@@ -1,7 +1,7 @@
 // Fixed rule (owner 2026-10-19, restated 2026-10-23: "L3和L3V看做统一等级 … 之后要把这个写入死，不要变了 L3v就是L3"): a process
 // record ending in L3V is a Level 3 record, exactly like L3. These tests fail if any part of the tool starts to treat L3V
 // differently: the same data with every L3 written as L3V (and the reverse) must give the same matches, issues, review
-// texts, overview figures, similarity results and LeanIX checks; and no program code may single out "L3V".
+// texts, overview figures and similarity results; and no program code may single out "L3V".
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync,readdirSync} from 'node:fs';
@@ -11,7 +11,6 @@ import {overviewStats,maintenanceReport} from '../public/overview.mjs';
 import {createWeightedSimilarity,portfolioCandidates} from '../public/weighted.mjs';
 import {pairResultLabel,pairStatusReason} from '../public/pair-status.mjs';
 import {workspaceData} from '../public/workspace.mjs';
-import {readProcessLinks,compareCatalogue,localProcessesFrom} from '../public/leanix-process-check.mjs';
 
 const bundled=workspaceData(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url),'utf8')));
 const level3=/\bL3V?(\s*)$/i;
@@ -46,17 +45,6 @@ test('L3V is L3: every similarity pair has the same status, score and reason',()
  const run=data=>{const m=buildModel(data),list=portfolioCandidates(createWeightedSimilarity(m,data.similarityWeights)),pairs=list.pairs;
   return pairs.map(p=>[p.key,pairResultLabel(p,data.similarityThreshold??50),p.coverage,pairStatusReason(p,data.similarityThreshold??50)]);};
  assert.equal(same(run(asL3)),same(run(asL3V)));
-});
-
-test('L3V is L3: the LeanIX checks treat an L3V name exactly like the L3 name',()=>{
- const KEYS=['id','type','name','displayName','description','processLifecycleStatus','relToParent','relProcessToApplication','fullName','updatedAt'];
- const exportOf=suffix=>readProcessLinks({'BBM PM process (Export 2026-10-23 08_00)':[KEYS,KEYS,
-  ['aaaaaaaa-0000-0000-0000-000000000001','Process',`BBM PM I2D Putaway to Warehouse Destination ${suffix}`,'','','','BBM PM I2D Putaway L2','AUTO-RACK','',''],
-  ['bbbbbbbb-0000-0000-0000-000000000002','Process',`BBM PM I2D Local Putaway Step ${suffix}`,'','','','BBM PM I2D Putaway L2','AUTO-RACK','',''],
-  ['cccccccc-0000-0000-0000-000000000003','Process',`BBM PM I2D Invented Name ${suffix}`,'','','','','','','']]});
- const model=buildModel(bundled),options={processRows:bundled.processRows};
- assert.equal(same(compareCatalogue(model,exportOf('L3'),options)),same(compareCatalogue(model,exportOf('L3V'),options)));
- assert.equal(same(localProcessesFrom(bundled,exportOf('L3'))),same(localProcessesFrom(bundled,exportOf('L3V'))));
 });
 
 test('L3V is L3: no program code singles out L3V (only comments may name it)',()=>{
