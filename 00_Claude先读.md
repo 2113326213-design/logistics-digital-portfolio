@@ -20,7 +20,13 @@
 - **小版本**（V10.1、V10.2……）：修正、文字和显示调整。
 - 版本号写在 `program/scripts/release.mjs` 的 RELEASE_VERSION（小写，如 `v10`、`v10.1`）；文件名、发布 zip、部署脚本和 Release 标签（`v10-20261022`）都随它生成。导入预览的“变化明细”是新功能，所以这一版是 V10（原计划的 V9.20 没有发布）。
 
-## V17 当前状态（2026-10-23，优先于所有历史段落）
+## V17.1 当前状态（2026-10-23，优先于所有历史段落）
+
+- V17 发布后的快速复核（1 个复核者 + 1 个反驳者）确认 1 个问题、驳回 1 个：`localProcessesFrom` 里 `placed` 按名称记录本地流程，同名的后一个覆盖前一个，子流程的 Parent 名称于是按导出行的先后决定。修正：先统计每个本地名称出现在哪些 Parent 下（`homes`），一个名称在两个以上 Parent 下时，以它为 Parent 的子流程不加入并写明原因；同一 Parent 下重复的仍算一个。用户：“不要重要去除吧”。驳回的一条：命中多个本地流程的 LeanIX 记录在 `counts.local` 里少算，但页面和 CSV 都不显示这个数，无可见影响。
+- 新增测试 “V17 review: a Parent name that two local processes share …”（两种行顺序结果相同；同一 Parent 下重复照常），在 V17 的代码上失败。534 项测试通过；deploy:sim 10 / 10。
+- 当前离线包：`offline/logistics-offline-20261022-v17.1.zip`。验证记录见 `verification/v17.1-verification.md`。
+
+## V17 状态（2026-10-23，受顶部 V17.1 更新）
 
 - **用户决定（2026-10-23）**：最初的流程数据（Business Capability + Process 表）来自 Signavio，不是 LeanIX；“Signavio 标准为主，LeanIX 的 BBM PM 本地流程作为单独标注的一层加进流程目录，导入时先预览再 Apply”。新功能，V17。当天下午要给工厂用，用户要求赶出；工厂当天先用 V16。
 - **数据**：`data.localProcesses` = [{id,name,level(1–3),parent,variant,leanixId,leanixName}]（`public/local-layer.mjs`：`cleanLocalProcesses`、`addLocalProcesses`、`LOCAL_TAG=' (LeanIX local)'`、`LOCAL_ID`）。id = 上级 id + “.L” + LeanIX Fact Sheet ID 的 8 位十六进制（冲突时加长），保证按编号前缀判断层级的所有规则照常；标签 = 名称 + “ (LeanIX local)”，`matchName` 是原名。workspace.mjs 只在非空时保留该字段；data-package.mjs 的 payload 带上它、applyDataPackage 按包替换；import-review.mjs 的 taxonomyChanged 包含它。内置 data.json 不带本地层。

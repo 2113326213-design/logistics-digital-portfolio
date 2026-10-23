@@ -1,13 +1,13 @@
 {
-  "createdAt": "2026-10-23T01:43:59.667Z",
-  "snapshot": "20261022_v17",
+  "createdAt": "2026-10-23T01:51:54.308Z",
+  "snapshot": "20261022_v17.1",
   "applications": 75,
   "tests": {
-    "passed": 533,
+    "passed": 534,
     "failed": 0,
-    "log": "verification/v17-test-results.txt"
+    "log": "verification/v17.1-test-results.txt"
   },
-  "offlineHTML": "offline/物流工具_最新版_离线单文件_20261022_v17.html",
+  "offlineHTML": "offline/物流工具_最新版_离线单文件_20261022_v17.1.html",
   "source": "program/",
   "workspace": "latest-workspace.json",
   "browserVisualVerification": "offline HTML checked in a local browser over http://127.0.0.1 (not file://); hosted sign-in not verified",

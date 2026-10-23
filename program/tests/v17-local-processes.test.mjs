@@ -98,3 +98,16 @@ test('V17: the page offers the layer as a preview from the process check and cha
  assert(app.includes("local=localProcessesFrom(base,links)"));
  assert(app.includes("$('previewLocalLayer').onclick=()=>previewLocalLayer(local,check.file)"));
 });
+
+test('V17 review: a Parent name that two local processes share is not decided by row order — the child is not added',()=>{
+ const area=n=>record(n,'BBM PM I2D Dup Area L2',leanixName(model.procs.get(n.startsWith('a1')?'M.I2D.010':'M.I2D.030')));
+ const child=record('a3000000-0000-0000-0000-000000000003','BBM PM I2D Dup Child L3','BBM PM I2D Dup Area L2');
+ for(const order of [[area('a1000000-0000-0000-0000-000000000001'),area('a2000000-0000-0000-0000-000000000002'),child],[area('a2000000-0000-0000-0000-000000000002'),area('a1000000-0000-0000-0000-000000000001'),child]]){
+  const {added,skipped}=localProcessesFrom(data,links(order));
+  assert.deepEqual(added.map(p=>p.id),['M.I2D.010.La1000000','M.I2D.030.La2000000']);
+  assert.deepEqual(skipped.map(s=>[s.name,s.reason]),[['BBM PM I2D Dup Child L3','Its LeanIX Parent name is used by several local processes, so the Parent is not clear.']]);
+ }
+ // The same local process listed twice under the same Parent is one process, and its child is still added.
+ const twice=[record('b1000000-0000-0000-0000-000000000001','BBM PM I2D One Area L2',leanixName(model.procs.get('M.I2D.030'))),record('b2000000-0000-0000-0000-000000000002','BBM PM I2D One Area L2',leanixName(model.procs.get('M.I2D.030'))),record('b3000000-0000-0000-0000-000000000003','BBM PM I2D One Child L3','BBM PM I2D One Area L2')];
+ assert.deepEqual(localProcessesFrom(data,links(twice)).added.map(p=>p.id),['M.I2D.030.Lb1000000','M.I2D.030.Lb1000000.Lb3000000']);
+});

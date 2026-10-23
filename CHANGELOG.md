@@ -2,6 +2,11 @@
 
 每个版本的离线包在 [Releases](https://github.com/2113326213-design/logistics-digital-portfolio/releases)；详细的修改说明和用户决定在 [`00_Claude先读.md`](00_Claude先读.md)，验证记录在 [`verification/`](verification/)。
 
+## [V17.1](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v17.1-20261022) · 2026-10-23
+
+- 修正：LeanIX 里两个本地流程同名（在不同上级下）时，挂在这个名称下的子流程不再按导出行的先后随便挂到其中一个，而是不加入并写明原因（复核发现）。例：LeanIX 里 “BBM PM I2D Dup Area L2” 分别在两个上级下各有一条，另一条流程的 Parent 写的是这个名称——以前会挂到导出里排在后面的那一个（换个顺序结果就变），现在不加入，原因 “Its LeanIX Parent name is used by several local processes, so the Parent is not clear.”。同一个本地流程在同一上级下重复出现时仍算一个，子流程照常加入。与标准流程同名多编号时不按顺序决定的规则一致。
+- 用户：“不要重要去除吧”——这类说不清的情况直接不加入。
+
 ## [V17](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v17-20261022) · 2026-10-23
 
 - **LeanIX 本地流程层**（用户 2026-10-23：“Signavio 标准为主，LeanIX 的 BBM PM 本地流程作为单独标注的一层加进流程目录，导入时先预览再 Apply”）。工具的流程目录仍是 Signavio 标准（Business Capability + Process 表）；在 Import data 选 LeanIX 流程导出后，流程核对里多了 **LeanIX local processes** 一节：

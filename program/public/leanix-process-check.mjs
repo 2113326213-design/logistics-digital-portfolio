@@ -207,10 +207,15 @@ export function localProcessesFrom(data,links){
   candidates.push({record,chain,level:+m[1],name:bareName(record.name).replace(/\s+/g,' ').trim(),variant:/L3V\s*$/i.test(record.name)});
  }
  const waiting=new Set(candidates.map(c=>nameKey(c.record.name))),placed=new Map(),ids=new Set(),keys=new Set(),added=[];
+ // The Parents each local name is found under (one name under two Parents is two processes).
+ const homes=new Map();for(const c of candidates){const k=nameKey(c.record.name);if(!homes.has(k))homes.set(k,new Set());homes.get(k).add(nameKey(c.record.parent));}
  let pending=candidates;
  for(let pass=0;pending.length&&pass<4;pass++)pending=pending.filter(c=>{
   if(!c.record.parent){skip(c.record,'No Parent in LeanIX.');return false;}
-  const standard=resolve(c.record.parent).id,parentNode=standard?model.procs.get(standard):placed.get(nameKey(c.record.parent));
+  const standard=resolve(c.record.parent).id;
+  // A Parent name that several local processes use (under different Parents) does not say which one: never decided by row order (V17 review).
+  if(!standard&&(homes.get(nameKey(c.record.parent))?.size||0)>1){skip(c.record,'Its LeanIX Parent name is used by several local processes, so the Parent is not clear.');return false;}
+  const parentNode=standard?model.procs.get(standard):placed.get(nameKey(c.record.parent));
   if(!parentNode){if(waiting.has(nameKey(c.record.parent))&&pass<3)return true;skip(c.record,'Its LeanIX Parent is neither in the Signavio standard nor added here.');return false;}
   if(chainCode(parentNode.id)!==c.chain){skip(c.record,'Its LeanIX Parent is in another process chain.');return false;}
   if(parentNode.level!==c.level-1){skip(c.record,`Its LeanIX Parent is Level ${parentNode.level}, not Level ${c.level-1}.`);return false;}
