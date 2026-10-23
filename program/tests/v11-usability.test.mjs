@@ -83,11 +83,26 @@ test('To review exports every open issue of the filtered applications, one row p
  const cap=maintenanceReport(model,{},'cap'),process=maintenanceReport(model,{},'process');
  const expected=[...cap.needsReview.map(a=>cap.issues.get(a.id).length),...process.needsReview.map(a=>process.issues.get(a.id).length)].reduce((x,y)=>x+y,0);
  assert.equal(rows.length,expected);
- assert.deepEqual([new Set(rows.filter(r=>r.dimension==='Business Capability').map(r=>r.appId)).size,new Set(rows.filter(r=>r.dimension==='Process').map(r=>r.appId)).size],[39,21]);
+ // V19.1 union (owner 2026-10-23): Process 21 -> 11 applications. 9 applications whose only process issues were records
+ // with a level outside the Signavio list or the name difference (and the unrecorded levels those records now cover;
+ // VM-CN_WACOS_Szh5 had both kinds) and RBAC_ME_Szh5
+ // Intralogistics control system, whose only issue was "Process name differs between sources" (no longer produced).
+ // Business Capability is unchanged.
+ assert.deepEqual([new Set(rows.filter(r=>r.dimension==='Business Capability').map(r=>r.appId)).size,new Set(rows.filter(r=>r.dimension==='Process').map(r=>r.appId)).size],[39,11]);
+ const processRows=rows.filter(r=>r.dimension==='Process');
+ for(const name of ['RBAC_ME_Szh5 Intralogistics control system','RBCD LOM Scrap Management Platform','RBCD WI management system','RBCW E-Queue system','RBHP_LOG_QualManager','ShzP_DAVIS','Szh5_ASRS_WCS_WMS','VM-CN_WACOS_Szh5','VM/LOG-Szh2_DAVIS (recovered 2026-09-21 09:32:15)','VMCN_iSCMP: Intelligent Supply Chain management platform'])
+  assert(!processRows.some(r=>r.application===name),`${name}: no process row`);
+ // No row for a process recorded with a level (it is in LeanIX and matches) and no name-difference row; a process record
+ // without a level is still exported (RBCD LOG Xone).
+ const inLeanix=new Map(model.apps.map(a=>[a.id,new Set(a.inLeanix.map(x=>x.raw))]));
+ assert(!processRows.some(r=>r.record&&inLeanix.get(r.appId).has(r.record)),'no row for a process in LeanIX');
+ assert(!processRows.some(r=>/match needs review|name differs between sources/i.test(r.issue)));
+ assert.deepEqual(processRows.filter(r=>r.application==='RBCD LOG Xone').map(r=>[r.issue,r.record]),[['Process level not specified','BBM_O2C_OM_01 Schedule Agreement for Goods']]);
  const rbcw=rows.filter(r=>r.application==='RBCW Auto Warehouse Management System'&&r.dimension==='Process');
- // V18.1 (fixed rule 2026-10-23): its matching L2 makes L0 and L1 full; its L3 is confirmed as recorded: nothing to review.
+ // V18.1 (fixed rule 2026-10-23): its matching L2 makes L0 and L1 full; its L3 is in LeanIX and matches (V19.1 union;
+ // until V19 it was confirmed as recorded): nothing to review.
  assert.deepEqual(rbcw,[]);
- assert.equal(rows.some(r=>r.application==='AUTO-RACK'&&r.dimension==='Process'),false,'confirmed as recorded, not to review');
+ assert.equal(rows.some(r=>r.application==='AUTO-RACK'&&r.dimension==='Process'),false,'its L3V is in LeanIX and matches (until V19 confirmed as recorded): not to review');
  const plant=toReviewRows(model,{entity:'RBCW'});
  assert(plant.length>0&&plant.every(r=>r.plant==='RBCW'));
  const csv=toReviewCSV(model,{entity:'RBCW'},{source:data.source});

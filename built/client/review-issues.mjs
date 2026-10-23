@@ -84,11 +84,14 @@ export function ancestorCoverage(model,report,app,level){
  const map=isCap?model.caps:model.procs,matched=new Map((app.processMatches||[]).map(m=>[m.raw,m.id]));
  const mappings=model.correctionLog.filter(c=>c.state==='Applied'&&c.appId===app.id&&c.dimension===report.dimension);
  const codeOf=r=>mappings.find(c=>c.raw===r.raw)?.targetId||(isCap?capCode(r.raw):matched.get(r.raw));
+ // A process in LeanIX but not in the Signavio list (union, V19.1) matches, but has no Signavio code or parent.
+ const inLeanix=new Set(isCap?[]:(app.inLeanix||[]).map(x=>x.raw));
  const inCatalogue=(node,at)=>!!node&&node.level===at&&(isCap?!!node.reference:!node.ambiguous);
  for(let deeper=level+1;deeper<=3;deeper++){
   const atDeeper=records.filter(r=>r.level===deeper);
   if(!atDeeper.length||atDeeper.some(r=>!r.valid))continue;
   const evidence=atDeeper.map(r=>{
+   if(inLeanix.has(r.raw))return {raw:r.raw,code:null,parent:null,inLeanix:true};
    const code=codeOf(r),parent=code?.split('.').slice(0,isCap?level+1:level+2).join('.');
    return inCatalogue(map.get(code),deeper)&&inCatalogue(map.get(parent),level)?{raw:r.raw,code,parent}:null;
   });
@@ -120,9 +123,8 @@ export function reviewIssues(model,report,app){
   for(const r of atLevel)if(!r.valid&&!r.accepted)issues.push({dimension,level,kind:'match',record:r.raw,label:`Level ${level} match needs review`,text:textFor(r.raw),...(isCap?{}:{detail:processDetail(model,app,r.raw)})});
  }
  for(const r of records)if(r.level===null&&!r.valid&&!r.accepted)issues.push({dimension,level:null,kind:'record',record:r.raw,label:isCap?'Capability needs review':'Process level not specified',text:textFor(r.raw),...(isCap?{}:{detail:processDetail(model,app,r.raw)})});
- // A matched code whose latest LeanIX name has a different meaning from the snapshot name: kept for business
- // confirmation (a catalogue question; 'and' / '&' spellings are equivalent and are not issues).
- if(!isCap){const seen=new Set();for(const m of app.processMatches||[]){const n=model.procs.get(m.id);if(n?.nameStatus!=='differs'||seen.has(m.raw))continue;seen.add(m.raw);issues.push({dimension,level:n.level,kind:'catalogue',record:m.raw,label:'Process name differs between sources',text:`${n.id} (Level ${n.level}): the latest LeanIX name "${n.leanix.name}" differs from the standard snapshot name "${n.snapshotName}". Confirm which name or business scope applies.`,detail:`Matched by ${matchSource(model,m.id,m.via).sources.join(' and ')} · Next: Confirm the applicable name; neither name is treated as wrong.`});}}
+ // A matched code whose latest LeanIX name differs from the Signavio snapshot name is not an issue since V19.1: both names
+ // are valid (union, owner decision 2026-10-23). Until V19 it was listed as "Process name differs between sources".
  if(isCap){
   const listed=new Set(issues.map(i=>i.record).filter(Boolean));
   if(model.standardCatalogue)for(const d of nameDifferenceRows(model,app))if(!listed.has(d.raw))issues.push({dimension,level:d.code.split('.').length-1,kind:'record',record:d.raw,label:'Name differs from standard',text:`The standard name is "${d.standardName}". Correct the record in LeanIX.`});

@@ -52,12 +52,28 @@ function mapping(data){const item=reviewItems(buildModel({...data,corrections:[]
 test('explicit mapping affects only the chosen source, updates similarity, retains raw data/history and can be revoked',()=>{
  const data=fixture(),before=buildModel(data),original=JSON.stringify(data.apps),c=mapping(data),next={...data,corrections:[c]},after=buildModel(next);
  assert.equal(createSimilarity(before,'process').compare('a','b').coverage,null);assert.equal(createSimilarity(after,'process').compare('a','b').coverage,1);
- // Before the mapping the L3V record is an ordinary unmatched Level 3 record: no variant hold, pending in similarity, actionable in review.
+ // Before the mapping the L3V record is an ordinary unmatched Level 3 record: no variant hold, actionable in review.
  assert.deepEqual(before.issues.filter(i=>i.appId==='a').map(i=>[i.type,i.value]),[['流程未匹配层级表',l3vRaw]]);assert(!before.issues.some(i=>/L3V/.test(i.type)),'no L3V variant issue type');
- assert.deepEqual(createSimilarity(before,'process').scopes.get('a').pending.map(p=>[p.value,p.reason]),[[l3vRaw,'流程未匹配层级表']]);assert.equal(createSimilarity(before,'process').compare('a','b').status,'needs-review');
+ // V19.1 union (owner 2026-10-23, "也按并集"): the L3V record has a level, so it is in LeanIX and is not pending in the
+ // similarity check (until V19 it was pending as '流程未匹配层级表'). It has no Signavio code either, so a has no process
+ // record to compare: the direction still has no score until the mapping gives the record its code.
+ assert.deepEqual(createSimilarity(before,'process').scopes.get('a').pending,[]);
+ const unmapped=createSimilarity(before,'process').compare('a','b');assert.deepEqual([unmapped.status,unmapped.reason,unmapped.coverage],['needs-review','目标没有可比较的登记。',null]);
  assert.deepEqual(createSimilarity(after,'process').scopes.get('a').pending,[]);assert.equal(createSimilarity(after,'process').compare('a','b').status,'comparable');
+ // A mapping still resolves a pending record: the same record without a level ('Process level not specified') is pending
+ // until the owner maps it, then the direction is scored like the L3V record above.
+ const noLevel='BBM PM I2D Return from Production',unlevelled=fixture();unlevelled.apps[0].Processes=noLevel;
+ const noLevelItem=reviewItems(buildModel(unlevelled)).find(i=>i.category==='流程匹配'&&i.appIds.includes('a')&&i.raw===noLevel);
+ const noLevelMapping=createCorrection(unlevelled,{appId:'a',dimension:'process',raw:noLevel,targetId:'M.I2D.010.010.010',reviewer:'Reviewer',reason:'Business confirmed the standard process',reviewKey:noLevelItem.key});
+ const pendingBefore=createSimilarity(buildModel(unlevelled),'process'),pendingAfter=createSimilarity(buildModel({...unlevelled,corrections:[noLevelMapping]}),'process');
+ assert.deepEqual(pendingBefore.scopes.get('a').pending.map(p=>[p.value,p.reason]),[[noLevel,'流程未标注标准层级']]);
+ assert.deepEqual([pendingBefore.compare('a','b').status,pendingBefore.compare('a','b').reason],['needs-review','目标应用仍有未确认的分类。']);
+ assert.deepEqual(pendingAfter.scopes.get('a').pending,[]);assert.deepEqual([pendingAfter.compare('a','b').status,pendingAfter.compare('a','b').coverage],['comparable',1]);
  const item=reviewItems(before).find(i=>i.key===c.reviewKey);assert.equal(reviewResolution(item,[]),'action');assert.equal(reviewResolution(item,correctionStates(next)),'mapped');
- const checkRow=dataChecksForApp(before,before.apps[0]).checks.find(r=>r.dimension==='process'&&r.raw===l3vRaw);assert.deepEqual(checkRow.tags.map(t=>t.label),['No confirmed standard match']);
+ // V19.1 union (owner 2026-10-23): the L3V record is in LeanIX (it has a level), so it matches and is no data check before the
+ // mapping either (until V19 it was a 'No confirmed standard match' check); it is listed in inLeanix until the mapping gives it its code.
+ assert(!dataChecksForApp(before,before.apps[0]).checks.some(r=>r.raw===l3vRaw),'the LeanIX record is not a data check');
+ assert.deepEqual(before.apps[0].inLeanix.map(x=>[x.raw,x.level]),[[l3vRaw,3]]);assert.deepEqual(after.apps[0].inLeanix,[]);
  const afterChecks=dataChecksForApp(after,after.apps[0]);assert(!afterChecks.checks.some(r=>r.raw===l3vRaw),'the mapped record is no longer a data check');assert.deepEqual(afterChecks.mappings.map(m=>[m.raw,m.targetId]),[[l3vRaw,'M.I2D.010.010.010']]);
  assert.equal(after.issues.filter(i=>i.appId==='a').length,0);assert.equal(after.issues.filter(i=>i.appId==='c').length,1);assert.equal(JSON.stringify(next.apps),original);
  assert(reviewItems(buildModel({...next,corrections:[]})).some(i=>i.key===c.reviewKey),'raw checklist key remains accessible');

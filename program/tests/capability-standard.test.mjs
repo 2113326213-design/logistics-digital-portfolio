@@ -452,10 +452,18 @@ test('the status after an applied import says what changed: applications, else t
 const tally=values=>values.reduce((counts,value)=>(counts[value]=(counts[value]||0)+1,counts),{});
 const pairName=p=>[p.target.app.Name,p.peer.app.Name].sort().join(' | ');
 const CATALOGUES={standard:data,'2026-10-15':legacy},portfolioCache=new Map();
-const portfolio=(catalogue,weights)=>{
- const key=catalogue+' '+JSON.stringify(weights??'default weights');
+// V19.1 union (owner 2026-10-23, "也按并集"): a process record with a level that is not exactly one Signavio process (not
+// found, several codes, another chain) is in LeanIX; buildModel lists it in app.inLeanix and the similarity check no longer
+// treats it as pending (it has no Signavio code, so it adds no comparison evidence either). The similarity check reads
+// app.inLeanix for nothing else, so with these lists emptied it is exactly the check until V19, where every such record was
+// pending. The UNTIL_V19 portfolios reproduce every count derived before V19.1 (the derivations in the comments below), and
+// comparing them with the V19.1 portfolios shows which pairs V19.1 changes and why.
+const UNTIL_V19='until V19';
+const portfolio=(catalogue,weights,rule='V19.1')=>{
+ const key=catalogue+' '+JSON.stringify(weights??'default weights')+' '+rule;
  if(!portfolioCache.has(key)){
-  const candidates=portfolioCandidates(createWeightedSimilarity(buildModel(CATALOGUES[catalogue]),weights));
+  const model=buildModel(CATALOGUES[catalogue]);if(rule===UNTIL_V19)for(const app of model.apps)app.inLeanix=[];
+  const candidates=portfolioCandidates(createWeightedSimilarity(model,weights));
   const byName=new Map(candidates.pairs.map(p=>[pairName(p),p]));assert.equal(byName.size,candidates.pairs.length,'application names are unique');
   portfolioCache.set(key,{candidates,byName,statuses:tally(candidates.pairs.map(p=>p.status)),labels:tally(candidates.pairs.map(p=>pairResultLabel(p,50))),
    thresholds:[30,50,60].map(t=>{const r=portfolioAtThreshold(candidates,t);return [t,r.confirmed.length,r.confirmedPairs.length];})});
@@ -494,9 +502,18 @@ const thresholdCounts=rows=>[30,50,60].map(t=>{const pairs=rows.filter(r=>r.stat
 // Code evidence (c) worked out from the components: each direction's capability and process points, the lower one.
 const ownCodeEvidence=p=>Math.min(...[p.forward,p.reverse].map(d=>d.components.filter(c=>(c.key==='cap'||c.key==='process')&&c.weight>0).reduce((sum,c)=>sum+c.score*c.weight,0)));
 const shownPoints=value=>String(Math.round(value*1000)/10); // points out of 100 with at most one decimal, as shown
+// V19.1: the applications with process records in LeanIX only (app.inLeanix, number of records), the same in both
+// catalogues; and the pairs whose status, pair score or label at 30 or 50 differs between the check until V19 and V19.1.
+const IN_LEANIX={'AUTO-RACK':1,'RBCD LOG Xone':1,'RBCD LOM Scrap Management Platform':2,'RBCD WI management system':1,'RBCW E-Queue system':1,'RBHP_LOG_QualManager':1,
+ 'ShzP_DAVIS':1,'Szh5_ASRS_WCS_WMS':1,'VM-CN_WACOS_Szh5':4,'VM/LOG-Szh2_DAVIS':3,'VMCN_iSCMP: Intelligent Supply Chain management platform':2};
+const pairResult=p=>JSON.stringify([p.status,p.coverage,pairResultLabel(p,30),pairResultLabel(p,50)]);
+const unionChanges=(catalogue,weights)=>{const until=portfolio(catalogue,weights,UNTIL_V19);return portfolio(catalogue,weights).candidates.pairs.map(p=>({p,old:until.byName.get(pairName(p))})).filter(({p,old})=>pairResult(p)!==pairResult(old));};
+const unionTransition=({p,old})=>`${old.status}/${pairResultLabel(old,50)} -> ${p.status}/${pairResultLabel(p,50)}`;
 
 test('the documented portfolio counts with the standard catalogue and, for contrast, with the 2026-10-15 catalogue (README "Current counts")',()=>{
- const now=portfolio('standard'),before=portfolio('2026-10-15');
+ // The counts derived until V19, with the similarity check until V19 (UNTIL_V19, see portfolio above); the counts of V19.1
+ // and the pairs it changes follow at the end of this test.
+ const now=portfolio('standard',undefined,UNTIL_V19),before=portfolio('2026-10-15',undefined,UNTIL_V19);
  // L3V is Level 3 (owner decision 2026-10-19). Seven L3V records in four applications have no standard L3 of the same
  // name and are pending like any unmatched L3, so no pair with one of these applications is confirmed and every such pair
  // in scope needs confirmation; all other pairs keep their results. Against the counts before the decision this moves
@@ -512,6 +529,16 @@ test('the documented portfolio counts with the standard catalogue and, for contr
   assert.equal(withL3V.length,4*75-6,'each of the four applications pairs with the 75 others, six pairs among themselves');
   assert(withL3V.every(p=>p.status!=='confirmed'&&pairResultLabel(p,50)===(p.status==='excluded'?'Out of scope':'Needs confirmation')));
   assert(withL3V.every(p=>[p.forward,p.reverse].some(direction=>direction.components.find(c=>c.key==='process').result.target.pending.some(item=>/\bL3V\s*$/.test(item.value)))));
+ }
+ // V19.1 union (owner 2026-10-23, "也按并集"): the seven L3V records have a level, so they are in LeanIX and no longer
+ // pending; the four applications have no other pending process record. In no pair of either catalogue is a record in
+ // LeanIX pending in either direction.
+ for(const catalogue of ['standard','2026-10-15']){
+  const {candidates}=portfolio(catalogue),directions=p=>[[p.forward,p.target.app],[p.reverse,p.peer.app]];
+  const withL3V=candidates.pairs.filter(p=>L3V_PENDING.includes(p.target.app.Name)||L3V_PENDING.includes(p.peer.app.Name));
+  assert.equal(withL3V.length,4*75-6);
+  assert(withL3V.every(p=>directions(p).every(([direction,app])=>!L3V_PENDING.includes(app.Name)||component(direction,'process').result.target.pending.length===0)),catalogue);
+  assert(candidates.pairs.every(p=>directions(p).every(([direction,app])=>!component(direction,'process').result.target.pending.some(item=>app.inLeanix.some(x=>x.raw===item.value)))),catalogue);
  }
  // Owner decision 2026-10-19 on the similarity check: (b) name words ignore single letters and the LeanIX
  // "(recovered …)" suffix (round 2: single digits and single Chinese characters stay words); (a) only name/description
@@ -574,9 +601,66 @@ test('the documented portfolio counts with the standard catalogue and, for contr
    labels50:{'Potential overlap':2,'Below threshold':402,'No shared registrations':372,'Needs confirmation':1450,'More detail needed':174,'No complete score':85,'Out of scope':365},
    labels30:{'Potential overlap':59,'Below threshold':345,'No shared registrations':372,'Needs confirmation':1450,'More detail needed':174,'No complete score':85,'Out of scope':365}}};
  for(const [catalogue,expected] of Object.entries(prior)){
-  const rows=portfolio(catalogue).candidates.pairs.map(p=>({a:p.target.app.Name,b:p.peer.app.Name,...beforeDecision(p)}));
+  const rows=portfolio(catalogue,undefined,UNTIL_V19).candidates.pairs.map(p=>({a:p.target.app.Name,b:p.peer.app.Name,...beforeDecision(p)}));
   assert.deepEqual({statuses:tally(rows.map(r=>r.status)),thresholds:thresholdCounts(rows),labels50:tally(rows.map(r=>r.label50)),labels30:tally(rows.map(r=>r.label30))},expected,catalogue);
  }
+ // V19.1 union (owner 2026-10-23, "也按并集"). Eleven applications have 18 process records with a level that are not one
+ // Signavio process: the seven L3V records above and eleven L3 records (RBCW E-Queue system's Register Truck L3 and
+ // VM/LOG-Szh2_DAVIS' Stage Packaging Kits L3 match several codes, the others none). They are in LeanIX now, no longer
+ // pending in the similarity check, and add no code. The catalogue does not change them.
+ for(const catalogue of ['standard','2026-10-15'])assert.deepEqual(Object.fromEntries(buildModel(CATALOGUES[catalogue]).apps.filter(app=>app.inLeanix.length).map(app=>[app.Name,app.inLeanix.length])),IN_LEANIX,catalogue);
+ // Every pair whose status, pair score or label (at 30 or 50) differs from the check until V19 has one of these
+ // applications, and every one of them was Needs confirmation: the levelled record was evidence still missing. Counted by
+ // unionChanges (the two portfolios pair by pair). Standard catalogue, 543 pairs: 248 incomplete pairs are complete now
+ // (247 Below threshold, and RBCC E-Queue system(Karis) | RBCW E-Queue system, a Potential overlap at 64, see the tests
+ // below), 52 incomplete pairs miss detail (More detail needed); of the investigation pairs (names and descriptions share no
+ // word, unchanged) 142 are No shared registrations, 47 More detail needed and 54 No complete score. 64 pairs of most of the
+ // eleven applications change; RBCD LOG Xone keeps a pending record without a level ('BBM_O2C_OM_01 Schedule Agreement for
+ // Goods', no change), and RBCD LOM Scrap Management Platform has no capability to compare (its only record, B.14.09.1, is
+ // outside B.06), so most of its pairs still need confirmation (3 changes). 2026-10-15 catalogue, 346 pairs: 169 complete
+ // (168 Below threshold, the E-Queue pair at 64), 46 More detail needed; investigation: 74 No shared registrations, 33 More
+ // detail needed, 24 No complete score; there the pairs of RBHP_LOG_QualManager and VM/LOG-Szh2_DAVIS still wait on a
+ // capability whose source meaning differs from the 2026-10-15 name (no change).
+ const NC='Needs confirmation';
+ const unionExpected={
+  standard:{transitions:{[`incomplete/${NC} -> confirmed/Below threshold`]:247,[`incomplete/${NC} -> confirmed/Potential overlap`]:1,[`incomplete/${NC} -> incomplete/More detail needed`]:52,
+    [`investigation/${NC} -> investigation/No shared registrations`]:142,[`investigation/${NC} -> investigation/More detail needed`]:47,[`investigation/${NC} -> investigation/No complete score`]:54},
+   perApp:{'AUTO-RACK':64,'RBCD LOG Xone':0,'RBCD LOM Scrap Management Platform':3,'RBCD WI management system':64,'RBCW E-Queue system':64,'RBHP_LOG_QualManager':64,'ShzP_DAVIS':64,'Szh5_ASRS_WCS_WMS':65,'VM-CN_WACOS_Szh5':64,'VM/LOG-Szh2_DAVIS':64,'VMCN_iSCMP: Intelligent Supply Chain management platform':64}},
+  '2026-10-15':{transitions:{[`incomplete/${NC} -> confirmed/Below threshold`]:168,[`incomplete/${NC} -> confirmed/Potential overlap`]:1,[`incomplete/${NC} -> incomplete/More detail needed`]:46,
+    [`investigation/${NC} -> investigation/No shared registrations`]:74,[`investigation/${NC} -> investigation/More detail needed`]:33,[`investigation/${NC} -> investigation/No complete score`]:24},
+   perApp:{'AUTO-RACK':52,'RBCD LOG Xone':0,'RBCD LOM Scrap Management Platform':3,'RBCD WI management system':52,'RBCW E-Queue system':52,'RBHP_LOG_QualManager':0,'ShzP_DAVIS':52,'Szh5_ASRS_WCS_WMS':53,'VM-CN_WACOS_Szh5':52,'VM/LOG-Szh2_DAVIS':0,'VMCN_iSCMP: Intelligent Supply Chain management platform':52}}};
+ for(const [catalogue,expected] of Object.entries(unionExpected)){
+  const changes=unionChanges(catalogue);
+  assert(changes.every(({p})=>p.target.app.Name in IN_LEANIX||p.peer.app.Name in IN_LEANIX),catalogue+': each changed pair has an application with a record in LeanIX only');
+  assert.deepEqual(tally(changes.map(unionTransition)),expected.transitions,catalogue);
+  assert.deepEqual(Object.fromEntries(Object.keys(IN_LEANIX).map(name=>[name,changes.filter(({p})=>p.target.app.Name===name||p.peer.app.Name===name).length])),expected.perApp,catalogue);
+ }
+ // The V19.1 counts, from those until V19 and these changes. Standard: 588 + 248 = 836 confirmed, 644 - 248 = 396
+ // incomplete; at 50 Potential overlap 7 + 1 = 8, Below threshold 581 + 247 = 828, No shared registrations 599 + 142 = 741,
+ // Needs confirmation 945 - 543 = 402, More detail needed 214 + 52 + 47 = 313, No complete score 139 + 54 = 193. At 30, 21
+ // of the 248 reach 30 (the E-Queue pair among them): Potential overlap 70 + 21 = 91, Below threshold 518 + 248 - 21 = 745.
+ // Thresholds: the E-Queue pair (64) adds its two applications and one pair at 50 and 60.
+ const v191=portfolio('standard'),v191Before=portfolio('2026-10-15');
+ assert.deepEqual(v191.statuses,{confirmed:836,incomplete:396,investigation:1253,excluded:365});
+ assert.deepEqual(v191.labels,{'Potential overlap':8,'Below threshold':828,'No shared registrations':741,'Needs confirmation':402,'More detail needed':313,'No complete score':193,'Out of scope':365});
+ assert.deepEqual(tally(v191.candidates.pairs.map(p=>pairResultLabel(p,30))),{'Potential overlap':91,'Below threshold':745,'No shared registrations':741,'Needs confirmation':402,'More detail needed':313,'No complete score':193,'Out of scope':365});
+ assert.deepEqual(v191.thresholds,[[30,47,91],[50,10,8],[60,8,4]]);
+ assert.deepEqual(v191.candidates.pairs.filter(p=>pairResultLabel(p,50)==='Potential overlap').map(pairName).sort(),[
+  'CGQB_Logistic_system | CGQB_Logistic_system_Q','CGQB_Logistic_system | Iris','CGQB_Logistic_system | RBCD B308 AGV Traffic Control System',
+  'CGQB_Logistic_system_Q | Iris','CGQB_Logistic_system_Q | RBCD B308 AGV Traffic Control System','Control Tower | Physical Logistics Management System','Datahub (recovered 2025-12-19 10:03:06) | RBCC_CDP',
+  'RBCC E-Queue system(Karis) | RBCW E-Queue system']);
+ // The pair that left threshold 30 with the 2026-10-19 decision stays out, and QinP FG Smart Label Management with it.
+ const v191At30=portfolioAtThreshold(v191.candidates,30);
+ assert(!v191At30.confirmedPairs.some(p=>pairName(p)==='BMLP_Nexeed_IAS@WxP | QinP FG Smart Label Management'));
+ assert(!v191At30.confirmed.some(row=>row.app.Name==='QinP FG Smart Label Management')&&v191At30.confirmed.some(row=>row.app.Name==='BMLP_Nexeed_IAS@WxP'));
+ // 2026-10-15: 402 + 169 = 571 confirmed, 830 - 169 = 661 incomplete; at 50 Potential overlap 2 + 1 = 3, Below threshold
+ // 400 + 168 = 568, No shared registrations 374 + 74 = 448, Needs confirmation 1,450 - 346 = 1,104, More detail needed
+ // 174 + 46 + 33 = 253, No complete score 85 + 24 = 109; at 30, 17 of the 169 reach 30: 59 + 17 = 76 and 343 + 169 - 17 =
+ // 495; thresholds 4 / 2 -> 6 / 3 at 50 and 60 (the E-Queue pair).
+ assert.deepEqual(v191Before.statuses,{confirmed:571,incomplete:661,investigation:1253,excluded:365});
+ assert.deepEqual(v191Before.labels,{'Potential overlap':3,'Below threshold':568,'No shared registrations':448,'Needs confirmation':1104,'More detail needed':253,'No complete score':109,'Out of scope':365});
+ assert.deepEqual(tally(v191Before.candidates.pairs.map(p=>pairResultLabel(p,30))),{'Potential overlap':76,'Below threshold':495,'No shared registrations':448,'Needs confirmation':1104,'More detail needed':253,'No complete score':109,'Out of scope':365});
+ assert.deepEqual(v191Before.thresholds,[[30,41,76],[50,6,3],[60,6,3]]);
 });
 
 // The six pairs per catalogue that the 2026-10-19 name rule (b) sends to investigation: their names shared exactly one
@@ -594,37 +678,55 @@ test('similarity decision 2026-10-19 (b): in each catalogue exactly six pairs, w
  // labels before 2026-10-20); QinP | ShzP_DAVIS and I-PFEP | iSCMP incomplete (process needs confirmation). BMLP | QinP is
  // No complete score now (Review needed before 2026-10-20).
  // 2026-10-15: BMLP | QinP and QinP | ShzP_Karis are incomplete there (capability needs confirmation), the rest as above.
+ // These are the results with the similarity check until V19 (UNTIL_V19).
+ // V19.1 union (owner 2026-10-23, "也按并集"): the process records that held QinP | ShzP_DAVIS and I-PFEP | iSCMP back have a
+ // level (ShzP_DAVIS: Load Truck L3; VMCN_iSCMP: Execute finite heuristic L3, Execute infinite heuristic L3), so they are
+ // in LeanIX and no longer pending. Both pairs are complete in both catalogues and No complete score: QinP | ShzP_DAVIS by
+ // hand from its components, from QinP process 50% x 40 = 20, from ShzP_DAVIS 100% x 40 = 40, code evidence min = 20;
+ // I-PFEP | iSCMP capability 100% x 30, process 0 in both directions = 30. With the old name words they would have been
+ // confirmed: the shared 'p' (1 of 8 words) adds 1.25 points (21.25), the shared 'i' (1 of 10 words) 1 point (31, Potential
+ // overlap at 30). The other four pairs are unchanged by V19.1.
  const expected={
-  standard:{'BMLP_Nexeed_IAS@WxP | QinP FG Smart Label Management':'No complete score','QinP FG Smart Label Management | ShzP_Karis':'No shared registrations','QinP FG Smart Label Management | ShzP_DAVIS':'Needs confirmation',
-   'RBCC I-PFEP | iTracker':'No shared registrations','VMCN_iWPC_AKL_Szh5 | iTracker':'No shared registrations','RBCC I-PFEP | VMCN_iSCMP: Intelligent Supply Chain management platform':'Needs confirmation'},
-  '2026-10-15':{'BMLP_Nexeed_IAS@WxP | QinP FG Smart Label Management':'Needs confirmation','QinP FG Smart Label Management | ShzP_Karis':'Needs confirmation','QinP FG Smart Label Management | ShzP_DAVIS':'Needs confirmation',
-   'RBCC I-PFEP | iTracker':'No shared registrations','VMCN_iWPC_AKL_Szh5 | iTracker':'No shared registrations','RBCC I-PFEP | VMCN_iSCMP: Intelligent Supply Chain management platform':'Needs confirmation'}};
- for(const [catalogue,labels] of Object.entries(expected)){
-  const {candidates,byName}=portfolio(catalogue);
+  [UNTIL_V19]:{
+   standard:{'BMLP_Nexeed_IAS@WxP | QinP FG Smart Label Management':'No complete score','QinP FG Smart Label Management | ShzP_Karis':'No shared registrations','QinP FG Smart Label Management | ShzP_DAVIS':'Needs confirmation',
+    'RBCC I-PFEP | iTracker':'No shared registrations','VMCN_iWPC_AKL_Szh5 | iTracker':'No shared registrations','RBCC I-PFEP | VMCN_iSCMP: Intelligent Supply Chain management platform':'Needs confirmation'},
+   '2026-10-15':{'BMLP_Nexeed_IAS@WxP | QinP FG Smart Label Management':'Needs confirmation','QinP FG Smart Label Management | ShzP_Karis':'Needs confirmation','QinP FG Smart Label Management | ShzP_DAVIS':'Needs confirmation',
+    'RBCC I-PFEP | iTracker':'No shared registrations','VMCN_iWPC_AKL_Szh5 | iTracker':'No shared registrations','RBCC I-PFEP | VMCN_iSCMP: Intelligent Supply Chain management platform':'Needs confirmation'}},
+  'V19.1':{
+   standard:{'BMLP_Nexeed_IAS@WxP | QinP FG Smart Label Management':'No complete score','QinP FG Smart Label Management | ShzP_Karis':'No shared registrations','QinP FG Smart Label Management | ShzP_DAVIS':'No complete score',
+    'RBCC I-PFEP | iTracker':'No shared registrations','VMCN_iWPC_AKL_Szh5 | iTracker':'No shared registrations','RBCC I-PFEP | VMCN_iSCMP: Intelligent Supply Chain management platform':'No complete score'},
+   '2026-10-15':{'BMLP_Nexeed_IAS@WxP | QinP FG Smart Label Management':'Needs confirmation','QinP FG Smart Label Management | ShzP_Karis':'Needs confirmation','QinP FG Smart Label Management | ShzP_DAVIS':'No complete score',
+    'RBCC I-PFEP | iTracker':'No shared registrations','VMCN_iWPC_AKL_Szh5 | iTracker':'No shared registrations','RBCC I-PFEP | VMCN_iSCMP: Intelligent Supply Chain management platform':'No complete score'}}};
+ const DAVIS='QinP FG Smart Label Management | ShzP_DAVIS',ISCMP='RBCC I-PFEP | VMCN_iSCMP: Intelligent Supply Chain management platform';
+ for(const [rule,byCatalogue] of Object.entries(expected))for(const [catalogue,labels] of Object.entries(byCatalogue)){
+  const {candidates,byName}=portfolio(catalogue,undefined,rule),where=rule+', '+catalogue;
   // Exactly these pairs are in investigation although their names shared a word under the old rule.
   const moved=candidates.pairs.filter(p=>p.status==='investigation'&&jaccard(oldNameWords(p.target.app.Name),oldNameWords(p.peer.app.Name))>0);
-  assert.deepEqual(moved.map(pairName).sort(),Object.keys(SINGLE_LETTER_PAIRS).sort(),catalogue);
+  assert.deepEqual(moved.map(pairName).sort(),Object.keys(SINGLE_LETTER_PAIRS).sort(),where);
   for(const [name,word] of Object.entries(SINGLE_LETTER_PAIRS)){
    const p=byName.get(name),[a,b]=name.split(' | ');
    assert.deepEqual([...oldNameWords(a)].filter(w=>oldNameWords(b).has(w)),[word],name+': the one word the names shared before');
    assert.deepEqual([component(p.forward,'name').score,component(p.forward,'description').score,component(p.reverse,'name').score],[0,0,0],name);
-   assert.deepEqual([p.status,p.zeroText,p.coverage,pairResultLabel(p,30),pairResultLabel(p,50)],['investigation',true,null,labels[name],labels[name]],catalogue+': '+name);
+   assert.deepEqual([p.status,p.zeroText,p.coverage,pairResultLabel(p,30),pairResultLabel(p,50)],['investigation',true,null,labels[name],labels[name]],where+': '+name);
   }
+  if(rule==='V19.1'){near(pairStatusModule.codeEvidenceScore?.(byName.get(DAVIS)),.2,where+': '+DAVIS);near(pairStatusModule.codeEvidenceScore?.(byName.get(ISCMP)),.3,where+': '+ISCMP);}
   // These six are the only pairs whose status or label (at 30 or 50) differs from before the decision (beforeDecision,
   // this file's own copy of the old rules); every other pair keeps both. Before, by hand from the old name words:
   // I-PFEP | iTracker 1/4 x 10 = 2.5, iWPC | iTracker 1/6 x 10 = 1.67, QinP | ShzP_Karis 1/8 x 10 = 1.25 points
   // (no code in common), BMLP | QinP 48.5 (see below). Under the labels before 2026-10-20 only BMLP | QinP in the standard
   // catalogue changed its label; with the 2026-10-20 labels the formerly confirmed pairs below the threshold also move from
-  // Below threshold to No shared registrations (or, for BMLP | QinP, No complete score).
+  // Below threshold to No shared registrations (or, for BMLP | QinP, No complete score). Since V19.1 QinP | ShzP_DAVIS (21.25)
+  // and I-PFEP | iSCMP (31) are among the confirmed ones before the decision, in both catalogues.
   const changed=candidates.pairs.map(p=>({p,old:beforeDecision(p)})).filter(({p,old})=>old.status!==p.status||old.label30!==pairResultLabel(p,30)||old.label50!==pairResultLabel(p,50));
-  assert.deepEqual(changed.map(({p})=>pairName(p)).sort(),Object.keys(SINGLE_LETTER_PAIRS).sort(),catalogue+': the pairs whose status or label changed');
-  const confirmedBefore=catalogue==='standard'?{'BMLP_Nexeed_IAS@WxP | QinP FG Smart Label Management':.485,'QinP FG Smart Label Management | ShzP_Karis':.0125,'RBCC I-PFEP | iTracker':.025,'VMCN_iWPC_AKL_Szh5 | iTracker':.1/6}:{'RBCC I-PFEP | iTracker':.025,'VMCN_iWPC_AKL_Szh5 | iTracker':.1/6};
+  assert.deepEqual(changed.map(({p})=>pairName(p)).sort(),Object.keys(SINGLE_LETTER_PAIRS).sort(),where+': the pairs whose status or label changed');
+  const confirmedBefore={...catalogue==='standard'?{'BMLP_Nexeed_IAS@WxP | QinP FG Smart Label Management':.485,'QinP FG Smart Label Management | ShzP_Karis':.0125}:{},'RBCC I-PFEP | iTracker':.025,'VMCN_iWPC_AKL_Szh5 | iTracker':.1/6,
+   ...rule==='V19.1'?{[DAVIS]:.1/8+.2,[ISCMP]:.1/10+.3}:{}};
   for(const {p,old} of changed){
    const name=pairName(p),score=confirmedBefore[name];
-   assert.equal(old.status,score===undefined?'incomplete':'confirmed',catalogue+': '+name);
-   if(score!==undefined)near(old.coverage,score,catalogue+': '+name);
-   const was=name.startsWith('BMLP')&&catalogue==='standard'?['Potential overlap','Below threshold']:score===undefined?['Needs confirmation','Needs confirmation']:['Below threshold','Below threshold'];
-   assert.deepEqual([old.label30,old.label50],was,catalogue+': '+name);
+   assert.equal(old.status,score===undefined?'incomplete':'confirmed',where+': '+name);
+   if(score!==undefined)near(old.coverage,score,where+': '+name);
+   const was=score===undefined?['Needs confirmation','Needs confirmation']:[atThreshold(score,30)?'Potential overlap':'Below threshold','Below threshold'];
+   assert.deepEqual([old.label30,old.label50],was,where+': '+name);
   }
  }
  // BMLP_Nexeed_IAS@WxP | QinP FG Smart Label Management (standard catalogue), by hand from its components: from BMLP,
@@ -671,34 +773,43 @@ test('similarity decision 2026-10-19 (b): the name words of the real application
  // suffix only, 12 through both: counted by the separate script with each rule on its own; round 1 had 242 = 188 + 42 + 12,
  // the 8 more being pairs of RBCC I4.0 Visualization (Davis), listed below). Their statuses now, against those before the
  // change (standard: 98 confirmed, 101 incomplete, 35 excluded; 2026-10-15: 53, 146, 35): six moved to investigation
- // (test above), the others keep their status.
- for(const [catalogue,statuses] of [['standard',{confirmed:94,incomplete:99,investigation:6,excluded:35}],['2026-10-15',{confirmed:51,incomplete:142,investigation:6,excluded:35}]]){
-  const changed=[],sinceRoundOne=[];
-  for(const p of portfolio(catalogue).candidates.pairs){
+ // (test above), the others keep their status. These are the statuses with the similarity check until V19 (UNTIL_V19).
+ // V19.1 union (owner 2026-10-23, "也按并集"): the same 234 pairs with the same name scores; where a levelled process record
+ // outside the Signavio list was the evidence still missing, the pair is complete now (see the documented portfolio counts
+ // above): standard 44 of the 99 incomplete pairs (138 confirmed, 55 incomplete), 2026-10-15 33 of the 142 (84, 109). Before
+ // the decision, with V19.1: standard 144 confirmed, 55 incomplete, 35 excluded (QinP | ShzP_DAVIS and I-PFEP | iSCMP
+ // confirmed as well, test above); 2026-10-15: 88, 111, 35.
+ for(const [catalogue,rule,statuses,statusesBefore] of [['standard',UNTIL_V19,{confirmed:94,incomplete:99,investigation:6,excluded:35},{confirmed:98,incomplete:101,excluded:35}],['2026-10-15',UNTIL_V19,{confirmed:51,incomplete:142,investigation:6,excluded:35},{confirmed:53,incomplete:146,excluded:35}],
+  ['standard','V19.1',{confirmed:138,incomplete:55,investigation:6,excluded:35},{confirmed:144,incomplete:55,excluded:35}],['2026-10-15','V19.1',{confirmed:84,incomplete:109,investigation:6,excluded:35},{confirmed:88,incomplete:111,excluded:35}]]){
+  const changed=[],sinceRoundOne=[],where=rule+', '+catalogue;
+  for(const p of portfolio(catalogue,undefined,rule).candidates.pairs){
    const a=p.target.app.Name,b=p.peer.app.Name,score=component(p.forward,'name').score;
    assert.equal(score,jaccard(newNameWords(a),newNameWords(b)),pairName(p));assert.equal(component(p.reverse,'name').score,score,pairName(p));
    if(score!==jaccard(oldNameWords(a),oldNameWords(b)))changed.push(p);
    if(score!==jaccard(roundOneNameWords(a),roundOneNameWords(b)))sinceRoundOne.push(p);
   }
-  assert.equal(changed.length,234,catalogue);assert.deepEqual(tally(changed.map(p=>p.status)),statuses,catalogue);
+  assert.equal(changed.length,234,where);assert.deepEqual(tally(changed.map(p=>p.status)),statuses,where);
+  assert.deepEqual(tally(changed.map(p=>beforeDecision(p).status)),statusesBefore,where+': before the decision');
   // Round 1 -> round 2: exactly the 11 pairs in which RBCC I4.0 Visualization (Davis) shares a word (rbcc or davis) with
   // the other name. Its words grow from 4 to 5, so 1 / (4 + n - 1) becomes 1 / (5 + n - 1), n the other name's words.
   // All 11 are incomplete in both catalogues (Needs confirmation at 30 and 50): no status, label, threshold, pair score or
   // code evidence changes. Against before the decision 8 of them are back to their old score; I-PFEP, E-Queue and
-  // ShzP_DAVIS still lost their single letter (old 1/7, 1/9, 1/7).
+  // ShzP_DAVIS still lost their single letter (old 1/7, 1/9, 1/7). With V19.1 too: RBCC I4.0 Visualization (Davis) keeps its
+  // pending process record without a level ('RBCC | Warehouse Delivery').
   const expected={'RBCC E-Queue system(Karis)':[1/8,1/7],'RBCC I-PFEP':[1/6,1/5],'RBCC LOG Control Tower V2':[1/9,1/8],
    'RBCC Production Excution Support System(PESS)':[1/10,1/9],'RBCC Supplier Logistics Management Platform':[1/9,1/8],'RBCC/LOG Digital Twin':[1/8,1/7],
    'RBCC_CDP':[1/6,1/5],'RBCC_IDPS_Intelligent document print system':[1/10,1/9],'RBCC_VNA task management':[1/8,1/7],'ShzP_DAVIS':[1/6,1/5],'VM/LOG-Szh2_DAVIS':[1/8,1/7]};
-  assert.deepEqual(sinceRoundOne.map(pairName).sort(),Object.keys(expected).map(other=>[I40,other].sort().join(' | ')).sort(),catalogue);
+  assert.deepEqual(sinceRoundOne.map(pairName).sort(),Object.keys(expected).map(other=>[I40,other].sort().join(' | ')).sort(),where);
   for(const p of sinceRoundOne){
    const other=p.target.app.Name===I40?p.peer.app.Name:p.target.app.Name,[now,roundOne]=expected[other];
    near(component(p.forward,'name').score,now,pairName(p));near(jaccard(roundOneNameWords(I40),roundOneNameWords(other)),roundOne,pairName(p));
-   assert.deepEqual([p.status,pairResultLabel(p,30),pairResultLabel(p,50),p.coverage,pairStatusModule.codeEvidenceScore?.(p)],['incomplete','Needs confirmation','Needs confirmation',null,null],catalogue+': '+pairName(p));
+   assert.deepEqual([p.status,pairResultLabel(p,30),pairResultLabel(p,50),p.coverage,pairStatusModule.codeEvidenceScore?.(p)],['incomplete','Needs confirmation','Needs confirmation',null,null],where+': '+pairName(p));
   }
   assert.equal(sinceRoundOne.filter(p=>changed.includes(p)).length,3,'I-PFEP, E-Queue and ShzP_DAVIS');
  }
  // Score changes of pairs that stay confirmed, by hand from their component scores (weights 10 / 20 / 30 / 40, both
- // directions equal): [pair, name score now, pair score now].
+ // directions equal): [pair, name score now, pair score now]. V19.1 changes none of them: no application here has a process
+ // record in LeanIX only.
  const {byName}=portfolio('standard');
  for(const [name,nameScore,coverage] of [
   // suffix only: the names shared recovered, 2025, 12, 19, 10, 03 (6 of 11 words) and now share nothing; description 1/6.
@@ -717,7 +828,7 @@ test('similarity decision 2026-10-19 (b): the name words of the real application
  assert.equal(pairResultLabel(byName.get('BMLP_Nexeed_IAS@WxP | ShzP_Karis'),30),'Potential overlap');
 });
 
-test('the seven Potential overlap pairs at 50 stay the same; two scores rise because CGQB_Logistic_system_Q loses its single "q"',()=>{
+test('the seven Potential overlap pairs at 50 stay the same; two scores rise because CGQB_Logistic_system_Q loses its single "q" (V19.1 adds the E-Queue pair)',()=>{
  // Pair scores by hand from the component scores (weights 10 / 20 / 30 / 40; the lower direction):
  const expected={
   // names {cgqb, logistic, system} and {cgqb, logistic, system, q}: 3/4 -> 3/3; description 8/31; capability, process 100%.
@@ -735,13 +846,27 @@ test('the seven Potential overlap pairs at 50 stay the same; two scores rise bec
   'Control Tower | Physical Logistics Management System':.2*2/25+.3+.4,
   // the "(recovered …)" words never matched RBCC_CDP; description 2/5: 78 unchanged.
   'Datahub (recovered 2025-12-19 10:03:06) | RBCC_CDP':.2*2/5+.3+.4};
- const {candidates,byName}=portfolio('standard');
- assert.deepEqual(candidates.pairs.filter(p=>pairResultLabel(p,50)==='Potential overlap').map(pairName).sort(),Object.keys(expected).sort());
- for(const [name,coverage] of Object.entries(expected))near(byName.get(name).coverage,coverage,name);
- // The 2026-10-15 catalogue keeps its two Potential overlap pairs and their scores.
- const old15=portfolio('2026-10-15');
- assert.deepEqual(old15.candidates.pairs.filter(p=>pairResultLabel(p,50)==='Potential overlap').map(pairName).sort(),['Control Tower | Physical Logistics Management System','Datahub (recovered 2025-12-19 10:03:06) | RBCC_CDP']);
- for(const name of ['Control Tower | Physical Logistics Management System','Datahub (recovered 2025-12-19 10:03:06) | RBCC_CDP'])near(old15.byName.get(name).coverage,expected[name],name);
+ // V19.1 union (owner 2026-10-23, "也按并集"): an eighth pair in both catalogues. RBCW E-Queue system's Register Truck L3
+ // (several Signavio codes) is in LeanIX and no longer pending, so the RBCW direction is complete: names rbcc, queue, system,
+ // karis and rbcw, queue, system share 2 of 5 words; identical descriptions 1; capability B.06.5 vs B.06.3 0; process 100%
+ // in both directions (RBCW's other record Manage Time-Windows L3 is one of Karis' codes): 64 in each catalogue. Until V19
+ // the seven (two) pairs below were the only ones (UNTIL_V19).
+ const EQUEUE='RBCC E-Queue system(Karis) | RBCW E-Queue system',equeue=.1*2/5+.2+.4;
+ const old15Pairs=['Control Tower | Physical Logistics Management System','Datahub (recovered 2025-12-19 10:03:06) | RBCC_CDP'];
+ for(const [rule,union] of [[UNTIL_V19,{}],['V19.1',{[EQUEUE]:equeue}]]){
+  const {candidates,byName}=portfolio('standard',undefined,rule),standard={...expected,...union};
+  assert.deepEqual(candidates.pairs.filter(p=>pairResultLabel(p,50)==='Potential overlap').map(pairName).sort(),Object.keys(standard).sort(),rule);
+  for(const [name,coverage] of Object.entries(standard))near(byName.get(name).coverage,coverage,rule+': '+name);
+  // The 2026-10-15 catalogue keeps its two Potential overlap pairs and their scores.
+  const old15=portfolio('2026-10-15',undefined,rule),old15Expected={...Object.fromEntries(old15Pairs.map(name=>[name,expected[name]])),...union};
+  assert.deepEqual(old15.candidates.pairs.filter(p=>pairResultLabel(p,50)==='Potential overlap').map(pairName).sort(),Object.keys(old15Expected).sort(),rule);
+  for(const [name,coverage] of Object.entries(old15Expected))near(old15.byName.get(name).coverage,coverage,rule+': '+name);
+ }
+ for(const catalogue of ['standard','2026-10-15']){
+  const p=portfolio(catalogue).byName.get(EQUEUE);
+  assert.deepEqual([p.forward,p.reverse].map(direction=>direction.components.map(c=>c.score)),[[2/5,1,0,1],[2/5,1,0,1]],catalogue);
+  assert.deepEqual([portfolio(catalogue,undefined,UNTIL_V19).byName.get(EQUEUE).status,pairResultLabel(portfolio(catalogue,undefined,UNTIL_V19).byName.get(EQUEUE),50)],['incomplete','Needs confirmation'],catalogue+' until V19');
+ }
 });
 
 test('similarity decision 2026-10-19 (c): every No complete score pair shows its code evidence, the lower capability and process total; no other pair has one',()=>{
@@ -750,13 +875,31 @@ test('similarity decision 2026-10-19 (c): every No complete score pair shows its
  assert.equal(typeof codeEvidence,'function');
  // Distribution derived independently (component scores of the code before the change, rule (b) and gate (a) applied by
  // the separate script; 0 differences from the program): 139 No complete score pairs in the standard catalogue (138 before
- // plus BMLP | QinP at 47.5), 85 in the 2026-10-15 catalogue. Keys are points out of 100.
+ // plus BMLP | QinP at 47.5), 85 in the 2026-10-15 catalogue. Keys are points out of 100. These are the pairs with the
+ // similarity check until V19 (UNTIL_V19).
+ // V19.1 union (owner 2026-10-23, "也按并集"): 54 more pairs in the standard catalogue (193) and 24 more in the 2026-10-15
+ // catalogue (109): investigation pairs that needed confirmation until V19 only because a levelled process record outside
+ // the Signavio list was pending; each has one of the applications with such a record (IN_LEANIX), and no pair leaves No
+ // complete score. The loop checks each one against this file's own code evidence (ownCodeEvidence). The 54 add, in points:
+ // 30 x 13, 10.17 x 12, 2.67 x 6, 7.5, 10, 15, 20 and 40 x 3 each, 1.9, 5.33, 8, 17.67, 20.83, 22.5, 31.9 and 32.67 once;
+ // the 24: 30 x 13, 2.67 x 3, 10 and 15 x 2, 20, 31.9, 32.67 and 40 once.
  const expected={
-  standard:{'30':57,'15':23,'10':21,'20':12,'7.5':9,'5':5,'47.5':4,'40':3,'22.5':2,'6':1,'50':1,'70':1},
-  '2026-10-15':{'30':55,'15':11,'10':6,'5':5,'20':4,'40':2,'50':1,'70':1}};
- for(const [catalogue,distribution] of Object.entries(expected)){
+  [UNTIL_V19]:{
+   standard:{'30':57,'15':23,'10':21,'20':12,'7.5':9,'5':5,'47.5':4,'40':3,'22.5':2,'6':1,'50':1,'70':1},
+   '2026-10-15':{'30':55,'15':11,'10':6,'5':5,'20':4,'40':2,'50':1,'70':1}},
+  'V19.1':{
+   standard:{'30':70,'15':26,'10':24,'20':15,'7.5':12,'10.1666667':12,'2.6666667':6,'40':6,'5':5,'47.5':4,'22.5':3,'6':1,'8':1,'50':1,'70':1,
+    '1.9047619':1,'5.3333333':1,'17.6666667':1,'20.8333333':1,'31.9047619':1,'32.6666667':1},
+   '2026-10-15':{'30':68,'15':13,'10':8,'5':5,'20':5,'40':3,'2.6666667':3,'50':1,'70':1,'31.9047619':1,'32.6666667':1}}};
+ for(const catalogue of ['standard','2026-10-15']){
+  const until=portfolio(catalogue,undefined,UNTIL_V19).byName,added=portfolio(catalogue).candidates.pairs.filter(p=>pairResultLabel(p,50)==='No complete score'&&pairResultLabel(until.get(pairName(p)),50)!=='No complete score');
+  assert.equal(added.length,{standard:54,'2026-10-15':24}[catalogue],catalogue);
+  assert(added.every(p=>pairResultLabel(until.get(pairName(p)),50)==='Needs confirmation'&&(p.target.app.Name in IN_LEANIX||p.peer.app.Name in IN_LEANIX)),catalogue);
+  assert(!portfolio(catalogue).candidates.pairs.some(p=>pairResultLabel(p,50)!=='No complete score'&&pairResultLabel(until.get(pairName(p)),50)==='No complete score'),catalogue);
+ }
+ for(const [rule,byCatalogue] of Object.entries(expected))for(const [catalogue,distribution] of Object.entries(byCatalogue)){
   const seen=[];
-  for(const p of portfolio(catalogue).candidates.pairs){
+  for(const p of portfolio(catalogue,undefined,rule).candidates.pairs){
    const value=codeEvidence(p);
    if(pairResultLabel(p,50)!=='No complete score'){assert.equal(value,null,pairName(p));continue;}
    // The weighted name and description score 0, so each directional total is its capability and process points.
@@ -767,7 +910,7 @@ test('similarity decision 2026-10-19 (c): every No complete score pair shows its
    assert.equal(pairStatusReason(p,50),`No shared words in names or descriptions; compare the recorded functions. Code evidence ${shownPoints(own)} / 100 from capabilities and processes; not a pair score.`,pairName(p));
    seen.push(String(Math.round(own*1e9)/1e7));
   }
-  assert.deepEqual(tally(seen),distribution,catalogue);
+  assert.deepEqual(tally(seen),distribution,rule+', '+catalogue);
  }
  // Owner-confirmed example of 2026-10-15: Iris | RCS-2000 showed 'Unavailable · Review needed' with a directional weighted
  // subtotal of 30.0 (since 2026-10-20 the status reads 'No complete score'); that is its code evidence (capability 100% x
@@ -798,8 +941,10 @@ test('similarity decision 2026-10-19 (a): only name and description fields with 
  // Counts derived independently like those above (the code before the change run with these weights, gate (a) applied by
  // the separate script; 0 differences from the program). Before the change all three weightings gave 592 confirmed and
  // 1,247 investigation, because a zero name or description held a pair back even at weight 0.
+ // These counts are those with the similarity check until V19 (UNTIL_V19); the pairs checked one at a time are the same
+ // with V19.1 (none of them has an application with a process record in LeanIX only). The V19.1 counts follow at the end.
  // Name weight 0: a pair is held back when its descriptions share no word, whatever its names share.
- const W0={name:0,description:.2,cap:.3,process:.4},noName=portfolio('standard',W0);
+ const W0={name:0,description:.2,cap:.3,process:.4},noName=portfolio('standard',W0,UNTIL_V19);
  assert.deepEqual(noName.statuses,{confirmed:461,incomplete:558,investigation:1466,excluded:365});
  // Labels of the 2026-10-20 status rule, split by a short node script over the public/ modules: the old Not similar 1,155
  // = Below threshold 454 (461 confirmed - 7 Potential overlap) + No shared registrations 701; Review needed 164 = No
@@ -809,28 +954,60 @@ test('similarity decision 2026-10-19 (a): only name and description fields with 
  // CGQB_Logistic_system | D-sample tracking system: the names share 'system' (1 of 5 words), the descriptions nothing.
  // Weights normalized to 0 / 2/9 / 3/9 / 4/9; capability 20% one way and 100% the other, process 0: code evidence
  // min(.2, 1) x 3/9 = 6.67 (shown 6.7). Before the change it was confirmed at 6.67.
- const dsample=noName.byName.get('CGQB_Logistic_system | D-sample tracking system');
+ const dsample=portfolio('standard',W0).byName.get('CGQB_Logistic_system | D-sample tracking system');
  assert.equal(component(dsample.forward,'name').score,1/5);
  assert.deepEqual([dsample.status,pairResultLabel(dsample,50)],['investigation','No complete score']);
  assert.equal(dsample.reason,'Description has zero overlap; investigate the underlying function before treating this as an opportunity.');
  near(pairStatusModule.codeEvidenceScore?.(dsample),.2*3/9,'code evidence');
  assert.equal(pairStatusReason(dsample,50),'No shared words in descriptions; compare the recorded functions. Code evidence 6.7 / 100 from capabilities and processes; not a pair score.');
  // Description weight 0: only the name holds a pair back. Iris | RCS-2000: names share nothing; capability 100% x 3/8.
- const noDescription=portfolio('standard',{name:.1,description:0,cap:.3,process:.4});
+ const ND={name:.1,description:0,cap:.3,process:.4},noDescription=portfolio('standard',ND,UNTIL_V19);
  assert.deepEqual(noDescription.statuses,{confirmed:216,incomplete:215,investigation:2054,excluded:365});
- const rcs=noDescription.byName.get('Iris | RCS-2000');
+ const rcs=portfolio('standard',ND).byName.get('Iris | RCS-2000');
  assert.equal(rcs.reason,'Name has zero overlap; investigate the underlying function before treating this as an opportunity.');
  assert.equal(pairStatusReason(rcs,50),'No shared words in names; compare the recorded functions. Code evidence 37.5 / 100 from capabilities and processes; not a pair score.');
  // Name and description weight 0: nothing holds a pair back, so no pair is in investigation and none is No complete score
  // or No shared registrations; the old Not similar 1,303 are all confirmed pairs below 50, now Below threshold
  // (1,326 - 23; node script over the public/ modules).
- const codeOnly=portfolio('standard',{name:0,description:0,cap:.3,process:.4});
+ const CODE_ONLY={name:0,description:0,cap:.3,process:.4},codeOnly=portfolio('standard',CODE_ONLY,UNTIL_V19);
  assert.deepEqual(codeOnly.statuses,{confirmed:1326,incomplete:1159,excluded:365});
  assert.deepEqual(codeOnly.labels,{'Potential overlap':23,'Below threshold':1303,'Needs confirmation':945,'More detail needed':214,'Out of scope':365});
  assert.deepEqual(codeOnly.thresholds,[[30,51,141],[50,23,23],[60,14,14]]);
  // Iris | RBCD B308 AGV Traffic Control System: capability and process 100% -> 3/7 + 4/7 = 100; Iris | RCS-2000: 3/7 = 42.86.
- near(codeOnly.byName.get('Iris | RBCD B308 AGV Traffic Control System').coverage,1,'Iris | RBCD B308');near(codeOnly.byName.get('Iris | RCS-2000').coverage,3/7,'Iris | RCS-2000');
- assert(codeOnly.candidates.pairs.every(p=>pairStatusModule.codeEvidenceScore?.(p)===null));
+ for(const portfolioRule of [UNTIL_V19,'V19.1']){
+  const {byName,candidates}=portfolio('standard',CODE_ONLY,portfolioRule);
+  near(byName.get('Iris | RBCD B308 AGV Traffic Control System').coverage,1,'Iris | RBCD B308');near(byName.get('Iris | RCS-2000').coverage,3/7,'Iris | RCS-2000');
+  assert(candidates.pairs.every(p=>pairStatusModule.codeEvidenceScore?.(p)===null),portfolioRule);
+ }
+ // V19.1 union (owner 2026-10-23, "也按并集"): with each weighting exactly the 543 pairs change that change with the default
+ // weights (the documented portfolio counts above): the pairs in which a levelled process record outside the Signavio list
+ // was pending. All of them were Needs confirmation; what they become depends on the weights (unionChanges, status and
+ // label at 50). The V19.1 counts are those until V19 plus these changes: name weight 0: 461 + 218 = 679 confirmed, 558 - 218
+ // = 340 incomplete; Potential overlap 7 + 2 = 9, Below threshold 454 + 216 = 670, No shared registrations 701 + 165 = 866,
+ // Needs confirmation 945 - 543 = 402, More detail needed 214 + 49 + 50 = 313, No complete score 164 + 61 = 225; description
+ // weight 0: 216 + 79 = 295 confirmed, 215 - 79 = 136 incomplete; name and description weight 0: 1,326 + 444 = 1,770
+ // confirmed, 1,159 - 444 = 715 incomplete, Potential overlap 23 + 6 = 29, Below threshold 1,303 + 438 = 1,741, More detail
+ // needed 214 + 99 = 313.
+ const NC='Needs confirmation',defaultChanges=unionChanges('standard').map(({p})=>pairName(p)).sort();
+ assert.equal(defaultChanges.length,543);
+ for(const [weights,transitions] of [
+  [W0,{[`incomplete/${NC} -> confirmed/Below threshold`]:216,[`incomplete/${NC} -> confirmed/Potential overlap`]:2,[`incomplete/${NC} -> incomplete/More detail needed`]:49,
+   [`investigation/${NC} -> investigation/No shared registrations`]:165,[`investigation/${NC} -> investigation/More detail needed`]:50,[`investigation/${NC} -> investigation/No complete score`]:61}],
+  [ND,{[`incomplete/${NC} -> confirmed/Below threshold`]:78,[`incomplete/${NC} -> confirmed/Potential overlap`]:1,[`incomplete/${NC} -> incomplete/More detail needed`]:10,
+   [`investigation/${NC} -> investigation/No shared registrations`]:271,[`investigation/${NC} -> investigation/More detail needed`]:89,[`investigation/${NC} -> investigation/No complete score`]:94}],
+  [CODE_ONLY,{[`incomplete/${NC} -> confirmed/Below threshold`]:438,[`incomplete/${NC} -> confirmed/Potential overlap`]:6,[`incomplete/${NC} -> incomplete/More detail needed`]:99}]]){
+  const changes=unionChanges('standard',weights);
+  assert.deepEqual(changes.map(({p})=>pairName(p)).sort(),defaultChanges,JSON.stringify(weights));
+  assert.deepEqual(tally(changes.map(unionTransition)),transitions,JSON.stringify(weights));
+ }
+ const v191NoName=portfolio('standard',W0),v191CodeOnly=portfolio('standard',CODE_ONLY);
+ assert.deepEqual(v191NoName.statuses,{confirmed:679,incomplete:340,investigation:1466,excluded:365});
+ assert.deepEqual(v191NoName.labels,{'Potential overlap':9,'Below threshold':670,'No shared registrations':866,'Needs confirmation':402,'More detail needed':313,'No complete score':225,'Out of scope':365});
+ assert.deepEqual(v191NoName.thresholds,[[30,50,81],[50,11,9],[60,8,4]]);
+ assert.deepEqual(portfolio('standard',ND).statuses,{confirmed:295,incomplete:136,investigation:2054,excluded:365});
+ assert.deepEqual(v191CodeOnly.statuses,{confirmed:1770,incomplete:715,excluded:365});
+ assert.deepEqual(v191CodeOnly.labels,{'Potential overlap':29,'Below threshold':1741,'Needs confirmation':402,'More detail needed':313,'Out of scope':365});
+ assert.deepEqual(v191CodeOnly.thresholds,[[30,58,181],[50,28,29],[60,15,15]]);
 });
 
 test('the weighted CSV reports the zero-text gate as "Zero overlap in all weighted name/description fields", so a pair whose unweighted names overlap can say Yes',()=>{

@@ -67,6 +67,8 @@ function sourceRows(model,app){
  }
  for(const raw of app.rawProcess){
   if(applied(model,appId,'process',raw))continue;
+  // In LeanIX, not in the Signavio list: it matches (union, V19.1), so it is neither an issue nor a confirmation to show.
+  if((app.inLeanix||[]).some(x=>x.raw===raw))continue;
   const decision=(app.accepted||[]).find(d=>d.dimension==='process'&&d.raw===raw);
   if(decision){addTag(addRow(rows,'process',raw),'Confirmed by owner as recorded',acceptedText(decision));continue;}
   const issue=model.issues.find(item=>item.appId===appId&&item.value===raw&&item.type.startsWith('流程'));

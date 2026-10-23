@@ -174,11 +174,23 @@ test('a direction with no comparable branch gives a specific reason, never "know
  assert.equal(r.reason,'对方登记深度不足。');
  for(const a of model.apps.slice(0,30))for(const b of model.apps)if(a.id!==b.id)for(const s of [cap,process]){const result=s.compare(a.id,b.id);if(result.comparableBranches===0)assert.notEqual(result.reason,'部分分支信息不足，保留已知分支结果。');}
  // Several different branch reasons and no comparable branch use the neutral fallback.
+ // B's unconfirmed U record has no level: since V19.1 (union, owner 2026-10-23) a levelled record outside the Signavio list
+ // ('BBM PM U Unlisted step L1', used here until V19) is in LeanIX and no longer pending, so it would leave the U branch
+ // comparable (0 of 1). A record without a level is still pending and keeps B's U branch unconfirmed.
  const processRows=[['T','L0','M.T','Root'],['T','L1','M.T.1','One'],['U','L0','M.U','Other'],['U','L1','M.U.1','Other one'],['V','L0','M.V','Third'],['V','L1','M.V.1','Third one']];
- const m=buildModel({apps:[{ID:'A',Name:'A','Business Capabilities':'',Processes:'BBM PM T Root L0;BBM PM U Other one L1'},{ID:'B',Name:'B','Business Capabilities':'',Processes:'BBM PM V Third one L1;BBM PM U Unlisted step L1'}],capabilityRows:[],processRows});
+ const m=buildModel({apps:[{ID:'A',Name:'A','Business Capabilities':'',Processes:'BBM PM T Root L0;BBM PM U Other one L1'},{ID:'B',Name:'B','Business Capabilities':'',Processes:'BBM PM V Third one L1;BBM PM U Unlisted step'}],capabilityRows:[],processRows});
+ const scopeB=createSimilarity(m,'process').scopes.get('B');
+ assert.deepEqual(scopeB.pending.map(p=>[p.value,p.reason,p.chain]),[['BBM PM U Unlisted step','流程未标注标准层级','U']]);
  const mixed=createSimilarity(m,'process').compare('A','B');
  assert.equal(mixed.comparableBranches,0);assert(new Set(mixed.branches.map(b=>b.reason)).size>=2);
+ assert.deepEqual(mixed.branches.map(b=>[b.id,b.reason]),[['M.T','The target records only this L0 process chain; an L1 or deeper record is needed to confirm a functional match.'],['M.U.1','对方在此分支仍有未确认的分类。']]);
  assert.equal(mixed.reason,'No branch can be compared yet; see the branch details.');
+ // V19.1 union (owner 2026-10-23, "也按并集"): with the levelled record B has no pending U record, so A's U branch is compared
+ // (0 of 1) and only then does the direction keep its known branch result.
+ const levelled=buildModel({apps:[{ID:'A',Name:'A','Business Capabilities':'',Processes:'BBM PM T Root L0;BBM PM U Other one L1'},{ID:'B',Name:'B','Business Capabilities':'',Processes:'BBM PM V Third one L1;BBM PM U Unlisted step L1'}],capabilityRows:[],processRows});
+ assert.deepEqual(levelled.apps[1].inLeanix.map(x=>[x.raw,x.level]),[['BBM PM U Unlisted step L1',1]]);
+ const partial=createSimilarity(levelled,'process').compare('A','B');
+ assert.deepEqual([partial.comparableBranches,partial.branches.find(b=>b.id==='M.U.1').coverage,partial.status,partial.reason],[1,0,'partial','部分分支信息不足，保留已知分支结果。']);
 });
 
 test('real direction changed by option A: VM-CN Auto labeling printing system → RBCW Auto Warehouse process is 2/8',()=>{

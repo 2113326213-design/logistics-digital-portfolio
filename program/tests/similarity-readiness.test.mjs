@@ -16,37 +16,62 @@ const app=(ID,extra={})=>({ID,Name:`Warehouse ${ID}`,Description:'manage warehou
  'Business Capabilities':'B.06.1.1 Task',Processes:'BBM PM T Task L3',...extra});
 const index=(apps,weights,rows=processRows)=>createWeightedSimilarity(buildModel({apps,capabilityRows,processRows:rows}),weights);
 const names=result=>result.apps.map(row=>row.app.Name);
+// The synthetic unresolved process record has no level ("BBM PM T Unknown", Process level not specified), so it stays
+// pending: since V19.1 (owner 2026-10-23, "也按并集") a record with a level, such as the earlier "BBM PM T Unknown L3",
+// is in LeanIX and is no longer pending (pinned in the last test of this file). Both go through the same issue path.
 
 // 2026-10-21: expectations re-derived from the V9.16 data (LeanIX export 2026-10-20 merged by application ID).
 // ShzP_Pad system, RBCW Auto Warehouse Management System and Szh5_ASRS_WCS_WMS now register B.06.5 instead of the
 // B.06 root and VMCN_Digital Dynamic Supermarket no longer registers B.06.4.4, so two applications left the queue
 // (none joined; RBCW AWMS stays because its new "Transport Material Intra Plant L3" record needs confirmation).
 // 17 queued applications × 70 affected pairs − C(17,2) shared pairs = 1054 (was 19 × 70 − C(19,2) = 1159).
-test('bundled portfolio: 1054 affected pairs reduce to 17 source applications with no unexplained pair',()=>{
+// V19.1 union (owner 2026-10-23, "也按并集"): a process record with a level (L0–L3, L3V = L3) that is not exactly one
+// Signavio process is in LeanIX (app.inLeanix) and is no longer pending in the similarity check. 11 of the 17 queued
+// applications were queued only for such records and left the queue: AUTO-RACK, RBCD LOM Scrap Management Platform,
+// RBCD WI management system, RBCW Auto Warehouse Management System, RBCW E-Queue system, RBHP_LOG_QualManager,
+// ShzP_DAVIS, Szh5_ASRS_WCS_WMS, VM-CN_WACOS_Szh5, VM/LOG-Szh2_DAVIS and VMCN_iSCMP. RBCD LOG Xone stays for its record
+// without a level only; none joined. 6 queued applications × 70 − C(6,2) = 405 (was 1054). Recounted with node on
+// tests/data-v9.16.json: emptying every app.inLeanix gives back the old 1054 / 17 (15 Needs confirmation, 2 More detail needed).
+const LEVEL=/\bL[0-3]V?\s*$/i;
+test('bundled portfolio: 405 affected pairs reduce to 6 source applications with no unexplained pair',()=>{
  const data=workspaceData(JSON.parse(readFileSync(RECORDS_V916)));
  const model=buildModel(data),pairs=createWeightedSimilarity(model,data.similarityWeights).pairs();
  const before=JSON.stringify({apps:data.apps,labels:pairs.map(pair=>[pair.status,pair.coverage])});
  const result=comparisonReadiness(pairs);
- assert.equal(result.pairCount,1054);
- assert.equal(result.apps.length,17);
+ assert.equal(result.pairCount,405);// was 1054
+ assert.equal(result.apps.length,6);// was 17
  assert.equal(result.unattributedPairCount,0);
- assert.equal(result.apps.filter(row=>row.kinds.includes('Needs confirmation')).length,15);
+ assert.equal(result.apps.filter(row=>row.kinds.includes('Needs confirmation')).length,4);// was 15
  assert.equal(result.apps.filter(row=>row.kinds.includes('More detail needed')).length,2,
-  'only the two Level-0-only process applications remain coarse; 15 + 2 = 17, no application carries both kinds since Szh5_ASRS_WCS_WMS gained B.06.5');
- assert.equal(new Set(result.apps.map(row=>row.app.id)).size,17);
+  'only the two Level-0-only process applications remain coarse; 4 + 2 = 6, no application carries both kinds');
+ assert.equal(new Set(result.apps.map(row=>row.app.id)).size,6);
+ assert.deepEqual(new Set(names(result)),new Set(['360° Supplier dashboard','CDR_EM','RBAC_ME_i-Warehouse',
+  'RBCC I4.0 Visualization (Davis)','RBCC Production Excution Support System(PESS)','RBCD LOG Xone']));
+ assert(result.apps.every(row=>row.pairCount===70));
  assert(!names(result).includes('CGQB_Logistic_system'));
- const shzp=result.apps.find(row=>row.app.Name==='ShzP_DAVIS');
- assert.equal(shzp.pairCount,70);
- assert.equal(shzp.records.length,1);
- assert.equal(shzp.records[0].raw,'BBM PM I2D Load Truck L3');
- // 2026-10-21: the export added B.06.5 beside B.14.09.1, so the outside-only capability reason no longer applies.
- assert.equal(result.apps.find(row=>row.app.Name==='RBCD LOM Scrap Management Platform').records.length,2,
-  'two pending processes are distinct reasons for the same application; its capability is now also inside B.06');
+ // Every record left to confirm has no level; the More detail needed records are matched Level 0 processes.
+ for(const row of result.apps)for(const record of row.records){
+  assert.equal(record.dimension,'process',row.app.Name);
+  assert.equal(LEVEL.test(record.raw),record.kind==='More detail needed',row.app.Name+': '+record.raw);
+ }
+ // ShzP_DAVIS was queued (70 pairs) for "BBM PM I2D Load Truck L3" alone: in LeanIX, so not pending any more, although
+ // the record is still in model.issues.
+ const shzp=model.apps.find(app=>app.Name==='ShzP_DAVIS');
+ assert(!names(result).includes('ShzP_DAVIS'));
+ assert.deepEqual(shzp.inLeanix.map(x=>x.raw),['BBM PM I2D Load Truck L3']);
+ assert(model.issues.some(issue=>issue.appId===shzp.id&&issue.value==='BBM PM I2D Load Truck L3'));
+ // RBCD LOM Scrap Management Platform had two pending L3V records; both are in LeanIX now.
+ assert(!names(result).includes('RBCD LOM Scrap Management Platform'));
+ assert.equal(model.apps.find(app=>app.Name==='RBCD LOM Scrap Management Platform').inLeanix.length,2);
+ // RBCD LOG Xone had two pending records: the one with a level left, the one without a level stays.
+ const xone=result.apps.find(row=>row.app.Name==='RBCD LOG Xone');
+ assert.deepEqual(xone.records.map(record=>record.raw),['BBM_O2C_OM_01 Schedule Agreement for Goods']);
+ assert.deepEqual(xone.app.inLeanix.map(x=>x.raw),['BBM PM P2F Transmit Material and Sales Master Data L3']);
  assert.equal(JSON.stringify({apps:data.apps,labels:pairs.map(pair=>[pair.status,pair.coverage])}),before);
 });
 
 test('only the app with an unresolved record is queued, once across directions, repeated pairs and peers',()=>{
- const i=index([app('A',{Processes:'BBM PM T Unknown L3'}),app('B'),app('C')]);
+ const i=index([app('A',{Processes:'BBM PM T Unknown'}),app('B'),app('C')]);
  const result=comparisonReadiness([...i.pairs(),i.pair('A','B'),i.pair('B','A')]);
  assert.equal(result.pairCount,2);
  assert.equal(result.unattributedPairCount,0);
@@ -56,13 +81,13 @@ test('only the app with an unresolved record is queued, once across directions, 
 });
 
 test('a zero-weight dimension contributes no readiness work while another weighted problem still does',()=>{
- const i=index([app('A',{Processes:'BBM PM T Unknown L3'}),app('B',{Description:''}),app('C')],
+ const i=index([app('A',{Processes:'BBM PM T Unknown'}),app('B',{Description:''}),app('C')],
   {name:.1,description:.2,cap:.7,process:0});
  const result=comparisonReadiness(i.pairs());
  assert.deepEqual(names(result),['Warehouse B']);
  assert.equal(result.pairCount,2);
  assert.deepEqual(result.apps[0].records.map(record=>record.dimension),['description']);
- assert.deepEqual(comparisonReadiness(index([app('A',{Processes:'BBM PM T Unknown L3'}),app('C')],
+ assert.deepEqual(comparisonReadiness(index([app('A',{Processes:'BBM PM T Unknown'}),app('C')],
   {name:.1,description:.2,cap:.7,process:0}).pairs()),{apps:[],pairCount:0,unattributedPairCount:0});
 });
 
@@ -90,7 +115,7 @@ test('empty capability and process registrations are attributed independently',(
 });
 
 test('application order uses affected pair count before name and only the supplied pairs count',()=>{
- const i=index([app('A',{Processes:'BBM PM T Unknown L3'}),app('Z',{Processes:'BBM PM T Unknown L3'}),app('B'),app('C')]);
+ const i=index([app('A',{Processes:'BBM PM T Unknown'}),app('Z',{Processes:'BBM PM T Unknown'}),app('B'),app('C')]);
  const result=comparisonReadiness([i.pair('A','B'),i.pair('Z','C'),i.pair('Z','B')]);
  assert.deepEqual(result.apps.map(row=>[row.app.Name,row.pairCount]),[['Warehouse Z',2],['Warehouse A',1]]);
  const tied=comparisonReadiness([i.pair('Z','B'),i.pair('A','B')]);
@@ -133,7 +158,7 @@ test('missing taxonomy ancestors are attributed by projection side in either pai
 });
 
 test('excluded apps and complete-score/investigation pairs do not enter the data queue',()=>{
- const i=index([app('A',{Processes:'BBM PM T Unknown L3',scopeNote:'No score,not go-live'}),app('B'),app('C')]);
+ const i=index([app('A',{Processes:'BBM PM T Unknown',scopeNote:'No score,not go-live'}),app('B'),app('C')]);
  assert.deepEqual(comparisonReadiness(i.pairs()),{apps:[],pairCount:0,unattributedPairCount:0});
  const noText=index([app('A',{Name:'Iris',Description:'oranges'}),app('B',{Name:'Conveyor',Description:'apples'})]);
  assert.equal(noText.pairs()[0].status,'investigation');
@@ -147,4 +172,20 @@ test('unexplained unavailable evidence is counted without blaming either applica
  const pair={...original,status:'incomplete',coverage:null,forward:direction(original.forward),reverse:direction(original.reverse)};
  assert.deepEqual(comparisonReadiness([pair]),{apps:[],pairCount:1,unattributedPairCount:1,unattributedPairs:[pair]},
   'preserve the comparison for inspection without assigning the problem to either application');
+});
+
+// V19.1 union (owner 2026-10-23, "也按并集"): a process record with a level that is not in the Signavio list is in
+// LeanIX; like a record the owner confirmed it is not pending, and it adds no comparison evidence. The record without a
+// level beside it is still queued.
+test('a process record with a level outside the Signavio list is not queued; one without a level still is',()=>{
+ const i=index([app('A',{Processes:'BBM PM T Task L3;BBM PM T Unknown L3'}),app('B',{Processes:'BBM PM T Task L3;BBM PM T Unknown'}),app('C')]);
+ const model=buildModel({apps:[app('A',{Processes:'BBM PM T Task L3;BBM PM T Unknown L3'})],capabilityRows,processRows});
+ assert.deepEqual(model.apps[0].inLeanix.map(x=>x.raw),['BBM PM T Unknown L3']);
+ assert(model.issues.some(issue=>issue.value==='BBM PM T Unknown L3'),'the record is still a model issue');
+ assert.equal(i.pair('A','C').status,'confirmed','A ↔ C gets a normal score');
+ assert.equal(i.pair('A','C').coverage,index([app('A'),app('C')]).pair('A','C').coverage,'and the record adds no comparison evidence');
+ const result=comparisonReadiness(i.pairs());
+ assert.deepEqual(names(result),['Warehouse B']);
+ assert.deepEqual(result.apps[0].records.map(record=>record.raw),['BBM PM T Unknown']);
+ assert.equal(result.pairCount,2);
 });

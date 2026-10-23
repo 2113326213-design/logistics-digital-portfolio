@@ -65,18 +65,31 @@ assert.deepEqual(mixedBroad.branches.map(b=>b.coverage),[null,1]);
 assert.equal(mixedBroad.comparableBranches,1);
 
 // L3V is Level 3 (owner decision 2026-10-19, "level 3v就是level3"): an L3V record is matched by name at level 3
-// exactly like L3. An unknown L3V name is an unmatched Level 3 record: it stays in the source review and is pending,
-// so the direction with it as target has no score; a peer's extra pending record cannot undo a full target match.
+// exactly like L3. An unknown L3V name is an unmatched Level 3 record: it stays in the source review (model.issues).
+// V19.1 union (owner 2026-10-23, "也按并集"): a record with a level is in LeanIX, so in the similarity check it is no longer
+// pending, exactly like a record the owner confirmed. It has no Signavio code and adds no evidence: the direction with it
+// as target is scored on M.T.1 alone (it used to be "needs-review" with no score).
 const variantData={apps:[app('Variant','BBM PM T One L1;BBM PM T Unknown variant L3V'),app('Standard','BBM PM T One L1')],capabilityRows:[],processRows};
 const variantModel=buildModel(variantData),variantIndex=createSimilarity(variantModel,'process');
 assert.deepEqual(variantModel.issues.map(i=>[i.app,i.type,i.value]),[['Variant','流程未匹配层级表','BBM PM T Unknown variant L3V']]);
-assert.deepEqual(variantIndex.scopes.get('Variant').pending.map(p=>[p.value,p.reason]),[['BBM PM T Unknown variant L3V','流程未匹配层级表']]);
+assert.deepEqual(variantModel.apps.find(a=>a.id==='Variant').inLeanix.map(x=>[x.raw,x.level]),[['BBM PM T Unknown variant L3V',3]]);
+assert.deepEqual(variantIndex.scopes.get('Variant').pending,[]);
 assert.deepEqual(variantIndex.scopes.get('Variant').known.map(n=>n.id),['M.T.1']);
-assert.equal(variantIndex.compare('Variant','Standard').coverage,null);
-assert.equal(variantIndex.compare('Variant','Standard').status,'needs-review');
-assert.equal(variantIndex.compare('Variant','Standard').reason,'目标应用仍有未确认的分类。');
+assert.equal(variantIndex.compare('Variant','Standard').coverage,1);
+assert.equal(variantIndex.compare('Variant','Standard').status,'comparable');
+assert.equal(variantIndex.compare('Variant','Standard').targetCount,1,'the LeanIX record adds no code to the denominator');
 assert.equal(variantIndex.compare('Standard','Variant').coverage,1);
 assert.equal(variantIndex.compare('Standard','Variant').status,'comparable');
+// The same name recorded without a level is still pending ("Process level not specified"), so the direction with it as
+// target has no score; a peer's extra pending record cannot undo a full target match.
+const noLevelIndex=createSimilarity(buildModel({...variantData,apps:[app('Variant','BBM PM T One L1;BBM PM T Unknown variant'),app('Standard','BBM PM T One L1')]}),'process');
+assert.deepEqual(noLevelIndex.scopes.get('Variant').pending.map(p=>[p.value,p.reason]),[['BBM PM T Unknown variant','流程未标注标准层级']]);
+assert.deepEqual(noLevelIndex.scopes.get('Variant').known.map(n=>n.id),['M.T.1']);
+assert.equal(noLevelIndex.compare('Variant','Standard').coverage,null);
+assert.equal(noLevelIndex.compare('Variant','Standard').status,'needs-review');
+assert.equal(noLevelIndex.compare('Variant','Standard').reason,'目标应用仍有未确认的分类。');
+assert.equal(noLevelIndex.compare('Standard','Variant').coverage,1);
+assert.equal(noLevelIndex.compare('Standard','Variant').status,'comparable');
 // Each L3V record gets the same result as the same record marked L3: a unique name in its chain is matched,
 // an L2-only name is not found at level 3, a name with two L3 codes is ambiguous and another chain is a chain difference.
 const l3vRows=[...processRows,['T','L2','M.T.2.1','Twin parent'],['T','L3','M.T.2.1.1','Twin'],['T','L3','M.T.1.2.3','Twin']];
@@ -88,6 +101,10 @@ assert.deepEqual(outcome('Marked L3V'),{process:['M.T.1.2.1'],issues:[
  ['BBM PM T Twin','流程名称对应多个编号',['M.T.1.2.3','M.T.2.1.1']],
  ['BBM PM U Detail two','流程链编号存在差异',['M.T.1.2.2']]]});
 assert.deepEqual(outcome('Marked L3'),outcome('Marked L3V'));
+// V19.1 union: the three unmatched records are in LeanIX for both applications alike, so neither has a pending record.
+const leanixOf=id=>levelModel.apps.find(a=>a.id===id).inLeanix.map(x=>[x.raw.replace(/ L3V?$/,''),x.level,x.type]),levelIndex=createSimilarity(levelModel,'process');
+assert.equal(leanixOf('Marked L3V').length,3);assert.deepEqual(leanixOf('Marked L3'),leanixOf('Marked L3V'));
+assert.deepEqual([levelIndex.scopes.get('Marked L3V').pending,levelIndex.scopes.get('Marked L3').pending],[[],[]]);
 // A matched L3V record is a Level 3 code in the comparison and in the denominator.
 const matchedIndex=createSimilarity(buildModel({apps:[app('Both L3V','BBM PM T Detail one L3V;BBM PM T Detail two L3V'),app('Both L3','BBM PM T Detail one L3;BBM PM T Detail two L3'),app('One L3','BBM PM T Detail one L3')],capabilityRows:[],processRows}),'process');
 assert.deepEqual(matchedIndex.scopes.get('Both L3V').known.map(n=>[n.id,n.level]),[['M.T.1.2.1',3],['M.T.1.2.2',3]]);
@@ -138,11 +155,13 @@ assert.equal(all.filter(r=>r.coverage!==null).length,75);
 // Management System "BBM PM I2D Transport Material Intra Plant L3", which the process catalogue cannot confirm (流程未匹配层级表).
 assert.equal(model.issues.length,23);assert.equal(model.taxonomyIssues.length,2);
 // Bundled data, L3V as Level 3: the six L3V records with applied mappings count as their L3 codes; the seven without a
-// standard L3 of the same name (at any level, in any chain) are pending like any unmatched L3, so none of their four
-// applications has a process score as target.
+// standard L3 of the same name (at any level, in any chain) stay in the source review like any unmatched L3.
+// V19.1 union (owner 2026-10-23, "也按并集"): those seven records are in LeanIX, so they are no longer pending in the
+// similarity check (before V19.1 all seven were pending and none of their four applications had a process score as
+// target). Every record still pending has no level at all.
 const processScopes=indexes.process.scopes;
-const l3vPending=[...processScopes.values()].flatMap(scope=>scope.pending.filter(p=>/\bL3V\s*$/i.test(p.value)).map(p=>[scope.app.Name,p.value,p.reason])).sort((a,b)=>(a[0]+a[1]).localeCompare(b[0]+b[1]));
-assert.deepEqual(l3vPending,[
+const l3vUnmatched=model.issues.filter(i=>/\bL3V\s*$/i.test(i.value)).map(i=>[i.app,i.value,i.type]).sort((a,b)=>(a[0]+a[1]).localeCompare(b[0]+b[1]));
+assert.deepEqual(l3vUnmatched,[
  ['AUTO-RACK','BBM PM I2D Putaway to Automated Warehouse L3V','流程未匹配层级表'],
  ['RBCD LOM Scrap Management Platform','BBM PM B2P Manage Fixed Assets Scrapping L3V','流程未匹配层级表'],
  ['RBCD LOM Scrap Management Platform','BBM PM I2P Disposal due to Scrapping L3V','流程未匹配层级表'],
@@ -150,9 +169,23 @@ assert.deepEqual(l3vPending,[
  ['VM-CN_WACOS_Szh5','BBM PM I2D Move Material Production to Production L3V','流程未匹配层级表'],
  ['VM-CN_WACOS_Szh5','BBM PM I2D Return from Production L3V','流程未匹配层级表'],
  ['VM-CN_WACOS_Szh5','BBM PM I2D Round quantity in material request and picking L3V','流程未匹配层级表']]);
-for(const name of new Set(l3vPending.map(([name])=>name)))assert(indexes.process.peers(appId(name)).every(r=>r.coverage===null&&r.status==='needs-review'),name+' has a pending L3V record');
+for(const [name,raw] of l3vUnmatched)assert(model.apps.find(a=>a.Name===name).inLeanix.some(x=>x.raw===raw&&x.level===3),`${name}: ${raw} is in LeanIX`);
+assert.deepEqual([...processScopes.values()].flatMap(scope=>scope.pending.filter(p=>/\bL3V\s*$/i.test(p.value))),[]);
+assert.deepEqual([...processScopes.values()].flatMap(scope=>scope.pending.map(p=>[scope.app.Name,p.reason])).sort((a,b)=>a[0].localeCompare(b[0])),[
+ ['RBAC_ME_i-Warehouse','流程未标注标准层级'],['RBCC I4.0 Visualization (Davis)','流程未标注标准层级'],
+ ['RBCC Production Excution Support System(PESS)','流程未标注标准层级'],['RBCD LOG Xone','流程未标注标准层级']]);
+// The four applications now have a process score as target against 69 of the 75 other applications. The six without one
+// are the peers whose own records still hold the comparison: the four above with a record without a level, and the two
+// that record a process chain only at L0 (360° Supplier dashboard, CDR_EM).
+const heldPeers=['RBAC_ME_i-Warehouse','RBCC I4.0 Visualization (Davis)','RBCC Production Excution Support System(PESS)','RBCD LOG Xone','360° Supplier dashboard','CDR_EM'].sort();
+for(const name of new Set(l3vUnmatched.map(([name])=>name))){
+ const results=indexes.process.peers(appId(name));
+ assert(results.every(r=>r.status!=='needs-review'),name+' has no pending process record');
+ assert.deepEqual(results.filter(r=>r.coverage===null).map(r=>r.peer.app.Name).sort(),heldPeers,name);
+ assert.equal(results.filter(r=>r.coverage!==null).length,69,name);
+}
 for(const [name,codes] of [['AUTO-RACK',['M.I2D.010.050.010']],['RBCD LOP Digital Dashboard',['M.M2S.030.030.020']],['RBCW LOM Dashboard',['M.I2D.020.110.030']],['RBCW LOM PSTU Management System',['M.I2D.020.010.050']],['RBHP_LOG AGV Performance Tracking System',['M.I2D.020.100.020','M.I2D.020.100.030']]]){
  const known=processScopes.get(appId(name)).known;
  for(const code of codes)assert(known.some(n=>n.id===code&&n.level===3),`${name}: mapped L3V record counts as ${code}`);
 }
-console.log('PASS: code-count coverage 4/6 and 3/4, duplicate/ancestor removal, single-count projection, count-based rankings, L0 process N/A, N/A preservation, L3V matched and pending as Level 3, comparable capability targets require L2 or deeper, legacy semantic evidence holds, peer filters and unresolved records.');
+console.log('PASS: code-count coverage 4/6 and 3/4, duplicate/ancestor removal, single-count projection, count-based rankings, L0 process N/A, N/A preservation, L3V matched as Level 3, a levelled record in LeanIX not pending (V19.1), comparable capability targets require L2 or deeper, legacy semantic evidence holds, peer filters and unresolved records.');

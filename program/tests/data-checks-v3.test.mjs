@@ -25,8 +25,11 @@ const coversEveryGap=(model,reports)=>{
   }
  }
 };
-// L3V is Level 3 (owner decision 2026-10-19). Of the 13 L3V records, these 7 have neither a standard L3 of the same name
-// nor an applied mapping, so they are ordinary unmatched process records ('No confirmed standard match').
+// L3V is Level 3 (owner decision 2026-10-19). Of the 13 L3V records, these 7 have neither a Signavio L3 of the same name
+// nor an applied mapping. Until V19 they were ordinary unmatched process records ('No confirmed standard match' checks).
+// V19.1 union (owner 2026-10-23): like every process recorded with a level they are in LeanIX, so they match and are no
+// data check; each is listed in its application's inLeanix. They still have no Signavio code (model.issues, similarity
+// and mappings unchanged), see the block below the totals.
 const unmatchedL3V=[
  ['AUTO-RACK','BBM PM I2D Putaway to Automated Warehouse L3V'],
  ['RBCD LOM Scrap Management Platform','BBM PM B2P Manage Fixed Assets Scrapping L3V'],
@@ -35,14 +38,27 @@ const unmatchedL3V=[
  ['VM-CN_WACOS_Szh5','BBM PM I2D Move Material Production to Production L3V'],
  ['VM-CN_WACOS_Szh5','BBM PM I2D Return from Production L3V'],
  ['VM-CN_WACOS_Szh5','BBM PM I2D Round quantity in material request and picking L3V']];
-// AUTO-RACK and RBCD LOM Scrap Management Platform otherwise pass Level 3, so their unmatched L3V records add two Process
-// needs-review applications (18 + 2 = 20 since 2026-10-21: VMCN_CONNEX left the Process gap with the export, 19 + 2 = 21 before),
-// and Szh5_ASRS_WCS_WMS's Level 3 gap becomes its L3V row instead of a separate 'Level 3 missing' row (one check fewer).
-// The per-record Level 3 labels are asserted in the test at the end of this file.
+// Until V19, AUTO-RACK and RBCD LOM Scrap Management Platform otherwise passed Level 3, so their unmatched L3V records added two
+// Process needs-review applications (18 + 2 = 20 since 2026-10-21: VMCN_CONNEX left the Process gap with the export, 19 + 2 = 21
+// before), and Szh5_ASRS_WCS_WMS's Level 3 gap was its L3V row instead of a separate 'Level 3 missing' row (one check fewer).
+// V19.1 union: all three pass Level 3 through these records, and Szh5_ASRS_WCS_WMS still has no 'Level 3 missing' row.
+// The per-record results are asserted in the test at the end of this file.
 const l3vGapApps=['AUTO-RACK','RBCD LOM Scrap Management Platform'],l3vMovedRowApp='Szh5_ASRS_WCS_WMS';
+// V19.1 union (owner 2026-10-23): the 12 applications that left the Process Level 3 gap (20 → 8 with both catalogues) because
+// their Level 3 records outside the Signavio list (the 7 unmatched L3V records and 12 L3 records) are in LeanIX and match.
+const unionLevel3Apps=['AUTO-RACK','RBCD LOG Xone','RBCD LOM Scrap Management Platform','RBCD WI management system','RBCW Auto Warehouse Management System','RBCW E-Queue system','RBHP_LOG_QualManager','ShzP_DAVIS','Szh5_ASRS_WCS_WMS','VM-CN_WACOS_Szh5','VM/LOG-Szh2_DAVIS','VMCN_iSCMP: Intelligent Supply Chain management platform'];
+const leftLevel3GapThroughLeanIX=(model,reports)=>{
+ for(const name of unionLevel3Apps){
+  const app=model.apps.find(a=>a.Name===name);
+  assert(app.inLeanix.some(x=>x.level===3),`${name} has a Level 3 record in LeanIX only`);
+  assert(!l3Gap(reports.process).includes(app),`${name} passes Level 3 (V19.1 union)`);
+ }
+};
 const sorted=rows=>rows.map(row=>JSON.stringify(row)).sort();
 const l3vRows=all=>all.flatMap(([app,checks])=>checks.checks.filter(row=>/\sL3V$/.test(row.raw)).map(row=>[app.Name,row.raw,row.tags]));
-const unmatchedL3VRows=unmatchedL3V.map(([name,raw])=>[name,raw,[{label:'No confirmed standard match',detail:`Source: ${raw}. Check naming, level and catalogue coverage before changing the record.`}]]);
+// Until V19 l3vRows gave one 'No confirmed standard match' row per unmatched L3V record; since V19.1 it gives none, and the
+// records are listed in inLeanix instead.
+const l3vInLeanix=model=>unmatchedL3V.filter(([name,raw])=>model.apps.find(a=>a.Name===name).inLeanix.some(x=>x.raw===raw&&x.level===3));
 // 2026-10-21 (V9.16): the LeanIX export of 2026-10-20 re-registered VMCN_CONNEX (HC.06.01.01 / HC.06.01.05 → B.06.2.3 / B.06.2.6,
 // empty process list → 'BBM PM P2F Prepare demand forecasting L3') and VMCN_Digital Dynamic Supermarket (B.06.4.4 → B.06.4), so no
 // current record has an HC.06 code, lacks a process or is outside the standard. Their registrations as recorded before the export
@@ -55,8 +71,10 @@ assert.equal(model.apps.length,76);
 // Logistics Management System with Level 2 only, VM-CN Auto labeling printing system and VMCN_iWPC_AKL_Szh5 with B.06.5.7, which the
 // legacy catalogue lacks; left: VMCN_CONNEX), Process 21 → 20 (left: VMCN_CONNEX).
 assert.equal(l3Gap(reports.cap).length,43);
-assert.equal(l3Gap(reports.process).length,20);
-assert(l3vGapApps.every(name=>l3Gap(reports.process).some(app=>app.Name===name)));
+// V19.1 union (owner 2026-10-23): Process 20 → 8, the 12 applications of unionLevel3Apps pass Level 3 through LeanIX.
+assert.equal(l3Gap(reports.process).length,8,'V19.1 union: 12 applications whose Level 3 records outside the Signavio list are in LeanIX left the gap');
+leftLevel3GapThroughLeanIX(model,reports);
+assert(l3vGapApps.every(name=>!l3Gap(reports.process).some(app=>app.Name===name)),'V19.1 union: their unmatched L3V records match through LeanIX');
 assert.equal(all.reduce((sum,[,checks])=>sum+checks.m,0),12);
 // The legacy catalogue is not the business capability standard: its name differences stay provenance only
 // (no 'Name differs from standard' checks) and missing codes keep the neutral 'Verify in LeanIX' wording.
@@ -70,9 +88,15 @@ assert.equal(model.standardCatalogue,false);
 // VMCN_Packaging Data System L2; 360° Supplier dashboard L1, L2) and 2 'Process name differs between sources'
 // (RBAC_ME_Szh5 Intralogistics control system, VM-CN_WACOS_Szh5). Five capability L2 records keep their tag and gain
 // the 'Level 2 match needs review' line of Issues to review (same count).
-assert.equal(all.filter(([app])=>app.Name!==l3vMovedRowApp).reduce((sum,[,checks])=>sum+checks.n,0),127);
-assert.equal(all.reduce((sum,[,checks])=>sum+checks.n,0),129);
-assert.deepEqual(sorted(l3vRows(all)),sorted(unmatchedL3VRows),'only the 7 unmatched L3V records are checks, each tagged like any unmatched process record');
+// V19.1 union (owner 2026-10-23): −28 process checks → 101: the 19 'Level 3 match needs review' rows of records with a level
+// outside the Signavio list (the 7 unmatched L3V records and 12 L3 records), the 7 missing Level 0–2 rows those records now
+// cover (RBCD LOM Scrap Management Platform L2; RBCD WI management system L0–L2; RBCW E-Queue system L0–L2) and the 2
+// 'Process name differs between sources' rows (no longer produced). 100 outside Szh5_ASRS_WCS_WMS plus its 1 (its L3V row is gone).
+assert.equal(all.filter(([app])=>app.Name!==l3vMovedRowApp).reduce((sum,[,checks])=>sum+checks.n,0),100);
+assert.equal(all.reduce((sum,[,checks])=>sum+checks.n,0),101);
+assert.deepEqual(l3vRows(all),[],'V19.1 union: no L3V record is a check (until V19 the 7 unmatched ones were)');
+assert.deepEqual(l3vInLeanix(model),unmatchedL3V,'the 7 unmatched L3V records are in LeanIX at Level 3');
+assert(!all.some(([,checks])=>checks.checks.some(row=>/Process name differs between sources/.test(row.primary))),'V19.1: no name-difference process check');
 assert(!all.some(([,checks])=>checks.checks.some(row=>row.tags.some(tag=>tag.label.startsWith('L3V')))),'no L3V-specific tag remains');
 {
  // An L3V record whose name is unique in the standard is matched by name like L3, even without its applied mapping;
@@ -128,19 +152,23 @@ coversEveryGap(model,reports);
 }
 assert(!all.some(([,checks])=>checks.checks.some(row=>row.tags.some(tag=>tag.label==='Possibly B.06'))),'no record is tagged Possibly B.06');
 {
- // Its only Level 3 record is an unmatched L3V record: a normal unmatched process record that needs review
- // with the 'Level 3 match needs review' label, and no separate 'Level 3 missing' row.
+ // Its only Level 3 record is an unmatched L3V record. Until V19 it was a normal unmatched process record that needed review
+ // ('Level 3 match needs review'). V19.1 union (owner 2026-10-23): it is in LeanIX, so it matches: no process check, no
+ // separate 'Level 3 missing' row, and its Level 3 passes.
  const [app,checks]=find('Szh5_ASRS_WCS_WMS');
- assert.deepEqual(checks.checks.filter(row=>row.dimension==='process').map(row=>[row.raw,row.primary,row.tags.map(tag=>tag.label)]),[['BBM PM I2D Pick via Picking Area (Goods to Man)-Automated warehouse L3V','Process: Level 3 match needs review',['No confirmed standard match']]]);
- assert(l3Gap(reports.process).includes(app));
+ assert.deepEqual(checks.checks.filter(row=>row.dimension==='process'),[]);
+ assert.deepEqual(app.inLeanix.map(x=>[x.raw,x.level]),[['BBM PM I2D Pick via Picking Area (Goods to Man)-Automated warehouse L3V',3]]);
+ assert(!l3Gap(reports.process).includes(app));
+ assert(reports.process.levels.find(level=>level.level===3).valid.includes(app),'its Level 3 matches through LeanIX');
 }
 {
  const [app,checks]=find('VM/LOG-Szh2_DAVIS');
  assert.equal(checks.k,2);
- assert(checks.checks.some(row=>row.raw.includes('Load Truck')&&row.tags.some(tag=>tag.label==='No confirmed standard match')));
- assert(checks.checks.some(row=>row.raw.includes('Stage Packed Goods')&&row.tags.some(tag=>tag.label==='No confirmed standard match')));
- assert(checks.checks.some(row=>row.raw.includes('Stage Packaging Kits')&&row.tags.some(tag=>tag.label==='Matches 2 standard codes')));
- for(const phrase of ['Load Truck','Stage Packaging Kits','Stage Packed Goods'])assert(checks.checks.some(row=>row.raw.includes(phrase)&&row.primary==='Process: Level 3 match needs review'),`${phrase} needs its L3 primary label`);
+ // V19.1 union (owner 2026-10-23): its three L3 records are not one Signavio process (Load Truck and Stage Packed Goods not
+ // found, Stage Packaging Kits matching 2 codes), but they are in LeanIX, so they match and are no checks. Until V19 each was a
+ // 'Process: Level 3 match needs review' row tagged 'No confirmed standard match' or 'Matches 2 standard codes'.
+ assert.deepEqual(checks.checks.filter(row=>row.dimension==='process'),[]);
+ assert.deepEqual(app.inLeanix.map(x=>[x.raw,x.level,x.type,x.candidates.length]),[['BBM PM I2D Load Truck L3',3,'流程未匹配层级表',0],['BBM PM I2D Stage Packaging Kits L3',3,'流程名称对应多个编号',2],['BBM PM I2D Stage Packed Goods L3',3,'流程未匹配层级表',0]]);
  assert(checks.checks.some(row=>row.raw.startsWith('B.06.4 ')&&row.tags.some(tag=>tag.label==='Meaning needs confirmation')));
  assert(checks.checks.some(row=>row.tags.some(tag=>tag.label==='Cost score 1')));
 }
@@ -184,14 +212,18 @@ assert(!all.some(([,checks])=>checks.checks.some(row=>row.tags.some(tag=>tag.lab
  assert.equal(model.apps.length,76);
  assert.deepEqual([...model.caps.values()].filter(node=>node.reference&&node.id.startsWith('HC.')).map(node=>node.id),[],'no HC entry in the capability catalogue');
  assert.equal(l3Gap(reports.cap).length,39);
- assert.equal(l3Gap(reports.process).length,20);
+ // V19.1 union (owner 2026-10-23): Process 20 → 8, the same 12 applications as with the legacy catalogue.
+ assert.equal(l3Gap(reports.process).length,8,'V19.1 union: 12 applications whose Level 3 records outside the Signavio list are in LeanIX left the gap');
+ leftLevel3GapThroughLeanIX(model,reports);
  assert.equal(all.reduce((sum,[,checks])=>sum+checks.m,0),12);
  assert.equal(model.standardCatalogue,true,'the bundled catalogue is the business capability standard');
  // V18.1: the same 14 missing Level 0–2 and 2 'Process name differs between sources' lines as with the legacy catalogue
  // above (+16): 97 + 2 = 99. ShzP_ALICE's B.05.2 row gains the 'Level 2 match needs review' line of Issues to review.
- assert.equal(all.filter(([app])=>app.Name!==l3vMovedRowApp).reduce((sum,[,checks])=>sum+checks.n,0),97);
- assert.equal(all.reduce((sum,[,checks])=>sum+checks.n,0),99);
- assert.deepEqual(sorted(l3vRows(all)),sorted(unmatchedL3VRows),'the capability catalogue does not change the L3V process checks');
+ // V19.1 union: the same 28 process lines as with the legacy catalogue are gone: 99 − 28 = 71, 70 outside Szh5_ASRS_WCS_WMS plus its 1.
+ assert.equal(all.filter(([app])=>app.Name!==l3vMovedRowApp).reduce((sum,[,checks])=>sum+checks.n,0),70);
+ assert.equal(all.reduce((sum,[,checks])=>sum+checks.n,0),71);
+ assert.deepEqual(l3vRows(all),[],'the capability catalogue does not change the L3V process result (V19.1: no L3V check)');
+ assert.deepEqual(l3vInLeanix(model),unmatchedL3V);
  assert.equal(all.reduce((sum,[,checks])=>sum+checks.k,0),2);
  // The coverage note in the detail panel agrees with the 'Not in standard' check.
  assert.equal(capabilityCatalogueNotice('B.06.4.4 Physical Inventory Management',model.standardCatalogue),'Not in the business capability standard — correct the record in LeanIX.');
@@ -260,7 +292,10 @@ assert(!all.some(([,checks])=>checks.checks.some(row=>row.tags.some(tag=>tag.lab
  {
   const [app,checks]=find('VM/LOG-Szh2_DAVIS');
   assert.equal(checks.k,0);
-  for(const phrase of ['Load Truck','Stage Packaging Kits','Stage Packed Goods'])assert(checks.checks.some(row=>row.raw.includes(phrase)&&row.primary==='Process: Level 3 match needs review'),`${phrase} needs its L3 primary label`);
+  // V19.1 union (owner 2026-10-23): its three L3 records are in LeanIX and match (until V19 each was a 'Process: Level 3 match
+  // needs review' check), as with the legacy catalogue.
+  assert.deepEqual(checks.checks.filter(row=>row.dimension==='process'),[]);
+  assert.deepEqual(app.inLeanix.map(x=>x.raw),['BBM PM I2D Load Truck L3','BBM PM I2D Stage Packaging Kits L3','BBM PM I2D Stage Packed Goods L3']);
   assert(!checks.checks.some(row=>row.raw.startsWith('B.06.4 ')));
   assert(checks.checks.some(row=>row.tags.some(tag=>tag.label==='Cost score 1')));
  }
@@ -284,19 +319,24 @@ assert.equal(dataChecksSummary({n:0,m:0,k:2}),'0 to check');
 const escaped=renderDataChecks({checks:[{dimension:'cap',raw:'A<&',primary:'Business Capability: Level 3 missing',tags:[{label:'Verify in LeanIX',detail:'Check <record>'}]}],mappings:[],nameDifferences:[],n:1,m:0,k:0},value=>String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'));
 assert.match(escaped,/A&lt;&amp;/);
 assert.match(escaped,/Check &lt;record&gt;/);
-console.log('PASS: v3 Data checks use the corrected model, cover every Overview L3 gap (and since V18.1 every Issues to review item), preserve 12 mappings, match the legacy 89-row/67-app name-difference baseline, and with the standard show the 2 name-difference checks and (pre-export registration) B.06.4.4 marked Not in standard; HC records are only tagged Outside B.06 review scope; L3V records are matched by name like L3 and the 7 unmatched ones are ordinary No confirmed standard match checks.');
+console.log('PASS: v3 Data checks use the corrected model, cover every Overview L3 gap (and since V18.1 every Issues to review item), preserve 12 mappings, match the legacy 89-row/67-app name-difference baseline, and with the standard show the 2 name-difference checks and (pre-export registration) B.06.4.4 marked Not in standard; HC records are only tagged Outside B.06 review scope; L3V records are matched by name like L3, and since V19.1 every process recorded with a level (the 7 unmatched L3V records included) is in LeanIX, matches and is no check.');
 
-// L3V is Level 3 (owner decision 2026-10-19): an unmatched L3V record is a Level 3 gap with both catalogues.
+// L3V is Level 3 (owner decision 2026-10-19). Until V19 an unmatched L3V record was a Level 3 gap with both catalogues
+// ('Process: Level 3 match needs review').
 // 2026-10-21 (V9.16 export): legacy total 109 → 113 (see above; the standard total stays 83), Process gap 21 → 20 (VMCN_CONNEX left).
 // V18.1: Data checks list every Issues to review item: legacy 113 → 129, standard 83 → 99 (see above).
-test('Unmatched L3V records are Level 3 gaps in Data checks',()=>{
- for(const [source,total] of [[{...data,capabilityRows:old.capabilityRows,taxonomySource:old.taxonomySource},129],[data,99]]){
-  const {reports,all,find}=checked(source);
-  assert.equal(l3Gap(reports.process).length,20);
-  for(const name of new Set(unmatchedL3V.map(([name])=>name)))assert(l3Gap(reports.process).some(app=>app.Name===name),`${name} needs Level 3 review`);
+// V19.1 union (owner 2026-10-23): like every process recorded with a level, an unmatched L3V record is in LeanIX, so it matches
+// with both catalogues and is no data check: legacy 129 → 101, standard 99 → 71, Process gap 20 → 8 (see above).
+test('Unmatched L3V records match through LeanIX and are not Data checks (V19.1 union)',()=>{
+ for(const [source,total] of [[{...data,capabilityRows:old.capabilityRows,taxonomySource:old.taxonomySource},101],[data,71]]){
+  const {model,reports,all,find}=checked(source);
+  assert.equal(l3Gap(reports.process).length,8);
+  for(const name of new Set(unmatchedL3V.map(([name])=>name)))assert(!l3Gap(reports.process).some(app=>app.Name===name),`${name} passes Level 3`);
   for(const [name,raw] of unmatchedL3V){
-   const [,checks]=all.find(([app])=>app.Name===name);
-   assert.equal(checks.checks.find(row=>row.raw===raw).primary,'Process: Level 3 match needs review',`${raw} is an unrecognized Level 3 registration`);
+   const [app,checks]=all.find(([app])=>app.Name===name);
+   assert(!checks.checks.some(row=>row.raw===raw),`${raw} is no data check`);
+   assert.deepEqual(reports.process.records.get(app.id).filter(r=>r.raw===raw).map(r=>[r.level,r.valid,r.accepted,r.reason]),[[3,true,null,'In LeanIX, not in the Signavio list']],raw);
+   assert(model.issues.some(i=>i.appId===app.id&&i.value===raw&&i.type==='流程未匹配层级表'),`${raw} still has no Signavio code`);
   }
   const [,szh5]=find(l3vMovedRowApp);
   assert.equal(szh5.checks.filter(row=>row.primary==='Process: Level 3 missing').length,0,'Szh5_ASRS_WCS_WMS registers Level 3 through its L3V record');

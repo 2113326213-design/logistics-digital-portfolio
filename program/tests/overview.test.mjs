@@ -69,15 +69,27 @@ test('Any bad registration at a level reduces quality once, and no L3V record is
  const cap=maintenanceReport(buildModel(data),{},'cap');assert.equal(cap.levels[2].filled.length,2);assert.equal(cap.levels[2].valid.length,0);assert.equal(cap.pending.length,2);
  // L3V is Level 3 (owner decision 2026-10-19): no record is a variant excluded from registration and quality.
  const p=maintenanceReport(buildModel(fixture()),{},'process');assert.deepEqual(p.levelsAvailable,[0,1,2,3]);assert(!('l3v' in p)&&p.records.get('B').every(r=>!('variant' in r)),'no variant state remains');assert.deepEqual(p.registered.map(a=>a.id),['A','B']);assert.equal(p.missing.length,1);
- // An unmatched L3V record is a bad registration: its application no longer passes quality.
- const unmatched=fixture();unmatched.apps[1].Processes='BBM PM T Stage L1;BBM PM T Unlisted L3V';
- const u=maintenanceReport(buildModel(unmatched),{},'process');
- assert.deepEqual([u.quality.map(a=>a.id),u.pending.map(a=>a.id),u.missing.map(a=>a.id)],[['A'],['B'],['C']]);
- assert.deepEqual(u.records.get('B').filter(r=>!r.valid).map(r=>[r.raw,r.level,r.reason]),[['BBM PM T Unlisted L3V',3,'流程未匹配层级表']]);
+ // V19.1 union (owner 2026-10-23): a process recorded with a level is in LeanIX, so an L3V record that is not in the
+ // Signavio list matches, exactly like such an L3 record (L3V is L3), and its application passes quality. Until V19 it
+ // was a bad registration. model.issues still lists it (similarity check and mappings unchanged).
+ for(const suffix of ['L3V','L3']){
+  const unmatched=fixture();unmatched.apps[1].Processes=`BBM PM T Stage L1;BBM PM T Unlisted ${suffix}`;
+  const m=buildModel(unmatched),u=maintenanceReport(m,{},'process');
+  assert.deepEqual([u.quality.map(a=>a.id),u.pending.map(a=>a.id),u.missing.map(a=>a.id)],[['A','B'],[],['C']],suffix);
+  assert.deepEqual(u.records.get('B').map(r=>[r.raw,r.level,r.valid,r.reason]),[['BBM PM T Stage L1',1,true,''],[`BBM PM T Unlisted ${suffix}`,3,true,'In LeanIX, not in the Signavio list']],suffix);
+  assert.deepEqual(m.apps.find(a=>a.id==='B').inLeanix.map(x=>[x.raw,x.level,x.type]),[[`BBM PM T Unlisted ${suffix}`,3,'流程未匹配层级表']],suffix);
+  assert.deepEqual(m.issues.filter(i=>i.appId==='B'&&i.type.startsWith('流程')).map(i=>i.value),[`BBM PM T Unlisted ${suffix}`],suffix);
+ }
+ // A process record without a level is still a bad registration: its application no longer passes quality.
+ const noLevel=fixture();noLevel.apps[1].Processes='BBM PM T Stage L1;BBM PM T Unlisted';
+ const n=maintenanceReport(buildModel(noLevel),{},'process');
+ assert.deepEqual([n.quality.map(a=>a.id),n.pending.map(a=>a.id),n.missing.map(a=>a.id)],[['A'],['B'],['C']]);
+ assert.deepEqual(n.records.get('B').filter(r=>!r.valid).map(r=>[r.raw,r.level,r.reason]),[['BBM PM T Unlisted',null,'流程未标注标准层级']]);
  const empty=maintenanceReport(buildModel(fixture()),{entity:'No plant'},'process');assert.equal(empty.apps.length,0);assert.equal(empty.plants.length,0);
 });
 // L3V is Level 3 (owner decision 2026-10-19): without a mapping, a matched L3V record counts as a valid Level 3
-// registration and an unmatched one as an unrecognized Level 3 registration, never as 'unknown'.
+// registration, never as 'unknown'. Until V19 an unmatched one was an unrecognized Level 3 registration; since V19.1
+// (union, owner 2026-10-23) it is in LeanIX and also a valid Level 3 registration.
 test('L3V records are Level 3 registrations in the maintenance report',()=>{
  const p=maintenanceReport(buildModel(fixture()),{},'process');
  assert.deepEqual(p.records.get('B').map(r=>[r.raw,r.level,r.valid]),[['BBM PM T Stage L1',1,true],['BBM PM T Detail L3V',3,true]]);
@@ -89,7 +101,9 @@ test('L3V records are Level 3 registrations in the maintenance report',()=>{
  const data=fixture();data.apps[1].Processes='BBM PM T Stage L1;BBM PM T Unlisted L3V';
  const u=maintenanceReport(buildModel(data),{},'process'),b=u.apps.find(a=>a.id==='B');
  assert.deepEqual(u.records.get('B').find(r=>r.raw==='BBM PM T Unlisted L3V').level,3);
- assert.deepEqual([u.levels[3].valid.map(a=>a.id),u.levels[3].invalid.map(a=>a.id),u.unknown],[['A'],['B'],[]]);
+ // V19.1 union (owner 2026-10-23): the unlisted L3V record is in LeanIX, so it is a valid Level 3 registration (until V19:
+ // an invalid one). It is still Level 3, never 'unknown'.
+ assert.deepEqual([u.levels[3].valid.map(a=>a.id),u.levels[3].invalid.map(a=>a.id),u.unknown],[['A','B'],[],[]]);
  // The level suffix is read the same way as the model reads it, in any letter case.
  const lower=fixture();lower.apps[1].Processes='BBM PM T Stage l1;BBM PM T Detail l3v';
  const lowerModel=buildModel(lower);
@@ -98,7 +112,13 @@ test('L3V records are Level 3 registrations in the maintenance report',()=>{
  // Only a record with no level suffix at all is 'unknown'.
  const noLevel=fixture();noLevel.apps[1].Processes='BBM PM T Stage L1;BBM PM T Detail';
  assert.deepEqual(maintenanceReport(buildModel(noLevel),{},'process').unknown.map(a=>a.id),['B']);
- assert.deepEqual(maintenanceGapReasons(u,u,b,[3]),['L3 '+String.fromCharCode(183)+' Unrecognized registration: BBM PM T Unlisted L3V']);
+ // V19.1 union: a process recorded at a level now always matches, so no Level 3 'Unrecognized registration' reason remains
+ // for it (that behaviour no longer exists for processes; the reason is still tested for capabilities in 'L2 quality drill'
+ // below). A level with no entry still gives its reason.
+ assert.deepEqual(maintenanceGapReasons(u,u,b,[3]),[]);
+ const noLevelData=fixture();noLevelData.apps[1].Processes='BBM PM T Stage L1;BBM PM T Unlisted';
+ const nl=maintenanceReport(buildModel(noLevelData),{},'process');
+ assert.deepEqual(maintenanceGapReasons(nl,nl,nl.apps.find(a=>a.id==='B'),[3]),['L3 '+String.fromCharCode(183)+' No explicit registration']);
 });
 test('Only applied verified mappings repair the quality numerator; notes alone do not',()=>{
  const data=fixture(),raw=data.apps[1]['Business Capabilities'];data.reviews={example:{status:'已确认',result:'done',reviewer:'test'}};

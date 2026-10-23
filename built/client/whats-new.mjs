@@ -1,16 +1,18 @@
 // A short notice for plant users when the tool was updated (owner request 2026-10-23: "if we update a new version, let
 // them know"). The page itself shows no version number (owner decision 2026-10-23). Each update that changes what plant
 // users see gets a new id and its own lines in plain English; one browser never sees the same id twice.
-// The second update of 23 October 2026 (owner decision: the LeanIX comparison and the download for the server were
-// removed) keeps the first update's lines, so a browser that skipped the first update still reads them.
+// The updates of 23 October 2026 (V18.1; V19: the LeanIX comparison and the download for the server were removed; V19.1:
+// a process counts as matching when it is in the Signavio list or in LeanIX) share one notice, so a browser that skipped
+// an earlier one still reads its lines.
 export const WHATS_NEW=Object.freeze({
- id:'2026-10-23-2',
+ id:'2026-10-23-3',
  date:'23 October 2026',
  items:Object.freeze([
   'Data checks now list the same items as Issues to review, at every level.',
   'A level with no entry now counts as complete when a deeper level matches the standard. For example, if Level 3 matches, Levels 2, 1 and 0 count as complete.',
   'Import data no longer compares LeanIX process exports. If you choose one, the tool says so and changes nothing.',
-  'Share this data with everyone now has only Upload to server. The download for the server admin is gone.'
+  'Share this data with everyone now has only Upload to server. The download for the server admin is gone.',
+  'A process now counts as matching when it is in the Signavio list or in LeanIX. Every process recorded with a level (L0 to L3) is in LeanIX, so only processes without a level are still listed to review. The Similarity check no longer asks to confirm them.'
  ])
 });
 export const UPDATE_SEEN_KEY='logistics-portfolio:update-seen';

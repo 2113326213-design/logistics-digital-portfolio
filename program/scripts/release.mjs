@@ -1,6 +1,6 @@
 // Keep the visible release label and downloaded file name in sync.
 export const RELEASE_DATE='2026-10-22';
-export const RELEASE_VERSION='v19';
+export const RELEASE_VERSION='v19.1';
 export const OFFLINE_FILE_NAME=`物流工具_最新版_离线单文件_${RELEASE_DATE.replaceAll('-','')}_${RELEASE_VERSION}.html`;
 // The release ZIP is the one GitHub release asset: the offline HTML and the IIS deploy script generated for it
 // (scripts/deploy-script.mjs), so the server needs one download (owner report 2026-10-22: twice only the script was

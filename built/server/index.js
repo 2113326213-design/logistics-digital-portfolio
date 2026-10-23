@@ -432,7 +432,7 @@ function buildModel(data) {
       return { own: all.filter((s) => !other(s)), other: all.filter(other) };
     };
     const capRecords = records("cap", raw["Business Capabilities"]), processRecords = records("process", raw.Processes);
-    const a = { ...raw, id, cap: [], process: [], unmatched: [], processMatches: [], accepted: [], notInExport: missingFromExport.has(id) ? data.inventoryExport : null, rawCap: capRecords.own, rawProcess: processRecords.own, otherCompany: [...capRecords.other, ...processRecords.other] };
+    const a = { ...raw, id, cap: [], process: [], unmatched: [], processMatches: [], inLeanix: [], accepted: [], notInExport: missingFromExport.has(id) ? data.inventoryExport : null, rawCap: capRecords.own, rawProcess: processRecords.own, otherCompany: [...capRecords.other, ...processRecords.other] };
     for (const s of a.rawCap) {
       const corrected = mapped(id, "cap", s);
       if (corrected) {
@@ -462,6 +462,7 @@ function buildModel(data) {
         continue;
       }
       a.unmatched.push(s);
+      if (found.type !== "\u6D41\u7A0B\u672A\u6807\u6CE8\u6807\u51C6\u5C42\u7EA7") a.inLeanix.push({ raw: s, level: Number(PROCESS_LEVEL.exec(s)[1]), type: found.type, candidates: found.candidates || [] });
       flag(a, "process", { appId: a.id, app: a.Name, type: found.type, value: s, ...found.candidates ? { candidates: found.candidates } : {} });
     }
     if (!a.rawCap.length && mapped(id, "cap", "")) a.cap.push(mapped(id, "cap", ""));

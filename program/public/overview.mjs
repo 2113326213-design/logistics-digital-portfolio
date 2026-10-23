@@ -60,10 +60,13 @@ export function maintenanceReport(model,filters={},dimension='cap'){
    const mapped=corrections.find(c=>c.raw===raw),id=mapped?.targetId||(isCap?capCode(raw):null);
    const issue=model.issues.find(i=>i.appId===a.id&&i.value===raw&&i.type.startsWith(isCap?'业务能力':'流程'));
    const level=mapped?map.get(id)?.level:isCap?(id?id.split('.').length-1:null):PROCESS_LEVEL.exec(raw)?.[1];
-   // A record the owner confirmed as recorded is not an issue, but it has no catalogue code: it never matches the standard.
-   const accepted=!mapped&&(a.accepted||[]).find(d=>d.dimension===dimension&&d.raw===raw)||null;
-   const valid=!accepted&&(!!mapped||(isCap?!!id&&!!map.get(id)?.reference:level!==undefined&&level!==null&&!issue));
-   return {raw,level:level===undefined||level===null?null:Number(level),valid,accepted,reason:accepted?'Confirmed by owner as recorded':issue?.type||(!valid?'Not matched to the current taxonomy':'')};
+   // A process in LeanIX but not in the Signavio list matches (union, V19.1, model.mjs inLeanix); the owner's confirmation
+   // of such a record is no longer needed. Any other record the owner confirmed as recorded is not an issue, but it has no
+   // catalogue code: it never matches the standard.
+   const union=!isCap&&!mapped&&(a.inLeanix||[]).some(x=>x.raw===raw);
+   const accepted=!mapped&&!union&&(a.accepted||[]).find(d=>d.dimension===dimension&&d.raw===raw)||null;
+   const valid=!accepted&&(!!mapped||union||(isCap?!!id&&!!map.get(id)?.reference:level!==undefined&&level!==null&&!issue));
+   return {raw,level:level===undefined||level===null?null:Number(level),valid,accepted,reason:accepted?'Confirmed by owner as recorded':union?'In LeanIX, not in the Signavio list':issue?.type||(!valid?'Not matched to the current taxonomy':'')};
   })];
  }));
  // Per application and level: the deeper records that make an unrecorded level full ([] when none).
@@ -184,7 +187,7 @@ export function createOverviewUI({getModel,escape:esc,onApp,onStateChange=()=>{}
   el('overviewScope').textContent=`${total} of ${model.apps.length} applications · ${filters.division||'All business units'} · ${filters.entity||'All plants'}`;
   host.querySelectorAll('[data-overview-dim]').forEach(b=>{b.classList.toggle('active',b.dataset.overviewDim===dimension);b.setAttribute('aria-pressed',String(b.dataset.overviewDim===dimension));});
   el('overviewSummary').innerHTML=summaryCards();
-  el('overviewPanels').innerHTML=`${plantTable()}<details class="overview-definitions"><summary>How is this calculated?</summary><p>For each level, filled counts applications with entries at that level; matches standard counts applications whose entries match the current standard list. Both use all ${total} applications. Matching the standard does not confirm business suitability.</p><p>A level with no entry counts as filled and matching when a deeper level matches the standard. For example, if Level 3 matches, Levels 2, 1 and 0 count as full. An entry recorded at a level that does not match is still listed to review. This applies to Business Capability and Process.</p><p>To review counts applications with at least one open issue at any level of this view (a missing level, a record that does not match the standard, a record without a level, or a name or meaning to confirm). It does not depend on Show all levels.</p><p>Annual cost bands: 5 → ¥10,000; 4 → ¥20,000; 3 → ¥50,000; 2 → ¥100,000; 1 → ¥200,000 / year.</p><p>Out-of-scope applications are not included in cost totals.</p></details>`;
+  el('overviewPanels').innerHTML=`${plantTable()}<details class="overview-definitions"><summary>How is this calculated?</summary><p>For each level, filled counts applications with entries at that level; matches standard counts applications whose entries match. A process matches when it is in the Signavio process list or in LeanIX; every process recorded with a level (L0–L3) is in LeanIX, so only a process without a level does not match. A capability matches when its code is in the capability standard. Both use all ${total} applications. Matching the standard does not confirm business suitability.</p><p>A level with no entry counts as filled and matching when a deeper level matches the standard. For example, if Level 3 matches, Levels 2, 1 and 0 count as full. An entry recorded at a level that does not match is still listed to review. This applies to Business Capability and Process.</p><p>To review counts applications with at least one open issue at any level of this view (a missing level, a record that does not match the standard, a record without a level, or a name or meaning to confirm). It does not depend on Show all levels.</p><p>Annual cost bands: 5 → ¥10,000; 4 → ¥20,000; 3 → ¥50,000; 2 → ¥100,000; 1 → ¥200,000 / year.</p><p>Out-of-scope applications are not included in cost totals.</p></details>`;
   el('showAllLevels').onchange=e=>{showAllLevels=e.target.checked;refresh();onStateChange();};
 
  }

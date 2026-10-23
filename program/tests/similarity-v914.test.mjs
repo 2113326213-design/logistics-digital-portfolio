@@ -37,21 +37,38 @@ function withUI(run){
 const entry=(id,log)=>({dataset:{readinessApp:id},hasAttribute:()=>false,focus(options){log.push([id,options]);}});
 const clickOn=(host,button)=>host.fire('click',{target:{closest:()=>button}});
 
-test('the hidden screening outcomes are not built; record checks and their affected pairs remain',()=>withUI(({document})=>{
+test('the hidden screening outcomes are not built; record checks and their affected pairs remain',()=>withUI(({document,model})=>{
  const html=document.getElementById('portfolioProvisional').innerHTML;
  assert.doesNotMatch(html,/portfolioOtherOutcomes|View other comparison results|<summary>(Below threshold|No shared registrations|No complete score|Out of scope) · /);
  // 2026-10-21 (V9.16, LeanIX export 20261020_083736_UKj4Y_inventory.xlsx merged by ID): counts re-derived from public/data.json with
  // comparisonReadiness/pairResultLabel. ShzP_Pad system (B.06 root → B.06.5) and VMCN_Digital Dynamic Supermarket (lost the uncatalogued
  // B.06.4.4) left the record checks: 19 → 17 applications, 1,159 → 1,054 pairs (More detail needed 214 → 109, Needs confirmation still 945);
  // the hidden screening outcomes are 635+201+582+365 = 1,783 pairs (were 1,684).
- assert.match(html,/Check application records · 17 applications/);
- assert.match(html,/View affected comparisons · 1,054 pairs/);
+ // V19.1 union (owner 2026-10-23, "也按并集"): a process record with a level is in LeanIX and no longer pending in the
+ // similarity check. Re-derived with comparisonReadiness/pairResultLabel at the default threshold of 50: the 11 applications
+ // whose only records to check were such processes left the record checks (AUTO-RACK, RBCD LOM Scrap Management Platform,
+ // RBCD WI management system, RBCW Auto Warehouse Management System, RBCW E-Queue system, RBHP_LOG_QualManager, ShzP_DAVIS,
+ // Szh5_ASRS_WCS_WMS, VM-CN_WACOS_Szh5, VM/LOG-Szh2_DAVIS, VMCN_iSCMP); 6 remain (the two L0 chains and four records without
+ // a level), each in 70 pairs: 6 × 70 − 15 shared = 405 pairs (were 17 × 70 − 136 = 1,054). Needs confirmation 945 → 274;
+ // the 671 pairs now have a normal result (369 Below threshold, 180 No shared registrations, 96 No complete score,
+ // 22 More detail needed, 4 Potential overlap), so More detail needed is 109 → 131 and the hidden screening outcomes are
+ // 1,004+297+762+365 = 2,428 pairs.
+ assert.match(html,/Check application records · 6 applications/);
+ assert.match(html,/View affected comparisons · 405 pairs/);
  const buttons=(html.match(/<button\b/g)||[]).length;
- assert.equal(buttons,17+1054,'17 application entries and the 1,054 affected pairs; the 1,783 hidden pair buttons are gone');
+ assert.equal(buttons,6+405,'6 application entries and the 405 affected pairs; the 2,428 hidden pair buttons are gone');
+ const listed=name=>html.includes(`data-readiness-app="${esc(model.apps.find(a=>a.Name===name).id)}"`);
+ assert(!listed('AUTO-RACK'),'a process in LeanIX is no record to check');
+ assert(listed('RBCC I4.0 Visualization (Davis)'),'a process record without a level still is');
 }));
 
+// V19.1 union (owner 2026-10-23, "也按并集"): AUTO-RACK's only record to check (a process with a level, in LeanIX) is no
+// longer one, so it has no entry; the entry used is RBCC I4.0 Visualization (Davis), still listed for a process record
+// without a level.
+const listedApp=model=>model.apps.find(a=>a.Name==='RBCC I4.0 Visualization (Davis)');
 test('closing the details returns focus to the entry that opened them',()=>withUI(({document,model,opened})=>{
- const review=document.getElementById('similarityReview'),auto=model.apps.find(a=>a.Name==='AUTO-RACK'),log=[];
+ const review=document.getElementById('similarityReview'),auto=listedApp(model),log=[];
+ assert(document.getElementById('portfolioProvisional').innerHTML.includes(`data-readiness-app="${esc(auto.id)}"`),'the application has an entry');
  const button=entry(auto.id,log);
  clickOn(review,button);
  assert.deepEqual(opened,[auto.id]);assert.equal(document.getElementById('detail').open,true);
@@ -63,7 +80,7 @@ test('closing the details returns focus to the entry that opened them',()=>withU
 }));
 
 test('after a refresh, focus goes to the re-rendered entry for the same application',()=>withUI(({document,model})=>{
- const review=document.getElementById('similarityReview'),auto=model.apps.find(a=>a.Name==='AUTO-RACK');
+ const review=document.getElementById('similarityReview'),auto=listedApp(model);
  const originalLog=[],rerenderedLog=[],otherLog=[];
  const original=entry(auto.id,originalLog),rerendered=entry(auto.id,rerenderedLog),other=entry('someone-else',otherLog);
  clickOn(review,original);

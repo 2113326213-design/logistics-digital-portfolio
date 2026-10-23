@@ -67,8 +67,10 @@ export function importAppIds(events){
 export function importEvents(history){const events=cleanImportHistory(history),ids=importAppIds(events);return events.map(e=>({...e,appIds:ids.get(e.id)}));}
 
 function issueMap(data){
- const items=reviewItems(buildModel({...data,corrections:[]})),byApp=new Map();
- for(const i of items)for(const appId of i.appIds){if(!byApp.has(appId))byApp.set(appId,new Map());const key=JSON.stringify([i.category,i.code,i.raw]);byApp.get(appId).set(key,{category:i.category,record:i.raw});}
+ const model=buildModel({...data,corrections:[]}),items=reviewItems(model),byApp=new Map();
+ // A process in LeanIX but not in the Signavio list matches (union, V19.1): an import neither flags nor clears it.
+ const inLeanix=new Map(model.apps.map(a=>[a.id,new Set((a.inLeanix||[]).map(x=>x.raw))]));
+ for(const i of items)for(const appId of i.appIds){if(i.category==='流程匹配'&&inLeanix.get(appId)?.has(i.raw))continue;if(!byApp.has(appId))byApp.set(appId,new Map());const key=JSON.stringify([i.category,i.code,i.raw]);byApp.get(appId).set(key,{category:i.category,record:i.raw});}
  return byApp;
 }
 

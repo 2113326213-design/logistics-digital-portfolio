@@ -39,17 +39,20 @@ test('exact shared codes stay distinct from a parent-level match and do not inve
 });
 
 test('unconfirmed capability labels use the selected application source, not another application label',()=>{
- const apps=[{ID:'A',Name:'A','Business Capabilities':'B.06.99 My source <tag>',Processes:'BBM PM T Unknown <img> L1'},
+ // V19.1 union (owner 2026-10-23, "\u4e5f\u6309\u5e76\u96c6"): a process record with a level is in LeanIX and no longer pending, so the
+ // unconfirmed process record is recorded without a level (it was "BBM PM T Unknown <img> L1").
+ const apps=[{ID:'A',Name:'A','Business Capabilities':'B.06.99 My source <tag>',Processes:'BBM PM T Unknown <img>'},
  {ID:'B',Name:'B','Business Capabilities':'B.06.99 Another source label',Processes:''}];
  const fixture=buildModel({apps,capabilityRows:[],processRows:[['T','L0','M.T','Root'],['T','L1','M.T.1','Known']]});
  const args=pair(fixture,'A','B');
  const evidence=comparisonRecordEvidence(fixture,args.cap,args.capBack);
  assert.equal(evidence.sides[0].unconfirmed[0].raw,'B.06.99 My source <tag>');
  assert.equal(evidence.sides[1].unconfirmed[0].raw,'B.06.99 Another source label');
+ assert.deepEqual(comparisonRecordEvidence(fixture,args.process,args.processBack).sides[0].unconfirmed.map(record=>record.raw),['BBM PM T Unknown <img>']);
  const html=renderComparisonRecords(args);
  assert.match(html,/Original record/);assert.match(html,/Reason:/);
  assert.match(html,/My source &lt;tag&gt;/);assert.match(html,/Unknown &lt;img&gt;/);
- assert.match(html,/No confirmed match in the current process catalogue/);
+ assert.match(html,/Process level not specified/);
  assert.doesNotMatch(html,/<tag>|<img>|[\u4e00-\u9fff]/);
 });
 
@@ -59,15 +62,30 @@ test('L0 detail gaps, out-of-scope capabilities and unmatched L3V records have s
  const fixture=buildModel({apps,capabilityRows:[['B.05.2 Material Field Management']],processRows:[['T','L0','M.T','Root']]});
  const args=pair(fixture,'A','B'),evidence=comparisonRecordEvidence(fixture,args.process,args.processBack);
  assert.equal(evidence.exact.length,0);assert.equal(evidence.gaps.length,2);
- // L3V is Level 3 (owner decision 2026-10-19): with no standard L3 of that name the record is pending, like an unmatched L3.
- assert.deepEqual(evidence.sides[0].unconfirmed,[{raw:'BBM PM T Variant L3V',reason:'No confirmed match in the current process catalogue',candidates:[]}]);
+ // L3V is Level 3 (owner decision 2026-10-19): with no standard L3 of that name the record is unmatched, like an L3.
+ // V19.1 union (owner 2026-10-23, "也按并集"): a record with a level is in LeanIX, so it is no longer pending in the
+ // comparison (it was "Records not yet confirmed (1)" with status needs-review). It adds no code, so both directions rest
+ // on the shared L0 chain alone: "More detail needed", not "Needs confirmation".
+ assert.deepEqual(fixture.apps.find(app=>app.id==='A').inLeanix.map(record=>[record.raw,record.level]),[['BBM PM T Variant L3V',3]]);
+ assert.deepEqual(evidence.sides[0].unconfirmed,[]);
  assert.deepEqual(evidence.sides[0].excluded,[]);assert.deepEqual(evidence.sides[1].unconfirmed,[]);
- assert.equal(args.process.status,'needs-review');assert.equal(args.process.coverage,null);
+ assert.equal(args.process.status,'insufficient-depth');assert.equal(args.process.coverage,null);
  const html=renderComparisonRecords(args);
- assert.match(html,/BBM PM T Variant L3V/);assert.match(html,/Records not yet confirmed \(1\)/);assert.match(html,/No confirmed match in the current process catalogue/);
+ assert.doesNotMatch(html,/BBM PM T Variant L3V|Records not yet confirmed/);
  assert.doesNotMatch(html,/excluded from this L0–L3 comparison|L3V variant/);
  assert.match(html,/B\.05\.2 Material Field Management/);assert.match(html,/does not mean the code is incorrect/);
  assert.match(html,/More detail needed/);assert.match(html,/L0 process chain/);
+ // L3V is L3 here too: the same record marked L3 gives the same evidence and status.
+ const asL3=apps.map(app=>({...app,Processes:app.Processes.replace('Variant L3V','Variant L3')}));
+ const l3Fixture=buildModel({apps:asL3,capabilityRows:[['B.05.2 Material Field Management']],processRows:[['T','L0','M.T','Root']]}),l3Args=pair(l3Fixture,'A','B');
+ assert.deepEqual(comparisonRecordEvidence(l3Fixture,l3Args.process,l3Args.processBack).sides.map(side=>side.unconfirmed),[[],[]]);
+ assert.equal(l3Args.process.status,args.process.status);
+ // Recorded without a level the same name is still pending, with its own neutral reason.
+ const noLevel=apps.map(app=>({...app,Processes:app.Processes.replace('Variant L3V','Variant')}));
+ const pendingFixture=buildModel({apps:noLevel,capabilityRows:[['B.05.2 Material Field Management']],processRows:[['T','L0','M.T','Root']]}),pendingArgs=pair(pendingFixture,'A','B');
+ assert.deepEqual(comparisonRecordEvidence(pendingFixture,pendingArgs.process,pendingArgs.processBack).sides[0].unconfirmed,[{raw:'BBM PM T Variant',reason:'Process level not specified',candidates:[]}]);
+ assert.equal(pendingArgs.process.status,'needs-review');assert.equal(pendingArgs.process.coverage,null);
+ assert.match(renderComparisonRecords(pendingArgs),/Records not yet confirmed \(1\)[\s\S]*BBM PM T Variant[\s\S]*Process level not specified/);
  // With a standard L3 of the same name in its chain, the same L3V record is a confirmed Level 3 code.
  const named=buildModel({apps,capabilityRows:[['B.05.2 Material Field Management']],processRows:[['T','L0','M.T','Root'],['T','L1','M.T.010','Stage'],['T','L2','M.T.010.010','Group'],['T','L3','M.T.010.010.010','Variant']]});
  const matched=pair(named,'A','B'),confirmed=comparisonRecordEvidence(named,matched.process,matched.processBack);

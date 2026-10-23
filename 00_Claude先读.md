@@ -20,7 +20,18 @@
 - **小版本**（V10.1、V10.2……）：修正、文字和显示调整。
 - 版本号写在 `program/scripts/release.mjs` 的 RELEASE_VERSION（小写，如 `v10`、`v10.1`）；文件名、发布 zip、部署脚本和 Release 标签（`v10-20261022`）都随它生成。导入预览的“变化明细”是新功能，所以这一版是 V10（原计划的 V9.20 没有发布）。
 
-## V19 当前状态（2026-10-23，优先于所有历史段落）
+## V19.1 当前状态（2026-10-23，优先于所有历史段落）
+
+- **用户决定**：“其实没有标准表”（工具里叫 standard 的只是 Signavio 2025-02-21 的快照）；“要并集的看”；两种做法里选 “应用登记的就算”（另一种是导入 LeanIX 流程导出来补充，没选）。规则改动按小版本，V19.1。
+- **规则**：流程在 Signavio 清单里或在 LeanIX 里都算符合。`model.mjs`：带层级（PROCESS_LEVEL）但不是唯一一个 Signavio 流程的记录（未找到、多个编号、别的链）放进 `app.inLeanix`（raw、level、type、candidates）。`overview.mjs` maintenanceReport：这些记录 valid=true、accepted=null、reason “In LeanIX, not in the Signavio list”。`review-issues.mjs`：不再出 “Process name differs between sources”；ancestorCoverage 把 inLeanix 记录算作更深一层的证据（code/parent 为 null）。`data-checks.mjs` 跳过这些记录；`app.js` 详情里不再显示被取代的“已确认按原样登记”（confirmedShown）。
+- **Similarity check**（用户选“也按并集”）：`similarity.mjs` 建比较范围时跳过 inLeanix 记录，和已确认的记录一样不算 pending、也不提供比较依据；内置数据 468 对结果变化，Needs confirmation 726 → 258，Potential overlap 10 → 13，记录核对 13 → 5 个应用。
+- **不变（有意）**：`model.issues` 仍含这些记录（mapping 照旧可以用）；能力（Capability）判断不变；`overviewStats` 不变；acceptedRecords 数据保留（对没写层级的记录和能力仍有效）。
+- **内置数据**：19 条记录算符合（2 条原来已确认 + 17 条原来待处理）；Process To review 21 → 11；Level 3 filled 67 / matches 67（原 55）；Level 0–3 已登记 = 符合（75/73/70/67）。剩下的流程问题只有 “Level N missing” 和 “Process level not specified”。
+- **测试**：新增 `tests/v19-1-union.test.mjs`（8 项）；按旧规则写的测试由 3 个子代理按文件分组改写（保留原意：通用的问题清单逻辑改用没写层级的记录或能力；专门测旧规则的改成断言新规则并注明 “V19.1 union”），我逐个核对。`npm test` 550 项通过；`deploy:sim` 14 / 14。
+- **复核**：复核流程（2 个复核者 + 反驳核实）：一致性复核找到 5 处。会影响实际使用的 2 处已修好：导入历史不再把只在 LeanIX 的流程记成 “Issue detected”；Application landscape 的 “Not classified” 不再因为这些流程放进应用（AUTO-RACK 和其他应用一样处理）。另外 3 处只在现在的数据里没有的情况下才出现，留作后续：一个应用的流程全部只在 LeanIX 时相似度显示 Needs confirmation；只登记 L0 加只在 LeanIX 的 L3 时相似度要求补 Level 1；Signavio 里有、但上级不在清单里的记录反而比只在 LeanIX 的记录少算层级。测试改动审查：没有发现被削弱的测试；补了 L0–L2、L3V 和别的流程链的测试，改正 4 处注释说明。
+- 当前离线包：`offline/logistics-offline-20261022-v19.1.zip`。验证记录见 `verification/v19.1-verification.md`。
+
+## V19 状态（2026-10-23，受顶部 V19.1 更新）
 
 - **用户需求**：“现在不需要这个他们填入信息去更改的功能，这个提取的功能还有 leanix 抓数据的功能都删掉吧”。用 AskUserQuestion 确认：填写功能 = 工厂反馈（还没做，停止）；提取功能 = Import data 里的 LeanIX 对比 + Download file for the server；LeanIX 抓数据 = `tools/leanix` 两个脚本。删功能属于页面结构变化，按版本号规则是大版本 V19。由旁支会话在 git worktree（分支 v19-remove-leanix-check）里做，V18.1 发布后 rebase 上去。
 - **删除**：`public/leanix-process-check.mjs`；`app.js` 的 `previewLocalLayer`、`showProcessCheck`、Preview changes 里的 LeanIX 分支和 `exportDataPackage` 按钮处理；`index.html` 第 1 格的 LeanIX 说明和 Download 按钮；`interface.css` 的 process-check 样式；测试 v15、v16 全部，v17 只留“已有本地流程照常使用、存进工作区和数据包”的 2 项，l3v-is-l3 去掉 LeanIX 对比那一项；`tools/leanix/` 整个目录。

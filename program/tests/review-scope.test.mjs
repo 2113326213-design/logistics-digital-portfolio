@@ -71,11 +71,27 @@ test('RBHP review projects shared capability issues onto selected applications a
 });
 
 test('Process scope and source text remain limited to selected applications',()=>{
- const model=buildModel(data),apps=maintenanceReport(model,{entity:'RBCD'},'process').pending;
+ const model=buildModel(data),report=maintenanceReport(model,{entity:'RBCD'},'process'),pending=report.pending;
+ // V19.1 union (owner 2026-10-23): a process recorded with a level is in LeanIX, so the L3 / L3V records of AUTO-RACK, RBCD LOM
+ // Scrap Management Platform and RBCD WI management system that are not in the Signavio list match, and these three are no longer
+ // pending in Overview (until V19: AUTO-RACK, RBCD LOG Xone, RBCD LOM Scrap Management Platform, RBCD WI management system).
+ // RBCD LOG Xone stays pending for its process without a level.
+ assert.deepEqual(pending.map(a=>a.Name),['RBCD LOG Xone']);
+ const union=['AUTO-RACK','RBCD LOM Scrap Management Platform','RBCD WI management system'].map(name=>model.apps.find(a=>a.Name===name));
+ assert.deepEqual(union.map(a=>[a.Name,a.inLeanix.map(x=>x.raw).sort(),report.records.get(a.id).every(r=>r.valid)]),[
+  ['AUTO-RACK',['BBM PM I2D Putaway to Automated Warehouse L3V'],true],
+  ['RBCD LOM Scrap Management Platform',['BBM PM B2P Manage Fixed Assets Scrapping L3V','BBM PM I2P Disposal due to Scrapping L3V'],true],
+  ['RBCD WI management system',['BBM PM I2D Load Truck L3'],true]]);
+ // The Overview scope holds only RBCD LOG Xone's rows. The mapping checklist still works from the records without a Signavio
+ // code (V19.1 leaves mappings unchanged), so its L3 outside the Signavio list stays a checklist row next to the record without a level.
+ const pendingRows=scopeReviewItems(reviewItems(model),{appIds:pending.map(a=>a.id),dimension:'process'},model);
+ assert.deepEqual(pendingRows.map(i=>[i.apps.join(),i.raw,i.reason]).sort(),[
+  ['RBCD LOG Xone','BBM PM P2F Transmit Material and Sales Master Data L3','流程未匹配层级表'],
+  ['RBCD LOG Xone','BBM_O2C_OM_01 Schedule Agreement for Goods','流程未标注标准层级']]);
+ // Selected applications: the four that were pending until V19. L3V is Level 3 (owner decision 2026-10-19): the unmatched L3V
+ // records of AUTO-RACK and RBCD LOM Scrap Management Platform are checklist rows like any unmatched L3 record (3 earlier rows + 3 L3V rows).
+ const apps=[...pending,...union];
  const rows=scopeReviewItems(reviewItems(model),{appIds:apps.map(a=>a.id),dimension:'process'},model);
- // L3V is Level 3 (owner decision 2026-10-19): the unmatched L3V records of AUTO-RACK and RBCD LOM Scrap Management Platform
- // are pending process records that need review like any unmatched L3 record (3 earlier rows + 3 L3V rows).
- assert.deepEqual(apps.map(a=>a.Name).sort(),['AUTO-RACK','RBCD LOG Xone','RBCD LOM Scrap Management Platform','RBCD WI management system']);
  assert.equal(rows.length,6);assert(rows.every(i=>i.appIds.every(id=>apps.some(a=>a.id===id))));
  const history=correctionStates(data),l3v=rows.filter(i=>/\sL3V$/.test(i.raw));
  assert.deepEqual(l3v.map(i=>[i.category,i.apps.join(),i.raw,i.reason,reviewResolution(i,history)]).sort(),[
@@ -87,8 +103,15 @@ test('Process scope and source text remain limited to selected applications',()=
  const row=l3v.find(i=>i.apps[0]==='AUTO-RACK'),mapping=createCorrection(data,{appId:row.appIds[0],dimension:'process',raw:row.raw,targetId:'M.I2D.010.050.020',reviewKey:row.key,reviewer:'Business owner',reason:'Same putaway step verified against the standard process'});
  const next={...data,corrections:[...data.corrections,mapping]},mapped=buildModel(next);
  assert.equal(reviewResolution(row,correctionStates(next)),'mapped');
- assert(mapped.apps.find(a=>a.id===row.appIds[0]).process.includes('M.I2D.010.050.020'));
- assert.deepEqual(maintenanceReport(mapped,{entity:'RBCD'},'process').pending.map(a=>a.Name).sort(),['RBCD LOG Xone','RBCD LOM Scrap Management Platform','RBCD WI management system']);
+ const mappedApp=mapped.apps.find(a=>a.id===row.appIds[0]);
+ assert(mappedApp.process.includes('M.I2D.010.050.020'));
+ // V19.1 union: AUTO-RACK was not pending before the mapping either; the mapped record now matches by its Signavio code
+ // instead of through LeanIX (until V19 the mapping took AUTO-RACK out of the pending list).
+ const mappedReport=maintenanceReport(mapped,{entity:'RBCD'},'process');
+ assert.deepEqual(mappedReport.pending.map(a=>a.Name),['RBCD LOG Xone']);
+ assert(!mappedApp.inLeanix.some(x=>x.raw===row.raw),'a mapped record is not listed as LeanIX-only');
+ assert.deepEqual(mappedReport.records.get(mappedApp.id).filter(r=>r.raw===row.raw).map(r=>[r.valid,r.reason]),[[true,'']]);
+ assert.deepEqual(report.records.get(mappedApp.id).filter(r=>r.raw===row.raw).map(r=>[r.valid,r.reason]),[[true,'In LeanIX, not in the Signavio list']]);
  assert.equal(data.apps.find(a=>String(a.ID)===row.appIds[0]).Processes.includes(row.raw),true,'the mapping keeps the source record');
  const items=[{key:'shared',category:'能力编码缺失',appIds:['a','b'],apps:['A','B'],code:'B.06.9',raw:'all source records'}];
  const scoped=scopeReviewItems(items,{appIds:['a'],dimension:'cap'},{apps:[{id:'a',rawCap:['B.06.9 Plant A wording']},{id:'b',rawCap:['B.06.9 Plant B wording']}]});

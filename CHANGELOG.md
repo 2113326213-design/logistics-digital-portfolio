@@ -2,6 +2,17 @@
 
 每个版本的离线包在 [Releases](https://github.com/2113326213-design/logistics-digital-portfolio/releases)；详细的修改说明和用户决定在 [`00_Claude先读.md`](00_Claude先读.md)，验证记录在 [`verification/`](verification/)。
 
+## [V19.1](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v19.1-20261022) · 2026-10-23
+
+用户：“其实没有标准表”，“要并集的看”；在两种做法里选了“应用登记的就算”。
+1. **流程按并集判断**：流程在 Signavio 清单（Business Capability + Process.xlsx，2025-02-21 快照）里，或在 LeanIX 里，都算符合。应用登记的流程都来自 LeanIX，所以名字带层级（L0–L3，L3V 就是 L3）的记录都算符合：找不到的、对应好几个编号的、在别的流程链里的都一样。只有**没写层级**的记录和**某一层没登记**还算问题。
+2. 内置数据：19 条这样的记录（AUTO-RACK、RBCW Auto Warehouse 各 1 条原来是“已确认按原样登记”，另外 17 条原来在 To review 里，如 3 个应用的 Load Truck）都算符合；Process 待处理 21 → 11 个应用，Level 3 符合 55 → 67；Level 0–3 已登记的都算符合。原来的“已确认按原样登记”对这些记录不再需要，Data checks 和应用详情里不再显示那条橙色提示。
+3. “Process name differs between sources”（Signavio 和 LeanIX 名字不同）不再算问题：两个名字都算对。
+4. 固定规则不变：某一层没登记，只要更深一层全部符合，这一层就算满分；只在 LeanIX 里的记录也算“更深一层符合”。
+5. **Similarity check 也按并集**（用户选“也按并集”）：只在 LeanIX 里的流程和已确认按原样登记的记录一样，不再算待确认（Needs confirmation），比较只用有 Signavio 编号的记录。内置数据：1838 对中 468 对结果变化，Needs confirmation 726 → 258，Potential overlap 10 → 13（新增 AUTO-RACK ↔ Szh5_ASRS_WCS_WMS、RBCC E-Queue system(Karis) ↔ RBCW E-Queue system、RBCW Auto Warehouse Management System ↔ Szh5_ASRS_WCS_WMS），要核对记录的应用 13 → 5（剩下的是没写层级或只登记到 L0 的）。
+6. **不变**：已有的对应（mapping）不变；Business Capability 的判断不变。
+7. 总览 “How is this calculated?” 的说明和一次性更新提示加了一句简单英文。复核：复核流程（2 个复核者 + 反驳核实）：一致性复核找到 5 处。会影响实际使用的 2 处已修好：导入历史不再把只在 LeanIX 的流程记成 “Issue detected”；Application landscape 的 “Not classified” 不再因为这些流程放进应用（AUTO-RACK 和其他应用一样处理）。另外 3 处只在现在的数据里没有的情况下才出现，留作后续：一个应用的流程全部只在 LeanIX 时相似度显示 Needs confirmation；只登记 L0 加只在 LeanIX 的 L3 时相似度要求补 Level 1；Signavio 里有、但上级不在清单里的记录反而比只在 LeanIX 的记录少算层级。测试改动审查：没有发现被削弱的测试；补了 L0–L2、L3V 和别的流程链的测试，改正 4 处注释说明。
+
 ## [V19](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v19-20261022) · 2026-10-23
 
 用户：“现在不需要这个他们填入信息去更改的功能，这个提取的功能还有 leanix 抓数据的功能都删掉吧”。确认后（逐项选择）：

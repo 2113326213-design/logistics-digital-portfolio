@@ -53,12 +53,18 @@ export function buildModel(data){
   // unless an owner mapping names them. The source fields stay as recorded; Source records names what is not used.
   const records=(dimension,value)=>{const all=split(value),other=s=>otherCompanyRecord(s)&&!mapped(id,dimension,s);return {own:all.filter(s=>!other(s)),other:all.filter(other)};};
   const capRecords=records('cap',raw['Business Capabilities']),processRecords=records('process',raw.Processes);
-  const a={...raw,id,cap:[],process:[],unmatched:[],processMatches:[],accepted:[],notInExport:missingFromExport.has(id)?data.inventoryExport:null,rawCap:capRecords.own,rawProcess:processRecords.own,otherCompany:[...capRecords.other,...processRecords.other]};
+  const a={...raw,id,cap:[],process:[],unmatched:[],processMatches:[],inLeanix:[],accepted:[],notInExport:missingFromExport.has(id)?data.inventoryExport:null,rawCap:capRecords.own,rawProcess:processRecords.own,otherCompany:[...capRecords.other,...processRecords.other]};
   for(const s of a.rawCap){const corrected=mapped(id,'cap',s);if(corrected){a.cap.push(corrected);continue;}const code=capCode(s);if(code){ensureCap(code,s);a.cap.push(code);}else{a.unmatched.push(s);flag(a,'cap',{appId:a.id,app:a.Name,type:'业务能力无法识别',value:s});}}
   // L3V is Level 3 (owner decision 2026-10-19): matched by name and counted exactly like L3.
   // A record with a full business process code is matched by that code first; otherwise by chain, level and
   // name (case, spacing and 'and' / '&' are equivalent). A name that fits several codes is never resolved by order.
-  for(const s of a.rawProcess){const corrected=mapped(id,'process',s);if(corrected){a.process.push(corrected);a.processMatches.push({raw:s,id:corrected,via:'mapping'});continue;}const found=lookupProcess(s);if(found.id){a.process.push(found.id);a.processMatches.push({raw:s,id:found.id,via:found.via});continue;}a.unmatched.push(s);flag(a,'process',{appId:a.id,app:a.Name,type:found.type,value:s,...(found.candidates?{candidates:found.candidates}:{})});}
+  // Union (owner decision 2026-10-23, V19.1: "其实没有标准表", "要并集的看", "应用登记的就算"): a process matches when it is in
+  // the Signavio process list or in LeanIX. The applications' processes come from LeanIX, so every record with a level
+  // (L0–L3) is in LeanIX. One that is not one Signavio process (not found, several codes, another chain) is listed in
+  // inLeanix: the maintenance report counts it as matching (overview.mjs) and the similarity check does not hold it as
+  // pending (similarity.mjs, owner: "也按并集"). It has no Signavio code: it stays in model.issues (unless the owner
+  // confirmed it), so a mapping can still give it one, and it adds no comparison evidence.
+  for(const s of a.rawProcess){const corrected=mapped(id,'process',s);if(corrected){a.process.push(corrected);a.processMatches.push({raw:s,id:corrected,via:'mapping'});continue;}const found=lookupProcess(s);if(found.id){a.process.push(found.id);a.processMatches.push({raw:s,id:found.id,via:found.via});continue;}a.unmatched.push(s);if(found.type!=='流程未标注标准层级')a.inLeanix.push({raw:s,level:Number(PROCESS_LEVEL.exec(s)[1]),type:found.type,candidates:found.candidates||[]});flag(a,'process',{appId:a.id,app:a.Name,type:found.type,value:s,...(found.candidates?{candidates:found.candidates}:{})});}
   if(!a.rawCap.length&&mapped(id,'cap',''))a.cap.push(mapped(id,'cap',''));
   if(!a.rawProcess.length&&mapped(id,'process',''))a.process.push(mapped(id,'process',''));
   a.cap=[...new Set(a.cap)];a.process=[...new Set(a.process)];return a;
@@ -86,7 +92,9 @@ export function columns(model,view,expanded,focus=''){
  if(focus&&map.has(focus))return descend(focus);
  const cols=roots.flatMap(id=>descend(id));const covered=new Set(cols.flatMap(c=>c.apps.map(a=>a.id)));const extra=model.apps.filter(a=>!covered.has(a.id)||(view==='cap'&&a.capLeaf.some(id=>!roots.some(root=>model.ancestor(root,id)))));
  // Keep unmatched process assignments visible even when some other assignments map.
- const unresolved=model.apps.filter(a=>model.issues.some(i=>i.appId===a.id&&i.type.startsWith(view==='process'?'流程':'业务能力')));
+ // A process in LeanIX but not in the Signavio list matches (union, V19.1) and does not put the application here; an
+ // application with no Signavio process at all still comes in through extra.
+ const unresolved=model.apps.filter(a=>model.issues.some(i=>i.appId===a.id&&i.type.startsWith(view==='process'?'流程':'业务能力')&&!(view==='process'&&(a.inLeanix||[]).some(x=>x.raw===i.value))));
  const others=[...new Map([...extra,...unresolved].map(a=>[a.id,a])).values()];
  if(others.length)cols.push({id:'unmapped',key:'unmapped',label:view==='cap'?'仅填到总类 / 未匹配':'未匹配 / 未填写流程',level:null,apps:others,opened:[]});
  return cols;

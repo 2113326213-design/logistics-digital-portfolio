@@ -38,7 +38,10 @@ export function createSimilarity(model,dimension){
    if(!node||node.ambiguous||(dimension==='cap'&&!node.reference)){pending.push({id,value:node?.label||id,reason:'分类表没有可确认的标准编号'});continue;}
    known.push(node);
   }
-  for(const issue of model.issues.filter(i=>i.appId===app.id&&i.type.startsWith(dimension==='cap'?'业务能力':'流程'))){
+  // A process in LeanIX but not in the Signavio list matches (union, owner decision 2026-10-23, V19.1: "也按并集"): like a
+  // record the owner confirmed, it is not pending; it has no Signavio code, so it adds no comparison evidence either.
+  const inLeanix=new Set(dimension==='process'?(app.inLeanix||[]).map(x=>x.raw):[]);
+  for(const issue of model.issues.filter(i=>i.appId===app.id&&i.type.startsWith(dimension==='cap'?'业务能力':'流程')&&!inLeanix.has(i.value))){
    pending.push({value:issue.value,reason:issue.type,candidates:issue.candidates||[],chain:issue.value.match(/^BBM\s+PM\s+([A-Z0-9]+)/i)?.[1]});
   }
   const levels=[...new Set(known.map(n=>n.level))].sort();

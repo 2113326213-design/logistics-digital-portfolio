@@ -77,8 +77,18 @@ test('bundled data: the export of 2026-10-20 is applied, the five unlisted appli
  assert.equal(states.filter(c=>c.state==='Needs review').length,0,'no mapping is left for re-confirmation');
  assert.equal(states.filter(c=>c.state==='Applied'&&/carried over/.test(c.reviewer)).length,5,'five mappings re-confirmed because only other fields of their applications changed');
  const rbcw=model.apps.find(a=>a.Name==='RBCW Auto Warehouse Management System');
- assert(rbcw.rawProcess.includes('BBM PM I2D Transport Material Intra Plant L3')&&rbcw.unmatched.includes('BBM PM I2D Transport Material Intra Plant L3'),'the new L3 that the catalogue cannot confirm stays open');
- assert.deepEqual([maintenanceReport(model,{},'cap').needsReview.length,maintenanceReport(model,{},'process').needsReview.length],[40,23]);
+ assert(rbcw.rawProcess.includes('BBM PM I2D Transport Material Intra Plant L3')&&rbcw.unmatched.includes('BBM PM I2D Transport Material Intra Plant L3'),'the new L3 that the Signavio catalogue cannot confirm has no Signavio code');
+ // V19.1 union (owner 2026-10-23): that L3 is in LeanIX, so it matches and is not open in To review (until V19 it stayed open).
+ const processReport=maintenanceReport(model,{},'process');
+ assert(rbcw.inLeanix.some(x=>x.raw==='BBM PM I2D Transport Material Intra Plant L3'));
+ assert.deepEqual(processReport.issues.get(rbcw.id),[],'RBCW Auto Warehouse Management System has no process issue left');
+ // Process To review 23 → 11 (V19.1 union): 11 applications whose only process issues were records with a level outside the
+ // Signavio list or the name difference (and the missing levels those records now cover; VM-CN_WACOS_Szh5 had both kinds) and RBAC_ME_Szh5 Intralogistics control system, whose only
+ // issue was 'Process name differs between sources' (no longer produced).
+ const unionLeft=['AUTO-RACK','RBAC_ME_Szh5 Intralogistics control system','RBCD LOM Scrap Management Platform','RBCD WI management system','RBCW Auto Warehouse Management System','RBCW E-Queue system','RBHP_LOG_QualManager','ShzP_DAVIS','Szh5_ASRS_WCS_WMS','VM-CN_WACOS_Szh5','VM/LOG-Szh2_DAVIS','VMCN_iSCMP: Intelligent Supply Chain management platform'];
+ assert.deepEqual(unionLeft.filter(name=>processReport.needsReview.some(a=>a.Name===name)),[],'V19.1 union: these left Process To review');
+ assert.equal(unionLeft.filter(name=>model.apps.find(a=>a.Name===name).inLeanix.length).length,11,'all but RBAC_ME_Szh5 Intralogistics control system have records in LeanIX only');
+ assert.deepEqual([maintenanceReport(model,{},'cap').needsReview.length,processReport.needsReview.length],[40,11]);
  const rows=portfolioCandidates(createWeightedSimilarity(model,data.similarityWeights||DEFAULT_WEIGHTS));
  const score=(x,y)=>{const p=rows.pairs.find(p=>[p.target.app.Name,p.peer.app.Name].sort().join('|')===[x,y].sort().join('|'));return Math.round(p.coverage*1000)/10;};
  assert.equal(score('Control Tower','Physical Logistics Management System'),41.6);

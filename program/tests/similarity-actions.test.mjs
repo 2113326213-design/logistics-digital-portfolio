@@ -6,6 +6,7 @@ import {buildModel} from '../public/model.mjs';
 import {workspaceData} from '../public/workspace.mjs';
 import {createWeightedSimilarity} from '../public/weighted.mjs';
 import {comparisonReadiness} from '../public/similarity-readiness.mjs';
+import {pairResultLabel,codeEvidenceScore} from '../public/pair-status.mjs';
 
 const bundled=workspaceData(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url))));
 const chosenNames=['AR Stock Taking','AUTO-RACK','Control Tower','Dolly call off program','Physical Logistics Management System'];
@@ -14,6 +15,14 @@ const chosenNames=['AR Stock Taking','AUTO-RACK','Control Tower','Dolly call off
 // tests/v918-accepted-records.test.mjs checks the confirmed state.
 const chosen={...bundled,acceptedRecords:[],apps:bundled.apps.filter(app=>chosenNames.includes(app.Name))};
 assert.equal(chosen.apps.length,5,'the walkthrough uses five real applications from the source inventory');
+// V19.1 union (owner 2026-10-23, "也按并集"): a process record with a level that is not one Signavio process is in LeanIX
+// and is no longer pending in the similarity check, confirmed or not, so the real record no longer opens a record check
+// (pinned on the real five applications in the V19.1 test below). The walkthrough keeps its purpose, one application
+// record that blocks four comparisons, by recording the same AUTO-RACK process without its level: a record without a
+// level ("Process level not specified") is still pending and goes through the same issue path in similarity.mjs.
+const OPEN_RECORD='BBM PM I2D Putaway to Automated Warehouse L3V',OPEN_RECORD_WITHOUT_LEVEL='BBM PM I2D Putaway to Automated Warehouse';
+const walkthrough={...chosen,apps:chosen.apps.map(app=>app.Name!=='AUTO-RACK'?app:{...app,Processes:app.Processes.split(';').map(raw=>raw===OPEN_RECORD?OPEN_RECORD_WITHOUT_LEVEL:raw).join(';')})};
+assert.notEqual(JSON.stringify(walkthrough.apps),JSON.stringify(chosen.apps),'the walkthrough record is recorded without its level');
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 
 // State and delegated clicks use the same small DOM double as the comparison-flow tests.
@@ -34,7 +43,7 @@ function click(host,dataset={},attributes=[]){
  const button={dataset,hasAttribute:name=>attributes.includes(name)};
  host.fire('click',{target:{closest:()=>button}});
 }
-function withUI(run,data=chosen){
+function withUI(run,data=walkthrough){
  const previous=globalThis.document,document=stubDocument(),model=buildModel(data),opened=[];
  globalThis.document=document;
  try{
@@ -67,9 +76,39 @@ test('five-application example turns four AUTO-RACK comparisons into one direct 
  assert.doesNotMatch(markup,/Putaway to Automated Warehouse/,'record details stay inside View details');
 }));
 
+// V19.1 union (owner 2026-10-23, "也按并集"): on the real records (the owner's confirmation still left out) AUTO-RACK's
+// "Putaway to Automated Warehouse L3V" is in LeanIX, so it is not pending and adds no comparison evidence. The record check
+// is gone and AUTO-RACK's four comparisons get normal results (re-derived with node from public/data.json): Below
+// threshold with AR Stock Taking, Dolly call off program and Physical Logistics Management System, and No complete score
+// with code evidence 15 / 100 with Control Tower, which joins Control Tower ↔ Dolly call off program (30 / 100) in the
+// shared-classification group. The other six comparisons keep the results the walkthrough shows.
+test('V19.1: on the real records AUTO-RACK has no record check and its four comparisons get normal results',()=>withUI(({model,html})=>{
+ const auto=appByName(model,'AUTO-RACK'),markup=html(),rows=pairButtons(markup);
+ assert.deepEqual(auto.inLeanix.map(x=>x.raw),[OPEN_RECORD]);
+ assert.match(markup,/Comparing 5 applications · 10 pairs/);
+ assert.doesNotMatch(markup,/Check application records/);
+ assert.deepEqual(readinessIds(markup),[]);
+ assert.equal(rows.length,10,'every comparison is a normal pair button');
+ assert.equal(rows.filter(row=>row[1]===auto.id||row[2]===auto.id).length,4);
+ const index=createWeightedSimilarity(model,chosen.similarityWeights),label=name=>pairResultLabel(index.pair(auto.id,appByName(model,name).id),chosen.similarityThreshold);
+ assert.deepEqual(chosenNames.filter(name=>name!=='AUTO-RACK').map(name=>[name,label(name)]),[
+  ['AR Stock Taking','Below threshold'],['Control Tower','No complete score'],
+  ['Dolly call off program','Below threshold'],['Physical Logistics Management System','Below threshold']]);
+ assert.equal(codeEvidenceScore(index.pair(auto.id,appByName(model,'Control Tower').id)),0.15);
+ const codeGroup=markup.match(/<details\b[^>]*><summary>[^<]*Shared business classifications[^<]*<\/summary>([\s\S]*?)<\/details>/)?.[0]||'';
+ assert.match(codeGroup,/· 2 pairs<\/summary>/);
+ assert.deepEqual(pairButtons(codeGroup).map(row=>[row[1],row[2]].map(id=>model.apps.find(app=>app.id===id).Name).sort()),
+  [['AUTO-RACK','Control Tower'],['Control Tower','Dolly call off program']]);
+ assert.match(codeGroup,/Code evidence 15 \/ 100/);
+ assert.match(markup,/No shared registrations · 3 pairs/);
+ assert.doesNotMatch(markup,/Putaway to Automated Warehouse/);
+},chosen));
+
 // 2026-10-21: re-derived from the V9.16 data (LeanIX export 2026-10-20). The four healthy applications no longer all share
 // B.06.1.4: Control Tower and Dolly call off program now record B.06.5 and Physical Logistics Management System B.06.8, so only
 // Control Tower ↔ Dolly call off program keeps code evidence (30 / 100); the other three former code-evidence pairs share no registration.
+// V19.1: the walkthrough keeps AUTO-RACK's record open (recorded without its level, see above), so these results hold;
+// on the real records AUTO-RACK ↔ Control Tower joins this group (previous test).
 test('the code-evidence comparison remains grouped and opens its own evidence',()=>withUI(({ui,document,model,html})=>{
  const markup=html(),codeGroup=markup.match(/<details\b[^>]*><summary>[^<]*Shared business classifications[^<]*<\/summary>([\s\S]*?)<\/details>/)?.[0]||'';
  assert.match(codeGroup,/compare actual uses/);
@@ -97,10 +136,11 @@ test('zero Process weight removes AUTO-RACK record work without changing the sel
  assert.deepEqual(readinessIds(html()),[]);
  assert.doesNotMatch(html(),/Check application records/);
  assert.equal(pairButtons(html()).length,10);
-},{...chosen,similarityWeights:{name:.2,description:.3,cap:.5,process:0}}));
+},{...walkthrough,similarityWeights:{name:.2,description:.3,cap:.5,process:0}}));
 
 test('a pair with two unresolved sources lists each bad app once and never adds the healthy peer',()=>{
- const data=fixture([app('A',{Processes:'BBM PM T Unknown one L3'}),app('B',{Processes:'BBM PM T Unknown two L3'}),app('C')]);
+ // Records without a level stay pending under V19.1 (owner 2026-10-23); with a level they would be in LeanIX.
+ const data=fixture([app('A',{Processes:'BBM PM T Unknown one'}),app('B',{Processes:'BBM PM T Unknown two'}),app('C')]);
  withUI(({html})=>{
   assert.deepEqual(new Set(readinessIds(html())),new Set(['A','B']));
   assert.equal(readinessIds(html()).length,2);
@@ -145,7 +185,7 @@ test('refreshes do not duplicate the delegated details action',()=>withUI(({ui,d
 }));
 
 test('excluded applications retain scope comparison outcomes instead of entering the record-check queue',()=>{
- const data=fixture([app('A',{Processes:'BBM PM T Unknown L3',scopeNote:'No score,not go-live'}),app('B'),app('C')]);
+ const data=fixture([app('A',{Processes:'BBM PM T Unknown',scopeNote:'No score,not go-live'}),app('B'),app('C')]);
  withUI(({html})=>{
   assert.deepEqual(readinessIds(html()),[]);
   assert.equal(pairButtons(html()).length,3);
@@ -174,13 +214,13 @@ test('unattributed comparison evidence remains accessible instead of silently di
 
 test('record summaries count unique source entries when one entry has several reasons',()=>{
  const source=app('A'),entry={app:{...source,id:source.ID},pairCount:4,kinds:['Needs confirmation'],records:[
-  {dimension:'process',kind:'Needs confirmation',raw:'BBM PM T Unknown L3',reason:'Source name needs confirmation.'},
-  {dimension:'process',kind:'Needs confirmation',raw:'BBM PM T Unknown L3',reason:'The catalogue relationship needs confirmation.'}
+  {dimension:'process',kind:'Needs confirmation',raw:'BBM PM T Unknown',reason:'Source name needs confirmation.'},
+  {dimension:'process',kind:'Needs confirmation',raw:'BBM PM T Unknown',reason:'The catalogue relationship needs confirmation.'}
  ]};
  const markup=renderComparisonReadiness({apps:[entry],pairCount:4,unattributedPairCount:0},esc);
  assert.match(markup,/1 process record to check/i);
  assert.doesNotMatch(markup,/2 process records/i);
  assert.match(markup,/affects 4 comparisons/);
  assert.deepEqual(readinessIds(markup),['A']);
- assert.doesNotMatch(markup,/BBM PM T Unknown L3/,'source details still require the explicit details action');
+ assert.doesNotMatch(markup,/BBM PM T Unknown/,'source details still require the explicit details action');
 });

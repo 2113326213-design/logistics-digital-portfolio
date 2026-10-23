@@ -54,7 +54,7 @@ const app=(ID,Processes)=>({ID,Name:'App '+ID,Description:'d',Division:'PS',Enti
 const FULL='BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Warehouse to Consume L1;BBM PM I2D Packaging Handling L2;BBM PM I2D Pack Detail L3';
 
 test('matching: and / & equivalent, a meaningful name difference kept, ambiguous names and missing codes not guessed',()=>{
- const model=buildModel(fixture([app('dock','BBM PM I2D Dock & Yard L2'),app('new','BBM PM I2D Returnable Packaging Handling L2'),app('truck','BBM PM I2D Register Truck L2'),app('load','BBM PM I2D Load Truck L2'),app('code','M.I2D.020.070 Foreign Trade'),app('old','BBM PM I2D Foreign Trade L2')]));
+ const model=buildModel(fixture([app('dock','BBM PM I2D Dock & Yard L2'),app('new','BBM PM I2D Returnable Packaging Handling L2'),app('truck','BBM PM I2D Register Truck L2'),app('load','BBM PM I2D Load Truck L2'),app('code','M.I2D.020.070 Foreign Trade'),app('old','BBM PM I2D Foreign Trade L2'),app('noLevel','BBM PM I2D Load Truck')]));
  const by=id=>model.apps.find(a=>a.id===id);
  assert.deepEqual(by('dock').processMatches,[{raw:'BBM PM I2D Dock & Yard L2',id:'M.I2D.020.010',via:'name'}]);
  assert.deepEqual(by('new').processMatches,[{raw:'BBM PM I2D Returnable Packaging Handling L2',id:'M.I2D.020.050',via:'leanix-name'}]);
@@ -66,16 +66,34 @@ test('matching: and / & equivalent, a meaningful name difference kept, ambiguous
  const old=processMatchRows(model,by('old'))[0];
  assert.deepEqual(old.sources,['Standard snapshot (Business Capability + Process.xlsx, 21.02.2025)'],'snapshot only, not shown as confirmed by LeanIX');
  assert.match(old.note,/Not included in this export\. This does not show that the process is retired/);
- const report=maintenanceReport(model,{},'process'),truck=report.issues.get('truck').find(i=>i.kind==='match');
- assert.match(truck.detail,/Candidates: M\.I2D\.030\.010 Register Truck \(Level 2\); M\.I2D\.040\.010 Register Truck \(Level 2\)/);assert.match(truck.detail,/Next: Confirm the business branch/);
- assert.match(report.issues.get('load').find(i=>i.kind==='match').detail,/Process code: not identified .*does not show that the process does not exist/);
+ // V19.1 union (owner 2026-10-23: "要并集的看", "应用登记的就算"): a process recorded with a level is in LeanIX, so a name
+ // with two codes (truck) and a name not in the Signavio list (load) both match. Until V19 each was a "Level 2 match needs
+ // review" issue whose detail named the candidates; that issue no longer exists. They are still not resolved to a code:
+ // app.process stays empty and model.issues keeps them (asserted above), and app.inLeanix keeps the candidates unguessed.
+ const report=maintenanceReport(model,{},'process');
+ assert.deepEqual(by('truck').inLeanix,[{raw:'BBM PM I2D Register Truck L2',level:2,type:'流程名称对应多个编号',candidates:[{id:'M.I2D.030.010',label:'Register Truck'},{id:'M.I2D.040.010',label:'Register Truck'}]}]);
+ assert.deepEqual(by('load').inLeanix,[{raw:'BBM PM I2D Load Truck L2',level:2,type:'流程未匹配层级表',candidates:[]}]);
+ assert.equal(model.issues.find(i=>i.appId==='load').type,'流程未匹配层级表');
+ for(const id of ['truck','load']){
+  assert.deepEqual(report.records.get(id).map(r=>[r.raw,r.level,r.valid,r.accepted,r.reason]),[[by(id).rawProcess[0],2,true,null,'In LeanIX, not in the Signavio list']],id);
+  assert.deepEqual(report.issues.get(id).filter(i=>i.kind==='match'||i.record),[],`${id}: no record issue`);
+ }
+ // A process without a level is not in the union: it stays an issue, and its detail still names the code and the next step.
+ assert.deepEqual(by('noLevel').inLeanix,[]);
+ const noLevel=report.issues.get('noLevel').find(i=>i.kind==='record');
+ assert.equal(noLevel.label,'Process level not specified');
+ assert.match(noLevel.detail,/Process code: not identified · Checked against: .* · Next: Confirm which level \(L0–L3\) this process belongs to\./);
 });
 
 test('To review: a passing Level 3 does not hide other issues; one application, all issues; a matching L3 makes L0–L2 full (fixed rule 2026-10-23)',()=>{
  const model=buildModel(fixture([app('ok',FULL),app('noLevel',FULL+';BBM PM I2D Something'),app('several','BBM PM I2D Pack Detail L3;BBM PM I2D Something')]));
  const report=maintenanceReport(model,{},'process'),l3=new Set(l3MaintenanceMetrics(report).quality.map(a=>a.id));
  assert(l3.has('noLevel'));assert(report.needsReview.some(a=>a.id==='noLevel'),'Level 3 passes, another record has no level: still To review');
- assert.deepEqual(report.issues.get('noLevel').map(i=>i.label),['Process level not specified','Process name differs between sources']);
+ // V19.1 union (owner 2026-10-23): "Packaging Handling L2" matches M.I2D.020.050, whose LeanIX name ("Returnable Packaging
+ // Handling") differs from the Signavio name. Both names are valid now, so "Process name differs between sources" is gone.
+ assert.equal(model.procs.get('M.I2D.020.050').nameStatus,'differs','the names still differ');
+ assert.equal(report.records.get('noLevel').find(r=>r.raw==='BBM PM I2D Packaging Handling L2').valid,true);
+ assert.deepEqual(report.issues.get('noLevel').map(i=>i.label),['Process level not specified']);
  assert.equal(report.needsReview.filter(a=>a.id==='several').length,1);
  const several=report.issues.get('several');
  assert.deepEqual(several.map(i=>i.label),['Process level not specified'],'Levels 0–2 are covered by confirmed Level 3 (V9.5)');
@@ -86,9 +104,20 @@ test('To review: a passing Level 3 does not hide other issues; one application, 
  assert.deepEqual(maintenanceReport(model,{},'process').needsReview.map(a=>a.id),report.needsReview.map(a=>a.id));
 });
 
-test('bundled data: the name difference reaches To review with both names, equivalent spellings do not',()=>{
+// V19.1 union (owner 2026-10-23): until V19 the name difference of M.I2D.020.050 reached To review as "Process name differs
+// between sources". Both the Signavio and the LeanIX name are valid now: it is no issue anywhere, and the source records
+// still show both names as information.
+test('bundled data: a name that differs between Signavio and LeanIX is not an issue (V19.1 union); both names stay visible',()=>{
  const model=bundled(),report=maintenanceReport(model,{},'process');
- const lines=[...report.issues.values()].flat().filter(i=>i.label==='Process name differs between sources');
- assert(lines.length>=1&&lines.every(i=>/M\.I2D\.020\.050/.test(i.text)&&/Returnable Packaging Handling/.test(i.text)&&/"Packaging Handling"/.test(i.text)));
- assert(![...report.issues.values()].flat().some(i=>/Dock & Yard|Unloading & Check|Identification & Booking/.test(i.text)&&i.label==='Process name differs between sources'));
+ assert.equal(model.procs.get('M.I2D.020.050').nameStatus,'differs');
+ assert.deepEqual([...report.issues.values()].flat().filter(i=>i.label==='Process name differs between sources'||/differs from the standard snapshot name/.test(i.text)),[]);
+ const apps=model.apps.filter(a=>a.processMatches.some(m=>m.id==='M.I2D.020.050'));
+ assert(apps.length>=1,'the bundled data has applications matched to M.I2D.020.050');
+ for(const a of apps){
+  const raws=a.processMatches.filter(m=>m.id==='M.I2D.020.050').map(m=>m.raw);
+  assert(report.records.get(a.id).filter(r=>raws.includes(r.raw)).every(r=>r.valid),a.Name);
+  assert(!report.issues.get(a.id).some(i=>raws.includes(i.record)),a.Name);
+  const row=processMatchRows(model,a).find(r=>r.id==='M.I2D.020.050');
+  assert.match(row.note,/Names differ between sources: snapshot "Packaging Handling", LeanIX "Returnable Packaging Handling"\./,a.Name);
+ }
 });

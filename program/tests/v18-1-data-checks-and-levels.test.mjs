@@ -11,6 +11,7 @@ import {workspaceData} from '../public/workspace.mjs';
 import {maintenanceReport} from '../public/overview.mjs';
 import {dataChecksForApp,dataChecksSummary,renderDataChecks} from '../public/data-checks.mjs';
 import {processIssues,capabilityIssues} from '../public/process-issues.mjs';
+import {ancestorCoverage} from '../public/review-issues.mjs';
 
 const bundled=()=>buildModel(workspaceData(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url),'utf8'))));
 const legacy=JSON.parse(readFileSync(new URL('./capability-rows-2026-10-15.json',import.meta.url)));
@@ -40,10 +41,19 @@ test('the owner\'s example: BMLP_Nexeed_IAS@WxP shows Level 2 and Level 3 missin
  assert.deepEqual(processIssues(model,app).map(i=>i.label),['Level 2 missing','Level 3 missing']);
  assert.deepEqual(toCheck(checks).map(row=>row.primary),['Process: Level 2 missing','Process: Level 3 missing']);
  assert.equal(dataChecksSummary(checks),'2 to check');
- // A name question without a check tag is listed with its sentence.
- const szh5=model.apps.find(a=>a.Name==='RBAC_ME_Szh5 Intralogistics control system'),row=dataChecksForApp(model,szh5).checks.find(r=>r.raw==='BBM PM I2D Packaging Handling L2');
- assert.equal(row.primary,'Process: Process name differs between sources');
- assert.match(renderDataChecks({checks:[row],mappings:[],nameDifferences:[],n:1,m:0,k:0},String),/Returnable Packaging Handling.*Packaging Handling/);
+ // V19.1 union (owner 2026-10-23): "Process name differs between sources" is no longer produced, because the Signavio
+ // name and the LeanIX name are both valid. Until V19 this record was listed with its sentence naming both names; now it
+ // simply matches its code, the catalogue still knows both names, and neither list shows it.
+ const szh5=model.apps.find(a=>a.Name==='RBAC_ME_Szh5 Intralogistics control system'),raw='BBM PM I2D Packaging Handling L2';
+ const match=szh5.processMatches.find(m=>m.raw===raw);
+ assert.equal(match?.id,'M.I2D.020.050','the record matches its Signavio code by name');
+ const node=model.procs.get(match.id);
+ assert.equal(node.nameStatus,'differs','the two sources still name it differently');
+ assert.deepEqual([node.snapshotName,node.leanix.name],['Packaging Handling','Returnable Packaging Handling']);
+ assert(!processIssues(model,szh5).some(i=>i.record===raw||i.label==='Process name differs between sources'),'not an issue in Issues to review');
+ const szh5Checks=dataChecksForApp(model,szh5);
+ assert.equal(szh5Checks.checks.find(r=>r.raw===raw),undefined,'not a line in Data checks');
+ assert.doesNotMatch(renderDataChecks(szh5Checks,String),/Packaging Handling|differs between sources/);
 });
 
 const app=(ID,cap,process)=>({ID,Name:`App ${ID}`,Entity:'Plant A',Division:'PS','Main Business Capability':'','Business Capabilities':cap,Processes:process});
@@ -58,12 +68,14 @@ const full=(report,id,n)=>level(report,n).filled.some(a=>a.id===id)&&level(repor
 const missing=(report,id)=>report.issues.get(id).filter(i=>i.kind==='missing').map(i=>i.level);
 
 test('fixed rule: the deepest matching level makes every level above it full, in Process',()=>{
- const report=maintenanceReport(buildModel(fixture([
+ const model=buildModel(fixture([
   app('onlyL3','B.06.1.1 Detail','BBM PM T Detail L3'),
   app('L2noL1','B.06.1.1 Detail','BBM PM T Test L0;BBM PM T Step L2'),
   app('badL3','B.06.1.1 Detail','BBM PM T Unknown step L3'),
-  app('badDirectL2','B.06.1.1 Detail','BBM PM T Unknown branch L2;BBM PM T Detail L3')
- ])),{},'process');
+  app('badDirectL2','B.06.1.1 Detail','BBM PM T Unknown branch L2;BBM PM T Detail L3'),
+  app('noLevel','B.06.1.1 Detail','BBM PM T Unknown step')
+ ]));
+ const report=maintenanceReport(model,{},'process'),byId=id=>model.apps.find(a=>a.id===id);
  // Level 3 matches: Levels 2, 1 and 0 are full, nothing is missing.
  for(const n of [0,1,2,3])assert(full(report,'onlyL3',n),`onlyL3 Level ${n}`);
  assert.deepEqual(report.issues.get('onlyL3'),[]);
@@ -71,34 +83,69 @@ test('fixed rule: the deepest matching level makes every level above it full, in
  // Level 1 missing and Level 2 matching: Level 1 is full; Level 3 has nothing deeper, so it stays missing.
  assert(full(report,'L2noL1',1));
  assert.deepEqual(missing(report,'L2noL1'),[3]);
- // A deeper level that does not match fills nothing.
- assert.deepEqual(missing(report,'badL3'),[0,1,2]);
- // A recorded level is judged on its own records: a matching L3 never hides a bad direct L2.
- assert(report.issues.get('badDirectL2').some(i=>i.level===2&&i.kind==='match'));
- assert(!full(report,'badDirectL2',2));
+ // V19.1 union (owner 2026-10-23): a process recorded with a level is in LeanIX, so an L3 that is not in the Signavio list
+ // now matches and fills Levels 2, 1 and 0 like any matching L3 (until V19 it filled nothing). Its evidence names it as a
+ // LeanIX record without a Signavio code or parent.
+ assert.deepEqual(byId('badL3').inLeanix.map(x=>x.raw),['BBM PM T Unknown step L3']);
+ for(const n of [0,1,2,3])assert(full(report,'badL3',n),`badL3 Level ${n}`);
+ assert.deepEqual(report.issues.get('badL3'),[]);
+ assert.deepEqual(ancestorCoverage(model,report,byId('badL3'),0),[{raw:'BBM PM T Unknown step L3',code:null,parent:null,inLeanix:true}]);
+ // A record that does not match (now only one without a level) fills nothing: every level stays missing.
+ assert.deepEqual(missing(report,'noLevel'),[0,1,2,3]);
+ assert.deepEqual(report.issues.get('noLevel').filter(i=>i.kind==='record').map(i=>i.label),['Process level not specified']);
+ // A recorded level is judged on its own records, never on deeper coverage. V19.1 union: the direct L2 outside the
+ // Signavio list is in LeanIX and matches on its own (until V19 it was a Level 2 match issue); the Business Capability
+ // test below keeps the case of a failing direct record that a matching deeper level must not hide.
+ assert.deepEqual(ancestorCoverage(model,report,byId('badDirectL2'),2),[],'a level with its own records is not covered from deeper');
+ assert(!report.issues.get('badDirectL2').some(i=>i.level===2),'the direct L2 is not an issue');
+ assert.equal(report.records.get('badDirectL2').find(r=>r.raw==='BBM PM T Unknown branch L2').reason,'In LeanIX, not in the Signavio list');
+ assert(full(report,'badDirectL2',2));
 });
 
 test('fixed rule: the same in Business Capability',()=>{
  const report=maintenanceReport(buildModel(fixture([
   app('onlyL3','B.06.1.1 Detail','BBM PM T Detail L3'),
   app('onlyL2','B.06.1 Branch','BBM PM T Detail L3'),
-  app('badL3','B.06.1.9 Unknown','BBM PM T Detail L3')
+  app('badL3','B.06.1.9 Unknown','BBM PM T Detail L3'),
+  app('badDirectL2','B.06.9 Unknown;B.06.1.1 Detail','BBM PM T Detail L3')
  ])),{},'cap');
  for(const n of [1,2,3])assert(full(report,'onlyL3',n),`onlyL3 Level ${n}`);
  assert.deepEqual(report.issues.get('onlyL3'),[]);
  assert(full(report,'onlyL2',1),'Level 1 missing and Level 2 matching: Level 1 full');
  assert.deepEqual(missing(report,'onlyL2'),[3]);
  assert.deepEqual(missing(report,'badL3'),[1,2]);
+ // A recorded level is judged on its own records: a matching L3 never hides a bad direct L2. (V19.1 union: this case
+ // moved here from the Process test, where a direct record with a level now always matches.)
+ assert(report.issues.get('badDirectL2').some(i=>i.level===2&&i.kind==='match'));
+ assert(!full(report,'badDirectL2',2));
 });
 
 test('fixed rule on the bundled data, and no code calls a covered level unfilled again',()=>{
  const model=bundled(),process=maintenanceReport(model,{},'process'),find=name=>model.apps.find(a=>a.Name===name);
- // RBCW Auto Warehouse Management System: its matching L2 (Material Consumption) makes L0 and L1 full; its L3 is confirmed as
- // recorded. RBAC_ME_i-Warehouse: its matching L1 makes L0 full; it records nothing at Levels 2 and 3.
- assert.deepEqual(processIssues(model,find('RBCW Auto Warehouse Management System')),[]);
+ // RBCW Auto Warehouse Management System: its matching L2 (Material Consumption) makes L0 and L1 full; its L3 Transport
+ // Material Intra Plant is in LeanIX, not in the Signavio list, so it matches (V19.1 union; until V19 it was confirmed as
+ // recorded). RBAC_ME_i-Warehouse: its matching L1 makes L0 full; it records nothing at Levels 2 and 3.
+ const rbcw=find('RBCW Auto Warehouse Management System');
+ assert.deepEqual(processIssues(model,rbcw),[]);
+ assert.equal(process.records.get(rbcw.id).find(r=>r.raw==='BBM PM I2D Transport Material Intra Plant L3').reason,'In LeanIX, not in the Signavio list');
  assert.deepEqual(processIssues(model,find('RBAC_ME_i-Warehouse')).filter(i=>i.kind==='missing').map(i=>i.label),['Level 2 missing','Level 3 missing']);
- assert.deepEqual(process.levels.map(l=>[l.level,l.filled.length,l.valid.length]),[[0,73,73],[1,71,71],[2,67,67],[3,67,55]]);
- assert.equal(process.needsReview.length,21);
+ // V19.1 union (owner 2026-10-23), until V19 [[0,73,73],[1,71,71],[2,67,67],[3,67,55]] and 21 to review:
+ // - Levels 0 and 1 +2: RBCD WI management system and RBCW E-Queue system record only an L3 outside the Signavio list; it
+ //   now matches, so Levels 2, 1 and 0 count as full. Level 2 +3: the same two and RBCD LOM Scrap Management Platform
+ //   (its L3V records outside the Signavio list now cover its unrecorded Level 2).
+ // - Level 3 matching +12: every application with an L3 outside the Signavio list now matches at Level 3 (the 9 that
+ //   leave To review below, RBCD LOG Xone, which stays for its record without a level, and AUTO-RACK and RBCW Auto
+ //   Warehouse, whose such record the owner had confirmed as recorded).
+ // - To review -10: 9 applications whose only process issues were records with a level outside the Signavio list or the
+ //   name difference (and the unrecorded levels those records now cover; VM-CN_WACOS_Szh5 had both kinds), and RBAC_ME_Szh5 Intralogistics control system, whose only issue was
+ //   "Process name differs between sources" (no longer produced).
+ assert.deepEqual(process.levels.map(l=>[l.level,l.filled.length,l.valid.length]),[[0,75,75],[1,73,73],[2,70,70],[3,67,67]]);
+ const leftL3=['AUTO-RACK','RBCD LOG Xone','RBCD LOM Scrap Management Platform','RBCD WI management system','RBCW Auto Warehouse Management System','RBCW E-Queue system','RBHP_LOG_QualManager','ShzP_DAVIS','Szh5_ASRS_WCS_WMS','VM-CN_WACOS_Szh5','VM/LOG-Szh2_DAVIS (recovered 2026-09-21 09:32:15)','VMCN_iSCMP: Intelligent Supply Chain management platform'];
+ for(const name of leftL3)assert(find(name).inLeanix.some(x=>x.level===3)&&level(process,3).valid.some(a=>a.id===find(name).id),`${name}: an L3 outside the Signavio list now matches`);
+ assert.equal(process.needsReview.length,11,'V19.1 union: 21 -> 11, see above');
+ for(const name of ['RBAC_ME_Szh5 Intralogistics control system','RBCD LOM Scrap Management Platform','RBCD WI management system','RBCW E-Queue system','RBHP_LOG_QualManager','ShzP_DAVIS','Szh5_ASRS_WCS_WMS','VM-CN_WACOS_Szh5','VM/LOG-Szh2_DAVIS (recovered 2026-09-21 09:32:15)','VMCN_iSCMP: Intelligent Supply Chain management platform'])
+  assert(!process.needsReview.some(a=>a.id===find(name).id),`${name} is no longer to review`);
+ assert(process.needsReview.some(a=>a.id===find('RBCD LOG Xone').id),'RBCD LOG Xone stays: its record without a level');
  for(const file of ['review-issues.mjs','overview.mjs']){
   const code=readFileSync(new URL(`../public/${file}`,import.meta.url),'utf8');
   assert.doesNotMatch(code,/not counted as filled|does not change filled counts/,file);

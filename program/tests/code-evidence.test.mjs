@@ -252,7 +252,7 @@ test('bundled data: BMLP_Nexeed_IAS@WxP | QinP FG Smart Label Management is now 
  close(codeEvidenceScore(pair),0.5);assert.equal(formatCodeEvidence(codeEvidenceScore(pair)),'50 / 100');
 });
 
-test('bundled data: all 201 No complete score pairs have code evidence, equal to their lower capability + process total',()=>{
+test('bundled data: all 297 No complete score pairs have code evidence, equal to their lower capability + process total',()=>{
  // 2026-10-20: the 139 pairs once labelled Review needed are exactly the No complete score pairs (owner request).
  const pairs=portfolioCandidates(index).pairs,review=pairs.filter(p=>pairResultLabel(p,50)==='No complete score');
  // 139 came from an independent recount over the 2,850 pairs: both applications in scope, name and description
@@ -269,13 +269,30 @@ test('bundled data: all 201 No complete score pairs have code evidence, equal to
  // code with complete coverage (joined: 67 from No shared registrations, 6 from More detail needed, 9 from Needs
  // confirmation; all 20 that left are now No shared registrations). The round-1 rule gives the same 201; no name
  // filtering gives 199 (the two added pairs share only a single letter: BMLP | QinP and VMCN_iWPC_AKL_Szh5 | iTracker).
- assert.equal(review.length,201);
+ // V19.1 union (owner 2026-10-23, "也按并集"): a process record with a level that is not one Signavio process is in
+ // LeanIX (app.inLeanix) and is no longer pending, so it no longer makes a pair Needs confirmation; it has no Signavio
+ // code and adds no code evidence. 96 pairs joined (re-derived with node from tests/data-v9.16.json; emptying every
+ // app.inLeanix gives back the 201): all 96 were Needs confirmation and each involves one of the applications with such
+ // a record (VM/LOG-Szh2_DAVIS 29, AUTO-RACK 15, Szh5_ASRS_WCS_WMS 13, RBCD LOM Scrap Management Platform 11, ShzP_DAVIS 9,
+ // RBCW Auto Warehouse Management System 7, VMCN_iSCMP 7, VM-CN_WACOS_Szh5 7, RBCW E-Queue system 3, RBCD WI management
+ // system 1; some pairs hold two). None left, and the other 201 are the same pairs as before.
+ const inLeanix=pair=>[pair.target.app,pair.peer.app].some(a=>a.inLeanix.length>0);
+ assert.equal(review.length,297);// was 201
+ assert.equal(review.filter(pair=>!inLeanix(pair)).length,201,'the 201 pairs of the recount above');
+ assert.equal(review.filter(inLeanix).length,96,'joined in V19.1');
  for(const pair of review)close(codeEvidenceScore(pair),codeOnly(pair),pair.key);
  for(const pair of pairs)if(pairResultLabel(pair,50)!=='No complete score')assert.equal(codeEvidenceScore(pair),null,pair.key);
  // The recount's range: highest 0.7 (only Iris | RBCD B308 AGV Traffic Control System), lowest 0.05 — never 0.
+ // V19.1: the lowest is now 0.4 × 1/21 ≈ 1.9 (RBHP_LOG SupplierManager | VMCN_iSCMP: Intelligent Supply Chain management
+ // platform, Needs confirmation until V19.1: VMCN_iSCMP → RBHP_LOG SupplierManager shares no capability of 1 and 1
+ // process of 21; the other direction is 0.4 × 1/7). The 201 pairs of the recount still range from 0.05 to 0.7.
  const values=review.map(codeEvidenceScore),top=review.filter(p=>Math.abs(codeEvidenceScore(p)-0.7)<1e-12);
  assert.deepEqual(top.map(p=>[p.target.app.Name,p.peer.app.Name].sort()),[['Iris','RBCD B308 AGV Traffic Control System']]);
- close(Math.max(...values),0.7);close(Math.min(...values),0.05);
+ close(Math.max(...values),0.7);close(Math.min(...values),0.4/21);
+ const lowest=review.filter(p=>Math.abs(codeEvidenceScore(p)-0.4/21)<1e-12);
+ assert.deepEqual(lowest.map(p=>[p.target.app.Name,p.peer.app.Name].sort()),[['RBHP_LOG SupplierManager','VMCN_iSCMP: Intelligent Supply Chain management platform']]);
+ const recount=review.filter(pair=>!inLeanix(pair)).map(codeEvidenceScore);
+ close(Math.max(...recount),0.7);close(Math.min(...recount),0.05);
 });
 
 // ---- Rendered UI (stub document, as in tests/handoff-rules.test.mjs) ----
@@ -302,7 +319,17 @@ test('the single-pair score box shows Unavailable, No complete score and the cod
  ui.restoreState({focusAppId:app('ARS').id,focusPeerId:app('AGR w/ Camera').id});
  const confirmed=document.getElementById('focusResult').innerHTML;
  assert.match(confirmed,/30\.9<small> \/ 100<\/small><\/strong><em class="comparison-status">Below threshold<\/em><\/div>/);assert.doesNotMatch(confirmed,/comparison-code-evidence/);
+ // V19.1 union (owner 2026-10-23, "也按并集"): Iris–AUTO-RACK was this Needs confirmation example, for AUTO-RACK's
+ // "BBM PM I2D Putaway to Automated Warehouse L3V". With a level, that record is in LeanIX and no longer pending, so the
+ // pair has a score: Iris → AUTO-RACK 0.2 × 1/33 (description) + 0.3 × 1/1 (capability) + 0.4 × 0/1 (process) = 30.6;
+ // AUTO-RACK → Iris 0.2 × 1/33 + 0.3 × 1/2 + 0.4 × 0/2 = 15.6; the lower one is shown, Below threshold, no code evidence.
  ui.restoreState({focusAppId:app('Iris').id,focusPeerId:app('AUTO-RACK').id});
+ const rack=document.getElementById('focusResult').innerHTML;
+ assert.match(rack,/15\.6<small> \/ 100<\/small><\/strong><em class="comparison-status">Below threshold<\/em><\/div>/);assert.doesNotMatch(rack,/comparison-code-evidence/);
+ // A Needs confirmation pair still has no code evidence: RBCD LOG Xone's "BBM_O2C_OM_01 Schedule Agreement for Goods"
+ // has no level, so it is still pending (its other record, with a level, is in LeanIX).
+ assert.deepEqual(app('RBCD LOG Xone').inLeanix.map(x=>x.raw),['BBM PM P2F Transmit Material and Sales Master Data L3']);
+ ui.restoreState({focusAppId:app('Iris').id,focusPeerId:app('RBCD LOG Xone').id});
  const pending=document.getElementById('focusResult').innerHTML;
  assert.match(pending,/<strong>Unavailable<\/strong><em class="comparison-status">Needs confirmation<\/em><\/div>/);assert.doesNotMatch(pending,/comparison-code-evidence/);
 }));
@@ -328,18 +355,26 @@ test('the compare-dialog pair row shows No complete score with the code evidence
  const [iris,rcs,agv,ars,rack]=['Iris','RCS-2000','RBCD B308 AGV Traffic Control System','ARS','AUTO-RACK'].map(app);
  ui.open({poolIds:[iris,rcs,agv,ars,rack].map(a=>a.id),contextLabel:'Code evidence'});
  const html=document.getElementById('comparisonMatrix').innerHTML,rows=pairRows(html);
- // The four AUTO-RACK investigation pairs now share one application-record action.
- // The other four applications still form six independently comparable pairs.
- assert.equal(rows.size,6);
- assert.deepEqual([...html.matchAll(/data-readiness-app="([^"]*)"/g)].map(match=>match[1]),[esc(rack.id)]);
- for(const a of [iris,rcs,agv,ars])assert(!rows.has(rowKey(a,rack)),'AUTO-RACK is checked once, not once per peer');
+ // Until V19.1 the four AUTO-RACK investigation pairs shared one application-record action (Needs confirmation for
+ // "BBM PM I2D Putaway to Automated Warehouse L3V") and the other four applications formed six pairs.
+ // V19.1 union (owner 2026-10-23, "也按并集"): that record has a level, so it is in LeanIX and not pending; all ten
+ // pairs are normal rows and no application-record action is left.
+ assert.equal(rows.size,10);// was 6
+ assert.deepEqual([...html.matchAll(/data-readiness-app="([^"]*)"/g)].map(match=>match[1]),[]);// was [AUTO-RACK]
+ for(const a of [iris,rcs,agv,ars])assert(rows.has(rowKey(a,rack)),'AUTO-RACK is compared with '+a.Name);
  // Round 2 markup: <strong>No complete score<small class="compare-pair-code">Code evidence N / 100</small></strong>.
  assert.equal(rows.get(rowKey(iris,rcs)).strong,pairCode('30'));// 0.3 × 1 + 0.4 × 0
  assert.equal(rows.get(rowKey(iris,agv)).strong,pairCode('70'));// 0.3 × 1 + 0.4 × 1
+ // V19.1: RCS-2000 → AUTO-RACK 0.3 × 1/1 + 0.4 × 0/1 = 0.3; AUTO-RACK → RCS-2000 0.3 × 1/2 + 0.4 × 0/2 = 0.15 (lower).
+ assert.equal(rows.get(rowKey(rcs,rack)).strong,pairCode('15'));
  assert(!html.includes(' · Code evidence'),'the round-1 inline separator is gone');
- assert.equal((html.match(/<small class="compare-pair-code">/g)||[]).length,2,'one code evidence line per No complete score row');
+ assert.equal((html.match(/<small class="compare-pair-code">/g)||[]).length,3,'one code evidence line per No complete score row');// was 2
  assert.equal(rows.get(rowKey(ars,iris)).strong,'31.3 / 100','a confirmed pair shows its score only');
  assert.equal(rows.get(rowKey(ars,rcs)).strong,'32.1 / 100');
+ // V19.1: the other AUTO-RACK pairs are confirmed Below threshold pairs with a score only (Iris–AUTO-RACK: see the score box test).
+ assert.equal(rows.get(rowKey(iris,rack)).strong,'15.6 / 100');
+ assert.equal(rows.get(rowKey(agv,rack)).strong,'15.6 / 100');
+ assert.equal(rows.get(rowKey(ars,rack)).strong,'18.3 / 100');
  // Code evidence appears on No complete score rows and on no other row.
  for(const [key,{strong,target,peer,attributes,inner}] of rows){
   assert.equal(/Code evidence/.test(strong),strong.startsWith('No complete score'),key+': '+strong);
