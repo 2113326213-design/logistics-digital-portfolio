@@ -2,6 +2,14 @@
 
 每个版本的离线包在 [Releases](https://github.com/2113326213-design/logistics-digital-portfolio/releases)；详细的修改说明和用户决定在 [`00_Claude先读.md`](00_Claude先读.md)，验证记录在 [`verification/`](verification/)。
 
+## [V17.4](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v17.4-20261022) · 2026-10-23
+
+- 用户：“能不能别改的那么让人看不懂？我感觉你的单词用的很奇特。”——认可的写法 “就这样通俗易懂的说”：
+  - Import data 底部：标题 **Admin only: share this data with everyone**；说明 “Only the person who updates the data needs this. Download the file and put it on the server next to index.html. Everyone who opens the tool then gets the new data.”；按钮 **Download file for the server**；下载后的提示 “Downloaded logistics-data.json (N applications, data from …). Put it on the server next to index.html.”
+  - 流程核对里加 LeanIX 流程的一节：标题 “BBM PM processes not in the standard list”，计数 “Can be added / Cannot be added / Already in the tool”，按钮 “Preview adding them”，预览说明和来源说明都用大白话（“not in the standard list”、“each under its parent process in LeanIX”）。
+  - 以后给工厂用户看的文字都避免 steward、publish、package、catalogue、taxonomy、layer、recorded、variant 这类词。
+- 规则和数字不变。
+
 ## [V17.3](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v17.3-20261022) · 2026-10-23
 
 - 给工厂用户的措辞（用户经侧边会话 2026-10-23：“第一个可以 第二个我感觉不要显示 第三个别显示第五个不用显示”）：

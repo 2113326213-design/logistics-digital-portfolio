@@ -20,7 +20,12 @@
 - **小版本**（V10.1、V10.2……）：修正、文字和显示调整。
 - 版本号写在 `program/scripts/release.mjs` 的 RELEASE_VERSION（小写，如 `v10`、`v10.1`）；文件名、发布 zip、部署脚本和 Release 标签（`v10-20261022`）都随它生成。导入预览的“变化明细”是新功能，所以这一版是 V10（原计划的 V9.20 没有发布）。
 
-## V17.3 当前状态（2026-10-23，优先于所有历史段落）
+## V17.4 当前状态（2026-10-23，优先于所有历史段落）
+
+- **用词规则（用户 2026-10-23）**：“能不能别改的那么让人看不懂？我感觉你的单词用的很奇特。”工厂用户看到的英文要通俗：用 admin、share、download、file、server、standard list 这类词，不用 steward、publish、package、catalogue、taxonomy、layer、recorded、variant。本版按用户认可的原文改了 Import data 底部一节（标题、说明、按钮、下载提示）和 LeanIX 流程一节（标题、计数、按钮、预览说明、来源说明）。元素 id（`#packagePublish`、`#exportDataPackage`、`#previewLocalLayer`）不变。
+- 539 项测试通过；deploy:sim 10 / 10。当前离线包：`offline/logistics-offline-20261022-v17.4.zip`。验证记录见 `verification/v17.4-verification.md`。
+
+## V17.3 状态（2026-10-23，受顶部 V17.4 更新）
 
 - 用户（经侧边会话转达，原话 “第一个可以 第二个我感觉不要显示 第三个别显示第五个不用显示”；第五条确认为 “不用加那句说明”）：(1) 发布一节明确只给数据维护人；(2) 总览不显示 “confirmed as recorded”；(3) 不显示 “(LeanIX local)” 标注和 “L3V” 说法；(4) 总览数字不改；(5) 服务器提示不改。
 - 改动：index.html 的 `#packagePublish` 标题与首句；overview.mjs 去掉 “· N confirmed as recorded”；local-layer.mjs 去掉 `LOCAL_TAG`（标签就是名称，`matchName` 照常）；leanix-processes.mjs 的本地来源说明；app.js 两处说明去掉 “(LeanIX local)”。这推翻了 V17 “单独标注” 的显示方式（数据层仍是单独一层，按编号 “.L…” 可区分）。

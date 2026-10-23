@@ -59,7 +59,7 @@ test('V17: with the layer, the model marks local processes, keeps the hierarchy 
  for(const a of recorders){const b=withLayer.apps.find(x=>x.id===a.id);assert(b.process.includes(truck.id));assert(!b.unmatched.includes('BBM PM I2D Load Truck L3'));assert(!withLayer.issues.some(i=>i.appId===a.id&&i.value==='BBM PM I2D Load Truck L3'));}
  assert.equal(withLayer.issues.length,model.issues.length-3);
  // The source of a local match says so.
- assert.match(matchSource(withLayer,truck.id,'name').sources[0],/BBM PM process, not in the Signavio standard/);
+ assert.match(matchSource(withLayer,truck.id,'name').sources[0],/BBM PM process, not in the standard list/);
  // A local process with a standard name never takes the standard's records.
  const clash=buildModel({...data,localProcesses:[{id:'M.I2D.010.Laaaaaaaa',name:'Pre-Processing',level:2,parent:'M.I2D.010'}]});
  assert.equal(processLookup(clash.procs)('BBM PM I2D Receive to Store L1').id,'M.I2D.010');
