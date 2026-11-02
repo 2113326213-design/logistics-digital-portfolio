@@ -41,10 +41,18 @@ test('V19.1: AUTO-RACK matches at Level 3 — no issue, no owner confirmation sh
 test('V19.1: on the bundled data every process with a level matches; only missing levels and records without a level are left',()=>{
  const model=bundled(),report=maintenanceReport(model,{},'process'),l3=l3MaintenanceMetrics(report);
  // 19 records with a level are not one Signavio process: 17 were issues, 2 were confirmed by the owner (AUTO-RACK, RBCW).
- assert.equal(model.apps.flatMap(a=>a.inLeanix).length,19);
+ // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): 19 -> 20. The export replaces
+ // VMCN_iWPC_AKL_Szh5's L1/L2 records with "BBM PM Others L0", a Level 0 not in the Signavio list, so it is in LeanIX.
+ // (EDCN AWS's 7 new ETAS.I2D records are not counted: by the ETAS rule they are the Signavio M.I2D processes.)
+ assert.equal(model.apps.flatMap(a=>a.inLeanix).length,20);
  assert(model.apps.flatMap(a=>a.inLeanix).every(x=>/^BBM\s+PM\s/i.test(x.raw)&&/L[0-3]V?\s*$/i.test(x.raw)));
- assert.deepEqual([report.needsReview.length,l3.complete.length,l3.quality.length,l3.notPassing.length,l3.confirmed.length],[11,67,67,8,0],'To review 21 → 11; Level 3 matches 55 → 67');
- assert.deepEqual(report.levels.map(l=>[l.level,l.filled.length,l.valid.length]),[[0,75,75],[1,73,73],[2,70,70],[3,67,67]]);
+ // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): [11,67,67,8,0] -> [10,68,68,7,0]. CDR_EM recorded
+ // only "BBM PM I2D Intralogistics to Demand L0"; the export gives it two P2F Level 3 processes, so it matches at Level 3
+ // and leaves To review and the Level 3 card.
+ assert.deepEqual([report.needsReview.length,l3.complete.length,l3.quality.length,l3.notPassing.length,l3.confirmed.length],[10,68,68,7,0],'To review 21 → 11 → 10 (2026-11-02 data); Level 3 matches 55 → 67 → 68');
+ // 2026-11-02 data: Level 3 67 -> 68 (CDR_EM, as above). Levels 1 and 2 stay 73 and 70: CDR_EM joins them while
+ // VMCN_iWPC_AKL_Szh5 (now only "BBM PM Others L0") leaves them.
+ assert.deepEqual(report.levels.map(l=>[l.level,l.filled.length,l.valid.length]),[[0,75,75],[1,73,73],[2,70,70],[3,68,68]]);
  const labels=new Set(model.apps.flatMap(a=>report.issues.get(a.id).map(i=>i.label.replace(/\d/,'N'))));
  assert.deepEqual([...labels].sort(),['Level N missing','Process level not specified']);
  assert(!toReviewRows(model).some(r=>r.dimension==='Process'&&/match needs review|differs between sources/.test(r.issue)));
@@ -78,27 +86,46 @@ test('V19.1: the similarity check follows the union too ("也按并集"); mappin
  const model=bundled(),data=workspaceData(JSON.parse(read('../public/data.json'))),threshold=data.similarityThreshold??50;
  // model.issues still holds the records without one Signavio code (mappings work on them as before) ...
  const issues=model.issues.filter(i=>i.type.startsWith('流程'));
- assert.equal(issues.length,21);
+ // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): 21 -> 26. VMCN_Packaging Data System gains four
+ // BBM_PKG_* processes without a standard level, and VMCN_iWPC_AKL_Szh5 now records "BBM PM Others L0", a Level 0 not in
+ // the Signavio list (in LeanIX, so it matches; it is still held here for mappings, like the other 19).
+ assert.equal(issues.length,26);
  assert(issues.some(i=>i.app==='ShzP_DAVIS'&&i.value==='BBM PM I2D Load Truck L3'));
  assert.equal(byName(model,'AUTO-RACK').accepted.length,1,'the confirmation data is kept');
  // ... but the similarity check treats a process in LeanIX like a confirmed record: not pending, no evidence.
  const pairs=portfolioCandidates(createWeightedSimilarity(model,data.similarityWeights)).pairs;
  const labels={};for(const p of pairs){const l=pairResultLabel(p,threshold);labels[l]=(labels[l]||0)+1;}
- assert.deepEqual(labels,{'Below threshold':926,'No shared registrations':702,'No complete score':250,'More detail needed':62,'Out of scope':564,'Needs confirmation':258,'Potential overlap':13},'until V19: Needs confirmation 726, Potential overlap 10');
+ // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): before {Below threshold 926, No shared
+ // registrations 702, No complete score 250, More detail needed 62, Out of scope 564, Needs confirmation 258, Potential
+ // overlap 13}. The 16 changed applications (mostly new Level 3 capabilities such as B.06.5.2, and new processes) move
+ // pairs between labels; Potential overlap 13 -> 12 because CGQB_Logistic_system <-> Iris is now Below threshold (Iris
+ // gained B.06.5.2, which CGQB_Logistic_system does not record, so its capability score falls from 1/3 to 1/5).
+ assert.deepEqual(labels,{'Below threshold':876,'No shared registrations':691,'No complete score':251,'More detail needed':61,'Out of scope':564,'Needs confirmation':320,'Potential overlap':12},'until V19: Needs confirmation 726, Potential overlap 10');
  const readiness=comparisonReadiness(pairs,threshold),listed=readiness.apps.map(row=>row.app.Name).sort();
- assert.deepEqual(listed,['CDR_EM','RBAC_ME_i-Warehouse','RBCC I4.0 Visualization (Davis)','RBCC Production Excution Support System(PESS)','RBCD LOG Xone']);
+ // 2026-11-02 data: CDR_EM leaves (it was listed for its Level 0-only "BBM PM I2D Intralogistics to Demand L0"; it now
+ // records two P2F Level 3 processes). VMCN_Packaging Data System joins for its four BBM_PKG_* processes without a level,
+ // and VMCN_iWPC_AKL_Szh5 joins because it now records a process only at Level 0 ("BBM PM Others L0").
+ assert.deepEqual(listed,['RBAC_ME_i-Warehouse','RBCC I4.0 Visualization (Davis)','RBCC Production Excution Support System(PESS)','RBCD LOG Xone','VMCN_Packaging Data System','VMCN_iWPC_AKL_Szh5']);
  const inLeanix=new Set(model.apps.flatMap(a=>a.inLeanix.map(x=>x.raw)));
- assert(!readiness.apps.some(row=>row.records.some(r=>inLeanix.has(r.raw))),'no process in LeanIX is listed to confirm');
+ // 2026-11-02 data: expected [] -> the one record below. "BBM PM Others L0" (VMCN_iWPC_AKL_Szh5) is the first Level 0
+ // record in LeanIX in the bundled data. It is not pending (not "Needs confirmation"), as the union rule requires; it is
+ // listed only as "More detail needed" by the separate Level 0 rule, exactly as CDR_EM's Signavio L0 was until now.
+ const listedInLeanix=readiness.apps.flatMap(row=>row.records.filter(r=>inLeanix.has(r.raw)).map(r=>[row.app.Name,r.dimension,r.kind,r.raw,r.reason]));
+ assert.deepEqual(listedInLeanix,[['VMCN_iWPC_AKL_Szh5','process','More detail needed','BBM PM Others L0','This process chain is recorded only at Level 0; a Level 1 or deeper record is needed.']],'no process in LeanIX is listed to confirm');
  const overlap=pairs.filter(p=>pairResultLabel(p,threshold)==='Potential overlap').map(p=>[p.target.app.Name,p.peer.app.Name].sort().join(' <-> '));
  for(const pair of ['AUTO-RACK <-> Szh5_ASRS_WCS_WMS','RBCC E-Queue system(Karis) <-> RBCW E-Queue system','RBCW Auto Warehouse Management System <-> Szh5_ASRS_WCS_WMS'])assert(overlap.includes(pair),pair);
  // Capabilities: the same issues as before, e.g. a capability outside B.06.
- assert(capabilityIssues(model,byName(model,'ShzP_ALICE')).some(i=>i.raw==='B.05.2 Material Field Management'));
+ // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): ShzP_ALICE no longer records B.05.2 Material Field
+ // Management (the export lists only B.06 capabilities for it), so the check uses the equivalent unchanged case:
+ // CngP/MSE-Nbo Supplier SCM's B.05.3.7, also a capability outside B.06 and an issue before this data as well.
+ assert(capabilityIssues(model,byName(model,'CngP/MSE-Nbo Supplier SCM')).some(i=>i.raw==='B.05.3.7 Supplier Collaboration Management'));
 });
 
 test('V19.1: the explanation and the one-time update notice say it in plain words, with no version number',()=>{
  const overview=read('../public/overview.mjs');
  assert(overview.includes('A process matches when it is in the Signavio process list or in LeanIX; every process recorded with a level (L0–L3) is in LeanIX, so only a process without a level does not match.'));
- assert.equal(WHATS_NEW.id,'2026-10-23-3');
+ // V19.3 (2026-11-02) gave the notice a new id; the V19.1 line stays in it.
+ assert.notEqual(WHATS_NEW.id,'2026-10-23-2');
  const html=updateNoticeHTML(s=>String(s));
  assert(html.includes('<li>A process now counts as matching when it is in the Signavio list or in LeanIX. Every process recorded with a level (L0 to L3) is in LeanIX, so only processes without a level are still listed to review. The Similarity check no longer asks to confirm them.</li>'));
  assert.doesNotMatch(html,/\bV\d|version|release/i);

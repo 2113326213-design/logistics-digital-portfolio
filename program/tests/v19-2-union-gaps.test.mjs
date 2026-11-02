@@ -71,5 +71,8 @@ test('owner example: a LeanIX process only one side records does not lower the s
  const pairs=portfolioCandidates(createWeightedSimilarity(model,data.similarityWeights)).pairs;
  const overlap=pairs.filter(p=>pairResultLabel(p,data.similarityThreshold??50)==='Potential overlap').map(p=>[p.target.app.Name,p.peer.app.Name].sort().join(' <-> '));
  for(const pair of ['AUTO-RACK <-> RBCW Auto Warehouse Management System','AUTO-RACK <-> Szh5_ASRS_WCS_WMS','RBCC E-Queue system(Karis) <-> RBCW E-Queue system','RBCW Auto Warehouse Management System <-> Szh5_ASRS_WCS_WMS'])assert(overlap.includes(pair),pair);
- assert.equal(overlap.length,13);
+ // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): 13 -> 12. CGQB_Logistic_system <-> Iris is now
+ // Below threshold: Iris gained capability B.06.5.2, which CGQB_Logistic_system does not record, so that direction's
+ // capability score falls from 1/3 to 1/5. The four owner pairs above are unchanged.
+ assert.equal(overlap.length,12);
 });

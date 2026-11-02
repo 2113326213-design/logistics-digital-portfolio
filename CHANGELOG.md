@@ -2,6 +2,16 @@
 
 每个版本的离线包在 [Releases](https://github.com/2113326213-design/logistics-digital-portfolio/releases)；详细的修改说明和用户决定在 [`00_Claude先读.md`](00_Claude先读.md)，验证记录在 [`verification/`](verification/)。
 
+## [V19.3](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v19.3-20261022) · 2026-11-02
+
+用户把新的 inventory 上传到 Google Drive，选 “下载并更新内置数据”；ETAS 编号选 “认，编号和名称一致就算同一个”。
+1. **内置数据**：合并 2026-11-02 02:56 (GMT) 的 LeanIX 应用导出 `20261102_025607_zApwu_inventory.xlsx`（72 个应用），按应用 ID、走程序自己的导入流程（inventoryFromSheets → applyInventory → previewImport → recordImport，同 V9.16）。导出里没有的 3 个应用照原样保留并记在 data.inventoryExport：RBCW LOM Dashboard、VM/LOG-Szh2_DAVIS、360° Supplier dashboard（都已不在范围内）。16 个应用有变化（业务能力 12 个、流程 7 个、生命周期 2 个：RBCE Auto Warehouse Management System 和 VMCN_CONNEX 从 phaseIn 变为 active）。VMCN_iSCMP 的映射照原样带过来。
+2. **结果**：Business Capability Level 3 符合标准 36 → 48，To review 39 → 27（ARS、CDR_EM、EDCN AWS、Iris、RBCC I-PFEP、RBCC PESS、RBCC/LOG Digital Twin、RCS-2000、ShzP_ALICE、Szh5_ASRS_WCS_WMS、VM-CN_WACOS_Szh5、VMCN_iSCMP 补上了 Level 3）；Process Level 3 67 → 68，To review 11 → 10（CDR_EM 补了 P2F 的 Level 3）。Similarity（默认权重）：Potential overlap 13 → 12（CGQB_Logistic_system ↔ Iris：Iris 多了 B.06.5.2），Needs confirmation 258 → 320。
+3. **ETAS 编号**（用户决定）：流程写成 “ETAS.I2D.010.050.010 Putaway of Automated Goods Receipt (AGR)” 时，若 Signavio 有同一编号（M.I2D.010.050.010）且名称相同，就算这个标准流程，层级取它的层级（model.mjs processLookup、overview.mjs）。EDCN AWS 的 7 条全部这样匹配。不认的话 Needs confirmation 会是 381。
+4. **还要在 LeanIX 里处理的数据**：VMCN_Packaging Data System 新加了 4 条 “BBM_PKG_…” 流程，没有层级（另一套命名）；VMCN_iWPC_AKL_Szh5 原来的 Level 1 / Level 2 流程换成了一条 “BBM PM Others L0”。这两个应用和原来 4 条没写层级的应用一起，让 Needs confirmation 增加。
+5. **更新提示**：新的一次（id 2026-11-02），先说数据和 ETAS，再保留 10 月 23 日的几条（内网服务器还没更新过）。
+- 新增 `tests/v19-3-etas-codes.test.mjs`（4 项；ETAS 匹配的 2 项在 V19.2 代码上失败）。按旧数据写的 15 个测试文件按新数据更新（每处注明 “2026-11-02 data …” 和原因；没有删掉或放宽任何检查，断言总数没有减少）。
+
 ## [V19.2](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v19.2-20261022) · 2026-10-23
 
 用户：“我们现在来做那三个小问题的补救把”；“如果一遍有一遍没有就是有，如果都没有就算没有”；Similarity 里只在 LeanIX、对方没有的流程选 “不算，两个 E-Queue 算重合”。

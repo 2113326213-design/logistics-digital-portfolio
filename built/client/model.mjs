@@ -18,6 +18,11 @@ export function processLookup(procs){
   // A code may be a chain's own (Level 0) code, M.I2D, as LeanIX writes it (V16 review; same form as processCode).
   const code=s.match(/\bM\.[A-Z0-9]+(?:\.\d+)*(?=\s|$)/)?.[0];
   if(code&&procs.has(code)&&!procs.get(code).ambiguous)return {id:code,via:'code'};
+  // An ETAS code (owner decision 2026-11-02: "认，编号和名称一致就算同一个"): "ETAS.I2D.010.050.010 Putaway of Automated Goods
+  // Receipt (AGR)" is the Signavio process M.I2D.010.050.010 when that number exists and its name is the same (case,
+  // spacing and 'and' / '&' are equivalent). Otherwise the record is read like any other.
+  const etas=s.match(/^\s*ETAS\.([A-Z0-9]+(?:\.\d+)+)\s+(.+?)\s*$/i),etasNode=etas&&procs.get('M.'+etas[1].toUpperCase());
+  if(etasNode&&!etasNode.ambiguous&&norm(etasNode.matchName??etasNode.label)===norm(etas[2]))return {id:etasNode.id,via:'code'};
   const m=s.match(PROCESS_LEVEL);if(!m)return {id:null,type:'流程未标注标准层级'};
   const l=+m[1],name=s.replace(/^BBM\s+PM\s+[A-Z0-9]+\s+/i,'').replace(/\s+L[0-3]V?\s*$/i,'');
   const snapshotNames=nameIndex.get(l+'|'+norm(name))||[],leanixNames=(leanixIndex.get(l+'|'+norm(name))||[]).filter(n=>!snapshotNames.includes(n)),byName=[...snapshotNames,...leanixNames];

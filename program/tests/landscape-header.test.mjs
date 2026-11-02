@@ -16,12 +16,15 @@ const keys=list=>list.map(c=>c.key);
 const depth=id=>id.split('.').length;
 
 test('+ opens exactly one level, also when that level has a single sub-category',()=>{
- // B.01 has one populated sub-category (B.01.1) which has sub-categories of its own: one click shows B.01.1 only.
- const shown=cols('cap',openOneLevel(new Set(),'B.01'));
- const inside=shown.filter(c=>(c.opened||[]).includes('B.01'));
- assert.deepEqual(keys(inside.filter(c=>!c.direct)),['B.01.1']);
- assert.equal(inside.find(c=>c.id==='B.01.1').canExpand,true,'B.01.1 keeps its own +');
- assert(!shown.some(c=>c.id.startsWith('B.01.1.')),'no grandchild column before B.01.1 is opened');
+ // B.14 has one populated sub-category (B.14.9) which has sub-categories of its own: one click shows B.14.9 only.
+ // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): CDR_EM now records B.06.2.9 instead of
+ // B.01.01.2, so B.01 has no application any more. Same scenario on B.14 (RBCD LOM Scrap Management Platform records
+ // B.14.09.1, unchanged by the export): B.14 → single sub-category B.14.9 → B.14.9.1. Was B.01 → B.01.1 → B.01.1.2.
+ const shown=cols('cap',openOneLevel(new Set(),'B.14'));
+ const inside=shown.filter(c=>(c.opened||[]).includes('B.14'));
+ assert.deepEqual(keys(inside.filter(c=>!c.direct)),['B.14.9']);
+ assert.equal(inside.find(c=>c.id==='B.14.9').canExpand,true,'B.14.9 keeps its own +');
+ assert(!shown.some(c=>c.id.startsWith('B.14.9.')),'no grandchild column before B.14.9 is opened');
  // Process: M.Q2E opens to its single L1 only.
  const proc=cols('process',openOneLevel(new Set(),'M.Q2E')).filter(c=>(c.opened||[]).includes('M.Q2E')&&!c.direct);
  assert(proc.length&&proc.every(c=>depth(c.id)===depth('M.Q2E')+1));
@@ -32,16 +35,20 @@ test('+ opens exactly one level, also when that level has a single sub-category'
 });
 
 test('branches open and close independently; − closes the category and everything opened below it',()=>{
- const expanded=new Set();openOneLevel(expanded,'B.06.5');openOneLevel(expanded,'B.06.2');openOneLevel(expanded,'B.01');openOneLevel(expanded,'B.01.1');
+ // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): B.01 has no application any more (CDR_EM moved
+ // from B.01.01.2 to B.06.2.9), so the two-level branch is B.14 → B.14.9 (RBCD LOM Scrap Management Platform, B.14.09.1)
+ // instead of B.01 → B.01.1; the expected open set after closing B.06.5 is ['B.06.2','B.14','B.14.9'] (was
+ // ['B.01','B.01.1','B.06.2']).
+ const expanded=new Set();openOneLevel(expanded,'B.06.5');openOneLevel(expanded,'B.06.2');openOneLevel(expanded,'B.14');openOneLevel(expanded,'B.14.9');
  const before=cols('cap',expanded);
- assert(before.some(c=>c.id==='B.06.5.1')&&before.some(c=>c.id.startsWith('B.06.2.'))&&before.some(c=>c.id.startsWith('B.01.1.')));
+ assert(before.some(c=>c.id==='B.06.5.1')&&before.some(c=>c.id.startsWith('B.06.2.'))&&before.some(c=>c.id.startsWith('B.14.9.')));
  closeCategory(expanded,'B.06.5',model.ancestor);
- assert.deepEqual([...expanded].sort(),['B.01','B.01.1','B.06.2']);
+ assert.deepEqual([...expanded].sort(),['B.06.2','B.14','B.14.9']);
  const after=cols('cap',expanded);
  assert(after.some(c=>c.id==='B.06.5'&&!c.direct&&c.canExpand),'B.06.5 is a summary column again');
  assert.deepEqual(keys(after.filter(c=>c.id.startsWith('B.06.2.'))),keys(before.filter(c=>c.id.startsWith('B.06.2.'))),'B.06.2 stays open');
- closeCategory(expanded,'B.01',model.ancestor);
- assert.deepEqual([...expanded],['B.06.2'],'closing B.01 also closes B.01.1');
+ closeCategory(expanded,'B.14',model.ancestor);
+ assert.deepEqual([...expanded],['B.06.2'],'closing B.14 also closes B.14.9');
  assert.deepEqual(keys(cols('cap',new Set())),keys(cols('cap',closeCategory(new Set(['B.06.2']),'B.06.2',model.ancestor))));
 });
 
@@ -60,14 +67,17 @@ test('applications recorded only at an opened category stay in Only at this leve
 });
 
 test('opened categories are header rows spanning their columns, each with a − that collapses it',()=>{
- const expanded=new Set(['B.06.5','B.01','B.01.1']),shown=cols('cap',expanded),rows=openedGroupRows(shown);
- assert.equal(rows.length,2,'two levels opened under B.01');
+ // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): B.01 has no application any more (CDR_EM moved
+ // from B.01.01.2 to B.06.2.9); the two opened levels are B.14 → B.14.9 (RBCD LOM Scrap Management Platform, B.14.09.1)
+ // instead of B.01 → B.01.1.
+ const expanded=new Set(['B.06.5','B.14','B.14.9']),shown=cols('cap',expanded),rows=openedGroupRows(shown);
+ assert.equal(rows.length,2,'two levels opened under B.14');
  assert.equal(rows[0].reduce((n,cell)=>n+cell.span,0),shown.length);assert.equal(rows[1].reduce((n,cell)=>n+cell.span,0),shown.length);
  const b065=rows[0].find(cell=>cell.id==='B.06.5');assert.equal(b065.span,shown.filter(c=>(c.opened||[])[0]==='B.06.5').length);
- assert(rows[1].some(cell=>cell.id==='B.01.1'));
+ assert(rows[1].some(cell=>cell.id==='B.14.9'));
  const html=openedGroupCell(b065,{node:model.caps.get('B.06.5'),level:0,escape:esc});
  assert.match(html,new RegExp(`<th scope="colgroup" colspan="${b065.span}" class="opened-group" style="top:0px"><div class="opened-group-head"><button class="category-step" data-collapse="B\\.06\\.5" aria-label="Collapse B\\.06\\.5 [^"]+" title="Collapse">−</button><span class="opened-code">B\\.06\\.5</span>`));
- const second=openedGroupCell(rows[1].find(cell=>cell.id==='B.01.1'),{node:model.caps.get('B.01.1'),level:1,escape:esc});
+ const second=openedGroupCell(rows[1].find(cell=>cell.id==='B.14.9'),{node:model.caps.get('B.14.9'),level:1,escape:esc});
  assert.match(second,new RegExp(`style="top:${OPENED_ROW_HEIGHT}px"`));
  assert.match(openedGroupCell({id:null,span:3},{level:0,escape:esc}),/<th class="opened-gap" colspan="3" style="top:0px" aria-hidden="true"><\/th>/);
  assert.deepEqual(openedGroupRows(cols('cap',new Set())),[],'nothing opened, no extra header row');

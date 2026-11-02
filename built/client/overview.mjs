@@ -59,7 +59,9 @@ export function maintenanceReport(model,filters={},dimension='cap'){
   return [a.id,values.map(raw=>{
    const mapped=corrections.find(c=>c.raw===raw),id=mapped?.targetId||(isCap?capCode(raw):null);
    const issue=model.issues.find(i=>i.appId===a.id&&i.value===raw&&i.type.startsWith(isCap?'业务能力':'流程'));
-   const level=mapped?map.get(id)?.level:isCap?(id?id.split('.').length-1:null):PROCESS_LEVEL.exec(raw)?.[1];
+   // A process recorded by its code (an M. or ETAS code, without an "L3" suffix) has the level of the process it matches.
+   const byCode=!isCap&&!mapped&&(a.processMatches||[]).find(m=>m.raw===raw&&m.via==='code');
+   const level=mapped?map.get(id)?.level:isCap?(id?id.split('.').length-1:null):PROCESS_LEVEL.exec(raw)?.[1]??(byCode?map.get(byCode.id)?.level:undefined);
    // A process in LeanIX but not in the Signavio list matches (union, V19.1, model.mjs inLeanix); the owner's confirmation
    // of such a record is no longer needed. Any other record the owner confirmed as recorded is not an issue, but it has no
    // catalogue code: it never matches the standard.

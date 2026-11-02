@@ -27,6 +27,23 @@ const before=workspaceData(recordsBefore20261020(data));
 const beforeModel=buildModel(before),beforeIndex=createWeightedSimilarity(beforeModel),beforeCap=createSimilarity(beforeModel,'cap'),beforeProcess=createSimilarity(beforeModel,'process');
 const beforeApp=name=>{const found=beforeModel.apps.find(a=>a.Name===name);assert(found,`earlier records include ${name}`);return found;};
 const beforePair=(a,b)=>beforeIndex.pair(beforeApp(a).id,beforeApp(b).id);
+// 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): that export changed ARS (capability B.06.5 ->
+// B.06.5.2 and one more L3 process). AGR w/ Camera records B.06.5 and B.06.5.1, so on the current records the pair is
+// compared at capability Level 3 with no shared code (0.9 instead of 30.9) and confirmed example 1 no longer exists there.
+// Like the 2026-10-20 examples above, it runs on the records it was confirmed on, restored here from that import event
+// (which keeps every changed field's previous value).
+const EXPORT_20261102='20261102_025607_zApwu_inventory.xlsx';
+function recordsBefore20261102(data){
+ const event=(data.importHistory||[]).find(e=>e.inventoryFile===EXPORT_20261102);
+ assert(event,`import event for ${EXPORT_20261102}`);
+ const apps=data.apps.map(app=>event.changes.filter(change=>change.appId===String(app.ID).trim()).reduce((next,change)=>{
+  assert(!change.truncated,`the previous ${change.field} of ${change.appId} is complete in the import event`);return {...next,[change.field]:change.before};},app));
+ return {...data,apps};
+}
+const earlier=workspaceData(recordsBefore20261102(data));
+const earlierModel=buildModel(earlier),earlierIndex=createWeightedSimilarity(earlierModel),earlierCap=createSimilarity(earlierModel,'cap');
+const earlierApp=name=>{const found=earlierModel.apps.find(a=>a.Name===name);assert(found,`records before 2026-11-02 include ${name}`);return found;};
+const earlierPair=(a,b)=>earlierIndex.pair(earlierApp(a).id,earlierApp(b).id);
 const shown=value=>new Intl.NumberFormat('en-US',{maximumFractionDigits:1}).format(scorePoints(value));
 const component=(direction,key)=>direction.components.find(c=>c.key===key);
 const close=(actual,expected)=>assert(Math.abs(actual-expected)<1e-12,`${actual} ≈ ${expected}`);
@@ -38,14 +55,18 @@ function records(csv){
 }
 
 test('confirmed example 1: ARS vs AGR w/ Camera is 30.869565… shown as 30.9, capability at L2 with L3 deferred, process at L3',()=>{
- const p=pair('ARS','AGR w/ Camera');
+ // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): ARS changed in that export, so the confirmed
+ // example runs on the records before it (earlierPair, see recordsBefore20261102 above); was pair() on the current records.
+ // On the current records the pair is compared at capability Level 3 with no shared code: 0.869565… points (shown 0.9).
+ const now=pair('ARS','AGR w/ Camera');close(now.coverage,0.008695652173913044);assert.deepEqual(component(now.forward,'cap').result.comparisonLevels,[3]);
+ const p=earlierPair('ARS','AGR w/ Camera');
  assert.equal(p.status,'confirmed');close(p.coverage,0.30869565217391304);assert.equal(shown(p.coverage),'30.9');assert.equal(formatPoints(p.coverage),'30.9 pts');
  for(const direction of [p.forward,p.reverse]){
   const c=component(direction,'cap').result,pr=component(direction,'process').result;
   assert.equal(c.coverage,1);assert.deepEqual(c.comparisonLevels,[2]);assert.deepEqual(c.deferredLevels,[3]);
   assert.deepEqual(pr.comparisonLevels,[3],'capability L2 must not pull the complete L3 process comparison down');assert.deepEqual(pr.deferredLevels,[]);
  }
- assert.equal(comparisonRecordEvidence(model,cap.compare(app('ARS').id,app('AGR w/ Camera').id),cap.compare(app('AGR w/ Camera').id,app('ARS').id)).levelText,'Compared at Level 2; Level 3 detail deferred');
+ assert.equal(comparisonRecordEvidence(earlierModel,earlierCap.compare(earlierApp('ARS').id,earlierApp('AGR w/ Camera').id),earlierCap.compare(earlierApp('AGR w/ Camera').id,earlierApp('ARS').id)).levelText,'Compared at Level 2; Level 3 detail deferred');
 });
 
 test('confirmed example 2: Iris vs RBCW process directions 100% and 1/3, total Unavailable because RBCW capability is only B.06',()=>{
@@ -250,7 +271,10 @@ test('the single-pair comparison shows the pair status label next to the score',
  const detail=document.getElementById('focusResult').innerHTML;
  assert.match(detail,/<strong>Unavailable<\/strong><em class="comparison-status">No complete score<\/em>/);
  ui.restoreState({focusAppId:app('ARS').id,focusPeerId:app('AGR w/ Camera').id});
- assert.match(document.getElementById('focusResult').innerHTML,/30\.9<small> \/ 100<\/small><\/strong><em class="comparison-status">Below threshold<\/em>/);
+ // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): ARS now records B.06.5.2 (was B.06.5), so ARS vs
+ // AGR w/ Camera is compared at capability Level 3 with no shared code and scores 0.9 (was 30.9); still a confirmed pair
+ // Below threshold. <strong> is part of the pattern so that 30.9 would not match.
+ assert.match(document.getElementById('focusResult').innerHTML,/<strong>0\.9<small> \/ 100<\/small><\/strong><em class="comparison-status">Below threshold<\/em>/);
 }));
 
 test('the in-app calculation note states the name rule of the 2026-10-19 owner decision',()=>withUI((ui,document)=>{

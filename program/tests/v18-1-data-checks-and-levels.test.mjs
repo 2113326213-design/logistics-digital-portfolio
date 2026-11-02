@@ -139,10 +139,16 @@ test('fixed rule on the bundled data, and no code calls a covered level unfilled
  // - To review -10: 9 applications whose only process issues were records with a level outside the Signavio list or the
  //   name difference (and the unrecorded levels those records now cover; VM-CN_WACOS_Szh5 had both kinds), and RBAC_ME_Szh5 Intralogistics control system, whose only issue was
  //   "Process name differs between sources" (no longer produced).
- assert.deepEqual(process.levels.map(l=>[l.level,l.filled.length,l.valid.length]),[[0,75,75],[1,73,73],[2,70,70],[3,67,67]]);
+ // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): Level 3 67 -> 68. CDR_EM recorded only
+ // "BBM PM I2D Intralogistics to Demand L0"; the export gives it two P2F Level 3 processes, so it now matches at Level 3
+ // (and fills Levels 1 and 2). Levels 1 and 2 stay 73 and 70: VMCN_iWPC_AKL_Szh5 loses its L1 (P2F Sales and Operations
+ // Planning) and L2 (I2D Unloading & Check of Transport) records, replaced by "BBM PM Others L0", so it leaves both.
+ assert.deepEqual(process.levels.map(l=>[l.level,l.filled.length,l.valid.length]),[[0,75,75],[1,73,73],[2,70,70],[3,68,68]]);
  const leftL3=['AUTO-RACK','RBCD LOG Xone','RBCD LOM Scrap Management Platform','RBCD WI management system','RBCW Auto Warehouse Management System','RBCW E-Queue system','RBHP_LOG_QualManager','ShzP_DAVIS','Szh5_ASRS_WCS_WMS','VM-CN_WACOS_Szh5','VM/LOG-Szh2_DAVIS (recovered 2026-09-21 09:32:15)','VMCN_iSCMP: Intelligent Supply Chain management platform'];
  for(const name of leftL3)assert(find(name).inLeanix.some(x=>x.level===3)&&level(process,3).valid.some(a=>a.id===find(name).id),`${name}: an L3 outside the Signavio list now matches`);
- assert.equal(process.needsReview.length,11,'V19.1 union: 21 -> 11, see above');
+ // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): 11 -> 10. CDR_EM, whose only process issues were
+ // its missing Levels 1-3, now matches at Level 3 (see above) and leaves To review.
+ assert.equal(process.needsReview.length,10,'V19.1 union: 21 -> 11, see above; 2026-11-02 data: 11 -> 10 (CDR_EM)');
  for(const name of ['RBAC_ME_Szh5 Intralogistics control system','RBCD LOM Scrap Management Platform','RBCD WI management system','RBCW E-Queue system','RBHP_LOG_QualManager','ShzP_DAVIS','Szh5_ASRS_WCS_WMS','VM-CN_WACOS_Szh5','VM/LOG-Szh2_DAVIS (recovered 2026-09-21 09:32:15)','VMCN_iSCMP: Intelligent Supply Chain management platform'])
   assert(!process.needsReview.some(a=>a.id===find(name).id),`${name} is no longer to review`);
  assert(process.needsReview.some(a=>a.id===find('RBCD LOG Xone').id),'RBCD LOG Xone stays: its record without a level');
@@ -177,7 +183,8 @@ test('the update notice shows once to people who used the tool before, and never
 
 test('the update notice says what changed in plain words, with no version number',()=>{
  const html=updateNoticeHTML(s=>String(s));
- assert.match(html,/The tool was updated on 23 October 2026\./);
+ // V19.3: the notice of 2 November 2026 keeps the 23 October lines below its own.
+ assert.match(html,/The tool was updated on 2 November 2026\./);
  assert.match(html,/Data checks now list the same items as Issues to review/);
  assert.match(html,/if Level 3 matches, Levels 2, 1 and 0 count as complete/);
  assert.match(html,/id="updateNoticeClose">Close</);

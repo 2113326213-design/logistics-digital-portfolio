@@ -363,6 +363,8 @@ function processLookup(procs) {
   return (s) => {
     const code = s.match(/\bM\.[A-Z0-9]+(?:\.\d+)*(?=\s|$)/)?.[0];
     if (code && procs.has(code) && !procs.get(code).ambiguous) return { id: code, via: "code" };
+    const etas = s.match(/^\s*ETAS\.([A-Z0-9]+(?:\.\d+)+)\s+(.+?)\s*$/i), etasNode = etas && procs.get("M." + etas[1].toUpperCase());
+    if (etasNode && !etasNode.ambiguous && norm(etasNode.matchName ?? etasNode.label) === norm(etas[2])) return { id: etasNode.id, via: "code" };
     const m = s.match(PROCESS_LEVEL);
     if (!m) return { id: null, type: "\u6D41\u7A0B\u672A\u6807\u6CE8\u6807\u51C6\u5C42\u7EA7" };
     const l = +m[1], name = s.replace(/^BBM\s+PM\s+[A-Z0-9]+\s+/i, "").replace(/\s+L[0-3]V?\s*$/i, "");

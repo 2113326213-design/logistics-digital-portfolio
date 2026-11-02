@@ -8,7 +8,9 @@ import {dataAsOf,dataAsOfText} from '../public/data-as-of.mjs';
 const raw=JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url),'utf8'));
 
 test('the date comes from the inventory file name, then the LeanIX export time, then the latest import',()=>{
- assert.equal(dataAsOfText(raw),'Data: 20261021_logistic_inventory.xlsx · as of 2026-10-21');
+ // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): the bundled source is now that export (was
+ // 20261021_logistic_inventory.xlsx · as of 2026-10-21), so the line names it and takes 2026-11-02 from its file name.
+ assert.equal(dataAsOfText(raw),'Data: 20261102_025607_zApwu_inventory.xlsx · as of 2026-11-02');
  assert.equal(dataAsOfText({source:'20261020_083736_UKj4Y_inventory.xlsx'}),'Data: 20261020_083736_UKj4Y_inventory.xlsx · as of 2026-10-20','LeanIX export names start with the date');
  assert.equal(dataAsOfText({source:'20260825_logistic_inventory.xlsx'}),'Data: 20260825_logistic_inventory.xlsx · as of 2026-08-25');
  assert.equal(dataAsOfText({source:'inventory.xlsx',inventoryExport:{exportedAt:'2026-10-20 08:37:37 GMT'}}),'Data: inventory.xlsx · as of 2026-10-20');

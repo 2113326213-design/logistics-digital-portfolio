@@ -4,10 +4,14 @@
 // The updates of 23 October 2026 (V18.1; V19: the LeanIX comparison and the download for the server were removed; V19.1:
 // a process counts as matching when it is in the Signavio list or in LeanIX) share one notice, so a browser that skipped
 // an earlier one still reads its lines.
+// 2 November 2026 (V19.3): the data comes from the LeanIX export of that day, and ETAS process numbers are recognised. The
+// 23 October lines stay below them, because the intranet site had not been updated in between.
 export const WHATS_NEW=Object.freeze({
- id:'2026-10-23-3',
- date:'23 October 2026',
+ id:'2026-11-02',
+ date:'2 November 2026',
  items:Object.freeze([
+  'The data now comes from the LeanIX export of 2 November 2026. 16 applications changed, mostly their business capabilities and processes.',
+  'A process recorded with an ETAS number (for example ETAS.I2D.010.050.010) now counts as the same standard process when the number and the name match.',
   'Data checks now list the same items as Issues to review, at every level.',
   'A level with no entry now counts as complete when a deeper level matches the standard. For example, if Level 3 matches, Levels 2, 1 and 0 count as complete.',
   'Import data no longer compares LeanIX process exports. If you choose one, the tool says so and changes nothing.',

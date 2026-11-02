@@ -20,7 +20,16 @@
 - **小版本**（V10.1、V10.2……）：修正、文字和显示调整。
 - 版本号写在 `program/scripts/release.mjs` 的 RELEASE_VERSION（小写，如 `v10`、`v10.1`）；文件名、发布 zip、部署脚本和 Release 标签（`v10-20261022`）都随它生成。导入预览的“变化明细”是新功能，所以这一版是 V10（原计划的 V9.20 没有发布）。
 
-## V19.2 当前状态（2026-10-23，优先于所有历史段落）
+## V19.3 当前状态（2026-11-02，优先于所有历史段落）
+
+- **数据**：`public/data.json` 合并了 2026-11-02 的 LeanIX 应用导出 `20261102_025607_zApwu_inventory.xlsx`（用户上传到 Google Drive，经同意下载，读完删除本地副本；原始文件不进仓库）。用 `wl/tools/merge-20261102.mjs`（程序自己的导入流程，同 V9.16）。data.source = 该文件名，标题下显示 “Data: 20261102_025607_zApwu_inventory.xlsx · as of 2026-11-02”；data.inventoryExport 记下导出里没有的 3 个应用；importHistory 新增一条（21 处字段变化、16 个应用）。
+- **ETAS 编号**（用户 2026-11-02：“认，编号和名称一致就算同一个”）：`model.mjs` processLookup 在 M. 编号之后识别 “ETAS.<链>.<编号> <名称>”：Signavio 有 M.<链>.<编号> 且名称（norm）相同 → {id, via:'code'}；`overview.mjs` 中按编号匹配、没有 “L3” 后缀的记录取所匹配流程的层级。名称不同或编号不存在 → 照常读（没有层级 → 仍是问题）。
+- **数字**：Capability L3 符合 36 → 48、To review 39 → 27；Process L3 67 → 68、To review 11 → 10；Similarity Potential overlap 13 → 12、Needs confirmation 258 → 320（VMCN_Packaging Data System 的 4 条 BBM_PKG 记录没有层级，VMCN_iWPC_AKL_Szh5 只剩 “BBM PM Others L0”）。
+- **更新提示**：WHATS_NEW id 2026-11-02（日期 2 November 2026），新两条在前，保留 10 月 23 日的各条。
+- 测试 558 项通过（新增 `tests/v19-3-etas-codes.test.mjs`；15 个按旧数据写的测试文件由 4 个代理并行按新数据更新，我核对了断言数量没有减少、没有程序问题）；deploy:sim 14 / 14。浏览器：标题下数据行正确，EDCN AWS 没有 Issues to review，75 个应用详情都能打开、没有错误，Similarity “12 pairs to review”，用过 10 月 23 日版本的浏览器看到新的更新提示。
+- 当前离线包：`offline/logistics-offline-20261022-v19.3.zip`。验证记录见 `verification/v19.3-verification.md`。
+
+## V19.2 状态（2026-10-23，受顶部 V19.3 更新）
 
 - **并集规则（用户 2026-10-23）**：“如果一遍有一遍没有就是有，如果都没有就算没有”——流程或它的上一级，在 Signavio 清单或 LeanIX 里有一边有就算有。
 - **Similarity（similarity.mjs）**：`leanixNode` 把 app.inLeanix 的记录变成比较记录（id “LeanIX · <名称>”，去掉 “BBM PM” 和层级后缀；chainRoot = 流程链的 Signavio Level 0，例如 M.I2D）。同一链有更深的 LeanIX 流程时，这条链的 Level 0 记录不再单独算（不再 “recorded only at Level 0”）。compare() 里目标方只在 LeanIX、对方没有的流程不计入（不拉低分数，用户选 “不算，两个 E-Queue 算重合”），只有目标没有别的可比较时才保留（覆盖率 0 = 没有共同登记）。similarity-readiness 的 recordsForNode 对这些记录显示原名。

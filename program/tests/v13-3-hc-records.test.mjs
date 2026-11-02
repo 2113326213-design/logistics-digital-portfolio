@@ -34,8 +34,10 @@ test('Wuj HK AGV: the HC record stays in the source field and is left out of eve
  assert.deepEqual([wuj.rawCap,wuj.otherCompany,wuj.cap,wuj.capLeaf],[['B.06.5 Material Flow Orchestration'],[WUJ],['B.06.5'],['B.06.5']]);
  assert.deepEqual([...model.caps.keys()].filter(id=>id.startsWith('HC')),[],'no HC category');
  // The landscape lost its HC.02 column (13 → 12 columns) and its category list never had HC.
+ // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): 12 → 11 columns. CDR_EM now records B.06.2.9
+ // instead of B.01.01.2, so no application is under B.01 and its column is gone; unrelated to the HC rule.
  const capColumns=columns(model,'cap',new Set(),'').map(c=>c.id);
- assert(!capColumns.some(id=>id.startsWith('HC')));assert.equal(capColumns.length,12);
+ assert(!capColumns.some(id=>id.startsWith('HC')));assert.equal(capColumns.length,11);
  assert(!JSON.stringify(categoryOptions(model,'cap')).includes('HC.'));
  assert.deepEqual(filterLandscape(model,'cap',{query:'HC.02'}).apps,[],'the landscape search no longer finds it by the HC record');
  // No review item, no data check row for it; the application keeps its genuine gap (B.06.5 is Level 2: no Level 3).

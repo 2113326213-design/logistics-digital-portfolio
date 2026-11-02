@@ -32,7 +32,9 @@ const user=workspaceData({...bundled,reviews:{'review-key':{status:'待核对',r
 test('a package carries only the shared data, names itself by its content and states its date',()=>{
  assert.equal(DATA_PACKAGE_FILE,'logistics-data.json');
  assert.deepEqual(Object.keys(pkg),['format','version','id','publishedAt','dataAsOf','applications','data']);
- assert.deepEqual([pkg.format,pkg.version,pkg.publishedAt,pkg.dataAsOf,pkg.applications],[DATA_PACKAGE_FORMAT,1,PUBLISHED,'2026-10-21',bundled.apps.length-1]);
+ // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): the steward's data is the bundled data, whose
+ // source is now that export, so the package is dated 2026-11-02 (was 2026-10-21 from 20261021_logistic_inventory.xlsx).
+ assert.deepEqual([pkg.format,pkg.version,pkg.publishedAt,pkg.dataAsOf,pkg.applications],[DATA_PACKAGE_FORMAT,1,PUBLISHED,'2026-11-02',bundled.apps.length-1]);
  assert.match(pkg.id,/^[0-9a-f]{16}$/);
  for(const key of Object.keys(pkg.data))assert(['source','taxonomySource','inventoryExport','apps','capabilityRows','processRows','corrections','acceptedRecords','mappingNotes'].includes(key),key);
  for(const key of ['reviews','reviewHistory','pairReviews','similarityWeights','similarityThreshold','importHistory','applicationEvents'])assert(!(key in pkg.data),`no ${key}: it is each user's own`);
@@ -43,7 +45,9 @@ test('a package carries only the shared data, names itself by its content and st
 
 test('the page reads a package back exactly, and refuses anything else or anything edited',()=>{
  const text=dataPackageText(steward,{publishedAt:PUBLISHED}),read=readDataPackage(text);
- assert.deepEqual(read,{id:pkg.id,publishedAt:PUBLISHED,dataAsOf:'2026-10-21',data:pkg.data});
+ // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): the bundled source is now that export, so the
+ // date read back from the content is 2026-11-02 (was 2026-10-21).
+ assert.deepEqual(read,{id:pkg.id,publishedAt:PUBLISHED,dataAsOf:'2026-11-02',data:pkg.data});
  assert.throws(()=>readDataPackage('{not json'),/not valid JSON/);
  assert.throws(()=>readDataPackage({format:'something else'}),/not a data package of this tool/);
  assert.throws(()=>readDataPackage({...JSON.parse(text),version:2}),/version 2 is not supported/);
@@ -55,7 +59,9 @@ test('applying replaces the shared data and keeps everything that is the user\'s
  const read=readDataPackage(dataPackageText(steward,{publishedAt:PUBLISHED})),next=applyDataPackage(user,read);
  assert.deepEqual([next.apps,next.capabilityRows,next.processRows,next.source,next.taxonomySource],[steward.apps,steward.capabilityRows,steward.processRows,steward.source,steward.taxonomySource]);
  for(const key of ['reviews','reviewHistory','pairReviews','similarityWeights','similarityThreshold','importHistory','applicationEvents'])assert.deepEqual(next[key],user[key],key);
- assert.deepEqual(next.dataPackage,{id:pkg.id,publishedAt:PUBLISHED,dataAsOf:'2026-10-21',mappingIds:pkg.data.corrections.map(c=>c.id)});
+ // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): the package is dated 2026-11-02 (was 2026-10-21),
+ // the date of the bundled source that export now is.
+ assert.deepEqual(next.dataPackage,{id:pkg.id,publishedAt:PUBLISHED,dataAsOf:'2026-11-02',mappingIds:pkg.data.corrections.map(c=>c.id)});
  assert.equal(next.isAcceptanceSample,false);
  // The steward's mapping is added, since the user has none for that record; the shared ones are not duplicated.
  assert.equal(next.corrections.length,user.corrections.length+1);
@@ -77,7 +83,9 @@ test('through the page\'s preview and Apply: the changes are listed, history rec
  const applied=recordImport(user,preview.next,{inventoryFile:`${DATA_PACKAGE_FILE} (published 2026-10-22)`,taxonomyFile:''});
  assert.equal(applied.importHistory.length,user.importHistory.length+1);
  assert.equal(applied.importHistory.at(-1).inventoryFile,'logistics-data.json (published 2026-10-22)');
- assert.deepEqual(applied.dataPackage,{id:pkg.id,publishedAt:PUBLISHED,dataAsOf:'2026-10-21',mappingIds:pkg.data.corrections.map(c=>c.id)});
+ // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): the package is dated 2026-11-02 (was 2026-10-21),
+ // the date of the bundled source that export now is.
+ assert.deepEqual(applied.dataPackage,{id:pkg.id,publishedAt:PUBLISHED,dataAsOf:'2026-11-02',mappingIds:pkg.data.corrections.map(c=>c.id)});
  const reloaded=workspaceData(JSON.parse(JSON.stringify(applied)));
  assert.deepEqual(reloaded.dataPackage,applied.dataPackage,'kept in a saved or exported workspace');
  assert.equal(packageIsNew(reloaded,read),false,'not offered again after applying');
@@ -86,9 +94,11 @@ test('through the page\'s preview and Apply: the changes are listed, history rec
 
 test('a package with older data than the page shows is not offered (a server file left from before a newer release)',()=>{
  const dated=day=>createDataPackage(workspaceData({...steward,source:`${day}_logistic_inventory.xlsx`}));
- const older=dated('20261001'),sameDay=dated('20261021'),newer=dated('20261105');
- assert.deepEqual([older.dataAsOf,sameDay.dataAsOf,newer.dataAsOf],['2026-10-01','2026-10-21','2026-11-05']);
- assert.deepEqual([packageIsNew(user,older),packageIsNew(user,sameDay),packageIsNew(user,newer)],[false,true,true],'the page shows data as of 2026-10-21');
+ // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): the page now shows data as of 2026-11-02 (was
+ // 2026-10-21), so the same-day package is dated 20261102 (was 20261021, which is now older and would not be offered).
+ const older=dated('20261001'),sameDay=dated('20261102'),newer=dated('20261105');
+ assert.deepEqual([older.dataAsOf,sameDay.dataAsOf,newer.dataAsOf],['2026-10-01','2026-11-02','2026-11-05']);
+ assert.deepEqual([packageIsNew(user,older),packageIsNew(user,sameDay),packageIsNew(user,newer)],[false,true,true],'the page shows data as of 2026-11-02');
  assert.equal(packageIsNew(user,{...newer,dataAsOf:''}),true,'a package without a date is judged by its content only');
 });
 
@@ -143,12 +153,19 @@ test('review: a package is offered only when applying it changes something, and 
 });
 
 test('review: the date rule compares the data\'s own dates, not import dates; a forged header date is ignored',()=>{
- const undated=readDataPackage(dataPackageText({...steward,source:'Logistics inventory final.xlsx'}));
+ // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): the bundled data now records that export's time
+ // (inventoryExport.exportedAt 2026-11-02 02:56:08 GMT), which dates a package even without a date in its file name. The
+ // undated package is therefore built explicitly without the export record, as the bundled data was before (no
+ // inventoryExport): no date in the file name and no export time.
+ const {inventoryExport:_export,...stewardWithoutExport}=steward;
+ const undated=readDataPackage(dataPackageText({...stewardWithoutExport,source:'Logistics inventory final.xlsx'}));
  assert.equal(undated.dataAsOf,'');
  const afterUndated=recordImport(user,previewImport(user,applyDataPackage(user,undated)).next,{inventoryFile:'logistics-data.json',at:'2026-11-10T08:00:00.000Z'});
  const later=readDataPackage(dataPackageText({...bundled,source:'20261108_logistic_inventory.xlsx'}));
  assert.equal(packageIsNew(afterUndated,later),true,'data of 2026-11-08 is still offered after an import on 2026-11-10');
- assert.equal(readDataPackage({...JSON.parse(dataPackageText(steward)),dataAsOf:'2099-01-01'}).dataAsOf,'2026-10-21');
+ // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): the content's own date is now 2026-11-02 (was
+ // 2026-10-21), from the bundled source file name; the forged header date is still ignored.
+ assert.equal(readDataPackage({...JSON.parse(dataPackageText(steward)),dataAsOf:'2099-01-01'}).dataAsOf,'2026-11-02');
 });
 
 test('review: kept work from a server package is not called earlier data when the page opens',()=>{

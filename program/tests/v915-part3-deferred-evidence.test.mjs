@@ -42,9 +42,13 @@ const recordsBox=html=>between(html,'<section class="shared-comparison">','id="f
 const scoreCalculation=html=>between(html,'id="focusEvidence"','id="focusDirections"');
 function openPair(document,a,b){click(document.getElementById('similarityReview'),{portfolioApp:a,portfolioPeer:b});return document.getElementById('focusResult').innerHTML;}
 
-test('ARS ↔ AGR w/ Camera: the records box states the compared levels only; the deferred detail is in How the score is calculated',()=>withUI((ui,document)=>{
- const ars=app('ARS'),agr=app('AGR w/ Camera'),html=openPair(document,ars.id,agr.id);
- assert.match(html,/<strong>30\.9<small> \/ 100<\/small><\/strong>/,'score unchanged');
+// 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): ARS now records B.06.5.2 instead of B.06.5, so
+// ARS ↔ AGR w/ Camera is compared at Level 3 with nothing deferred (score 30.9 → 0.9). The same scenario (A records
+// B.06.5 at Level 2, B = AGR w/ Camera records B.06.5.1 at Level 3; Process compared at Level 3, nothing deferred) is
+// Control Tower ↔ AGR w/ Camera; neither application changed in the export. Its score is 30.7 (was 30.9 for ARS).
+test('Control Tower ↔ AGR w/ Camera: the records box states the compared levels only; the deferred detail is in How the score is calculated',()=>withUI((ui,document)=>{
+ const tower=app('Control Tower'),agr=app('AGR w/ Camera'),html=openPair(document,tower.id,agr.id);
+ assert.match(html,/<strong>30\.7<small> \/ 100<\/small><\/strong>/,'score unchanged');
  const records=recordsBox(html);
  assert.match(records,/<h5>Capability<\/h5><p class="comparison-level-note">Compared at Level 2<\/p>/);
  assert.match(records,/<h5>Process<\/h5><p class="comparison-level-note">Compared at Level 3<\/p>/);
@@ -59,11 +63,11 @@ test('ARS ↔ AGR w/ Camera: the records box states the compared levels only; th
  assert.doesNotMatch(calculation,/<h5>Process ·/,'process is compared at Level 3 with nothing deferred');
  assert.equal((html.match(/Deferred detail · not used in the score/g)||[]).length,1,'listed once on the page');
  // The underlying evidence and the level texts used elsewhere are unchanged.
- const evidence=comparisonRecordEvidence(model,capIndex.compare(ars.id,agr.id),capIndex.compare(agr.id,ars.id));
+ const evidence=comparisonRecordEvidence(model,capIndex.compare(tower.id,agr.id),capIndex.compare(agr.id,tower.id));
  assert.deepEqual(evidence.deferred.map(items=>items.map(node=>[node.id,node.comparedId,node.comparedLevel])),[[],[['B.06.5.1','B.06.5',2]]]);
  assert.equal(evidence.levelText,'Compared at Level 2; Level 3 detail deferred');assert.equal(evidence.comparedText,'Compared at Level 2');
- const pair=createWeightedSimilarity(model,DEFAULT_WEIGHTS).pair(ars.id,agr.id);
- assert.equal(pair.status,'confirmed');assert.equal(Math.round(pair.coverage*1000)/10,30.9);
+ const pair=createWeightedSimilarity(model,DEFAULT_WEIGHTS).pair(tower.id,agr.id);
+ assert.equal(pair.status,'confirmed');assert.equal(Math.round(pair.coverage*1000)/10,30.7);// 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): Control Tower instead of ARS (see above), 30.9 → 30.7
  assert.match(between(html,'id="focusDirections"','id="focusCosts"'),/Compared at Level 2; Level 3 detail deferred/,'the full calculation keeps its level basis');
 }));
 
@@ -87,18 +91,23 @@ test('a pair compared at different levels per branch states both levels and keep
 }));
 
 test('every deferred record is listed once with its projection, and pairs without deferred detail add nothing',()=>{
- const wacos=app('VM-CN_WACOS_Szh5'),labels=app('VM-CN Auto labeling printing system'),args=pairArgs(wacos.id,labels.id);
+ // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): WACOS now registers B.06.5.1/.2/.3 (and
+ // B.06.6 + B.06.6.3), so against VM-CN Auto labeling printing system (B.06.5 + B.06.5.7) the Capability branch is compared
+ // at Level 3 and defers nothing; that pair would no longer exercise both branches. The peer is therefore
+ // VM/LOG-Szh2_DAVIS (recovered 2026-09-21 09:32:15) (unchanged; B.06.5 at Level 2): it defers WACOS's three Level 3
+ // capability records under B.06.5, and the Process branch still defers WACOS's 15 Level 3 records. 1 + 15 = 16 → 3 + 15 = 18.
+ const wacos=app('VM-CN_WACOS_Szh5'),davis=app('VM/LOG-Szh2_DAVIS (recovered 2026-09-21 09:32:15)'),args=pairArgs(wacos.id,davis.id);
  const snapshot=JSON.stringify(args),html=renderDeferredEvidence(args);
  // Re-derived 2026-10-21 from the V9.16 data (LeanIX export 2026-10-20): VM-CN Auto labeling printing system now registers
  // B.06.5 + B.06.5.7, so against WACOS (B.06.5, Level 2) one Level 3 capability record is deferred too; the Process branch
  // still defers WACOS's 15 Level 3 records. The fixture therefore gathers both branches: 1 + 15 = 16.
  const capEvidence=comparisonRecordEvidence(model,args.cap,args.capBack),evidence=comparisonRecordEvidence(model,args.process,args.processBack);
- assert.deepEqual(capEvidence.deferred.map(items=>items.map(node=>[node.id,node.comparedId,node.comparedLevel])),[[],[['B.06.5.7','B.06.5',2]]]);
+ assert.deepEqual(capEvidence.deferred.map(items=>items.map(node=>[node.id,node.comparedId,node.comparedLevel])),[[['B.06.5.1','B.06.5',2],['B.06.5.2','B.06.5',2],['B.06.5.3','B.06.5',2]],[]]);// 2026-11-02 data: was [[],[['B.06.5.7','B.06.5',2]]] against VM-CN Auto labeling printing system
  assert.deepEqual(evidence.deferred.map(items=>items.length),[15,0]);
  const items=[...capEvidence.deferred.flat(),...evidence.deferred.flat()];
- assert.equal(items.length,16);
- assert.match(html,/Deferred detail · not used in the score \(16\)/);
- assert.equal((html.match(/<li>/g)||[]).length,16);
+ assert.equal(items.length,18);// 2026-11-02 data: 16 → 18 (3 capability + 15 process)
+ assert.match(html,/Deferred detail · not used in the score \(18\)/);// 2026-11-02 data: 16 → 18
+ assert.equal((html.match(/<li>/g)||[]).length,18);// 2026-11-02 data: 16 → 18
  for(const node of items)assert(html.includes(`<code>${displayCode(node.id)}</code>`)&&html.includes(`Compared under <code>${esc(displayCode(node.comparedId))}</code> · Level ${node.comparedLevel}`),node.id);
  assert.equal(JSON.stringify(args),snapshot,'rendering must not change evidence or scores');
  assert.doesNotMatch(renderComparisonRecords(args),/Deferred detail|detail deferred|Compared under/);
@@ -108,10 +117,12 @@ test('every deferred record is listed once with its projection, and pairs withou
 });
 
 test('the multi-application panel lists the same deferred detail inside How is this calculated?',()=>withUI((ui,document)=>{
- const ars=app('ARS'),agr=app('AGR w/ Camera');
- ui.open({poolIds:[ars.id,agr.id]});
+ // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): ARS now records B.06.5.2, so ARS ↔ AGR w/ Camera
+ // has no deferred detail (score 30.9 → 0.9); the same Level 2 vs Level 3 case is Control Tower ↔ AGR w/ Camera (30.7).
+ const tower=app('Control Tower'),agr=app('AGR w/ Camera');
+ ui.open({poolIds:[tower.id,agr.id]});
  const html=document.getElementById('comparisonEvidence').innerHTML;
- assert.match(html,/30\.9<span class="score-denominator"> \/ 100<\/span>/,'score unchanged');
+ assert.match(html,/30\.7<span class="score-denominator"> \/ 100<\/span>/,'score unchanged');
  const calculation=html.slice(html.indexOf('<summary>How is this calculated?</summary>'));
  assert(calculation.length>0);
  assert.match(calculation,/<details class="similarity-secondary comparison-deferred-evidence" id="comparisonDeferred" ><summary>Deferred detail · not used in the score \(1\)<\/summary>/);

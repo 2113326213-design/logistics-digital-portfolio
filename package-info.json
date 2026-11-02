@@ -1,13 +1,13 @@
 {
-  "createdAt": "2026-10-23T07:59:15.644Z",
-  "snapshot": "20261022_v19.2",
+  "createdAt": "2026-11-02T06:39:05.555Z",
+  "snapshot": "20261022_v19.3",
   "applications": 75,
   "tests": {
-    "passed": 554,
+    "passed": 558,
     "failed": 0,
-    "log": "verification/v19.2-test-results.txt"
+    "log": "verification/v19.3-test-results.txt"
   },
-  "offlineHTML": "offline/物流工具_最新版_离线单文件_20261022_v19.2.html",
+  "offlineHTML": "offline/物流工具_最新版_离线单文件_20261022_v19.3.html",
   "source": "program/",
   "workspace": "latest-workspace.json",
   "browserVisualVerification": "offline HTML checked in a local browser over http://127.0.0.1 (not file://); hosted sign-in not verified",
@@ -16,6 +16,6 @@
   "nodeModulesIncluded": false,
   "workspaceFormatVersion": 6,
   "nodeVerified": "v24.22.0",
-  "inventory": "20261021_logistic_inventory.xlsx (owner workbook, sheet Logistic Apps_1021 with Status in Oct; merged through Import data)",
+  "inventory": "20261102_025607_zApwu_inventory.xlsx (LeanIX application export, 2026-11-02 02:56 GMT) merged by ID through Import data into the owner workbook 20261021_logistic_inventory.xlsx",
   "deployScriptFixed": "2026-10-22 (appcmd by full path, cmd /k window in every case; npm run deploy:sim)"
 }
