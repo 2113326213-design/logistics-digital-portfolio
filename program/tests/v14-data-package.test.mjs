@@ -107,7 +107,8 @@ test('the page wiring: only the intranet page looks for the package; Not now rem
  assert(app.includes("async function checkDataPackage(){\n if(!/^https?:$/.test(location.protocol))return;\n let response;try{response=await fetch(DATA_PACKAGE_FILE,{cache:'no-store'});}catch{return;}\n if(!response.ok)return;"),'http/https only, no cache, a missing file is silent');
  assert(app.includes('await autosave.load();checkDataPackage();'),'checked once the page has its data');
  assert(app.includes('render();showPackageNotice();}'),'the notice follows every data change');
- assert(app.includes("localStorage.setItem(PACKAGE_DISMISSED_KEY,pkg.id)")&&app.includes("dismissed===pkg.id"),'Not now hides this package only');
+ // V20 review: hidden per upload (id and upload time), so data put back later with the same id is shown again.
+ assert(app.includes("const hideKey=`${pkg.id}|${pkg.publishedAt}`;")&&app.includes("localStorage.setItem(PACKAGE_DISMISSED_KEY,hideKey)")&&app.includes("dismissed===hideKey"),'Not now hides this upload only');
  assert(app.includes('previewImport(base,applyDataPackage(base,pkg,packageOptions()))'),'the same preview and Apply as a file import');
  assert(html.includes('<div id="packageNotice" class="package-notice" role="status" hidden></div>')&&html.includes('id="uploadToServer"')&&!html.includes('id="exportDataPackage"'));
 });
@@ -185,8 +186,9 @@ test('review: hiding the notice is not the only way — the Import data dialog k
  // No title: it would replace the button's accessible name (as found in V11).
  assert(app.includes('<button type="button" id="packageLater">Hide this update</button>'));
  assert(html.includes('<p id="serverPackageEntry" class="server-package-entry" hidden><span id="serverPackageText"></span><button type="button" id="serverPackagePreview">Preview server data</button></p>'));
- assert(app.includes("$('serverPackageEntry').hidden=!offered;")&&app.includes("$('serverPackagePreview').onclick=previewDataPackage;"));
- assert(app.indexOf("$('serverPackageEntry').hidden=!offered;")<app.indexOf("if(!offered||dismissed===pkg.id)"),'the entry follows the data, not the hiding');
+ // V20: the entry also shows server data this page did not start from (packageDiffers), to take it before uploading.
+ assert(app.includes("$('serverPackageEntry').hidden=!offered&&!other;")&&app.includes("$('serverPackagePreview').onclick=previewDataPackage;"));
+ assert(app.indexOf("$('serverPackageEntry').hidden=!offered&&!other;")<app.indexOf("if(!offered||dismissed===hideKey)"),'the entry follows the data, not the hiding');
 });
 
 // Second review (V14, before release).

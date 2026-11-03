@@ -20,7 +20,20 @@
 - **小版本**（V10.1、V10.2……）：修正、文字和显示调整。
 - 版本号写在 `program/scripts/release.mjs` 的 RELEASE_VERSION（小写，如 `v10`、`v10.1`）；文件名、发布 zip、部署脚本和 Release 标签（`v10-20261022`）都随它生成。导入预览的“变化明细”是新功能，所以这一版是 V10（原计划的 V9.20 没有发布）。
 
-## V19.3 当前状态（2026-11-02，优先于所有历史段落）
+## V20 当前状态（2026-11-02，优先于所有历史段落）
+
+- **起因**：用户问能不能直接在内网整理并部署；我在本机模拟内网走通了自助流程，列出缺口（A 共享数据安全、B 工厂用户、C 维护），用户选 “先做 A 组”。
+- **上传起点**：workspace 新字段 `serverBase`（16 位 hex，`workspace.mjs` serverBaseField）= 页面从服务器拿的（applyDataPackage）或自己上传成功的那份 id；文件导入不清除它（dataPackage 会被清除）。`uploadToServer(text,{base,confirmed,replaces})`：same → 不传；restore 模式下服务器 id ≠ replaces → changed；否则服务器更新 → older；服务器 id ≠ base → conflict；uploadWarnings 有内容且未确认 → check；服务器文件读不了且未确认 → check。页面 base = serverBase || dataPackage.id。
+- **备份**：BACKUP_FILES 5 个固定名字；上传前先读 previous ～ previous-4，再从 previous-5 往上写，previous = 当前，最后写新数据并读回。`listServerData`、`restoreServerData(file,{currentId})`（重新 createDataPackage + replaces，再 uploadToServer 的 restore 模式）。readDataPackage 读出 replaces；packageIsNew 对 replaces 等于页面 dataPackage.id 或 serverBase 的包不看日期。空文件 = 没有数据（readFile、checkDataPackage）。
+- **检查**：`import-warnings.mjs` importWarnings(preview, current)、uploadWarnings(server, ours)，阈值 “多于 max(下限, 10%)”。app.js showImportPreview 带 base，警告时 Apply 要勾选；上传 'check' 后同一份数据的第二次点击才确认（uploadConfirmedId）；pendingImport 存在时不上传；'conflict'/'older' 后 checkDataPackage()。Import data 顶部入口在 packageIsNew 或 packageDiffers 时显示。
+- **部署脚本**：部署脚本（deploy-iis.template.bat）：上传规则覆盖 7 个数据文件（logistics-data.json、previous ～ previous-5、check）；文件夹先关掉从盘符继承的权限（新格式化的 D: 默认让已登录用户可修改），再去掉 “已登录用户可修改” 权限，只给这 7 个文件；对所有人禁止 DELETE / MOVE / COPY / MKCOL / LOCK / PROPPATCH（页面只用 GET 和 PUT；删掉的数据文件无法再建）；文件不存在时先建空文件（已有的不动）；[6/6] 之后用 Windows 登录试一次上传（PUT 再读回 logistics-data.check.json），失败只提示不停止；结束说明只指向工具里的 Restore earlier server data。deploy:sim 19 / 19。
+- **更新提示**：WHATS_NEW id 2026-11-02-2，新两条在前。
+- **审查**：独立审查（Ultracode 工作流：3 个审查代理分别看页面上传与恢复、部署脚本、警告与测试，每条发现再由第二个代理尝试反驳；中途额度用完，用户说 “请再试一次” 后续跑）：15 条发现，13 条核实为真，1 条降级，1 条驳回，全部修复并加测试。主要有：页面已有服务器全部数据却没记下起点时会一直冲突（高）——现在 “same” 也记下起点，冲突时若服务器数据没有页面缺的内容就记下起点、再点一次即可上传；两人同时上传会丢一份——写数据前再读一次，变了就不写；恢复两步以前的数据——replaces 记下被撤销的每一次上传；上传成功后重新读服务器；重试不再挤掉备份、恢复前确认那份数据还在原位；“Hide this update” 按 “数据 + 上传时间” 记；工作区备份导入保留起点；“导出可能被筛选” 只对新的 LeanIX 导出提示；阈值不再向上取整；恢复数据的 “更旧” 警告只对拿过被替换数据的页面免除；预览无变化时不挡上传；部署脚本关掉继承权限、去掉手工复制的恢复说明。
+- **环境**：2026-11-03 12:29 系统清理了临时文件夹（%TEMP%\wl 里旧文件被删，包括 node_modules 和 repo-v5/.git）。node_modules 改装在 `%LOCALAPPDATA%\logistics-tool-nm`，程序文件夹里放一份副本；esbuild 不能从带中文的路径启动自身，运行测试和导出前设 `ESBUILD_BINARY_PATH=%LOCALAPPDATA%\logistics-tool-nm\node_modules\@esbuild\win32-x64\esbuild.exe`。发布用的仓库副本重新从 GitHub 克隆。
+- 测试 576 项通过（新增 `tests/v20-upload-safety.test.mjs` 17 项）。浏览器（本机 `wl/tools/serve-selfservice.mjs` 模拟内网，支持 7 个文件的 PUT；`wl/tools/v20-seed.mjs` 放一份 “别人上传的” 数据）：冲突、取服务器数据、导入后上传、备份轮换、恢复、恢复提示都按预期。真实 IIS（WebDAV、Windows 登录、文件权限）仍未测。
+- 当前离线包：`offline/logistics-offline-20261022-v20.zip`。验证记录见 `verification/v20-verification.md`。
+
+## V19.3 状态（2026-11-02，受顶部 V20 更新）
 
 - **数据**：`public/data.json` 合并了 2026-11-02 的 LeanIX 应用导出 `20261102_025607_zApwu_inventory.xlsx`（用户上传到 Google Drive，经同意下载，读完删除本地副本；原始文件不进仓库）。用 `wl/tools/merge-20261102.mjs`（程序自己的导入流程，同 V9.16）。data.source = 该文件名，标题下显示 “Data: 20261102_025607_zApwu_inventory.xlsx · as of 2026-11-02”；data.inventoryExport 记下导出里没有的 3 个应用；importHistory 新增一条（21 处字段变化、16 个应用）。
 - **ETAS 编号**（用户 2026-11-02：“认，编号和名称一致就算同一个”）：`model.mjs` processLookup 在 M. 编号之后识别 “ETAS.<链>.<编号> <名称>”：Signavio 有 M.<链>.<编号> 且名称（norm）相同 → {id, via:'code'}；`overview.mjs` 中按编号匹配、没有 “L3” 后缀的记录取所匹配流程的层级。名称不同或编号不存在 → 照常读（没有层级 → 仍是问题）。

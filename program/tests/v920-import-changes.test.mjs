@@ -87,5 +87,5 @@ test('fieldChanges compares only applications present in both, in field order, w
  const app=readFileSync(new URL('../public/app.js',import.meta.url),'utf8');
  assert(app.includes("${renderImportChanges(preview,esc)}${list('Added applications',preview.added)}"),'shown in the preview before the application lists');
  // V14: one preview display for file imports and the server data package; the file names come in as parameters.
- assert(app.includes("showImportPreview(preview,{inventoryFile:inventory?.name||'',taxonomyFile:taxonomy?.name||'',inventorySheet});")&&app.includes("const csv=importChangesCSV(preview,{inventoryFile,taxonomyFile})")&&app.includes("link.download='Import_changes_'+new Date().toISOString().slice(0,10)+'.csv'"));
+ assert(app.includes("showImportPreview(preview,{base,inventoryFile:inventory?.name||'',taxonomyFile:taxonomy?.name||'',inventorySheet,newExport:!!inventorySheets});")&&app.includes("const csv=importChangesCSV(preview,{inventoryFile,taxonomyFile})")&&app.includes("link.download='Import_changes_'+new Date().toISOString().slice(0,10)+'.csv'"));
 });

@@ -21,8 +21,9 @@ import {chronologicalEvents,renderHistoryRecords} from './history-view.mjs';
 import {tabFromSearch,searchForTab,appFromSearch,searchWithApp,appLink} from './view-route.mjs';
 import {toReviewCSV,toReviewFileName} from './to-review-export.mjs';
 import {dataAsOf,dataAsOfText} from './data-as-of.mjs';
-import {DATA_PACKAGE_FILE,readDataPackage,applyDataPackage,packageIsNew,packageNotOlder,dataPackageText} from './data-package.mjs';
-import {uploadToServer,uploadMessage,canUpload} from './server-upload.mjs';
+import {DATA_PACKAGE_FILE,readDataPackage,applyDataPackage,packageIsNew,packageDiffers,packageAdds,replacesPageData,packageNotOlder,dataPackageText} from './data-package.mjs';
+import {uploadToServer,uploadMessage,canUpload,listServerData,restoreServerData} from './server-upload.mjs';
+import {importWarnings} from './import-warnings.mjs';
 import {createAppSearch} from './app-search.mjs';
 import {updateNoticeDue,markUpdateSeen,updateNoticeHTML} from './whats-new.mjs';
 import './fullscreen.mjs';
@@ -142,16 +143,25 @@ $('detailClose').onclick=()=>$('detail').close();$('detail').addEventListener('c
  $('exportOpen').onclick=()=>{if(!data)return;if(downloadWorkspace({...data,similarityThreshold:comparison.getState().similarityThreshold},'logistics-workspace-'))autosave.exportStarted?.();};
  function storeThreshold(threshold){if(!isAdmin()||data?.similarityThreshold===threshold)return;data={...data,similarityThreshold:threshold};autosave.schedule();}
 for(const id of ['detail','importDialog'])$(id).addEventListener('click',e=>{if(e.target===$(id)){const r=$(id).getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)$(id).close();}});
-function resetImportPreview(){importGeneration++;pendingImport=null;$('importRun').disabled=false;$('importStatus').textContent='';$('importPreview').hidden=true;$('importPreview').innerHTML='';$('importApply').hidden=true;}
+function resetImportPreview(){importGeneration++;pendingImport=null;$('importRun').disabled=false;$('importStatus').textContent='';$('importPreview').hidden=true;$('importPreview').innerHTML='';$('importApply').hidden=true;$('importApply').disabled=false;}
 for(const id of ['inventoryFile','taxonomyFile'])$(id).onchange=resetImportPreview;
 $('importDialog').addEventListener('close',resetImportPreview);
 // The import preview for a file import or the server data package (V14: one display, one Apply).
-function showImportPreview(preview,{inventoryFile='',taxonomyFile='',inventorySheet=null,note=''}={}){
+function showImportPreview(preview,{inventoryFile='',taxonomyFile='',inventorySheet=null,note='',base=null,server=null,newExport=false}={}){
  const list=(title,apps)=>apps.length?`<details><summary>${title} · ${apps.length}</summary><ul>${apps.map(a=>`<li>${esc(a.Name)} · ${esc(a.ID)}</li>`).join('')}</ul></details>`:'';
  $('importPreview').innerHTML=`<div class="import-summary"><h3>Import preview</h3>${note?`<p class="hint">${esc(note)}</p>`:''}<div class="import-counts">${[['Added',preview.added.length],['Updated',preview.updated.length],['Removed',preview.removed.length],['Unchanged',preview.unchanged],...(preview.keptNotInExport?[['Not in this export · kept',preview.keptNotInExport]]:[])].map(([label,n])=>`<div><span>${label}</span><strong>${n}</strong></div>`).join('')}</div><dl class="source-records"><dt>Inventory</dt><dd>${esc(preview.next.source)}${inventorySheet?.name?` · sheet ${esc(inventorySheet.name)}`:''}</dd><dt>Taxonomy</dt><dd>${esc(preview.next.taxonomySource)} · ${preview.taxonomyChanged?'Changed':'Unchanged'}</dd>${preview.capabilityChanges.total?`<dt>Capabilities</dt><dd>${preview.capabilityChanges.renamed} renamed · ${preview.capabilityChanges.added} added · ${preview.capabilityChanges.removed} removed</dd>`:''}<dt>Pair reviews</dt><dd>${preview.pairReviews.added} added · ${preview.pairReviews.updated} updated · ${preview.pairReviews.removed} removed · ${preview.pairReviews.count} in this file</dd><dt>Review notes</dt><dd>${preview.reviewNotes}</dd><dt>Mappings</dt><dd>${preview.appliedMappings} applied · ${preview.staleMappings} need review</dd><dt>Activity log</dt><dd>${preview.activityRecords} records</dd></dl>${inventorySheet?.all?.length>1?`<p class="hint">This workbook has ${inventorySheet.all.length} inventory sheets (${inventorySheet.all.map(esc).join(', ')}); ${inventorySheet.rule==='newest'?`the newest, ${esc(inventorySheet.name)}, was read`:inventorySheet.rule==='exact'?`the sheet named ${esc(inventorySheet.name)} was read`:`the first, ${esc(inventorySheet.name)}, was read (no dates in the sheet names)`}.</p>`:''}${preview.pairReviews.removed?`<p class="review-reason">${preview.pairReviews.removed} pair ${preview.pairReviews.removed===1?'review in the current workspace is':'reviews in the current workspace are'} absent from this import and would be removed. Export the current workspace before applying.</p>`:''}${preview.activityRemoved?`<p class="review-reason">${preview.activityRemoved} existing activity records are absent from this import. Export the current workspace before applying.</p>`:''}${preview.capabilityChanges.total?`<p class="review-reason">This taxonomy changes the capability catalogue: ${preview.capabilityChanges.renamed} names, ${preview.capabilityChanges.added} added and ${preview.capabilityChanges.removed} removed codes. Similarity results follow the new catalogue; application records are not changed.</p>`:''}${preview.costScoresRemoved||preview.scopeExclusionsRemoved?`<p class="review-reason">This import clears ${preview.costScoresRemoved} recorded cost scores and removes ${preview.scopeExclusionsRemoved} opportunity scope exclusions. Review the supplied blank values before applying.</p>`:''}${preview.descriptionsCleared||preview.lifecycleValuesCleared?`<p class="review-reason">This import clears ${preview.descriptionsCleared} existing descriptions and ${preview.lifecycleValuesCleared} lifecycle values with blank cells. Review the supplied blank values before applying.</p>`:''}${preview.ownerDecisions.length?`<p class="hint">${preview.ownerDecisions.map(d=>esc(d.note)+(preview.hasChanges?'. The original source value is recorded with this import.':'. This is already reflected in the current workspace; nothing will be recorded.')).join('<br>')}</p>`:''}${preview.scopeExclusionsAdded.length?`<p class="hint">${preview.scopeExclusionsAdded.length} ${preview.scopeExclusionsAdded.length===1?'application is':'applications are'} no longer counted (no score, or status not still active): ${preview.scopeExclusionsAdded.map(a=>esc(a.Name)).join(', ')}. They stay in the list and are left out of cost totals, ROI and the similarity check.</p>`:''}<p class="hint">For Excel imports, optional columns or the cost sheet omitted from the file retain existing evidence by application ID. Blank values in a supplied column or sheet replace the previous value.</p>${renderImportChanges(preview,esc)}${list('Added applications',preview.added)}${list('Updated applications',preview.updated)}${list('Removed applications',preview.removed)}</div>`;
  // Change details as CSV (V9.20): the same rows as the table, plus added and removed applications.
  if($('exportImportChanges'))$('exportImportChanges').onclick=()=>{const csv=importChangesCSV(preview,{inventoryFile,taxonomyFile}),url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})),link=document.createElement('a');link.href=url;link.download='Import_changes_'+new Date().toISOString().slice(0,10)+'.csv';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);};
  $('importPreview').hidden=false;$('importApply').hidden=!preview.hasChanges;$('importStatus').textContent=preview.hasChanges?'Preview ready. Current data has not changed.':'No changes found. The current workspace and application history were kept.';
+ // V20 (owner 2026-11-02, "先做 A 组"): a file that looks wrong (many new or kept applications, applications of another
+ // department, older data) is named before Apply, and Apply waits until the person ticks that they checked it.
+ // Kept applications are named only for a new LeanIX export; older data is expected only when it was put back over the
+ // data this page took or uploaded (V20 review).
+ const warnings=preview.hasChanges&&base?importWarnings(preview,base,{newExport,restored:!!server&&replacesPageData(base,server)}):[];
+ if(warnings.length){
+  $('importPreview').insertAdjacentHTML('afterbegin',`<div class="import-warnings" role="alert"><h3>Check before applying</h3><ul>${warnings.map(w=>`<li>${esc(w)}</li>`).join('')}</ul><label><input type="checkbox" id="importWarningsChecked"> I checked this. Apply anyway.</label></div>`);
+  $('importApply').disabled=true;$('importWarningsChecked').onchange=e=>{$('importApply').disabled=!e.target.checked;};
+ }
 }
 // Data package on the intranet server (V14, data-package.mjs): offered under the title when it holds newer shared data
 // than this browser uses. Only the intranet page looks for it; the offline file never does.
@@ -162,21 +172,30 @@ async function checkDataPackage(){
  if(!/^https?:$/.test(location.protocol))return;
  let response;try{response=await fetch(DATA_PACKAGE_FILE,{cache:'no-store'});}catch{return;}
  if(!response.ok)return;
- try{serverPackage=readDataPackage(await response.text());}
+ // The deploy script creates the data files empty (V20): an empty file means no shared data yet.
+ let text='';try{text=await response.text();}catch{return;}
+ if(!text.trim())return;
+ try{serverPackage=readDataPackage(text);}
  catch(error){$('packageNotice').innerHTML=`<span>The data package on the server could not be read: ${esc(english(error.message))} The page keeps its current data.</span>`;$('packageNotice').hidden=false;return;}
  showPackageNotice();
 }
 function showPackageNotice(){
  const pkg=serverPackage,notice=$('packageNotice');if(!pkg)return;
  let dismissed='';try{dismissed=localStorage.getItem(PACKAGE_DISMISSED_KEY)||'';}catch{}
- const offered=!!data&&packageIsNew(data,pkg,packageOptions()),label=`New data on the server${pkg.dataAsOf?` · as of ${esc(pkg.dataAsOf)}`:''} · published ${esc(pkg.publishedAt.slice(0,10))}`;
+ // Plain words (V20): data put back with Restore earlier server data says so.
+ const offered=!!data&&packageIsNew(data,pkg,packageOptions()),stamp=`${pkg.dataAsOf?` · as of ${esc(pkg.dataAsOf)}`:''} · uploaded ${esc(pkg.publishedAt.slice(0,10))}`,label=`${pkg.replaces?'Earlier data was put back on the server':'New data on the server'}${stamp}`;
  // V14 review: hiding the notice is not the only way back to the data — the Import data dialog keeps an entry for it.
- $('serverPackageEntry').hidden=!offered;$('serverPackageText').innerHTML=offered?label:'';
- if(!offered||dismissed===pkg.id){notice.hidden=true;notice.innerHTML='';return;}
+ // V20: the entry also shows server data that is not new but that this page did not start from, so it can be taken
+ // before an upload (Upload to server does not overwrite it).
+ const other=!offered&&!!data&&packageDiffers(data,pkg,packageOptions());
+ $('serverPackageEntry').hidden=!offered&&!other;$('serverPackageText').innerHTML=offered?label:other?`The server has data that this page did not start from${stamp}`:'';
+ // Hidden per upload, not per data (V20 review): data put back later has the same id but a new upload time.
+ const hideKey=`${pkg.id}|${pkg.publishedAt}`;
+ if(!offered||dismissed===hideKey){notice.hidden=true;notice.innerHTML='';return;}
  notice.innerHTML=`<span>${label}</span><button type="button" id="packagePreview">Preview changes</button><button type="button" id="packageLater">Hide this update</button>`;
  notice.hidden=false;
  $('packagePreview').onclick=previewDataPackage;
- $('packageLater').onclick=()=>{try{localStorage.setItem(PACKAGE_DISMISSED_KEY,pkg.id);}catch{}notice.hidden=true;};
+ $('packageLater').onclick=()=>{try{localStorage.setItem(PACKAGE_DISMISSED_KEY,hideKey);}catch{}notice.hidden=true;};
 }
 // Owner request 2026-10-23: tell people who used the tool before, once, what changed in this update (whats-new.mjs).
 function showUpdateNotice(due){
@@ -188,15 +207,59 @@ function previewDataPackage(){
  const pkg=serverPackage;if(!pkg||!data)return;
  if(!$('importDialog').open)$('importDialog').showModal();
  resetImportPreview();
- const base=data,preview=previewImport(base,applyDataPackage(base,pkg,packageOptions())),file=`${DATA_PACKAGE_FILE} (published ${pkg.publishedAt.slice(0,10)})`;
+ const base=data,preview=previewImport(base,applyDataPackage(base,pkg,packageOptions())),file=`${DATA_PACKAGE_FILE} (uploaded ${pkg.publishedAt.slice(0,10)})`;
  pendingImport={...preview,base,inventoryFile:file,taxonomyFile:''};
- showImportPreview(preview,{inventoryFile:file,note:'Data published by the data steward on the intranet server. Applying it replaces the application inventory, the catalogues and the owner decisions (mappings, including those the steward revoked, and records confirmed as recorded); your review notes, pair reviews, score settings and own mappings are kept.'});
+ showImportPreview(preview,{base,server:pkg,inventoryFile:file,note:`${pkg.replaces?'Earlier data that was put back on the intranet server.':'Data shared on the intranet server.'} Applying it replaces the application list, the standard lists and the shared decisions (mappings, and records confirmed as they are). Your review notes, pair reviews, score settings and own mappings are kept.`});
 }
 $('serverPackagePreview').onclick=previewDataPackage;
 // Upload to server (V18): the shared data of this workspace as logistics-data.json, sent to the IIS server. Only the
 // intranet page shows it; the download for the server admin was removed in V19 (owner decision 2026-10-23).
 $('packagePublish').hidden=!canUpload();
-$('uploadToServer').onclick=async()=>{if(!data)return;const button=$('uploadToServer');button.disabled=true;$('uploadToServerStatus').textContent='Uploading…';try{$('uploadToServerStatus').textContent=uploadMessage(await uploadToServer(dataPackageText(data)));}catch(error){$('uploadToServerStatus').textContent='Nothing was uploaded: '+english(error.message);}finally{button.disabled=false;}};
+// V20: the upload says which server data this page started from (serverBase, or the package it took before V20), a
+// second click is needed after warnings, and nothing is sent while an import preview waits to be applied.
+let uploadConfirmedId='';
+$('uploadToServer').onclick=async()=>{
+ if(!data)return;
+ if(pendingImport?.hasChanges){$('uploadToServerStatus').textContent='An import preview is waiting. Apply it or close this window first; the data on this page has not changed yet. Nothing was uploaded.';return;}
+ const button=$('uploadToServer');button.disabled=true;$('uploadToServerStatus').textContent='Uploading…';
+ try{
+  const text=dataPackageText(data),id=JSON.parse(text).id;
+  const result=await uploadToServer(text,{base:data.serverBase||data.dataPackage?.id||'',confirmed:uploadConfirmedId===id});
+  uploadConfirmedId=result.status==='check'?id:'';
+  let message=uploadMessage(result);
+  // Uploaded, or the server already has this data: that is now where the page starts from.
+  if(['done','same'].includes(result.status)&&result.id){data={...data,serverBase:result.id};autosave.schedule();}
+  // V20 review: server data this page did not start from may hold nothing the page lacks (the same export, or the
+  // page's own upload from before V20). The page then counts it as its start, and the next click replaces it.
+  else if(result.status==='conflict'&&result.pkg&&!packageAdds(data,result.pkg,packageOptions())){data={...data,serverBase:result.pkg.id};autosave.schedule();message='This page already has everything in the server data. Nothing was uploaded yet: click Upload to server again to replace it.';}
+  $('uploadToServerStatus').textContent=message;
+  // The server data may have changed since the page opened: read it again, so the notices and "Preview server data"
+  // follow what is on the server now.
+  if(['done','same','conflict','older'].includes(result.status))checkDataPackage();
+ }catch(error){$('uploadToServerStatus').textContent='Nothing was uploaded: '+english(error.message);}finally{button.disabled=false;}
+};
+// Restore earlier server data (V20): the last five uploads, newest first; one of them is put back as the server data.
+$('serverRestoreList').onclick=async()=>{
+ const box=$('serverRestoreItems'),status=$('serverRestoreStatus');box.innerHTML='';status.textContent='Reading the server…';
+ const list=await listServerData();
+ if(list.status!=='ok'){status.textContent=uploadMessage(list).replace(/\s*Nothing was uploaded\.\s*/,' ').trim();return;}
+ // The upload time in the reader's own time zone (the file keeps it in UTC).
+ const two=n=>String(n).padStart(2,'0'),local=iso=>{const d=new Date(iso);return Number.isNaN(d.getTime())?String(iso).slice(0,16):`${d.getFullYear()}-${two(d.getMonth()+1)}-${two(d.getDate())} ${two(d.getHours())}:${two(d.getMinutes())}`;};
+ const describe=pkg=>pkg?`Data as of ${pkg.dataAsOf||'an unknown date'} · uploaded ${local(pkg.publishedAt)} · ${pkg.data.apps.length} applications`:'This backup cannot be read';
+ status.textContent=`Now on the server: ${list.current?describe(list.current):'no data'}.${list.backups.length?'':' The server keeps no earlier uploads yet.'}`;
+ // A backup with the same data as the server has now (after a restore) cannot be put back again.
+ const same=backup=>!!backup.pkg&&backup.pkg.id===list.current?.id;
+ box.innerHTML=list.backups.map((backup,i)=>`<p class="server-backup"><span>${esc(describe(backup.pkg))}${same(backup)?' · the same as now':''}</span> <button type="button" data-restore="${i}"${backup.pkg&&!same(backup)?'':' disabled'}>Put this back</button></p>`).join('');
+ for(const button of box.querySelectorAll('[data-restore]'))button.onclick=async()=>{
+  const index=Number(button.dataset.restore),backup=list.backups[index];
+  if(!window.confirm(`Put this data back on the server?\n\n${describe(backup.pkg)}\n\nEveryone who opens the tool will be offered it. The data on the server now is kept as a backup.`))return;
+  status.textContent='Putting it back…';box.innerHTML='';
+  // It replaces the data on the server now and every upload after it, so pages that took any of them are offered it.
+  const result=await restoreServerData(backup.file,{currentId:list.current?.id||'',expectId:backup.pkg.id,newerIds:list.backups.slice(0,index).map(b=>b.pkg?.id).filter(Boolean)});
+  status.textContent=uploadMessage(result);
+  if(result.status==='done')checkDataPackage();
+ };
+};
 $('importRun').onclick=async()=>{
  const inventory=$('inventoryFile').files[0],taxonomy=$('taxonomyFile').files[0];resetImportPreview();
  if(!inventory&&!taxonomy){$('importStatus').textContent='Select an inventory, saved workspace or taxonomy.';return;}
@@ -208,11 +271,11 @@ $('importRun').onclick=async()=>{
   if([inventorySheets,taxonomySheets].some(sheets=>sheets&&isLeanixProcessExport(sheets)))throw Error(LEANIX_PROCESS_EXPORT);
   let next=base,raw;
   // A workspace backup gets the release's owner decisions the same way as reopening kept work (V17.5 audit).
-  let inventorySheet=null;if(inventory){if(/\.json$/i.test(inventory.name)){const text=await inventory.text();next=mergeBundledCorrections(importWorkspace(text),initialData).data;raw=JSON.parse(text).data;}else{const read=inventoryFromSheets(inventorySheets);inventorySheet=read.inventorySheet||null;next=applyInventory(base,read,inventory.name);}}
+  let inventorySheet=null;if(inventory){if(/\.json$/i.test(inventory.name)){const text=await inventory.text();next=mergeBundledCorrections(importWorkspace(text),initialData).data;raw=JSON.parse(text).data;if(base.serverBase)next={...next,serverBase:base.serverBase};}else{const read=inventoryFromSheets(inventorySheets);inventorySheet=read.inventorySheet||null;next=applyInventory(base,read,inventory.name);}}
   if(taxonomy){const rows=taxonomyFromSheets(taxonomySheets);next={...next,...rows,taxonomySource:rows.processRows?taxonomy.name:taxonomySourceName(processTaxonomySource(next.taxonomySource),taxonomy.name)};delete next.dataPackage;}
   if(generation!==importGeneration)return;
   const preview=previewImport(base,next,raw||next);pendingImport={...preview,base,inventoryFile:inventory?.name||'',taxonomyFile:taxonomy?.name||''};
-  showImportPreview(preview,{inventoryFile:inventory?.name||'',taxonomyFile:taxonomy?.name||'',inventorySheet});
+  showImportPreview(preview,{base,inventoryFile:inventory?.name||'',taxonomyFile:taxonomy?.name||'',inventorySheet,newExport:!!inventorySheets});
  }catch(error){if(generation===importGeneration)$('importStatus').textContent='Import failed: '+english(error.message)+' Current data has not changed.';}finally{if(generation===importGeneration)button.disabled=false;}
 };
 $('importApply').onclick=()=>{

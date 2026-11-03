@@ -7,7 +7,7 @@
 // Rules for the template (owner request 2026-10-22, after the window closed on the IIS server): system programs by full
 // path ("%APPCMD%"), "call" before a quoted program inside for /f, the deploy always in a cmd /k window (UAC or start),
 // every other end prints the reason and pauses. tests/deploy-script.test.mjs checks them; npm run deploy:sim
-// (scripts/deploy-sim.mjs) runs the script in ten situations on this PC before a release.
+// (scripts/deploy-sim.mjs) runs the script in its situations (19 checks in V20) on this PC before a release.
 import {readFileSync,writeFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {crc32,inflateRawSync} from 'node:zlib';

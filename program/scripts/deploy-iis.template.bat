@@ -177,18 +177,39 @@ echo [5/6] OK  IIS site %SITE% is configured
 
 rem ---- Upload to server (V18) --------------------------------------------
 rem The tool's "Upload to server" button sends logistics-data.json with an HTTP PUT, and first the file it replaces as
-rem logistics-data.previous.json. Owner decision 2026-10-23: every signed-in company Windows account may upload, only
-rem these two files; everyone keeps reading without signing in. The limits are set first and writing is switched on
-rem last, only when every limit is in place; if any limit cannot be set, writing is switched off and the deploy goes on.
+rem logistics-data.previous.json (older copies move on to logistics-data.previous-2.json ... -5.json). Owner decision
+rem 2026-10-23: every signed-in company Windows account may upload, only the data files in DATAFILES; everyone keeps
+rem reading without signing in. The limits are set first and writing is switched on last, only when every limit is in
+rem place; if any limit cannot be set, writing is switched off and the deploy goes on.
+rem Owner 2026-11-02 ("A group": make the shared server data safe): signed-in users (S-1-5-11) may change only those
+rem files, never index.html or the folder. V18 to V19.3 gave them Modify on the whole folder: that right is taken away
+rem first, also when upload cannot be turned on. As they can no longer create files, every data file is created here,
+rem empty, when it is missing (an existing file is never overwritten: it may hold the shared data; the tool reads an
+rem empty file as no data), and gets Modify for them on that file only. logistics-data.check.json is only for the
+rem upload test at [6/6].
 rem WebDAV Publishing is a server-wide IIS feature: added to the whole server it would answer PUT and DELETE of the other
 rem sites on this server with 405 (V18 review). When it was not on before, it is taken out of the server-wide lists
 rem again and added to this site only; if that cannot be done, the feature is removed again and upload stays off.
-rem DISM is called with "call" so that deploy:sim can stand in for it.
+rem DISM and icacls are called with "call" so that deploy:sim can stand in for them.
 set "DISM=%SystemRoot%\System32\dism.exe"
 set "FINDSTR=%SystemRoot%\System32\findstr.exe"
 set "ICACLS=%SystemRoot%\System32\icacls.exe"
 set "PSH=%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe"
+set "DATAFILES=logistics-data.json logistics-data.previous.json logistics-data.previous-2.json logistics-data.previous-3.json logistics-data.previous-4.json logistics-data.previous-5.json logistics-data.check.json"
 set "UPLOADSTEP="
+set "UPLOAD_ON=0"
+rem A new NTFS drive gives signed-in users Modify on every folder made on it (D:\ by default). That right is inherited,
+rem so it is first copied onto the folder (inheritance off; nothing is lost) and then removed like the old V18 right.
+call "%ICACLS%" "%TARGET%" /inheritance:d >nul 2>&1
+if errorlevel 1 (
+  set "UPLOADSTEP=the rights that %TARGET% takes from the drive could not be copied onto the folder"
+  goto :uploadoff
+)
+call "%ICACLS%" "%TARGET%" /remove:g "*S-1-5-11" >nul 2>&1
+if errorlevel 1 (
+  set "UPLOADSTEP=the old right of signed-in users to change every file in %TARGET% could not be removed"
+  goto :uploadoff
+)
 set "WEBDAV_WAS_ON=0"
 for /f "delims=" %%S in ('call "%DISM%" /online /English /get-featureinfo /featurename:IIS-WebDAV 2^>nul ^| "%FINDSTR%" /c:"State : Enabled"') do set "WEBDAV_WAS_ON=1"
 echo       Turning on Upload to server ^(IIS features; the first time this can take a few minutes^)...
@@ -230,31 +251,45 @@ if errorlevel 1 (
   set "UPLOADSTEP=writing could not be limited to signed-in users"
   goto :uploadoff
 )
-"%APPCMD%" set config "%SITE%" /section:system.webServer/webdav/authoringRules /-"[users='*',path='logistics-data.json']" /commit:apphost >nul 2>&1
-"%APPCMD%" set config "%SITE%" /section:system.webServer/webdav/authoringRules /+"[users='*',path='logistics-data.json',access='Read, Write']" /commit:apphost >nul 2>&1
+rem The tool only reads (GET) and writes (PUT) the data files. Deleting, moving or locking them is refused for everyone,
+rem signed in or not: a deleted data file could not be made again (signed-in users may not create files in the folder),
+rem and every upload to it would fail until this script runs again.
+"%APPCMD%" set config "%SITE%" /section:system.webServer/security/authorization /-"[accessType='Deny',users='*',verbs='DELETE,MKCOL,COPY,MOVE,PROPPATCH,LOCK,UNLOCK']" /commit:apphost >nul 2>&1
+"%APPCMD%" set config "%SITE%" /section:system.webServer/security/authorization /+"[accessType='Deny',users='*',verbs='DELETE,MKCOL,COPY,MOVE,PROPPATCH,LOCK,UNLOCK']" /commit:apphost >nul 2>&1
 if errorlevel 1 (
-  set "UPLOADSTEP=writing could not be limited to the two data files"
+  set "UPLOADSTEP=deleting or moving the data files could not be blocked"
   goto :uploadoff
 )
-"%APPCMD%" set config "%SITE%" /section:system.webServer/webdav/authoringRules /-"[users='*',path='logistics-data.previous.json']" /commit:apphost >nul 2>&1
-"%APPCMD%" set config "%SITE%" /section:system.webServer/webdav/authoringRules /+"[users='*',path='logistics-data.previous.json',access='Read, Write']" /commit:apphost >nul 2>&1
-if errorlevel 1 (
-  set "UPLOADSTEP=writing could not be limited to the two data files"
-  goto :uploadoff
+for %%F in (%DATAFILES%) do (
+  "%APPCMD%" set config "%SITE%" /section:system.webServer/webdav/authoringRules /-"[users='*',path='%%F']" /commit:apphost >nul 2>&1
+  "%APPCMD%" set config "%SITE%" /section:system.webServer/webdav/authoringRules /+"[users='*',path='%%F',access='Read, Write']" /commit:apphost >nul 2>&1
+  if errorlevel 1 (
+    set "UPLOADSTEP=writing could not be limited to the data files - the rule for %%F was not added"
+    goto :uploadoff
+  )
 )
-"%ICACLS%" "%TARGET%" /grant "*S-1-5-11:(OI)(CI)M" >nul 2>&1
-if errorlevel 1 (
-  set "UPLOADSTEP=signed-in users could not be allowed to change the files in %TARGET%"
-  goto :uploadoff
+for %%F in (%DATAFILES%) do (
+  if not exist "%TARGET%\%%F" type nul >>"%TARGET%\%%F" 2>nul
+  if not exist "%TARGET%\%%F" (
+    set "UPLOADSTEP=the empty data file %TARGET%\%%F could not be created"
+    goto :uploadoff
+  )
+  call "%ICACLS%" "%TARGET%\%%F" /grant "*S-1-5-11:M" >nul 2>&1
+  if errorlevel 1 (
+    set "UPLOADSTEP=signed-in users could not be allowed to change %TARGET%\%%F"
+    goto :uploadoff
+  )
 )
 "%APPCMD%" set config "%SITE%" /section:system.webServer/webdav/authoring /enabled:true /commit:apphost >nul 2>&1
 if errorlevel 1 (
   set "UPLOADSTEP=WebDAV writing could not be switched on"
   goto :uploadoff
 )
+set "UPLOAD_ON=1"
 set "INDOMAIN="
 for /f %%D in ('call "%PSH%" -NoProfile -Command "(Get-CimInstance Win32_ComputerSystem).PartOfDomain"') do set "INDOMAIN=%%D"
 echo       Upload to server: on ^(any signed-in company Windows account may replace logistics-data.json^)
+echo       Signed-in users may change only the logistics-data*.json files; they get no right on the folder or index.html.
 if "%WEBDAV_WAS_ON%"=="0" echo       WebDAV is on for site %SITE% only; other IIS sites on this server are not changed.
 if /i not "%INDOMAIN%"=="True" echo [!] This server is not in a company domain: only Windows accounts of this server can sign in to upload.
 if "%DISMRC%"=="3010" echo [!] Windows wants a restart to finish the IIS features. Restart the server when convenient; until then the upload may not work.
@@ -277,6 +312,23 @@ if errorlevel 1 (
   goto :fail
 )
 echo [6/6] OK  http://localhost:%PORT_FOR_TEST%/ responds
+rem ---- [6/6] upload test (only when Upload to server was turned on) -------
+rem Writes as the tool does, as this signed-in Windows account: PUT a small text to logistics-data.check.json, read it
+rem back and compare. PowerShell prints the reason and exits with the HTTP code. A failure only warns, it is not a stop:
+rem the site works, and the tool can be used without upload.
+if not "%UPLOAD_ON%"=="1" goto :uploadtested
+"%PSH%" -NoProfile -ExecutionPolicy Bypass -Command "$ProgressPreference = 'SilentlyContinue'; $u = 'http://localhost:' + $env:PORT_FOR_TEST + '/logistics-data.check.json'; $t = ConvertTo-Json -Compress @{ check = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') }; try { $null = Invoke-WebRequest -UseBasicParsing -UseDefaultCredentials -Method Put -Uri $u -Body $t -ContentType 'application/json' -TimeoutSec 20; $got = (Invoke-WebRequest -UseBasicParsing -UseDefaultCredentials -Uri $u -TimeoutSec 20).Content; if ($got -is [byte[]]) { $got = [Text.Encoding]::UTF8.GetString($got) }; if ($got -ne $t) { Write-Host '[!] Upload test failed: the file read back is not the text that was sent.'; exit 2 } } catch { $c = 0; if ($_.Exception.Response) { $c = [int]$_.Exception.Response.StatusCode }; if ($c) { Write-Host ('[!] Upload test failed: HTTP ' + $c + '.'); exit $c }; Write-Host ('[!] Upload test failed: ' + $_.Exception.Message.TrimEnd('.') + '.'); exit 1 }"
+set "UPTEST=%errorlevel%"
+if "%UPTEST%"=="0" echo [6/6] OK  upload test: a signed-in PUT and read-back of logistics-data.check.json worked
+if "%UPTEST%"=="0" goto :uploadtested
+set "UPMEANS=see the message above"
+if "%UPTEST%"=="401" set "UPMEANS=Windows sign-in was not accepted for this account"
+if "%UPTEST%"=="403" set "UPMEANS=the file rights - signed-in users may not change the data files in %TARGET%"
+if "%UPTEST%"=="404" set "UPMEANS=WebDAV is not answering for site %SITE%"
+if "%UPTEST%"=="405" set "UPMEANS=WebDAV is not answering for site %SITE%"
+echo     This usually means: %UPMEANS%.
+echo     The site itself works, and the tool can still be used without Upload to server.
+:uploadtested
 
 echo.
 echo === DONE ===
@@ -286,6 +338,7 @@ echo This script did not change it. After the server owner approves, run:
 echo   netsh advfirewall firewall add rule name="LogisticsTool %PORT_FOR_TEST%" dir=in action=allow protocol=TCP localport=%PORT_FOR_TEST%
 echo Rollback: restore the file in %BACKUP%, or remove the site:
 echo   %INETSRV%\appcmd.exe delete site "%SITE%"
+if "%UPLOAD_ON%"=="1" echo To undo a bad upload: in the tool use "Restore earlier server data" ^(Import data dialog^).
 echo.
 if exist "%TMPX%" rmdir /s /q "%TMPX%"
 popd 2>nul

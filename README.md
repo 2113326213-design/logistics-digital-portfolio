@@ -53,11 +53,11 @@
 
 不在内网，或想自己保留一份时用：
 
-1. 下载 [**logistics-offline-20261022-v19.3.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest)。
+1. 下载 [**logistics-offline-20261022-v20.zip**](https://github.com/2113326213-design/logistics-digital-portfolio/releases/latest)。
 2. 右键 → **Extract all**。
 3. 用 Chrome 打开里面的 HTML（同一个 zip 里的 `deploy-iis.bat` 是给内网服务器部署用的，自己用时不用管）。
 
-解压出来的文件名里带 **v19.3** 就对了（页面上不再显示版本号）。
+解压出来的文件名里带 **v20** 就对了（页面上不再显示版本号）。
 
 </td>
 </tr>
@@ -68,7 +68,7 @@
     <td align="center" width="25%"><h3>75</h3><sub>应用 · 10 个工厂 · 5 个业务部门</sub></td>
     <td align="center" width="25%"><h3>2,775</h3><sub>组两两比较 · 9 组得分 ≥ 50</sub></td>
     <td align="center" width="25%"><h3>22 / 39</h3><sub>Process / Capability 待处理应用</sub></td>
-    <td align="center" width="25%"><h3>V19.3</h3><sub>2026-11-02 · 558 项测试通过</sub></td>
+    <td align="center" width="25%"><h3>V20</h3><sub>2026-11-02 · 576 项测试通过</sub></td>
   </tr>
 </table>
 
@@ -101,7 +101,7 @@
 | 调整打分标准 | **Similarity check** 顶部 | **Score settings** → **Edit settings**，改权重和 **Minimum score** |
 | 保存我的调整，下次接着用 | 任意页面 | 自动保存在这台电脑的浏览器里，下次打开选 **Continue kept work**；要备份或发给别人用 **Export workspace** |
 | 把待处理清单发给工厂 | **Overview** | 选工厂 → **Export To review (CSV)**，用 Excel 打开 |
-| 把更新好的数据发给所有人 | **Import data** | 导入新的导出并 Apply → 对话框底部 **Share this data with everyone** → **Upload to server**（Windows 可能要求登录；这一节只在内网网址打开时出现）；见下方“给维护者 → 发布新数据” |
+| 把更新好的数据发给所有人 | **Import data** | 导入新的导出并 Apply → 对话框底部 **Share this data with everyone** → **Upload to server**（Windows 可能要求登录；这一节只在内网网址打开时出现）；上传错了用同一节的 **Restore earlier server data** 放回早先的一份；见下方“给维护者 → 发布新数据” |
 | 把某个应用发给同事 | 应用详情 | **Copy link to this application**，对方打开链接直接看到这个应用 |
 
 ## 常见问题
@@ -174,7 +174,9 @@
 
 完整更新日志见 [`CHANGELOG.md`](CHANGELOG.md)。
 
-**V19.3（当前，2026-11-02）**：数据更新为 2026-11-02 的 LeanIX 应用导出（20261102_025607_zApwu_inventory.xlsx）：16 个应用有变化，主要是业务能力和流程；Business Capability Level 3 符合标准 36 → 48 个应用，To review 39 → 27；Process To review 11 → 10。新规则：流程写成 ETAS 编号（如 ETAS.I2D.010.050.010）时，编号和名称都与 Signavio 一致就算同一个标准流程（EDCN AWS 的 7 条）。
+**V20（当前，2026-11-02）**：共享数据更安全：Upload to server 不会覆盖别人先上传的数据（先拿服务器数据再上传）；新增或删除很多应用时先列出、再点一次才上传；服务器保留最近 5 次上传，Import data → Share this data with everyone → Restore earlier server data 可以放回其中一份；Apply 前会列出看起来不对的地方（很多新增或删除的应用、导出被筛选、其他部门的应用、更旧的数据），勾选后才能 Apply；部署脚本只让登录的公司账号写数据文件，部署后自动试一次上传。
+
+**V19.3（2026-11-02）**：数据更新为 2026-11-02 的 LeanIX 应用导出（20261102_025607_zApwu_inventory.xlsx）：16 个应用有变化，主要是业务能力和流程；Business Capability Level 3 符合标准 36 → 48 个应用，To review 39 → 27；Process To review 11 → 10。新规则：流程写成 ETAS 编号（如 ETAS.I2D.010.050.010）时，编号和名称都与 Signavio 一致就算同一个标准流程（EDCN AWS 的 7 条）。
 
 **V19.2（2026-10-23）**：补上 V19.1 并集规则的 3 个小缺口：只在 LeanIX 里的流程在 Similarity check 里按 LeanIX 名称比较（两边都有算重合，只有一边有的不拉低分数），只登记了 LeanIX 流程的应用不再被当成“没有流程记录”，Signavio 的 Level 0 加 LeanIX 的 Level 3 不再显示 “recorded only at Level 0”；Signavio 流程的上一级不在清单里时也算有。用现在的数据，总览和相似度结果与 V19.1 相同。
 
@@ -234,6 +236,7 @@
 
 | 版本 | 主要变化 |
 |---|---|
+| [V20](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v20-20261022) | 共享数据更安全：Upload to server 不会覆盖别人先上传的数据（先拿服务器数据再上传）；新增或删除很多应用时先列出、再点一次才上传；服务器保留最近 5 次上传，Import data → Share this data with everyone → Restore earlier server data 可以放回其中一份；Apply 前会列出看起来不对的地方（很多新增或删除的应用、导出被筛选、其他部门的应用、更旧的数据），勾选后才能 Apply；部署脚本只让登录的公司账号写数据文件，部署后自动试一次上传 |
 | [V19.3](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v19.3-20261022) | 数据更新为 2026-11-02 的 LeanIX 应用导出（20261102_025607_zApwu_inventory.xlsx）：16 个应用有变化，主要是业务能力和流程；Business Capability Level 3 符合标准 36 → 48 个应用，To review 39 → 27；Process To review 11 → 10。新规则：流程写成 ETAS 编号（如 ETAS.I2D.010.050.010）时，编号和名称都与 Signavio 一致就算同一个标准流程（EDCN AWS 的 7 条） |
 | [V19.2](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v19.2-20261022) | 补上 V19.1 并集规则的 3 个小缺口：只在 LeanIX 里的流程在 Similarity check 里按 LeanIX 名称比较（两边都有算重合，只有一边有的不拉低分数），只登记了 LeanIX 流程的应用不再被当成“没有流程记录”，Signavio 的 Level 0 加 LeanIX 的 Level 3 不再显示 “recorded only at Level 0”；Signavio 流程的上一级不在清单里时也算有。用现在的数据，总览和相似度结果与 V19.1 相同 |
 | [V19.1](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v19.1-20261022) | 流程按并集判断（用户：“其实没有标准表”，“要并集的看”，选“应用登记的就算”）：流程在 Signavio 清单里或在 LeanIX 里都算符合；应用登记的流程都来自 LeanIX，所以只要名字带层级（L0–L3，L3V 就是 L3）就算符合，只有没写层级的和某一层没登记的还要处理。AUTO-RACK、Load Truck 等 19 条不再是问题；Process 待处理 21 → 11 个应用，Level 3 符合 55 → 67。Similarity check 也按并集（用户选“也按并集”）：这些记录不再算 Needs confirmation，468 对结果变化，多出 3 对 Potential overlap（如 AUTO-RACK ↔ Szh5_ASRS_WCS_WMS）。能力（Capability）不变 |
@@ -320,11 +323,14 @@
 
 V14 起，新数据不必等新版本：
 
-1. 在工具里点 **Import data**，导入新的 LeanIX 导出（或工作簿），看完预览后点 **Apply**。
-2. 在同一个对话框底部展开 **Share this data with everyone**，点 **Upload to server**。Windows 可能要求用公司账号登录。看到 “Uploaded. Everyone who opens the tool now gets this data” 就完成了；服务器上原来那份自动存成 `logistics-data.previous.json`，可以找服务器管理员换回去。服务器上的数据比你的新时不会上传。
+1. 在工具里点 **Import data**，导入新的 LeanIX 导出（或工作簿），看完预览后点 **Apply**。预览顶部出现 **Check before applying** 时（很多新增或删除的应用、导出被筛选、其他部门的应用、比页面更旧的数据），先核对，再勾 **I checked this. Apply anyway.** 才能 Apply。
+2. 在同一个对话框底部展开 **Share this data with everyone**，点 **Upload to server**。Windows 可能要求用公司账号登录。看到 “Uploaded. Everyone who opens the tool now gets this data” 就完成了。
+   - 服务器上原来那份自动存成备份，保留最近 5 次（`logistics-data.previous.json` 最新，到 `logistics-data.previous-5.json`）。上传错了：同一节展开 **Restore earlier server data** → **Show earlier uploads**，在要的那一份点 **Put this back** 并确认。被替换的那份又成为最新备份，所以也能再换回来。大家打开工具会看到 “Earlier data was put back on the server”。
+   - 服务器上的数据不是你这个页面拿过的那一份时（别人先上传了），不会上传：先在 Import data 顶部点 **Preview server data** 并 Apply，再导入你的文件、再上传。服务器上的数据比你的新时也不会上传。
+   - 和服务器数据比，新增或删除很多应用时先列出 **Check before uploading**，确认没错再点一次 **Upload to server**。
 3. 服务器还没打开上传（显示 “This server does not take uploads yet”）时：请服务器管理员在服务器上运行最新的 deploy-iis.bat，然后再点一次 **Upload to server**。
 4. 在服务器的浏览器打开 `http://localhost:8083/logistics-data.json`，能看到一大段文字就说明 IIS 已经能提供它。如果显示 404.3，说明 .json 类型没开，请告诉维护人。
-5. 大家用内网网址打开工具时，标题下会出现 “New data on the server · as of <日期> · published <日期>”：点 **Preview changes** 先看变化再 **Apply**。**Hide this update** 只隐藏这条提示，以后仍可在 **Import data** 对话框顶部点 **Preview server data** 打开。
+5. 大家用内网网址打开工具时，标题下会出现 “New data on the server · as of <日期> · uploaded <日期>”：点 **Preview changes** 先看变化再 **Apply**。**Hide this update** 只隐藏这条提示，以后仍可在 **Import data** 对话框顶部点 **Preview server data** 打开。
 
 - 数据包只含共享数据：应用清单、能力和流程目录、所有者的映射和 “confirmed as recorded”。不含个人的备注、配对审核、打分设置和历史。映射以数据管家发布的为准（撤销和替换都会同步，数据管家从数据包里去掉的映射也会从你这里去掉），你自己另加的映射保留。
 - 只有应用后确实会有变化时才提示；已经应用过的同一个数据包不会再提示；应用后再打开页面，会说明你保存的工作用的是服务器上发布的数据。
@@ -400,7 +406,7 @@ flowchart LR
 | 导入 / 导出（Excel、工作区、CSV） | `program/public/xlsx.mjs`、`program/public/import-review.mjs`、`program/public/workspace.mjs`、`program/public/exports.mjs`、`program/public/score-settings.mjs`（阈值随备份）、`program/public/offline-save.mjs`（离线导出提示）；应用搜索在 `program/public/app-search.mjs`（6 个搜索框共用 matchesApplication 和同一个名称、提示） |
 | 样式 | `program/public/*.css` |
 | 构建和离线单文件 | `program/scripts/build.mjs`、`program/scripts/export-offline.mjs` |
-| 测试（`npm test`，当前 558 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v19.3-test-results.txt` |
+| 测试（`npm test`，当前 576 项） | `program/tests/*.test.mjs`；最近一次完整结果在 `verification/v20-test-results.txt` |
 | 离线单文件版 | `offline/` |
 | IIS 部署脚本（每次发布自动生成） | `offline/deploy-iis.bat`（同一份脚本也在发布 zip `offline/logistics-offline-<日期>-<版本>.zip` 里，部署只需下载这个 zip）；生成器 `program/scripts/deploy-script.mjs`，模板 `program/scripts/deploy-iis.template.bat`，发布打包 `program/scripts/release-files.mjs`（`npm run release:files`），检查 `program/tests/deploy-script.test.mjs`，本机模拟 `program/scripts/deploy-sim.mjs`（`npm run deploy:sim`） |
 | 构建输出、文件校验清单 | `built/`、`MANIFEST.sha256` |

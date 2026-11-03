@@ -41,7 +41,7 @@ test('V19: a LeanIX process export is refused before it could be read as an inve
 
 test('V19: the download for the server is gone; the share section shows only where Upload to server works',()=>{
  assert(!/exportDataPackage|Download file for the server|give it to the server admin/.test(html+app));
- assert.match(html,/<details class="package-publish" id="packagePublish"><summary>Share this data with everyone<\/summary><p>[^<]*<\/p><button type="button" id="uploadToServer">Upload to server<\/button><p id="uploadToServerStatus" class="hint" role="status"><\/p><\/details>/);
+ assert.match(html,/<details class="package-publish" id="packagePublish"><summary>Share this data with everyone<\/summary><p>[^<]*<\/p><button type="button" id="uploadToServer">Upload to server<\/button><p id="uploadToServerStatus" class="hint" role="status"><\/p><details id="serverRestore">.*<\/details><\/details>/);
  assert(app.includes("$('packagePublish').hidden=!canUpload();"));
  const script=deployScript({html:Buffer.from('<html>test</html>'),version:'v1.2',zipName:'logistics-offline-20300101-v1.2.zip',scriptName:'deploy-iis.bat'});
  assert(!script.includes('Download file for the server'));

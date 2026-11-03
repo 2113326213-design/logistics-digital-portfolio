@@ -40,9 +40,12 @@ test('steps 2 to 6 are the V9.15 script tested on the server, with appcmd by ful
  assert.equal(sha256(readFileSync(html)),'a1af36d4e87b6eb3cea4673cef29a9f1ba129241e4e9e296320242ee2b6a6658','the hash the V9.15 script checks');
  const clearer='echo [X] SHA-256 mismatch - the HTML in the zip named at [1/6] is not the expected V9.15 build ^(logistics-offline-20261020-v9.15.zip^).\r\n'+
   '  echo     Delete that zip, save logistics-offline-20261020-v9.15.zip from the GitHub release in Downloads again, open it and double-click deploy-iis-v9.15.bat inside it. Stopping.';
- // The V18 upload block between [5/6] and [6/6] is new; the rest of steps 2 to 6 is unchanged.
+ // The V18 upload block between [5/6] and [6/6] is new, and so are the upload test after [6/6] and the two lines on undoing
+ // an upload in the DONE text (A group, 2026-11-02); the rest of steps 2 to 6 is unchanged.
  const upload=text=>text.slice(text.indexOf('rem ---- Upload to server (V18)'),text.indexOf('rem ---- [6/6]'));
- assert.equal(fromStep2(generated).replace(upload(generated),'').replace(clearer,'echo [X] SHA-256 mismatch - the zip is not the expected V9.15 build. Stopping.').replace(DEPLOY_TIME,''),fullPathAppcmd(fromStep2(expected)));
+ const uploadTest=text=>text.slice(text.indexOf('rem ---- [6/6] upload test'),text.indexOf('\r\n:uploadtested\r\n')+'\r\n:uploadtested\r\n'.length);
+ const undo=/^if "%UPLOAD_ON%"=="1" echo [^\r]*\r\n/gm;
+ assert.equal(fromStep2(generated).replace(upload(generated),'').replace(uploadTest(generated),'').replace(undo,'').replace(clearer,'echo [X] SHA-256 mismatch - the zip is not the expected V9.15 build. Stopping.').replace(DEPLOY_TIME,''),fullPathAppcmd(fromStep2(expected)));
  // The settings block and the header are unchanged apart from the generated note, APPCMD and the one-download note.
  const head=text=>text.slice(0,text.indexOf('rem ---- [1/6]'));
  const oneDownload='rem  One download: logistics-offline-20261020-v9.15.zip holds the HTML and this script. Save it in\r\n'+
@@ -58,7 +61,8 @@ test('owner report 2026-10-22 (the window closed on the server): every run stays
  // ended the script right after "[1/6] OK zip" without a message (reproduced 2026-10-22).
  assert.match(script,/^set "APPCMD=%INETSRV%\\appcmd\.exe"\r$/m);
  assert.doesNotMatch(script,/^\s*(?:if [^\r\n]*?\s)?appcmd\s/m,'no bare appcmd call');
- // 8 calls of the V9.15 steps and 13 in the V18 upload block.
+ // 8 calls of the V9.15 steps and 13 in the V18 upload block (A group, 2026-11-02: was 13; the two WebDAV rules written
+ // one by one, 4 calls, are now one loop over the 7 data files, 2 calls; the rule that refuses DELETE and MOVE adds 2).
  assert.equal(script.match(/"%APPCMD%" /g).length,21);
  // Not Administrator: UAC opens a cmd /k window; a cancelled or blocked request is reported and waits for a key.
  assert.match(script,/Start-Process -FilePath cmd\.exe -Verb RunAs -ErrorAction Stop -ArgumentList \('\/k call \\"' \+ \$env:SELF/);
@@ -71,6 +75,82 @@ test('owner report 2026-10-22 (the window closed on the server): every run stays
  const lines=script.split('\r\n');
  lines.forEach((line,i)=>{if(/^exit \/b 1$/.test(line))assert(lines.slice(i-2,i).includes('pause >nul'),`line ${i+1}`);});
  assert.deepEqual(lines.flatMap((line,i)=>/^exit \/b 0$/.test(line)?[lines[i-1].split(' ').slice(0,2).join(' ')]:[]),['start "Logistics','endlocal']);
+});
+
+// A group (owner 2026-11-02, "先做 A 组": make the shared server data safe). npm run deploy:sim runs these steps (14-17).
+test('A group (owner 2026-11-02): signed-in users may change only the 7 data files, never index.html or the folder; the upload test only warns',()=>{
+ const script=deployScript({html:Buffer.from('<html>test</html>'),version:'v1.2',zipName:'logistics-offline-20300101-v1.2.zip',scriptName:'deploy-iis.bat'});
+ const block=script.slice(script.indexOf('rem ---- Upload to server (V18)'),script.indexOf('rem ---- [6/6]')),on=block.indexOf('webdav/authoring /enabled:true');
+ const code=text=>text.split('\r\n').filter(line=>!line.startsWith('rem ')).join('\r\n');
+ assert(on>0);
+ // The data files: fixed names, the page uses exactly these.
+ assert.match(block,/^set "DATAFILES=logistics-data\.json logistics-data\.previous\.json logistics-data\.previous-2\.json logistics-data\.previous-3\.json logistics-data\.previous-4\.json logistics-data\.previous-5\.json logistics-data\.check\.json"\r$/m);
+ // A WebDAV rule for each of the 7 (removed, then added: users='*', Read, Write), before writing is switched on; a failure
+ // turns upload off with the file named.
+ const rules='for %%F in (%DATAFILES%) do (\r\n'+
+  `  "%APPCMD%" set config "%SITE%" /section:system.webServer/webdav/authoringRules /-"[users='*',path='%%F']" /commit:apphost >nul 2>&1\r\n`+
+  `  "%APPCMD%" set config "%SITE%" /section:system.webServer/webdav/authoringRules /+"[users='*',path='%%F',access='Read, Write']" /commit:apphost >nul 2>&1\r\n`+
+  '  if errorlevel 1 (\r\n    set "UPLOADSTEP=writing could not be limited to the data files - the rule for %%F was not added"\r\n    goto :uploadoff\r\n  )\r\n)\r\n';
+ assert(block.includes(rules)&&block.indexOf(rules)<on,'7 authoring rules before writing is switched on');
+ assert.equal(block.match(/authoringRules \/\+/g).length,1,'no other authoring rule');
+ // The folder-wide right that V18 to V19.3 gave signed-in users (S-1-5-11) is removed first, before DISM, so also when
+ // upload cannot be turned on; no inheritable or folder-wide right is given any more.
+ const remove='call "%ICACLS%" "%TARGET%" /remove:g "*S-1-5-11" >nul 2>&1\r\nif errorlevel 1 (\r\n  set "UPLOADSTEP=the old right of signed-in users to change every file in %TARGET% could not be removed"\r\n  goto :uploadoff\r\n)\r\n';
+ assert(block.indexOf(remove)>0&&block.indexOf(remove)<block.indexOf('call "%DISM%" /online /enable-feature'),'removed before anything else');
+ // V20 review: a new NTFS drive (D:\ by default) gives signed-in users an inherited Modify that /remove:g cannot take
+ // away; inheritance is switched off first (the inherited rights are copied onto the folder), then the right is removed.
+ const inherit='call "%ICACLS%" "%TARGET%" /inheritance:d >nul 2>&1\r\nif errorlevel 1 (\r\n  set "UPLOADSTEP=the rights that %TARGET% takes from the drive could not be copied onto the folder"\r\n  goto :uploadoff\r\n)\r\n'+remove;
+ assert(block.includes(inherit),'inheritance off, then the removal');
+ assert.doesNotMatch(script,/S-1-5-11:\((OI|CI)\)/,'no inheritable right for signed-in users');
+ assert.deepEqual(code(script).split('\r\n').filter(line=>line.includes('S-1-5-11')).map(line=>line.trim()),['call "%ICACLS%" "%TARGET%" /remove:g "*S-1-5-11" >nul 2>&1','call "%ICACLS%" "%TARGET%\\%%F" /grant "*S-1-5-11:M" >nul 2>&1'],'only the removal on the folder and Modify on each data file itself');
+ assert.doesNotMatch(code(script),/S-1-5-11[^\r]*index\.html|index\.html[^\r]*S-1-5-11/,'index.html is never given to signed-in users');
+ // Each data file is created empty only when it is missing (>> never empties a file that is there), then gets the right.
+ const files='for %%F in (%DATAFILES%) do (\r\n  if not exist "%TARGET%\\%%F" type nul >>"%TARGET%\\%%F" 2>nul\r\n'+
+  '  if not exist "%TARGET%\\%%F" (\r\n    set "UPLOADSTEP=the empty data file %TARGET%\\%%F could not be created"\r\n    goto :uploadoff\r\n  )\r\n'+
+  '  call "%ICACLS%" "%TARGET%\\%%F" /grant "*S-1-5-11:M" >nul 2>&1\r\n'+
+  '  if errorlevel 1 (\r\n    set "UPLOADSTEP=signed-in users could not be allowed to change %TARGET%\\%%F"\r\n    goto :uploadoff\r\n  )\r\n)\r\n';
+ assert(block.indexOf(files)>block.indexOf(rules)&&block.indexOf(files)<on,'files and rights after the rules, before writing is switched on');
+ assert.doesNotMatch(block,/[^>]>"%TARGET%\\%%F"|copy [^\r]*%%F/,'a data file is never overwritten');
+ // icacls and PowerShell by full path; icacls with call, so deploy:sim can stand in for it.
+ assert.match(block,/^set "ICACLS=%SystemRoot%\\System32\\icacls\.exe"\r$/m);
+ assert.match(block,/^set "PSH=%SystemRoot%\\System32\\WindowsPowerShell\\v1\.0\\powershell\.exe"\r$/m);
+ assert.doesNotMatch(code(block),/(^|[\s(])(icacls|powershell)(\.exe)?\s/im,'no bare icacls or powershell in the upload block');
+ assert.equal(code(block).match(/"%ICACLS%"/g).length,code(block).match(/call "%ICACLS%"/g).length);
+ // Every limit and the switch itself lead to the switch-off (13: was 10 before; switching inheritance off, the folder
+ // clean-up, the file creation and the rule that refuses DELETE and MOVE are new, the two rule steps are one loop, and
+ // the folder-wide grant is gone).
+ assert.equal(block.match(/goto :uploadoff/g).length,13);
+ // The tool only GETs and PUTs: deleting, moving or locking a data file is refused for everyone, signed in or not (a
+ // deleted file could not be made again), before the data files get their rights and writing is switched on.
+ const denyRule=`[accessType='Deny',users='*',verbs='DELETE,MKCOL,COPY,MOVE,PROPPATCH,LOCK,UNLOCK']`;
+ const deny=`"%APPCMD%" set config "%SITE%" /section:system.webServer/security/authorization /+"${denyRule}" /commit:apphost >nul 2>&1\r\nif errorlevel 1 (\r\n  set "UPLOADSTEP=deleting or moving the data files could not be blocked"\r\n  goto :uploadoff\r\n)\r\n`;
+ assert(block.includes(deny)&&block.indexOf(deny)<block.indexOf(files)&&block.indexOf(deny)<on,'DELETE and MOVE refused before the files get rights');
+ const undeny=block.indexOf(`/section:system.webServer/security/authorization /-"${denyRule}" /commit:apphost >nul 2>&1\r\n`);
+ assert(undeny>0&&undeny<block.indexOf(deny),'removed first, so a second run does not add it twice');
+ assert.doesNotMatch(block,/goto :fail|exit \/b/);
+ assert.match(block,/^set "UPLOAD_ON=0"\r$/m);assert(block.indexOf('set "UPLOAD_ON=1"')>on,'on only after writing was switched on');
+ // The upload test: after the [6/6] smoke test passed, only when upload was turned on; a signed-in PUT and read-back of
+ // logistics-data.check.json with PowerShell by its full path. A failure warns and says what it usually means; it never
+ // stops or pauses (the window waits once, at the end of DONE).
+ const start=script.indexOf('rem ---- [6/6] upload test'),label=script.indexOf('\r\n:uploadtested\r\n'),test=script.slice(start,label+2);
+ assert(script.indexOf('echo [6/6] OK  http://localhost:%PORT_FOR_TEST%/ responds\r\nrem ---- [6/6] upload test')>0,'right after the smoke test passed');
+ assert(start>0&&label>start&&label<script.indexOf('echo === DONE ==='));
+ assert.match(test,/^if not "%UPLOAD_ON%"=="1" goto :uploadtested\r$/m,'only when upload was turned on');
+ const ps=test.split('\r\n').filter(line=>line.startsWith('"%PSH%" -NoProfile '));
+ assert.equal(ps.length,1,'PowerShell by its full path');
+ for(const part of ["'/logistics-data.check.json'",'Invoke-WebRequest -UseBasicParsing -UseDefaultCredentials -Method Put -Uri $u -Body $t','Invoke-WebRequest -UseBasicParsing -UseDefaultCredentials -Uri $u','if ($got -ne $t)',"Write-Host ('[!] Upload test failed: HTTP ' + $c + '.'); exit $c","Write-Host ('[!] Upload test failed: ' + $_.Exception.Message.TrimEnd('.') + '.'); exit 1"])assert(ps[0].includes(part),part);
+ assert.equal(ps[0].split('"').length-1,4,'no double quote inside the PowerShell command: cmd would end the quoted text there');
+ assert.doesNotMatch(code(test),/goto :fail|exit \/b|pause|^powershell /m,'not a stop');
+ assert.match(test,/^if "%UPTEST%"=="0" echo \[6\/6\] OK  upload test: a signed-in PUT and read-back of logistics-data\.check\.json worked\r\nif "%UPTEST%"=="0" goto :uploadtested\r\n/m);
+ for(const [status,means] of [['401','Windows sign-in was not accepted for this account'],['403','the file rights - signed-in users may not change the data files in %TARGET%'],['404','WebDAV is not answering for site %SITE%'],['405','WebDAV is not answering for site %SITE%']])assert(test.includes(`if "%UPTEST%"=="${status}" set "UPMEANS=${means}"\r\n`),status);
+ assert.match(test,/set "UPMEANS=see the message above"\r\n[\s\S]*echo     This usually means: %UPMEANS%\.\r\necho     The site itself works, and the tool can still be used without Upload to server\.\r\n$/);
+ // DONE says how to undo a bad upload (only when upload is on); the way to stop uploads is still printed when it is turned on.
+ const done=script.slice(script.indexOf('echo === DONE ==='),script.indexOf('\r\n:fail\r\n'));
+ // V20 review: only through the tool. A file copied by hand is not marked as put back, so pages that took the bad data
+ // would not be told, and the bad data would not be kept as a backup.
+ assert.match(done,/\r\nif "%UPLOAD_ON%"=="1" echo To undo a bad upload: in the tool use "Restore earlier server data" \^\(Import data dialog\^\)\.\r\n/);
+ assert.doesNotMatch(script,/by hand copy/);
+ assert.match(block,/\r\necho       To stop uploads later: %INETSRV%\\appcmd\.exe set config "%SITE%" \/section:system\.webServer\/webdav\/authoring \/enabled:false \/commit:apphost\r\ngoto :uploaddone\r\n/);
 });
 
 test('every placeholder is filled with the release values, and the script uses CRLF only',()=>{

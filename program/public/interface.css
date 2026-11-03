@@ -387,3 +387,12 @@ html:has(body.portfolio-fullscreen){scrollbar-gutter:auto}
 .server-package-entry{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 12px;padding:8px 12px;border:1px solid #9cc7de;border-radius:8px;background:#eef6fb;color:#173f55}
 .server-package-entry span{flex:1 1 220px}
 
+/* V20: checks before Apply, and the earlier server uploads that can be put back */
+.import-warnings{margin:0 0 12px;padding:10px 14px;border:1px solid #e0b35a;border-radius:8px;background:#fff8e8;color:#4a3410}
+.import-warnings h3{margin:0 0 6px;font-size:1rem}
+.import-warnings ul{margin:0 0 8px;padding-left:20px}
+.import-warnings label{display:flex;gap:8px;align-items:center;font-weight:600}
+#serverRestore{margin-top:10px}
+#serverRestore summary{cursor:pointer;color:#1f4255}
+.server-backup{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:6px 0;padding:6px 10px;border:1px solid #dce6ed;border-radius:6px;background:#fff}
+.server-backup span{flex:1 1 260px}

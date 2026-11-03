@@ -2,6 +2,18 @@
 
 每个版本的离线包在 [Releases](https://github.com/2113326213-design/logistics-digital-portfolio/releases)；详细的修改说明和用户决定在 [`00_Claude先读.md`](00_Claude先读.md)，验证记录在 [`verification/`](verification/)。
 
+## [V20](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v20-20261022) · 2026-11-02
+
+用户问 “可以直接在内网整理部署吗？”，我实测后列出缺口，用户选 “先做 A 组”（共享数据的安全）。
+1. **上传不覆盖别人的数据**（`server-upload.mjs`）：工作区记下页面从服务器拿的或自己上传的那份数据（新字段 serverBase，文件导入后保留；V20 之前拿过的用 dataPackage.id）。服务器上的数据不是这一份时，Upload to server 只读不写，提示先在 Import data 顶部点 Preview server data 拿服务器数据，再导入自己的文件、再上传。服务器数据日期比页面旧、不会作为新数据提示时，Import data 顶部也显示这一项（`data-package.mjs` packageDiffers）；冲突或 “服务器更新” 后页面重新读一次服务器。
+2. **服务器保留最近 5 次上传**：`logistics-data.previous.json`（最新）到 `logistics-data.previous-5.json`，每次上传先读，再从最旧往下移一格，最旧的丢掉。Import data → Share this data with everyone → **Restore earlier server data** → Show earlier uploads 列出每一份（数据日期、本地上传时间、应用数；和当前相同的那份不能再放回），**Put this back** 确认后把它重新打包放回（新的上传时间，replaces = 被替换数据的 id）；被替换的那份成为最新备份，恢复也能撤销。拿过被替换数据的页面会收到 “Earlier data was put back on the server”，即使数据日期更旧（packageIsNew）。列表打开期间服务器数据变了就不恢复。
+3. **Apply 前和上传前的检查**（新 `import-warnings.mjs`）：Apply 前，新增应用超过 max(5, 10%)、删除超过 max(3, 10%)、导出里没有而保留的超过 max(5, 10%)、新增应用里至少 3 个且至少一半没有 B.06 能力也没有 BBM PM / ETAS 流程、数据日期比页面旧，都列在预览顶部，勾 “I checked this. Apply anyway.” 才能 Apply（文件导入和服务器数据都一样）。上传前按应用 ID 和服务器数据比较，新增超过 max(5, 10%) 或删除超过 max(3, 10%) 时先列出，同一份数据再点一次才上传；服务器文件读不了时也要再点一次。导入预览还没 Apply 时不上传。
+4. **部署脚本（deploy-iis.template.bat）：上传规则覆盖 7 个数据文件（logistics-data.json、previous ～ previous-5、check）；文件夹先关掉从盘符继承的权限（新格式化的 D: 默认让已登录用户可修改），再去掉 “已登录用户可修改” 权限，只给这 7 个文件；对所有人禁止 DELETE / MOVE / COPY / MKCOL / LOCK / PROPPATCH（页面只用 GET 和 PUT；删掉的数据文件无法再建）；文件不存在时先建空文件（已有的不动）；[6/6] 之后用 Windows 登录试一次上传（PUT 再读回 logistics-data.check.json），失败只提示不停止；结束说明只指向工具里的 Restore earlier server data**。deploy:sim 新增对应情况。
+5. **页面文字**：服务器数据提示 “… · uploaded <日期>”（原 published），恢复的数据说 “Earlier data was put back on the server”；服务器数据预览的说明去掉 “data steward / catalogues”。服务器上的空文件当作还没有数据（部署脚本先建空文件）。
+6. **更新提示**：新的一次（id 2026-11-02-2），新加两条在前（Apply 前的检查；上传保护和恢复），保留同日和 10 月 23 日的各条（内网服务器还没更新过）。
+7. **独立审查（Ultracode 工作流：3 个审查代理分别看页面上传与恢复、部署脚本、警告与测试，每条发现再由第二个代理尝试反驳；中途额度用完，用户说 “请再试一次” 后续跑）：15 条发现，13 条核实为真，1 条降级，1 条驳回，全部修复并加测试。主要有：页面已有服务器全部数据却没记下起点时会一直冲突（高）——现在 “same” 也记下起点，冲突时若服务器数据没有页面缺的内容就记下起点、再点一次即可上传；两人同时上传会丢一份——写数据前再读一次，变了就不写；恢复两步以前的数据——replaces 记下被撤销的每一次上传；上传成功后重新读服务器；重试不再挤掉备份、恢复前确认那份数据还在原位；“Hide this update” 按 “数据 + 上传时间” 记；工作区备份导入保留起点；“导出可能被筛选” 只对新的 LeanIX 导出提示；阈值不再向上取整；恢复数据的 “更旧” 警告只对拿过被替换数据的页面免除；预览无变化时不挡上传；部署脚本关掉继承权限、去掉手工复制的恢复说明**。
+- 新增 `tests/v20-upload-safety.test.mjs`（17 项，其中 5 项是审查后加的）；V18 上传、V14、V19、V9.20、V19.3 和部署脚本的测试按新行为和新文字更新（上传要带起点、备份先读、写数据前再读一次、预览带 base、更新提示 id、13 处 goto :uploadoff）。deploy:sim 19 / 19（新增 18 号：禁止 DELETE 的规则写不进去 → 上传不开、部署继续；14 号改为在 “从盘符继承修改权限” 的文件夹上部署）。浏览器在本机模拟内网服务器实测：冲突不覆盖、取服务器数据时提示 “older” 并要勾选、预览无变化时上传照常、导入新文件后上传并留备份、恢复后页面收到放回提示。
+
 ## [V19.3](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v19.3-20261022) · 2026-11-02
 
 用户把新的 inventory 上传到 Google Drive，选 “下载并更新内置数据”；ETAS 编号选 “认，编号和名称一致就算同一个”。

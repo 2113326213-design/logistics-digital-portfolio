@@ -47,7 +47,10 @@ export function readDataPackage(value){
  const payload=packagePayload(document.data);
  if(packageId(payload)!==document.id)throw Error('The data package was changed or damaged after it was published.');
  // The data date comes from the verified content, never from the header (which the id does not cover).
- return {id:document.id,publishedAt:String(document.publishedAt||''),dataAsOf:dataAsOf(payload)?.date||'',data:payload};
+ // replaces (V20): set by Restore earlier server data — the ids of the server data this package was put back over (the
+ // data on the server then, and every upload after the one put back).
+ const replaces=[...new Set((Array.isArray(document.replaces)?document.replaces:[document.replaces]).map(id=>String(id??'')).filter(id=>/^[0-9a-f]{16}$/.test(id)))];
+ return {id:document.id,publishedAt:String(document.publishedAt||''),dataAsOf:dataAsOf(payload)?.date||'',data:payload,...(replaces.length?{replaces}:{})};
 }
 
 // The owner decisions after applying a package (V14 review). Every mapping the package carries is taken as the steward
@@ -76,7 +79,7 @@ export function applyDataPackage(current,pkg,{releaseIds=[]}={}){
  const next={...base,source:payload.source,taxonomySource:payload.taxonomySource,apps:payload.apps,capabilityRows:payload.capabilityRows,processRows:payload.processRows,
   corrections:mergedCorrections(base.corrections,published,new Set(releaseIds),new Set(base.dataPackage?.mappingIds||[])),acceptedRecords:cleanAcceptedRecords(payload.acceptedRecords),
   reviewHistory:[...base.reviewHistory,...cleanReviewHistory(payload.mappingNotes).filter(n=>n.action==='revoke'&&!noteIds.has(n.id))],
-  isAcceptanceSample:false,dataPackage:{id:pkg.id,publishedAt:pkg.publishedAt,dataAsOf:pkg.dataAsOf,mappingIds:published.map(c=>c.id)}};
+  isAcceptanceSample:false,dataPackage:{id:pkg.id,publishedAt:pkg.publishedAt,dataAsOf:pkg.dataAsOf,mappingIds:published.map(c=>c.id)},serverBase:pkg.id};
  delete next.inventoryExport;if(payload.inventoryExport)next.inventoryExport=payload.inventoryExport;
  // The local process layer is part of the catalogue: it follows the package (V17).
  delete next.localProcesses;if(payload.localProcesses?.length)next.localProcesses=payload.localProcesses;
@@ -93,10 +96,27 @@ const sharedText=data=>{const p=packagePayload(data);return JSON.stringify({...p
 // updated from is never offered again (V14 review 3): a newer release can add fields for the same source on reload,
 // and applying the package again would only strip them. File imports clear that marker (import-review.mjs).
 export function packageIsNew(current,pkg,options){
- if(!current||current.dataPackage?.id===pkg.id)return false;
+ if(!current)return false;
+ // Data put back with Restore earlier server data (V20) over the data this page took or uploaded is offered even when
+ // its data date is older, and even when it is the package this page took before uploading the data now undone: that
+ // is the point of restoring it.
+ const replacesOurs=replacesPageData(current,pkg);
+ if(!replacesOurs&&current.dataPackage?.id===pkg.id)return false;
  const shown=dataAsOf(packagePayload(current))?.date||'';
- if(pkg.dataAsOf&&shown&&pkg.dataAsOf<shown)return false;
- return sharedText(applyDataPackage(current,pkg,options))!==sharedText(current);
+ if(!replacesOurs&&pkg.dataAsOf&&shown&&pkg.dataAsOf<shown)return false;
+ return packageAdds(current,pkg,options);
+}
+// Whether a restored package was put back over the data this page took or uploaded (V20).
+export const replacesPageData=(current,pkg)=>!!pkg?.replaces?.some(id=>id===current?.dataPackage?.id||id===current?.serverBase);
+// Whether applying the package would change this page's shared data (V20 review: when it would not, the page already
+// holds everything the server data has, and Upload to server may replace it).
+export const packageAdds=(current,pkg,options)=>sharedText(applyDataPackage(current,pkg,options))!==sharedText(current);
+// Server data this page did not start from and does not hold (V20): Upload to server refuses to overwrite it, so the
+// Import data dialog offers it even when it is not offered as new (older data date), to take it before uploading.
+// "Started from" is what an upload sends as its start: serverBase, or before V20 the package the page took.
+export function packageDiffers(current,pkg,options){
+ if(!current||(current.serverBase||current.dataPackage?.id)===pkg.id)return false;
+ return packageAdds(current,pkg,options);
 }
 // Whether kept work from a package should count as at least as new as data dated fileDate (an undated package does).
 export const packageNotOlder=(dataPackage,fileDate)=>!!dataPackage&&!(fileDate&&dataPackage.dataAsOf&&dataPackage.dataAsOf<fileDate);

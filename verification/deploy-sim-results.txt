@@ -1,4 +1,4 @@
-npm run deploy:sim · 2026-11-02 · deploy-iis.bat V19.3
+npm run deploy:sim · 2026-11-03 · deploy-iis.bat V20
 PASS  1. not Administrator, UAC accepted
 PASS  2. not Administrator, UAC cancelled
 PASS  3. already Administrator
@@ -13,4 +13,9 @@ PASS  11. upload limits cannot be set: upload stays off, the site is still deplo
 PASS  12. WebDAV Publishing already installed: the server-wide lists are left alone, upload on
 PASS  13. WebDAV cannot be limited to this site: the feature is removed again, upload off, site deployed
 PASS  5b. WebDAV newly installed: taken out of the server-wide lists and added to this site only
-All 14 checks passed for deploy-iis.bat (V19.3).
+PASS  14. normal deploy after V18-V19.3: 7 WebDAV rules, folder and index.html read-only, 7 empty data files changeable, upload test passes
+PASS  15. data files already there with data: not overwritten, still changeable by signed-in users
+PASS  16. the upload test gets 401: warned, the deploy still reaches DONE and pauses only at the end
+PASS  17. one data file cannot get its right: upload off with the reason, the deploy goes on
+PASS  18. deleting and moving cannot be refused: upload off with the reason, the deploy goes on
+All 19 checks passed for deploy-iis.bat (V20).

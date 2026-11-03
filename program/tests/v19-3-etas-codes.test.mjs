@@ -44,10 +44,10 @@ test('the bundled data: EDCN AWS records its 7 processes with ETAS numbers, all 
 
 import {WHATS_NEW,updateNoticeDue,updateNoticeHTML} from '../public/whats-new.mjs';
 test('the update notice of 2 November 2026 tells returning users about the new data and the ETAS numbers, once, with no version number',()=>{
- assert.equal(WHATS_NEW.id,'2026-11-02');
+ assert.notEqual(WHATS_NEW.id,'2026-10-23-3');
  const seen=id=>{const map=new Map([['logistics-portfolio:update-seen',id]]);return {get length(){return map.size;},key:i=>[...map.keys()][i]??null,getItem:k=>map.has(k)?map.get(k):null,setItem:(k,v)=>map.set(k,String(v))};};
  assert.equal(updateNoticeDue(seen('2026-10-23-3')),true,'someone who closed the 23 October notice sees this one');
- assert.equal(updateNoticeDue(seen('2026-11-02')),false);
+ assert.equal(updateNoticeDue(seen(WHATS_NEW.id)),false);
  const html=updateNoticeHTML(s=>String(s));
  assert.match(html,/The tool was updated on 2 November 2026\./);
  assert(html.includes('<li>The data now comes from the LeanIX export of 2 November 2026. 16 applications changed, mostly their business capabilities and processes.</li>'));

@@ -4,7 +4,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {uploadToServer,uploadMessage,canUpload,PREVIOUS_FILE} from '../public/server-upload.mjs';
+import {uploadToServer,uploadMessage,canUpload,PREVIOUS_FILE,BACKUP_FILES} from '../public/server-upload.mjs';
 import {DATA_PACKAGE_FILE,dataPackageText} from '../public/data-package.mjs';
 import {deployScript} from '../scripts/deploy-script.mjs';
 
@@ -24,16 +24,20 @@ const server=({files={},putStatus=201,getStatus=null,keep=true}={})=>{
  return {files,calls,request};
 };
 
-test('V18: an upload keeps the server file as the previous one, writes the new file and reads it back',async()=>{
+// V20: an upload replaces only the server data the page started from (base); the backups are read before they move.
+const olderId=JSON.parse(older).id,backupReads=BACKUP_FILES.slice(0,-1).map(file=>['GET',file]);
+
+test('V18: an upload keeps the server file as a backup, writes the new file and reads it back',async()=>{
  const s=server({files:{[DATA_PACKAGE_FILE]:older}});
- const result=await uploadToServer(ours,{request:s.request,protocol:'http:'});
+ const result=await uploadToServer(ours,{request:s.request,protocol:'http:',base:olderId});
  assert.equal(result.status,'done');assert.equal(result.previous,true);
- assert.deepEqual(s.calls,[['GET',DATA_PACKAGE_FILE],['PUT',PREVIOUS_FILE],['PUT',DATA_PACKAGE_FILE],['GET',DATA_PACKAGE_FILE]]);
+ // V20 review: the data file is read once more right before it is replaced (another upload may have come in).
+ assert.deepEqual(s.calls,[['GET',DATA_PACKAGE_FILE],...backupReads,['PUT',PREVIOUS_FILE],['GET',DATA_PACKAGE_FILE],['PUT',DATA_PACKAGE_FILE],['GET',DATA_PACKAGE_FILE]]);
  assert.equal(s.files[PREVIOUS_FILE],older);assert.equal(s.files[DATA_PACKAGE_FILE],ours);
- assert.match(uploadMessage(result),/^Uploaded\. Everyone who opens the tool now gets this data .*kept as logistics-data\.previous\.json\.$/);
+ assert.match(uploadMessage(result),/^Uploaded\. Everyone who opens the tool now gets this data .*kept as a backup \(the last five are kept\)\.$/);
  // The first upload to an empty server has nothing to keep.
  const empty=server();const first=await uploadToServer(ours,{request:empty.request,protocol:'https:'});
- assert.deepEqual([first.status,first.previous,empty.calls.map(c=>c[0])],['done',false,['GET','PUT','GET']]);
+ assert.deepEqual([first.status,first.previous,empty.calls.map(c=>c[0])],['done',false,['GET','GET','PUT','GET']]);
 });
 
 test('V18: newer data on the server is never replaced, the same data is not sent again, and the offline file never uploads',async()=>{
@@ -58,8 +62,8 @@ test('V18: a server that refuses or is not set up gets a plain message, and noth
  }
  // A failed copy of the previous file stops before the real file is replaced.
  const s=server({files:{[DATA_PACKAGE_FILE]:older},putStatus:403});
- await uploadToServer(ours,{request:s.request,protocol:'http:'});
- assert.deepEqual(s.calls,[['GET',DATA_PACKAGE_FILE],['PUT',PREVIOUS_FILE]]);assert.equal(s.files[DATA_PACKAGE_FILE],older);
+ await uploadToServer(ours,{request:s.request,protocol:'http:',base:olderId});
+ assert.deepEqual(s.calls,[['GET',DATA_PACKAGE_FILE],...backupReads,['PUT',PREVIOUS_FILE]]);assert.equal(s.files[DATA_PACKAGE_FILE],older);
  const down=await uploadToServer(ours,{request:async()=>{throw new TypeError('Failed to fetch');},protocol:'http:'});
  assert.equal(down.status,'unreachable');assert.match(uploadMessage(down),/could not be reached/);
  // Sent, but not given back: said so.
@@ -69,15 +73,18 @@ test('V18: a server that refuses or is not set up gets a plain message, and noth
  await assert.rejects(()=>uploadToServer('{"x":1}',{request:server().request,protocol:'http:'}),/not a data package/);
 });
 
-test('V18: the deploy script lets only signed-in Windows users write only the two data files, and the tool keeps working without it',()=>{
+test('V18: the deploy script lets only signed-in Windows users write only the data files, and the tool keeps working without it',()=>{
  const script=deployScript({html:Buffer.from('<html>test</html>'),version:'v1.2',zipName:'logistics-offline-20300101-v1.2.zip',scriptName:'deploy-iis.bat'});
  const block=script.slice(script.indexOf('rem ---- Upload to server (V18)'),script.indexOf('rem ---- [6/6]'));
  assert(block.length>0&&script.indexOf('echo [5/6] OK')<script.indexOf('rem ---- Upload to server (V18)'));
  assert.match(block,/call "%DISM%" \/online \/enable-feature \/featurename:IIS-WebDAV \/featurename:IIS-WindowsAuthentication \/featurename:IIS-URLAuthorization \/all \/norestart \/quiet/);
  assert.match(block,/^set "DISM=%SystemRoot%\\System32\\dism\.exe"\r$/m,'full path');
  assert.match(block,/^set "ICACLS=%SystemRoot%\\System32\\icacls\.exe"\r$/m,'full path');
- // Only the two files may be written, only by signed-in users; reading stays open to everyone.
- assert.deepEqual([...block.matchAll(/authoringRules \/\+"\[users='\*',path='([^']+)',access='Read, Write'\]"/g)].map(m=>m[1]),['logistics-data.json','logistics-data.previous.json']);
+ // Only the data files may be written, only by signed-in users; reading stays open to everyone. V20: one rule per file of
+ // DATAFILES (the current data, five backups and the deploy's upload test file), written in one loop.
+ assert.match(block,/^set "DATAFILES=logistics-data\.json logistics-data\.previous\.json logistics-data\.previous-2\.json logistics-data\.previous-3\.json logistics-data\.previous-4\.json logistics-data\.previous-5\.json logistics-data\.check\.json"\r$/m);
+ assert.deepEqual([...block.matchAll(/authoringRules \/\+"\[users='\*',path='([^']+)',access='Read, Write'\]"/g)].map(m=>m[1]),['%%F']);
+ assert.match(block,/for %%F in \(%DATAFILES%\) do \(\r\n  "%APPCMD%" set config "%SITE%" \/section:system\.webServer\/webdav\/authoringRules \/-/);
  assert.match(block,/authorization \/\+"\[accessType='Deny',users='\?',verbs='PUT,DELETE,MKCOL,COPY,MOVE,PROPPATCH,LOCK,UNLOCK'\]"/);
  assert.match(block,/windowsAuthentication \/enabled:true/);
  assert.doesNotMatch(block,/anonymousAuthentication/,'anonymous reading is not touched');
@@ -86,9 +93,12 @@ test('V18: the deploy script lets only signed-in Windows users write only the tw
  // Limits first, writing last (owner OK and peer review 2026-10-23): WebDAV writing is switched on after every limit,
  // and a failed limit switches it off.
  const on=block.indexOf('webdav/authoring /enabled:true');
- for(const limit of ['windowsAuthentication /enabled:true',"authorization /+\"[accessType='Deny',users='?'","path='logistics-data.json',access='Read, Write'","path='logistics-data.previous.json',access='Read, Write'",'*S-1-5-11:(OI)(CI)M'])assert(block.indexOf(limit)>0&&block.indexOf(limit)<on,limit);
+ // V20: the folder-wide right is removed and each data file gets its own right (no (OI)(CI) right on the folder any more);
+ // deleting or moving the data files is refused for everyone.
+ for(const limit of ['windowsAuthentication /enabled:true',"authorization /+\"[accessType='Deny',users='?'","authorization /+\"[accessType='Deny',users='*',verbs='DELETE,","path='%%F',access='Read, Write'",'/remove:g "*S-1-5-11"','/grant "*S-1-5-11:M"'])assert(block.indexOf(limit)>0&&block.indexOf(limit)<on,limit);
+ assert.doesNotMatch(block,/S-1-5-11:\(OI\)|\(CI\)M/);
  assert.match(block.slice(block.indexOf('\r\n:uploadoff\r\n')+2),/^:uploadoff\r\n"%APPCMD%" set config "%SITE%" \/section:system\.webServer\/webdav\/authoring \/enabled:false/);
- assert.equal((block.match(/goto :uploadoff/g)||[]).length,10,'every limit and the switch itself lead to the switch-off');
+ assert.equal((block.match(/goto :uploadoff/g)||[]).length,13,'every limit and the switch itself lead to the switch-off');
  // WebDAV is server-wide (V18 review): newly installed, it leaves the server-wide lists and is added to this site only,
  // before any limit; if it cannot leave them, the feature is removed again.
  const scope=[`config /section:system.webServer/handlers /-"[name='WebDAV']"`,`config /section:system.webServer/modules /-"[name='WebDAVModule']"`,`"%SITE%" /section:system.webServer/modules /+`,`"%SITE%" /section:system.webServer/handlers /+"[@start,name='WebDAV'`].map(s=>block.indexOf(s));
@@ -100,8 +110,9 @@ test('V18: the deploy script lets only signed-in Windows users write only the tw
 
 test('V18: the page shows Upload to server only on the intranet page, in plain words (V19: without the download)',()=>{
  const html=readFileSync(new URL('../public/index.html',import.meta.url),'utf8'),app=readFileSync(new URL('../public/app.js',import.meta.url),'utf8');
- assert.match(html,/<summary>Share this data with everyone<\/summary>.*<button type="button" id="uploadToServer">Upload to server<\/button><p id="uploadToServerStatus" class="hint" role="status"><\/p><\/details>/s);
+ assert.match(html,/<summary>Share this data with everyone<\/summary>.*<button type="button" id="uploadToServer">Upload to server<\/button><p id="uploadToServerStatus" class="hint" role="status"><\/p><details id="serverRestore">/s);
  assert.doesNotMatch(html,/steward|data package/i);
  assert(app.includes("$('packagePublish').hidden=!canUpload();"));
- assert(app.includes('uploadMessage(await uploadToServer(dataPackageText(data)))'));
+ // V20: the upload says which server data the page started from, and a second click confirms the warnings.
+ assert(app.includes("await uploadToServer(text,{base:data.serverBase||data.dataPackage?.id||'',confirmed:uploadConfirmedId===id})"));
 });

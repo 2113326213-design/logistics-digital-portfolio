@@ -6,10 +6,13 @@
 // an earlier one still reads its lines.
 // 2 November 2026 (V19.3): the data comes from the LeanIX export of that day, and ETAS process numbers are recognised. The
 // 23 October lines stay below them, because the intranet site had not been updated in between.
+// Later on 2 November 2026 (V20): the checks before Apply and Upload, and the kept server uploads. New id, same lines below.
 export const WHATS_NEW=Object.freeze({
- id:'2026-11-02',
+ id:'2026-11-02-2',
  date:'2 November 2026',
  items:Object.freeze([
+  'Before you apply an import, the tool now names what looks wrong, for example many new or removed applications, applications of another department, or older data. Tick that you checked it, then apply.',
+  'Upload to server now protects the shared data. It does not overwrite data that someone else uploaded first, it asks again when many applications would be added or removed, and the server keeps the last five uploads. To put one back: Import data, Share this data with everyone, Restore earlier server data.',
   'The data now comes from the LeanIX export of 2 November 2026. 16 applications changed, mostly their business capabilities and processes.',
   'A process recorded with an ETAS number (for example ETAS.I2D.010.050.010) now counts as the same standard process when the number and the name match.',
   'Data checks now list the same items as Issues to review, at every level.',
