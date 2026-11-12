@@ -2,6 +2,16 @@
 
 每个版本的离线包在 [Releases](https://github.com/2113326213-design/logistics-digital-portfolio/releases)；详细的修改说明和用户决定在 [`00_Claude先读.md`](00_Claude先读.md)，验证记录在 [`verification/`](verification/)。
 
+## [V21](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v21-20261022) · 2026-11-12
+
+用户：“我想解决这个问题，让别人一眼就能看出是什么问题”，再要求 “详细的对比展示”，选了方案 A + B。
+1. **A 对比展示**（新 `process-record-kind.mjs`）：工具从流程名读层级（标准写法 “BBM PM <链> <名称> L0–L3”，或 M. / ETAS 编号）。读不出层级、也不是标准写法的记录（BBM_P2S_LE_01 …、RBCC | Warehouse Delivery）在 Issues to review 里叫 **Process name not in the standard form**，按 Prefix / Process chain / Process name / Level 四段检查（processNameParts、checkProcessName），和同一应用的一条标准记录（优先 L3；没有就用示例）并排显示（nameComparison、renderNameComparison），每段标 ok / 错 / 待查并写原因，末尾 “Next: In LeanIX, replace it with a standard process …”。标准写法但缺层级的记录仍叫 Process level not specified；名称正好是一条标准流程时直接给出 “BBM PM <链> <名称> L<n>”。Data checks、To review 导出、Similarity 的记录说明用同一套文字。
+2. **B 工厂清单**（新 `process-name-fixes.mjs`）：Overview → Process 下 “Process names to fix in LeanIX · N”（工厂、应用、LeanIX 记录、哪里不对、怎么改；点应用名打开详情），按 Overview 的工厂筛选；**Export for plants (CSV)**（BOM、Excel 引号、文件名 Process_names_to_fix_<工厂>_<日期>.csv）。内置数据：8 条、5 个应用（RBAC_ME_i-Warehouse、RBCC I4.0 Visualization (Davis)、RBCC PESS、RBCD LOG Xone、VMCN_Packaging Data System ×4）。
+3. **Import data 窗口文字**（另一会话，用户 “这些单词看不懂”）：LeanIX file (.xlsx)、Standard capability and process list (usually leave empty)、Share with everyone、Put back an earlier upload；部署脚本 DONE 行、deploy:sim 14 号和相关测试同步。
+4. **更新提示**：id 2026-11-12，新两条在前；V20 那条改用新按钮名。
+5. **文档与环境**：Windows 于 11-03 清理了 %TEMP%（node_modules、repo-v5/.git 丢失），依赖改装在 %LOCALAPPDATA%\logistics-tool-nm，仓库克隆在 %LOCALAPPDATA%\logistics-tool-repo；测试和导出前设 ESBUILD_BINARY_PATH（esbuild 不能从带中文的路径启动）。
+- 新增 `tests/v21-process-names.test.mjs`（7 项）；9 个锁着旧文字或旧结构的测试按新行为更新（注明原因，没有删检查）。浏览器实测：PESS 详情显示四段对比，Overview → Process 列出 8 条，CSV 导出 9 行，无脚本错误。本版在额度紧张时用 Fable 5.1 完成，省掉了独立审查（下次版本补）。
+
 ## [V20](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v20-20261022) · 2026-11-02
 
 用户问 “可以直接在内网整理部署吗？”，我实测后列出缺口，用户选 “先做 A 组”（共享数据的安全）。

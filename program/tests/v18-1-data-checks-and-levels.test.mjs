@@ -184,7 +184,7 @@ test('the update notice shows once to people who used the tool before, and never
 test('the update notice says what changed in plain words, with no version number',()=>{
  const html=updateNoticeHTML(s=>String(s));
  // V19.3: the notice of 2 November 2026 keeps the 23 October lines below its own.
- assert.match(html,/The tool was updated on 2 November 2026\./);
+ assert.match(html,/The tool was updated on 12 November 2026\./);
  assert.match(html,/Data checks now list the same items as Issues to review/);
  assert.match(html,/if Level 3 matches, Levels 2, 1 and 0 count as complete/);
  assert.match(html,/id="updateNoticeClose">Close</);

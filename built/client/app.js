@@ -20,6 +20,7 @@ import {renderSourceRecords} from './source-records.mjs';
 import {chronologicalEvents,renderHistoryRecords} from './history-view.mjs';
 import {tabFromSearch,searchForTab,appFromSearch,searchWithApp,appLink} from './view-route.mjs';
 import {toReviewCSV,toReviewFileName} from './to-review-export.mjs';
+import {nameFixCSV,nameFixFileName} from './process-name-fixes.mjs';
 import {dataAsOf,dataAsOfText} from './data-as-of.mjs';
 import {DATA_PACKAGE_FILE,readDataPackage,applyDataPackage,packageIsNew,packageDiffers,packageAdds,replacesPageData,packageNotOlder,dataPackageText} from './data-package.mjs';
 import {uploadToServer,uploadMessage,canUpload,listServerData,restoreServerData} from './server-upload.mjs';
@@ -44,6 +45,9 @@ createAppSearch({input:$('appSearch'),list:$('appSearchResults'),getApps:()=>mod
 function downloadText(text,name,type){const url=URL.createObjectURL(new Blob([text],{type})),link=document.createElement('a');link.href=url;link.download=name;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);}
 // To review as CSV for the current Overview filter (V11).
 $('overviewExportReview').onclick=()=>{if(!model)return;const state=overview.getState(),filters={division:state.division,entity:state.entity};downloadText(toReviewCSV(model,filters,{source:data?.source||''}),toReviewFileName(filters),'text/csv;charset=utf-8');};
+// V21 (plan B): the process names to fix in LeanIX, for the plants in the Overview filter. The button is drawn with the
+// Process view, so the click is taken on the Overview.
+$('overviewWorkspace').addEventListener('click',e=>{if(!e.target.closest('#overviewExportNameFixes')||!model)return;const state=overview.getState(),filters={division:state.division,entity:state.entity};downloadText(nameFixCSV(model,maintenanceReport(model,filters,'process'),{source:data?.source||''}),nameFixFileName(filters),'text/csv;charset=utf-8');});
 // Direct link to an application (V11): the address bar carries ?app=<ID> while its details are open.
 function setAppParam(id){try{history.replaceState(history.state,'',location.pathname+searchWithApp(location.search,id)+location.hash);}catch{/* file: pages may restrict URL changes */}}
 

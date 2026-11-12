@@ -3,6 +3,7 @@ import {displayCode} from './display.mjs';
 import {semanticConcerns} from './semantic-review.mjs';
 import {nameDifferenceRows} from './name-differences.mjs';
 import {STANDARD_SNAPSHOT,matchSource} from './leanix-processes.mjs';
+import {noLevelRecord,nameComparison,NO_LEVEL_TEXT} from './process-record-kind.mjs';
 
 // One issue result per application and dimension (owner specification 2026-10-20). The Overview To review counts,
 // the To review list and the application detail all use it.
@@ -20,7 +21,7 @@ export const REVIEW_TEXT=Object.freeze({
  notMatched:'No confirmed match in the current process catalogue.',
  multiple:'Multiple possible matches. Confirmation is required.',
  otherChain:'The name matches a process in another process chain. Confirmation is required.',
- noLevel:'No process level (L0–L3) recorded.',
+ noLevel:NO_LEVEL_TEXT,
  capabilityUnreadable:'The capability code could not be identified. Check the source format.',
  outsideB06:'Outside the B.06 review scope and not in the current catalogue. Confirm the business assignment; no error is confirmed.',
  notInStandard:'This code is not in the business capability standard. Correct the record in LeanIX.',
@@ -34,7 +35,8 @@ const missingText=(dimension,level)=>`No Level ${level} ${dimension==='cap'?'cap
 function processText(model,app,raw){
  const issue=model.issues.find(i=>i.appId===app.id&&i.value===raw&&i.type.startsWith('流程'));
  if(!issue)return REVIEW_TEXT.notMatched;
- if(issue.type==='流程未标注标准层级')return REVIEW_TEXT.noLevel;
+ // V20.1: what kind of record it is (not a standard process, or a standard name without its level), in plain words.
+ if(issue.type==='流程未标注标准层级')return noLevelRecord(model,raw).text;
  if(issue.type==='流程名称对应多个编号'||issue.candidates?.length>1)return REVIEW_TEXT.multiple;
  // L3V is L3 (owner rule 2026-10-19, fixed 2026-10-23): the same text for both.
  if(issue.type==='流程未匹配层级表')return REVIEW_TEXT.notMatched;
@@ -54,7 +56,7 @@ function processDetail(model,app,raw,kind){
  const issue=model.issues.find(i=>i.appId===app.id&&i.value===raw&&i.type.startsWith('流程'));
  const candidates=issue?.candidates?.map(c=>codeName(model,c.id))||[];
  const code=candidates.length?`Candidates: ${candidates.join('; ')}`:'Process code: not identified';
- const next=issue?.type==='流程未标注标准层级'?'Confirm which level (L0–L3) this process belongs to.'
+ const next=issue?.type==='流程未标注标准层级'?noLevelRecord(model,raw).next
   :candidates.length>1?'Confirm the business branch (parent process) to choose one code.'
   :candidates.length?'Confirm whether the record belongs to this process chain.'
   :'Check the name and the catalogue version; this does not show that the process does not exist.';
@@ -128,7 +130,7 @@ export function reviewIssues(model,report,app){
   }
   for(const r of atLevel)if(!r.valid&&!r.accepted)issues.push({dimension,level,kind:'match',record:r.raw,label:`Level ${level} match needs review`,text:textFor(r.raw),...(isCap?{}:{detail:processDetail(model,app,r.raw)})});
  }
- for(const r of records)if(r.level===null&&!r.valid&&!r.accepted)issues.push({dimension,level:null,kind:'record',record:r.raw,label:isCap?'Capability needs review':'Process level not specified',text:textFor(r.raw),...(isCap?{}:{detail:processDetail(model,app,r.raw)})});
+ for(const r of records)if(r.level===null&&!r.valid&&!r.accepted)issues.push({dimension,level:null,kind:'record',record:r.raw,label:isCap?'Capability needs review':noLevelRecord(model,r.raw).label,text:textFor(r.raw),...(isCap?{}:{detail:processDetail(model,app,r.raw),compare:nameComparison(model,app,r.raw)})});
  // A matched code whose latest LeanIX name differs from the Signavio snapshot name is not an issue since V19.1: both names
  // are valid (union, owner decision 2026-10-23). Until V19 it was listed as "Process name differs between sources".
  if(isCap){

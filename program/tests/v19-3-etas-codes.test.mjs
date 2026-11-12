@@ -49,7 +49,7 @@ test('the update notice of 2 November 2026 tells returning users about the new d
  assert.equal(updateNoticeDue(seen('2026-10-23-3')),true,'someone who closed the 23 October notice sees this one');
  assert.equal(updateNoticeDue(seen(WHATS_NEW.id)),false);
  const html=updateNoticeHTML(s=>String(s));
- assert.match(html,/The tool was updated on 2 November 2026\./);
+ assert.match(html,/The tool was updated on 12 November 2026\./);
  assert(html.includes('<li>The data now comes from the LeanIX export of 2 November 2026. 16 applications changed, mostly their business capabilities and processes.</li>'));
  assert(html.includes('<li>A process recorded with an ETAS number (for example ETAS.I2D.010.050.010) now counts as the same standard process when the number and the name match.</li>'));
  assert.match(html,/Data checks now list the same items as Issues to review/,'the 23 October lines stay');

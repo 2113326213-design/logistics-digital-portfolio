@@ -94,7 +94,8 @@ test('a confirmed record is not an issue anywhere, and it still does not match t
  assert.equal(confirmed.issues.some(i=>i.appId===a.id&&i.value===XONE),false,'not a model issue');
  assert.equal(model.issues.some(i=>i.appId===a.id&&i.value===XONE),true,'it was one before the decision');
  assert.deepEqual(reviewIssues(confirmed,report,a),[],'not in To review or the application detail');
- assert.deepEqual(reviewIssues(model,process,xone).map(i=>i.label),['Process level not specified'],'its only process issue before');
+ // V21: a record not in the standard form ("BBM_…", no level) is labelled "Process name not in the standard form".
+ assert.deepEqual(reviewIssues(model,process,xone).map(i=>i.label),['Process name not in the standard form'],'its only process issue before');
  assert.equal(reviewItems(confirmed).some(i=>i.raw===XONE),false,'not in the review checklist');
  assert.deepEqual(dataChecksForApp(confirmed,a).checks.find(c=>c.dimension==='process'&&c.raw===XONE).tags.map(t=>t.label),['Confirmed by owner as recorded']);
  // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): 10 → 9, i.e. still one less than the 10 above;

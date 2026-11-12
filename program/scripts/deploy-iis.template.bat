@@ -338,7 +338,7 @@ echo This script did not change it. After the server owner approves, run:
 echo   netsh advfirewall firewall add rule name="LogisticsTool %PORT_FOR_TEST%" dir=in action=allow protocol=TCP localport=%PORT_FOR_TEST%
 echo Rollback: restore the file in %BACKUP%, or remove the site:
 echo   %INETSRV%\appcmd.exe delete site "%SITE%"
-if "%UPLOAD_ON%"=="1" echo To undo a bad upload: in the tool use "Restore earlier server data" ^(Import data dialog^).
+if "%UPLOAD_ON%"=="1" echo To undo a bad upload: in the tool open Import data, then "Put back an earlier upload".
 echo.
 if exist "%TMPX%" rmdir /s /q "%TMPX%"
 popd 2>nul

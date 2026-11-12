@@ -104,7 +104,8 @@ test('To review exports every open issue of the filtered applications, one row p
  const inLeanix=new Map(model.apps.map(a=>[a.id,new Set(a.inLeanix.map(x=>x.raw))]));
  assert(!processRows.some(r=>r.record&&inLeanix.get(r.appId).has(r.record)),'no row for a process in LeanIX');
  assert(!processRows.some(r=>/match needs review|name differs between sources/i.test(r.issue)));
- assert.deepEqual(processRows.filter(r=>r.application==='RBCD LOG Xone').map(r=>[r.issue,r.record]),[['Process level not specified','BBM_O2C_OM_01 Schedule Agreement for Goods']]);
+ // V21: a record not in the standard form ("BBM_…", no level) is labelled "Process name not in the standard form".
+ assert.deepEqual(processRows.filter(r=>r.application==='RBCD LOG Xone').map(r=>[r.issue,r.record]),[['Process name not in the standard form','BBM_O2C_OM_01 Schedule Agreement for Goods']]);
  const rbcw=rows.filter(r=>r.application==='RBCW Auto Warehouse Management System'&&r.dimension==='Process');
  // V18.1 (fixed rule 2026-10-23): its matching L2 makes L0 and L1 full; its L3 is in LeanIX and matches (V19.1 union;
  // until V19 it was confirmed as recorded): nothing to review.

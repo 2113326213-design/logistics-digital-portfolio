@@ -20,7 +20,17 @@
 - **小版本**（V10.1、V10.2……）：修正、文字和显示调整。
 - 版本号写在 `program/scripts/release.mjs` 的 RELEASE_VERSION（小写，如 `v10`、`v10.1`）；文件名、发布 zip、部署脚本和 Release 标签（`v10-20261022`）都随它生成。导入预览的“变化明细”是新功能，所以这一版是 V10（原计划的 V9.20 没有发布）。
 
-## V20 当前状态（2026-11-02，优先于所有历史段落）
+## V21 当前状态（2026-11-12，优先于所有历史段落）
+
+- **起因**：用户的 mentor 说 PESS 的数据 “没更新”；查明是内网服务器仍是旧版本（V18 起未部署），数据本身在 V20 已是 11-02 的导出。追问 PESS 的 BBM_P2S_LE_01 时，用户要 “让别人一眼就能看出是什么问题”，选方案 A + B。
+- **A**：`public/process-record-kind.mjs`——processNameParts（前缀 / 链 / 名称 / 层级，L3V 读作 L3）、checkProcessName（每段 ok/wrong/check + 说明；链以 model.procs 的 L0 节点为准，“16 standard chains”）、standardExample（同应用按名字匹配的标准记录，L3 优先；没有则 STANDARD_EXAMPLE）、noLevelRecord（label/text/next：非标准写法 → NOT_STANDARD_LABEL；标准写法缺层级 → NO_LEVEL_LABEL，名称唯一对应标准流程时给出完整写法）、nameComparison/renderNameComparison（.name-compare 表格）、nameProblems。接入 review-issues.mjs（issue.compare、label、Next）、process-issues.mjs（渲染：记录名在前、标签、说明、表格——v915 测试靠这个顺序找记录）、data-checks.mjs、comparison-records.mjs。
+- **B**：`public/process-name-fixes.mjs`——nameFixRows(model, report)（report.issues 里 level null 的 process 记录）、renderNameFixes（Overview 只在 Process 下渲染）、nameFixCSV、nameFixFileName；app.js 在 #overviewWorkspace 上代理 #overviewExportNameFixes 的点击。样式在 interface.css（.name-compare*、.name-part.is-ok/is-wrong/is-check、.name-fixes*）。
+- **Import data 文字**（另一会话）：index.html 的四处标签，deploy 模板 DONE 行，deploy-sim 14 号，相关测试。
+- **更新提示**：WHATS_NEW id 2026-11-12。
+- 测试 583 项通过（新增 `tests/v21-process-names.test.mjs` 7 项）；deploy:sim 19 / 19。浏览器（本机 http，`%LOCALAPPDATA%\logistics-handoff\serve-static.mjs`）：PESS 详情、Overview 清单、CSV 导出都按预期。未做独立审查（额度）；真实 IIS 仍未部署。
+- 当前离线包：`offline/logistics-offline-20261022-v21.zip`。验证记录见 `verification/v21-verification.md`。
+
+## V20 状态（2026-11-02，受顶部 V21 更新）
 
 - **起因**：用户问能不能直接在内网整理并部署；我在本机模拟内网走通了自助流程，列出缺口（A 共享数据安全、B 工厂用户、C 维护），用户选 “先做 A 组”。
 - **上传起点**：workspace 新字段 `serverBase`（16 位 hex，`workspace.mjs` serverBaseField）= 页面从服务器拿的（applyDataPackage）或自己上传成功的那份 id；文件导入不清除它（dataPackage 会被清除）。`uploadToServer(text,{base,confirmed,replaces})`：same → 不传；restore 模式下服务器 id ≠ replaces → changed；否则服务器更新 → older；服务器 id ≠ base → conflict；uploadWarnings 有内容且未确认 → check；服务器文件读不了且未确认 → check。页面 base = serverBase || dataPackage.id。

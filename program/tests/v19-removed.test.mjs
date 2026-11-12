@@ -41,7 +41,7 @@ test('V19: a LeanIX process export is refused before it could be read as an inve
 
 test('V19: the download for the server is gone; the share section shows only where Upload to server works',()=>{
  assert(!/exportDataPackage|Download file for the server|give it to the server admin/.test(html+app));
- assert.match(html,/<details class="package-publish" id="packagePublish"><summary>Share this data with everyone<\/summary><p>[^<]*<\/p><button type="button" id="uploadToServer">Upload to server<\/button><p id="uploadToServerStatus" class="hint" role="status"><\/p><details id="serverRestore">.*<\/details><\/details>/);
+ assert.match(html,/<details class="package-publish" id="packagePublish"><summary>Share with everyone<\/summary><p>[^<]*<\/p><button type="button" id="uploadToServer">Upload to server<\/button><p id="uploadToServerStatus" class="hint" role="status"><\/p><details id="serverRestore">.*<\/details><\/details>/);
  assert(app.includes("$('packagePublish').hidden=!canUpload();"));
  const script=deployScript({html:Buffer.from('<html>test</html>'),version:'v1.2',zipName:'logistics-offline-20300101-v1.2.zip',scriptName:'deploy-iis.bat'});
  assert(!script.includes('Download file for the server'));
@@ -61,7 +61,8 @@ test('V19: the one-time update notice is new and says in plain words what was re
  assert.equal(updateNoticeDue(storage),true);
  const html=updateNoticeHTML(s=>String(s));
  assert(html.includes('<li>Import data no longer compares LeanIX process exports. If you choose one, the tool says so and changes nothing.</li>'));
- assert(html.includes('<li>Share this data with everyone now has only Upload to server. The download for the server admin is gone.</li>'));
+ // V21: the section is called "Share with everyone" now, so the older line uses the current name.
+ assert(html.includes('<li>Share with everyone now has only Upload to server. The download for the server admin is gone.</li>'));
  // The first update's lines stay for browsers that skipped it.
  assert.match(html,/Data checks now list the same items as Issues to review/);
  assert.doesNotMatch(html,/\bV\d|version|release/i);

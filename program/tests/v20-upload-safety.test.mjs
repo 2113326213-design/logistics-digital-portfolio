@@ -186,7 +186,8 @@ test('V20: the page asks before Apply and before Upload, sends nothing while a p
  assert(app.includes("else if(result.status==='conflict'&&result.pkg&&!packageAdds(data,result.pkg,packageOptions())){data={...data,serverBase:result.pkg.id};autosave.schedule();message='This page already has everything in the server data. Nothing was uploaded yet: click Upload to server again to replace it.';}"));
  assert(app.includes("if(['done','same','conflict','older'].includes(result.status))checkDataPackage();"));
  // Restore: listed, asked, then put back; the page then reads the server again.
- assert(html.includes('<details id="serverRestore"><summary>Restore earlier server data</summary>'));
+ // Plain words (2026-11-12): the window says "Put back an earlier upload".
+ assert(html.includes('<details id="serverRestore"><summary>Put back an earlier upload</summary>'));
  assert(html.includes('<button type="button" id="serverRestoreList">Show earlier uploads</button>'));
  assert(app.includes("if(!window.confirm(`Put this data back on the server?"));
  assert(app.includes("const result=await restoreServerData(backup.file,{currentId:list.current?.id||'',expectId:backup.pkg.id,newerIds:list.backups.slice(0,index).map(b=>b.pkg?.id).filter(Boolean)});"));
@@ -200,13 +201,13 @@ test('V20: the page asks before Apply and before Upload, sends nothing while a p
 
 import {WHATS_NEW,updateNoticeDue,updateNoticeHTML} from '../public/whats-new.mjs';
 test('V20: returning users are told once about the checks and the kept uploads, in plain words, with no version number',()=>{
- assert.equal(WHATS_NEW.id,'2026-11-02-2');
+ assert.notEqual(WHATS_NEW.id,'2026-11-02','V20 had its own notice; V21 has the next one');
  const seen=id=>{const map=new Map([['logistics-portfolio:update-seen',id]]);return {get length(){return map.size;},key:i=>[...map.keys()][i]??null,getItem:k=>map.has(k)?map.get(k):null,setItem:(k,v)=>map.set(k,String(v))};};
  assert.equal(updateNoticeDue(seen('2026-11-02')),true,'someone who closed the earlier notice of the same day sees this one');
- assert.equal(updateNoticeDue(seen('2026-11-02-2')),false);
+ assert.equal(updateNoticeDue(seen(WHATS_NEW.id)),false);
  const html=updateNoticeHTML(s=>String(s));
  assert.match(html,/<li>Before you apply an import, the tool now names what looks wrong/);
- assert.match(html,/<li>Upload to server now protects the shared data\..*Restore earlier server data\.<\/li>/);
+ assert.match(html,/<li>Upload to server now protects the shared data\..*Put back an earlier upload\.<\/li>/);
  assert.match(html,/ETAS number/,'the earlier lines of the day stay');
  assert.doesNotMatch(html,/\bV\d|version|release|steward/i);
 });

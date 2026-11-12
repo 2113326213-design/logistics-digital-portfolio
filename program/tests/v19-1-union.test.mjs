@@ -54,7 +54,8 @@ test('V19.1: on the bundled data every process with a level matches; only missin
  // VMCN_iWPC_AKL_Szh5 (now only "BBM PM Others L0") leaves them.
  assert.deepEqual(report.levels.map(l=>[l.level,l.filled.length,l.valid.length]),[[0,75,75],[1,73,73],[2,70,70],[3,68,68]]);
  const labels=new Set(model.apps.flatMap(a=>report.issues.get(a.id).map(i=>i.label.replace(/\d/,'N'))));
- assert.deepEqual([...labels].sort(),['Level N missing','Process level not specified']);
+ // V21: a record not in the standard form ("BBM_…", no level) is labelled "Process name not in the standard form". Every record without a level in the bundled data is written that way.
+ assert.deepEqual([...labels].sort(),['Level N missing','Process name not in the standard form']);
  assert(!toReviewRows(model).some(r=>r.dimension==='Process'&&/match needs review|differs between sources/.test(r.issue)));
  // Load Truck, recorded by three applications, is no longer a question for the plants.
  for(const name of ['ShzP_DAVIS','RBCD WI management system'])assert(!processIssues(model,byName(model,name)).some(i=>i.raw==='BBM PM I2D Load Truck L3'),name);
@@ -67,7 +68,7 @@ test('V19.1: not found, several codes and another chain all match when the recor
  assert.equal(valid('RBCW E-Queue system','BBM PM I2D Register Truck L3').valid,true,'several Signavio codes');
  assert.equal(valid('VMCN_iSCMP: Intelligent Supply Chain management platform','BBM PM P2F Execute finite heuristic L3').valid,true,'not in the Signavio list');
  const noLevel=byName(model,'RBAC_ME_i-Warehouse');
- assert.deepEqual(processIssues(model,noLevel).map(i=>i.label),['Level 2 missing','Level 3 missing','Process level not specified'],'the record without a level, and the levels it cannot fill');
+ assert.deepEqual(processIssues(model,noLevel).map(i=>i.label),['Level 2 missing','Level 3 missing','Process name not in the standard form'],'the record without a level (V21: named for what it is), and the levels it cannot fill');
  assert.deepEqual(noLevel.inLeanix,[]);
 });
 

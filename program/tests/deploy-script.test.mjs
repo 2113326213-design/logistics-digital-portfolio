@@ -148,7 +148,7 @@ test('A group (owner 2026-11-02): signed-in users may change only the 7 data fil
  const done=script.slice(script.indexOf('echo === DONE ==='),script.indexOf('\r\n:fail\r\n'));
  // V20 review: only through the tool. A file copied by hand is not marked as put back, so pages that took the bad data
  // would not be told, and the bad data would not be kept as a backup.
- assert.match(done,/\r\nif "%UPLOAD_ON%"=="1" echo To undo a bad upload: in the tool use "Restore earlier server data" \^\(Import data dialog\^\)\.\r\n/);
+ assert.match(done,/\r\nif "%UPLOAD_ON%"=="1" echo To undo a bad upload: in the tool open Import data, then "Put back an earlier upload"\.\r\n/);
  assert.doesNotMatch(script,/by hand copy/);
  assert.match(block,/\r\necho       To stop uploads later: %INETSRV%\\appcmd\.exe set config "%SITE%" \/section:system\.webServer\/webdav\/authoring \/enabled:false \/commit:apphost\r\ngoto :uploaddone\r\n/);
 });

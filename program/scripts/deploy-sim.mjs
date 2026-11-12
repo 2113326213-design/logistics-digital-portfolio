@@ -261,7 +261,7 @@ try{
   for(const f of SHARED)if(!existsSync(path.join(target,f))||statSync(path.join(target,f)).size!==0)list14.push(`${f} was not created empty`);
   if(!/^\{"check":"[^"]+"\}$/.test(readLog(path.join(target,CHECK_FILE))))list14.push(`${CHECK_FILE} does not hold the upload test text`);
   if(!requests.join(' ').includes(`PUT /${CHECK_FILE} GET /${CHECK_FILE}`))list14.push(`no PUT and read-back of ${CHECK_FILE}: ${requests.join(' ')}`);
-  check('14. normal deploy after V18-V19.3: 7 WebDAV rules, folder and index.html read-only, 7 empty data files changeable, upload test passes',problems(normal,list14),[upload,'Signed-in users may change only the logistics-data*.json files',UPLOAD_TEST,'=== DONE ===','To undo a bad upload: in the tool use "Restore earlier server data" (Import data dialog).','To stop uploads later:'],0,['problem:',UPLOAD_TEST_FAILED,'by hand copy']);
+  check('14. normal deploy after V18-V19.3: 7 WebDAV rules, folder and index.html read-only, 7 empty data files changeable, upload test passes',problems(normal,list14),[upload,'Signed-in users may change only the logistics-data*.json files',UPLOAD_TEST,'=== DONE ===','To undo a bad upload: in the tool open Import data, then "Put back an earlier upload".','To stop uploads later:'],0,['problem:',UPLOAD_TEST_FAILED,'by hand copy']);
   // 15: the data files are already there with the shared data: never overwritten, and still changeable.
   fresh();logged(false);requests.length=0;
   const kept=Object.fromEntries(DATA.map(f=>[f,`{"kept":"${f}","note":"shared data, must not be replaced"}`]));

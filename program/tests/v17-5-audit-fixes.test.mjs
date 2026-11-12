@@ -65,7 +65,8 @@ test('V17.5 (3): a record the owner confirmed as recorded is listed in Data chec
  const before=dataChecksForApp(model,xone);
  const confirmedModel=buildModel({...data,acceptedRecords:[...data.acceptedRecords,{appId:xone.id,dimension:'process',raw,reviewer:'Owner decision',reason:'Test confirmation.',acceptedAt:'2026-10-23'}]});
  const after=dataChecksForApp(confirmedModel,confirmedModel.apps.find(a=>a.id===xone.id)),row=after.checks.find(r=>r.raw===raw);
- assert(before.checks.find(r=>r.raw===raw)?.tags.some(t=>t.label==='Process level not specified'),'unconfirmed: a line to check');
+ // V21: a record not in the standard form ("BBM_…", no level) is labelled "Process name not in the standard form".
+ assert(before.checks.find(r=>r.raw===raw)?.tags.some(t=>t.label==='Process name not in the standard form'),'unconfirmed: a line to check');
  assert(row?.tags.some(t=>t.label==='Confirmed by owner as recorded'),'confirmed: still listed');
  assert(!row.primary&&row.tags.every(t=>t.label==='Confirmed by owner as recorded'),'confirmed: no check line for it');
  assert.equal(after.n,before.n-1,'its confirmed record is not counted');

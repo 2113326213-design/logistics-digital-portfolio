@@ -3,6 +3,7 @@ import {displayCode,displayName} from './display.mjs';
 import {english} from './english.mjs';
 import {comparisonLevelText,comparedLevelText} from './pair-status.mjs';
 import {quickDifference} from './explanations.mjs';
+import {noLevelRecord} from './process-record-kind.mjs';
 
 // Why a branch without coverage was not scored (V9.15). Only a too-coarse registration is missing detail: the target's
 // own B.06-root / L0 branch, or a peer that registers only coarser levels. A branch held back by the other application's
@@ -60,7 +61,9 @@ export function comparisonRecordEvidence(model,forward,reverse){
    // A capability node may carry a label registered by another application.
    // Prefer this application's literal source entry when its code is known.
    const raw=dimension==='cap'&&record.id&&!record.semantic?scope.app.rawCap.filter(value=>capCode(value)===record.id):[];
-   return (raw.length?raw:[record.value]).map(value=>({raw:value||'Blank source record',reason:english(record.reason),candidates:record.candidates||[]}));
+   // V20.1: a record without a level is named as Issues to review names it ("Not a standard process" for an old or
+   // plant-made name).
+   return (raw.length?raw:[record.value]).map(value=>({raw:value||'Blank source record',reason:record.reason==='流程未标注标准层级'?noLevelRecord(model,value).label:english(record.reason),candidates:record.candidates||[]}));
   });
   const unconfirmed=[...new Map(pending.map(record=>[JSON.stringify(record),record])).values()];
   const excluded=dimension==='cap'?scope.outside.flatMap(node=>{

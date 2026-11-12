@@ -110,7 +110,7 @@ test('V18: the deploy script lets only signed-in Windows users write only the da
 
 test('V18: the page shows Upload to server only on the intranet page, in plain words (V19: without the download)',()=>{
  const html=readFileSync(new URL('../public/index.html',import.meta.url),'utf8'),app=readFileSync(new URL('../public/app.js',import.meta.url),'utf8');
- assert.match(html,/<summary>Share this data with everyone<\/summary>.*<button type="button" id="uploadToServer">Upload to server<\/button><p id="uploadToServerStatus" class="hint" role="status"><\/p><details id="serverRestore">/s);
+ assert.match(html,/<summary>Share with everyone<\/summary>.*<button type="button" id="uploadToServer">Upload to server<\/button><p id="uploadToServerStatus" class="hint" role="status"><\/p><details id="serverRestore">/s);
  assert.doesNotMatch(html,/steward|data package/i);
  assert(app.includes("$('packagePublish').hidden=!canUpload();"));
  // V20: the upload says which server data the page started from, and a second click confirms the warnings.

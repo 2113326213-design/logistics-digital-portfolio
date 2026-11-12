@@ -1,6 +1,7 @@
 import {maintenanceReport} from './overview.mjs';
 import {reviewIssues,REVIEW_TEXT} from './review-issues.mjs';
 import {matchSource} from './leanix-processes.mjs';
+import {renderNameComparison} from './process-record-kind.mjs';
 
 // Issues in the application profile (owner requests 2026-10-20): the profile lists exactly the open issues that the
 // Overview To review uses for this application (public/review-issues.mjs), one line each: the original record (or
@@ -20,14 +21,16 @@ const reportFor=(model,dimension)=>{const cache=reports[dimension];if(!cache.has
 
 // Each entry: raw = the original record ('' for a missing level), label = what the issue is, findings = one sentence.
 export function applicationIssues(model,app,dimension){
- return reviewIssues(model,reportFor(model,dimension),app).map(issue=>({raw:issue.kind==='missing'?'':issue.record,label:issue.label,level:issue.level,kind:issue.kind,findings:[issue.text,...(issue.detail?[issue.detail]:[])]}));
+ return reviewIssues(model,reportFor(model,dimension),app).map(issue=>({raw:issue.kind==='missing'?'':issue.record,label:issue.label,level:issue.level,kind:issue.kind,findings:[issue.text,...(issue.detail?[issue.detail]:[])],...(issue.compare?{compare:issue.compare}:{})}));
 }
 export const processIssues=(model,app)=>applicationIssues(model,app,'process');
 export const capabilityIssues=(model,app)=>applicationIssues(model,app,'cap');
 
 function renderIssues(title,issues,esc,dimension=''){
  if(!issues.length)return '';
- return `<h4>${title} · <span>${issues.length}</span></h4><div class="profile-processes">${issues.map(({raw,label,kind,findings})=>`<div class="profile-unlisted" data-issue-dimension="${esc(dimension)}" data-issue-record="${esc(raw)}" data-issue-kind="${esc(kind)}"><span class="profile-source-label">${esc(raw||label)}</span>${findings.map(text=>`<small class="profile-catalogue-note">${esc(text)}</small>`).join('')}</div>`).join('')}</div>`;
+ // V21: a record whose level cannot be read is named ("Process name not in the standard form") and shown part by part
+ // next to the standard form.
+ return `<h4>${title} · <span>${issues.length}</span></h4><div class="profile-processes">${issues.map(({raw,label,kind,findings,compare})=>`<div class="profile-unlisted" data-issue-dimension="${esc(dimension)}" data-issue-record="${esc(raw)}" data-issue-kind="${esc(kind)}"><span class="profile-source-label">${esc(raw||label)}</span>${compare?`<strong class="profile-issue-label">${esc(label)}</strong>`:''}${findings.map(text=>`<small class="profile-catalogue-note">${esc(text)}</small>`).join('')}${renderNameComparison(compare,esc)}</div>`).join('')}</div>`;
 }
 export const renderProcessIssues=(issues,esc)=>renderIssues('Process issues',issues,esc,'process');
 // Confirmed process matches with the record, the code, the level and the source that supports each match.

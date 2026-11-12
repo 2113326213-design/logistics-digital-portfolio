@@ -1,4 +1,4 @@
-npm run deploy:sim · 2026-11-03 · deploy-iis.bat V20
+npm run deploy:sim · 2026-11-12 · deploy-iis.bat V21
 PASS  1. not Administrator, UAC accepted
 PASS  2. not Administrator, UAC cancelled
 PASS  3. already Administrator
@@ -18,4 +18,4 @@ PASS  15. data files already there with data: not overwritten, still changeable 
 PASS  16. the upload test gets 401: warned, the deploy still reaches DONE and pauses only at the end
 PASS  17. one data file cannot get its right: upload off with the reason, the deploy goes on
 PASS  18. deleting and moving cannot be refused: upload off with the reason, the deploy goes on
-All 19 checks passed for deploy-iis.bat (V20).
+All 19 checks passed for deploy-iis.bat (V21).

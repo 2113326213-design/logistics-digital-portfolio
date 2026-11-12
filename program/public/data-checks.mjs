@@ -8,6 +8,7 @@ import {reviewIssues} from './review-issues.mjs';
 import {semanticConcerns} from './semantic-review.mjs';
 import {nameDifferenceRows} from './name-differences.mjs';
 import {acceptedText} from './accepted-records.mjs';
+import {noLevelRecord} from './process-record-kind.mjs';
 export {nameDifferenceRows};
 
 const applied=(model,appId,dimension,raw)=>model.correctionLog.some(c=>c.state==='Applied'&&c.appId===appId&&c.dimension===dimension&&c.raw===raw);
@@ -74,7 +75,8 @@ function sourceRows(model,app){
   const issue=model.issues.find(item=>item.appId===appId&&item.value===raw&&item.type.startsWith('流程'));
   if(!issue)continue;
   const row=addRow(rows,'process',raw);
-  if(issue.type==='流程未标注标准层级')addTag(row,'Process level not specified');
+  // V20.1: the same words as Issues to review — what kind of record it is and what to change in LeanIX.
+  if(issue.type==='流程未标注标准层级'){const kind=noLevelRecord(model,raw);addTag(row,kind.label,`${kind.text} ${kind.next}`);}
   else if(issue.type==='流程名称对应多个编号'||issue.candidates?.length>1){
    const codes=[...new Set(issue.candidates.map(candidate=>displayCode(candidate.id)))];
    addTag(row,`Matches ${codes.length} standard codes`,codes.join(' / '));

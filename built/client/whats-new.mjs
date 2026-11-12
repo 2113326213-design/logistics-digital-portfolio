@@ -7,18 +7,22 @@
 // 2 November 2026 (V19.3): the data comes from the LeanIX export of that day, and ETAS process numbers are recognised. The
 // 23 October lines stay below them, because the intranet site had not been updated in between.
 // Later on 2 November 2026 (V20): the checks before Apply and Upload, and the kept server uploads. New id, same lines below.
+// 12 November 2026 (V21): process names the tool cannot read are named and compared with the standard form, with a list
+// for the plants; the Import data window uses simpler words. New id, the earlier lines stay below.
 export const WHATS_NEW=Object.freeze({
- id:'2026-11-02-2',
- date:'2 November 2026',
+ id:'2026-11-12',
+ date:'12 November 2026',
  items:Object.freeze([
+  'A process name the tool cannot read is now called "Process name not in the standard form". The application details show it part by part next to a standard name, and Overview, Process, lists every such name with what to change in LeanIX. Export for plants (CSV) gives that list to the plants.',
+  'The Import data window uses simpler words: "LeanIX file (.xlsx)", "Share with everyone" and "Put back an earlier upload".',
   'Before you apply an import, the tool now names what looks wrong, for example many new or removed applications, applications of another department, or older data. Tick that you checked it, then apply.',
-  'Upload to server now protects the shared data. It does not overwrite data that someone else uploaded first, it asks again when many applications would be added or removed, and the server keeps the last five uploads. To put one back: Import data, Share this data with everyone, Restore earlier server data.',
+  'Upload to server now protects the shared data. It does not overwrite data that someone else uploaded first, it asks again when many applications would be added or removed, and the server keeps the last five uploads. To put one back: Import data, Share with everyone, Put back an earlier upload.',
   'The data now comes from the LeanIX export of 2 November 2026. 16 applications changed, mostly their business capabilities and processes.',
   'A process recorded with an ETAS number (for example ETAS.I2D.010.050.010) now counts as the same standard process when the number and the name match.',
   'Data checks now list the same items as Issues to review, at every level.',
   'A level with no entry now counts as complete when a deeper level matches the standard. For example, if Level 3 matches, Levels 2, 1 and 0 count as complete.',
   'Import data no longer compares LeanIX process exports. If you choose one, the tool says so and changes nothing.',
-  'Share this data with everyone now has only Upload to server. The download for the server admin is gone.',
+  'Share with everyone now has only Upload to server. The download for the server admin is gone.',
   'A process now counts as matching when it is in the Signavio list or in LeanIX. Every process recorded with a level (L0 to L3) is in LeanIX, so only processes without a level are still listed to review. The Similarity check no longer asks to confirm them.'
  ])
 });

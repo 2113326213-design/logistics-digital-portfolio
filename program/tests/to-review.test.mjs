@@ -142,7 +142,8 @@ test('bundled data: To review counts and the profile shows exactly the same issu
  const nameOnly=model.apps.find(a=>a.Name==='RBAC_ME_Szh5 Intralogistics control system');
  assert.deepEqual([nameOnly.inLeanix,process.issues.get(nameOnly.id)],[[],[]],'V19.1: the Signavio and the LeanIX name are both valid, no name-difference issue');
  const xone=model.apps.find(a=>a.Name==='RBCD LOG Xone');
- assert.deepEqual([xone.inLeanix.map(x=>x.raw),process.issues.get(xone.id).map(i=>i.label)],[['BBM PM P2F Transmit Material and Sales Master Data L3'],['Process level not specified']]);
+ // V21: a record not in the standard form ("BBM_…", no level) is labelled "Process name not in the standard form".
+ assert.deepEqual([xone.inLeanix.map(x=>x.raw),process.issues.get(xone.id).map(i=>i.label)],[['BBM PM P2F Transmit Material and Sales Master Data L3'],['Process name not in the standard form']]);
  assert(!l3MaintenanceMetrics(process).notPassing.includes(xone),'its Level 3 matches (V19.1 union)');
  // V19.1 union: the owner confirmations of 2026-10-22 are superseded; the records match and are not shown as confirmed.
  assert.deepEqual(l3MaintenanceMetrics(process).confirmed,[]);
