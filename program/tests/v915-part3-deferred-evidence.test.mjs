@@ -13,7 +13,10 @@ import {comparisonRecordEvidence,renderComparisonRecords,renderDeferredEvidence}
 import {comparedLevelText,comparisonLevelText} from '../public/pair-status.mjs';
 import {displayCode} from '../public/display.mjs';
 
-const data=workspaceData(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url))));
+const bundled=workspaceData(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url))));
+// 2026-11-12 data: Control Tower now has B.06.8.2 at Level 3, so its live comparison no longer defers detail. Preserve
+// the original Level 2-vs-Level 3 fixture here; all deferred-record, score and placement assertions below still apply.
+const data={...bundled,apps:bundled.apps.map(a=>a.Name==='Control Tower'?{...a,'Business Capabilities':'B.06.5 Material Flow Orchestration'}:a)};
 const model=buildModel(data),app=name=>model.apps.find(item=>item.Name===name);
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const capIndex=createSimilarity(model,'cap'),processIndex=createSimilarity(model,'process');
@@ -46,7 +49,7 @@ function openPair(document,a,b){click(document.getElementById('similarityReview'
 // ARS ↔ AGR w/ Camera is compared at Level 3 with nothing deferred (score 30.9 → 0.9). The same scenario (A records
 // B.06.5 at Level 2, B = AGR w/ Camera records B.06.5.1 at Level 3; Process compared at Level 3, nothing deferred) is
 // Control Tower ↔ AGR w/ Camera; neither application changed in the export. Its score is 30.7 (was 30.9 for ARS).
-test('Control Tower ↔ AGR w/ Camera: the records box states the compared levels only; the deferred detail is in How the score is calculated',()=>withUI((ui,document)=>{
+test('Control Tower Level 2 fixture ↔ AGR w/ Camera: the records box states the compared levels only; the deferred detail is in How the score is calculated',()=>withUI((ui,document)=>{
  const tower=app('Control Tower'),agr=app('AGR w/ Camera'),html=openPair(document,tower.id,agr.id);
  assert.match(html,/<strong>30\.7<small> \/ 100<\/small><\/strong>/,'score unchanged');
  const records=recordsBox(html);

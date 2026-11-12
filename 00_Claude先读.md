@@ -10,7 +10,7 @@
 4. **任何结束都要先给出原因并 `pause`**：UAC 被取消或拦截时写明原因并提示“右键 → Run as administrator”；只有把工作交给新窗口时才不暂停直接退出。
 5. **从 zip 里双击运行时，先把脚本复制到 Downloads**，新窗口运行这份副本（资源管理器会在窗口关闭后删除 zip 里临时解出的文件）。副本就在下载的发布 zip 旁边，所以能找到它。
 6. **只改模板** `program/scripts/deploy-iis.template.bat`（LF 换行，生成时转为 CRLF）；`tests/deploy-script.test.mjs` 检查以上规则。
-7. **发布前在本机模拟一遍**：`npm run release:files` 之后运行 `npm run deploy:sim`（仅 Windows；不弹 UAC、不碰 IIS），10 种情况（未提权并同意 UAC、UAC 被取消、已是管理员、关闭当前目录查找的新站点、带网页服务的重新部署、Downloads 里只有浏览器存成 “(1)” 的压缩包、Downloads 里只有别的版本；一次下载：在发布 zip 里双击脚本、在 “(1)” 副本里双击脚本、zip 里的 HTML 与脚本里的 SHA-256 不符必须停下并等待按键）都要 PASS 才能发布。
+7. **发布前在本机模拟一遍**：`npm run release:files` 之后运行 `npm run deploy:sim`（仅 Windows；不弹 UAC、不碰 IIS），19 项检查（包括未提权并同意 UAC、UAC 被取消、已是管理员、关闭当前目录查找的新站点、带网页服务的重新部署、Downloads 里只有浏览器存成 “(1)” 的压缩包、Downloads 里只有别的版本；一次下载：在发布 zip 里双击脚本、在 “(1)” 副本里双击脚本、zip 里的 HTML 与脚本里的 SHA-256 不符必须停下并等待按键）都要 PASS 才能发布。
 8. **一次下载**（2026-10-22 起；用户在 V11 和 V13.1 两次只下载了 `deploy-iis-script.zip`，脚本正确地停在 “…zip not found”）：`deploy-iis.bat` 放进发布 zip `logistics-offline-<日期>-<版本>.zip`，和 HTML 放在一起；部署步骤是“下载这一个 zip → 打开 → 双击 deploy-iis.bat”。脚本不能包含装着它的 zip 的 SHA-256，所以校验的是同一个 zip 里 HTML 的 SHA-256（发布前就已知），不符时停下、写明原因并 `pause`。**发 Release 只附发布 zip 一个文件**，不再生成也不再附 `deploy-iis-script.zip`（`npm run release:files` 会删掉 `offline/` 里的旧文件；下文历史段落里“附 `offline/deploy-iis-script.zip`”的步骤作废）。`offline/deploy-iis.bat` 仍保留，供在 GitHub 上查看。
 
 ## 版本号规则（2026-10-22 起长期有效）
@@ -20,7 +20,20 @@
 - **小版本**（V10.1、V10.2……）：修正、文字和显示调整。
 - 版本号写在 `program/scripts/release.mjs` 的 RELEASE_VERSION（小写，如 `v10`、`v10.1`）；文件名、发布 zip、部署脚本和 Release 标签（`v10-20261022`）都随它生成。导入预览的“变化明细”是新功能，所以这一版是 V10（原计划的 V9.20 没有发布）。
 
-## V21 当前状态（2026-11-12，优先于所有历史段落）
+## V21.1 当前状态（2026-11-12，验证完成，优先于所有历史段落）
+
+- **发布状态**：分支 `codex/v21-1-process-compat-20261112`、[PR #1](https://github.com/2113326213-design/logistics-digital-portfolio/pull/1)。全部发布前验证已通过；合并和发布记录以 PR 与 [V21.1 Release](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v21.1-20261022) 为准。发布应使用 merge commit，并下载附件核对 SHA-256。真实 IIS 仍未部署。
+- **数据**：11 月 12 日数据已经合并，禁止再次运行导入。71 个导入、75 个总计、0 新增/删除、4 个未列出但完整保留；77 处字段变化中 56 处只有能力编号补零，其余 21 处涉及 18 个应用。成本、ROI、状态、工厂与业务部门按 ID 保留。原始 Excel 不提交、不打包，使用的仓库外临时副本在收尾时删除。
+- **编号匹配**：ETAS 与 BBM_SWS 都要求编号和名称匹配、目标无歧义，支持无数字段的 Level 0。两位能力编号仍匹配原标准；原始写法保留。
+- **映射**：10 条经核验的完整流程原文、应用身份及目标快照均未变，通过 revoke/create 接续且旧记录保留；Control Tower V2 的旧 DM 映射仅撤销。最终 11 Applied、18 Revoked、0 Needs review。
+- **当前指标**：Capability L1/L2/L3 filled / valid 为 75/75、74/74、64/62；L3 缺失 11 个、待核对 13 个。Process L0/L1/L2/L3 为 75/75、73/73、70/70、69/69，L3 待核对 6 个，全部层级待核对 9 个。工厂非标准流程清单 8 条、5 个应用。
+- **更新提示**：`WHATS_NEW.id = 2026-11-12-2`，数据日期 12 November 2026；新条目置前、旧条目保留，页面没有版本号。
+- **验证**：Node v24.20.0，589/589 测试通过、0 失败、0 跳过。build、export:offline、release:files 成功；普通非管理员 Windows PowerShell 5.1.26100.9711 中 `deploy:sim` 19/19 通过。代码、数据与测试修改已独立复核，没有削弱测试。离线浏览器检查日期、层级统计、PESS 对比和工厂 CSV 通过，无脚本错误。详见 `verification/v21.1-verification.md`。
+- **环境复现**：从 PowerShell 7 启动 Node 再调用 Windows PowerShell 5.1 时，继承的 `PSModulePath` 会使 `Get-FileHash` 加载失败；运行模拟前仅临时清除进程级该变量，仍在非管理员终端执行原脚本。部署脚本及 SHA-256 校验没有降低。
+- **产物**：`offline/logistics-offline-20261022-v21.1.zip`，SHA-256 `11e3dc1130d003292b956d0bc87dbc576bffd2b3f30a543d3962933786ad96f1`。built 与 dist 字节一致；latest-workspace 已同步且导出/导入往返一致。
+- **维护边界**：npm audit 仍有 7 个开发依赖告警（4 moderate、3 high）；不进入本次离线 HTML/Worker 运行图，工具链升级及重新验证列入 C 组维护，不宣称依赖审计通过。
+
+## V21 状态（2026-11-12，受顶部 V21.1 更新）
 
 - **起因**：用户的 mentor 说 PESS 的数据 “没更新”；查明是内网服务器仍是旧版本（V18 起未部署），数据本身在 V20 已是 11-02 的导出。追问 PESS 的 BBM_P2S_LE_01 时，用户要 “让别人一眼就能看出是什么问题”，选方案 A + B。
 - **A**：`public/process-record-kind.mjs`——processNameParts（前缀 / 链 / 名称 / 层级，L3V 读作 L3）、checkProcessName（每段 ok/wrong/check + 说明；链以 model.procs 的 L0 节点为准，“16 standard chains”）、standardExample（同应用按名字匹配的标准记录，L3 优先；没有则 STANDARD_EXAMPLE）、noLevelRecord（label/text/next：非标准写法 → NOT_STANDARD_LABEL；标准写法缺层级 → NO_LEVEL_LABEL，名称唯一对应标准流程时给出完整写法）、nameComparison/renderNameComparison（.name-compare 表格）、nameProblems。接入 review-issues.mjs（issue.compare、label、Next）、process-issues.mjs（渲染：记录名在前、标签、说明、表格——v915 测试靠这个顺序找记录）、data-checks.mjs、comparison-records.mjs。

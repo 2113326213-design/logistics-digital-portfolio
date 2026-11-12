@@ -32,14 +32,44 @@ test('a different name, or a number the Signavio list does not have, is not matc
  }
 });
 
-test('the bundled data: EDCN AWS records its 7 processes with ETAS numbers, all matched at Level 3',()=>{
+// 2026-11-12 export compatibility: BBM_SWS replaces ETAS and also writes the Level 0 chain code without numbers.
+test('BBM_SWS numbers keep the ETAS code-and-name rule, including normalised names and similarity evidence',()=>{
+ const model=withProcesses('BBM_SWS.I2D.010.050.010 Putaway of Automated Goods Receipt (AGR);bbm_sws.i2d.010.050.020 putaway to  warehouse destination');
+ const app=model.apps.find(a=>a.id==='etas-test');
+ assert.deepEqual(app.processMatches.map(m=>[m.id,m.via]),[['M.I2D.010.050.010','code'],['M.I2D.010.050.020','code']]);
+ assert.deepEqual(app.inLeanix,[]);
+ assert.deepEqual(records(model).map(r=>[r.level,r.valid]),[[3,true],[3,true]]);
+ assert(!processIssues(model,app).some(i=>/BBM_SWS/i.test(i.raw||'')));
+ assert.deepEqual(createSimilarity(model,'process').scopes.get('etas-test').known.map(n=>n.id).sort(),['M.I2D.010.050.010','M.I2D.010.050.020']);
+});
+
+test('a BBM_SWS or ETAS chain code without numbers matches Level 0 only when its name also matches',()=>{
+ for(const prefix of ['BBM_SWS','ETAS']){
+  const raw=`${prefix}.P2F Plan to Fulfill`,model=withProcesses(raw),app=model.apps.find(a=>a.id==='etas-test');
+  assert.deepEqual(app.processMatches,[{raw,id:'M.P2F',via:'code'}]);
+  assert.deepEqual(records(model).map(r=>[r.level,r.valid]),[[0,true]]);
+  assert(!processIssues(model,app).some(i=>i.raw===raw));
+ }
+});
+
+test('BBM_SWS records with a different name or an unknown code remain unmatched and keep the missing-level issue',()=>{
+ for(const raw of ['BBM_SWS.I2D.010.050.010 Something else','BBM_SWS.I2D.999.999.999 Putaway of Automated Goods Receipt (AGR)','BBM_SWS.P2F Something else','BBM_SWS.UNKNOWN Plan to Fulfill']){
+  const model=withProcesses(raw),app=model.apps.find(a=>a.id==='etas-test');
+  assert.deepEqual(app.processMatches,[],raw);
+  assert.deepEqual(app.inLeanix,[],raw);
+  assert.deepEqual(processIssues(model,app).filter(i=>i.raw===raw).map(i=>i.label),['Process level not specified'],raw);
+ }
+});
+
+// 2026-11-12 data: EDCN AWS changed all seven prefixes from ETAS to BBM_SWS; the same codes/names still match at L3.
+test('the bundled data: EDCN AWS records its 7 processes with BBM_SWS numbers, all matched at Level 3',()=>{
  const data=base(),model=buildModel(data),app=model.apps.find(a=>a.Name==='EDCN AWS');
- const etas=app.rawProcess.filter(raw=>/^ETAS\./.test(raw));
- assert.equal(etas.length,7);
- assert.deepEqual(app.processMatches.filter(m=>etas.includes(m.raw)).map(m=>m.id),etas.map(raw=>'M.'+raw.split(' ')[0].slice(5)));
- assert(records(buildModel(workspaceData({...data,apps:[...data.apps,{...data.apps.find(a=>a.Name==='EDCN AWS'),ID:'etas-test'}]}))).filter(r=>etas.includes(r.raw)).every(r=>r.level===3&&r.valid));
- assert(!processIssues(model,app).some(i=>etas.includes(i.raw)));
- assert.equal(data.source,'20261102_025607_zApwu_inventory.xlsx','the LeanIX export of 2026-11-02');
+ const sws=app.rawProcess.filter(raw=>/^BBM_SWS\./.test(raw));
+ assert.equal(sws.length,7);
+ assert.deepEqual(app.processMatches.filter(m=>sws.includes(m.raw)).map(m=>m.id),sws.map(raw=>'M.'+raw.split(' ')[0].slice(8)));
+ assert(records(buildModel(workspaceData({...data,apps:[...data.apps,{...data.apps.find(a=>a.Name==='EDCN AWS'),ID:'etas-test'}]}))).filter(r=>sws.includes(r.raw)).every(r=>r.level===3&&r.valid));
+ assert(!processIssues(model,app).some(i=>sws.includes(i.raw)));
+ assert.equal(data.source,'20261112_055820_sqAhl_inventory.xlsx','the LeanIX export of 2026-11-12');
 });
 
 import {WHATS_NEW,updateNoticeDue,updateNoticeHTML} from '../public/whats-new.mjs';

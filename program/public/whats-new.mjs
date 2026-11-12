@@ -10,9 +10,11 @@
 // 12 November 2026 (V21): process names the tool cannot read are named and compared with the standard form, with a list
 // for the plants; the Import data window uses simpler words. New id, the earlier lines stay below.
 export const WHATS_NEW=Object.freeze({
- id:'2026-11-12',
+ id:'2026-11-12-2',
  date:'12 November 2026',
  items:Object.freeze([
+  'The data now comes from the LeanIX export of 12 November 2026. Capability codes use two-digit segments. Updates include Control Tower, D-sample tracking, Dolly call off, Material Requistion Digitalization, Davis, PMS, E-Queue, CDP, IDPS, VNA and Scrap Management; several dashboards have more detailed capabilities. DEMOS has a new description, and RBCE Auto Warehouse Management System has a new lifecycle date.',
+  'Process codes starting with BBM_SWS, including a whole process chain such as BBM_SWS.P2F, now match when both the code and the name agree with the process list.',
   'A process name the tool cannot read is now called "Process name not in the standard form". The application details show it part by part next to a standard name, and Overview, Process, lists every such name with what to change in LeanIX. Export for plants (CSV) gives that list to the plants.',
   'The Import data window uses simpler words: "LeanIX file (.xlsx)", "Share with everyone" and "Put back an earlier upload".',
   'Before you apply an import, the tool now names what looks wrong, for example many new or removed applications, applications of another department, or older data. Tick that you checked it, then apply.',

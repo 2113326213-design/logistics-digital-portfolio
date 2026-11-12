@@ -164,7 +164,8 @@ test('V20: a file that looks wrong is named before Apply',()=>{
  assert.deepEqual(importWarnings(preview({added:[other,other,{ID:'P',Processes:'BBM PM Inbound L2'},{ID:'E',Processes:'ETAS.01.02'}]}),current),[]);
  // Older data than the page shows.
  const olderNext={...data,source:'20261001_logistic_inventory.xlsx'};
- assert.deepEqual(importWarnings(preview({next:olderNext}),data),['This data (as of 2026-10-01) is older than the data on this page (as of 2026-11-02).']);
+ // 2026-11-12 data: the older-file warning compares against the new bundled inventory date.
+ assert.deepEqual(importWarnings(preview({next:olderNext}),data),['This data (as of 2026-10-01) is older than the data on this page (as of 2026-11-12).']);
 });
 
 test('V20: the page asks before Apply and before Upload, sends nothing while a preview waits, and can put earlier data back',()=>{

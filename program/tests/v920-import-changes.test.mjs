@@ -14,12 +14,12 @@ const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&
 const raw=JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url),'utf8'));
 const v916=workspaceData(JSON.parse(readFileSync(RECORDS_V916,'utf8'))),bundled=workspaceData(raw);
 const event=raw.importHistory.find(e=>e.inventoryFile==='20261021_logistic_inventory.xlsx');
-// 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): the bundled workspace now also holds that import
-// (21 field changes in 16 applications), so importing it into the V9.16 records gives 125 field changes, not the 104 of
-// 2026-10-21. The workspace as it was after the import of 2026-10-21 is rebuilt by setting back the old value of every field
-// change stored for the 2026-11-02 import; the real case below then checks the same 104 changes as before.
+// 2026-11-12 data: undo the latest 77 field changes before undoing the 21 changes of 2026-11-02. Reversing imports in
+// chronological reverse order restores both historical snapshots and keeps the original 104/21-field checks exact.
 const latest=raw.importHistory.find(e=>e.inventoryFile==='20261102_025607_zApwu_inventory.xlsx');
-const current={...bundled,apps:bundled.apps.map(app=>latest.changes.filter(c=>c.appId===app.ID).reduce((back,c)=>({...back,[c.field]:c.before}),app))};
+const november12=raw.importHistory.find(e=>e.inventoryFile==='20261112_055820_sqAhl_inventory.xlsx');
+const undoFields=(data,event)=>({...data,apps:data.apps.map(app=>event.changes.filter(c=>c.appId===app.ID).reduce((back,c)=>({...back,[c.field]:c.before}),app))});
+const november2=undoFields(bundled,november12),current=undoFields(november2,latest);
 const preview=previewImport(v916,current,current);
 const csvRows=text=>text.replace(/^﻿/,'').split('\r\n').map(line=>[...line.matchAll(/"((?:[^"]|"")*)"(?:,|$)/g)].map(m=>m[1].replaceAll('""','"')));
 
@@ -34,11 +34,14 @@ test('the preview lists the same field changes the import of 2026-10-21 recorded
  // The comparison is the one recordImport stores (hidden fields aside).
  const recorded=recordImport(v916,current).importHistory.at(-1).changes;
  assert.deepEqual(preview.fieldChanges.map(key).sort(),recorded.filter(c=>!/^annualBenefit/.test(c.field)).map(key).sort());
- // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): the rebuilt workspace is exactly the one the 2026-11-02
- // import started from: importing the bundled workspace into it lists the 21 stored field changes in 16 applications.
- const next=previewImport(current,bundled,bundled);
+ // 2026-11-12 data: compare the restored November 2 snapshot, retaining the original 21 changes in 16 applications.
+ const next=previewImport(current,november2,november2);
  assert.deepEqual([next.fieldChanges.length,new Set(next.fieldChanges.map(c=>c.appId)).size,next.added.length,next.removed.length],[21,16,0,0]);
  assert.deepEqual(next.fieldChanges.map(key).sort(),latest.changes.map(key).sort(),'old and new values match the stored import event of 2026-11-02');
+ // 2026-11-12 data: the new event must itself round-trip without truncating any old or new field value.
+ const newest=previewImport(november2,bundled,bundled);
+ assert.deepEqual([newest.fieldChanges.length,new Set(newest.fieldChanges.map(c=>c.appId)).size,newest.added.length,newest.removed.length],[77,71,0,0]);
+ assert.deepEqual(newest.fieldChanges.map(key).sort(),november12.changes.map(key).sort(),'old and new values match the stored import event of 2026-11-12');
 });
 
 test('the change details table: one row per changed field, readable labels and values, list fields as removed and added entries',()=>{

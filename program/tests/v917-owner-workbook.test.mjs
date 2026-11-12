@@ -95,23 +95,22 @@ test('the status survives a workspace round trip, comes into an older saved work
 });
 
 test('bundled data V9.17: the owner workbook of 2026-10-21 replaced the list; one application left it and the history keeps both imports',()=>{
- // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): that export was merged by application ID after the
- // owner workbook, so the bundled source is now the export (was 20261021_logistic_inventory.xlsx). It lists all 75 applications
- // but three, which are kept unchanged.
- assert.equal(data.source,'20261102_025607_zApwu_inventory.xlsx');
+ // 2026-11-12 data: the new LeanIX export was merged by ID; four missing applications are kept unchanged.
+ assert.equal(data.source,'20261112_055820_sqAhl_inventory.xlsx');
  assert.equal(data.apps.length,75);
  // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): the bundled data now carries the record of that export
  // (was no record), so the clearing is shown on the V9.16 records themselves: applying a full workbook (no LeanIX export marker)
  // to them drops their record of 20261020_083736_UKj4Y_inventory.xlsx, and that record is not back in the bundled data.
  assert.equal(v916.inventoryExport.file,'20261020_083736_UKj4Y_inventory.xlsx');
  assert.equal(Object.hasOwn(applyInventory(v916,data.apps.map(app=>({...app})),'20261021_logistic_inventory.xlsx'),'inventoryExport'),false,'a full workbook clears the LeanIX export record of V9.16');
- assert.deepEqual([raw.inventoryExport.file,raw.inventoryExport.exportedAt,raw.inventoryExport.missingIds.map(id=>data.apps.find(app=>app.ID===id).Name)],['20261102_025607_zApwu_inventory.xlsx','2026-11-02 02:56:08 GMT',['RBCW LOM Dashboard','VM/LOG-Szh2_DAVIS (recovered 2026-09-21 09:32:15)','360° Supplier dashboard']]);
- // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): the history gained a third import after the two of
- // 2026-10-21 (was the last two events), with no application added or removed.
- const [exportEvent,event,latest]=raw.importHistory.slice(-3);
+ // 2026-11-12 data: the repaired export has no export-info timestamp; its file name supplies the date, and iWPC is now missing too.
+ assert.deepEqual([raw.inventoryExport.file,raw.inventoryExport.exportedAt,raw.inventoryExport.missingIds.map(id=>data.apps.find(app=>app.ID===id).Name)],['20261112_055820_sqAhl_inventory.xlsx','',['RBCW LOM Dashboard','VM/LOG-Szh2_DAVIS (recovered 2026-09-21 09:32:15)','VMCN_iWPC_AKL_Szh5','360° Supplier dashboard']]);
+ // 2026-11-12 data: one additional import follows November 2; retain the exact checks for all earlier imports.
+ const [exportEvent,event,latest,newest]=raw.importHistory.slice(-4);
  assert.equal(exportEvent.inventoryFile,'20261020_083736_UKj4Y_inventory.xlsx');
  assert.equal(event.inventoryFile,'20261021_logistic_inventory.xlsx');
  assert.deepEqual([latest.kind,latest.inventoryFile,latest.removedIds,latest.addedIds],['import','20261102_025607_zApwu_inventory.xlsx',[],[]]);
+ assert.deepEqual([newest.kind,newest.inventoryFile,newest.removedIds,newest.addedIds,newest.changes.length],['import','20261112_055820_sqAhl_inventory.xlsx',[],[],77]);
  // CGQB_Logistic_system_Q is in Logistic Apps_0825 but not in Logistic Apps_1021.
  assert.deepEqual([event.removedIds,event.addedIds],[['fab13598-0672-4301-97ca-67583a04806b'],[]]);
  assert.equal(data.apps.some(app=>app.ID==='fab13598-0672-4301-97ca-67583a04806b'),false);

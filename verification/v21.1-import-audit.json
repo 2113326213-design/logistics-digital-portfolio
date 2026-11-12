@@ -1,0 +1,157 @@
+{
+  "source": "20261112_055820_sqAhl_inventory.xlsx",
+  "imported": 71,
+  "total": 75,
+  "added": 0,
+  "removed": 0,
+  "updated": 71,
+  "kept": [
+    "RBCW LOM Dashboard",
+    "VM/LOG-Szh2_DAVIS (recovered 2026-09-21 09:32:15)",
+    "VMCN_iWPC_AKL_Szh5",
+    "360° Supplier dashboard"
+  ],
+  "fieldChanges": 77,
+  "mappingStates": {
+    "Revoked": 18,
+    "Applied": 11
+  },
+  "mappingAudit": [
+    {
+      "action": "carried",
+      "app": "RBCD LOP Digital Dashboard",
+      "oldId": "l3v-12681baf83d23b3f1ca2137c",
+      "newId": "0114709eb1e3695b4c05bc27a8bd8958",
+      "raw": "BBM PM M2S Report process data production L3V",
+      "targetId": "M.M2S.030.030.020"
+    },
+    {
+      "action": "carried",
+      "app": "RBCW LOM PSTU Management System",
+      "oldId": "l3v-72e8086df8fcd8f0a0b97ba8",
+      "newId": "f53829c006d47edd8fde0c7de4bc8b54",
+      "raw": "BBM PM I2D Request Packaging Kit L3V",
+      "targetId": "M.I2D.020.010.050"
+    },
+    {
+      "action": "carried",
+      "app": "RBAC_ME_Logistics Data Platform",
+      "oldId": "l0-dm-135730a1862ff02f56ed6dc4",
+      "newId": "cb78eb9408798d18c7323c9d858ce0b4",
+      "raw": "BBM PM DM Data Management L0",
+      "targetId": "M.MDM"
+    },
+    {
+      "action": "carried",
+      "app": "RBCC Supplier Logistics Management Platform",
+      "oldId": "l0-dm-694123cdb65494ae26a9519d",
+      "newId": "89ed8e83b7ac1ca9f66acff919d3bf4e",
+      "raw": "BBM PM DM Data Management L0",
+      "targetId": "M.MDM"
+    },
+    {
+      "action": "carried",
+      "app": "RBHP_LOG SupplierManager",
+      "oldId": "l0-dm-f45bacf463a522b3cb091aef",
+      "newId": "0ea156c192dde2c03fc38dc220faa0c7",
+      "raw": "BBM PM DM Data Management L0",
+      "targetId": "M.MDM"
+    },
+    {
+      "action": "carried",
+      "app": "AUTO-RACK",
+      "oldId": "09edf2367f0a5f905393802ad29f8449",
+      "newId": "8fb9b714d40323c1a7c7876a0dfb225c",
+      "raw": "BBM PM I2D Putaway of Automated Goods Receipt (AGR) L3V",
+      "targetId": "M.I2D.010.050.010"
+    },
+    {
+      "action": "carried",
+      "app": "RBHP_LOG AGV Performance Tracking System",
+      "oldId": "c3264f5906a5594c6fdd4399d7b505b0",
+      "newId": "17a8a8cb5c237bdd43f25b2b798c894a",
+      "raw": "BBM PM I2D Monitor and Control Warehouse Processes L3V",
+      "targetId": "M.I2D.020.100.030"
+    },
+    {
+      "action": "carried",
+      "app": "RBHP_LOG AGV Performance Tracking System",
+      "oldId": "dad58bb16c11077e470d52f3a8806c34",
+      "newId": "eafc62bb60e09db95eb6e6624a6f685e",
+      "raw": "BBM PM I2D Optimize Warehouse L3V",
+      "targetId": "M.I2D.020.100.020"
+    },
+    {
+      "action": "retired",
+      "app": "RBCC LOG Control Tower V2",
+      "oldId": "9029d9adb41f92e5cb8bf264a16b6125",
+      "raw": "BBM PM DM Data Management L0",
+      "reason": "The old DM source record is absent; it is not transferred to the new P2F records."
+    },
+    {
+      "action": "carried",
+      "app": "VMCN_Digital Dynamic Supermarket",
+      "oldId": "0edbaefc59ff8cf733212865199805f1",
+      "newId": "11144da5fe3fb6494aca4199d4588460",
+      "raw": "BBM PM M2S Check feasibility production schedule L3",
+      "targetId": "M.M2S.020.010.010"
+    },
+    {
+      "action": "carried",
+      "app": "VMCN_iSCMP: Intelligent Supply Chain management platform",
+      "oldId": "256c0f80a532579ff6bad571ea176325",
+      "newId": "cb713b333c3f4f8a50756a81fa12848a",
+      "raw": "BBM PM P2F Handling the unconstrained demand plan L3",
+      "targetId": "M.P2F.010.040.090"
+    }
+  ],
+  "capabilityLevels": [
+    [
+      1,
+      75,
+      75
+    ],
+    [
+      2,
+      74,
+      74
+    ],
+    [
+      3,
+      64,
+      62
+    ]
+  ],
+  "processLevels": [
+    [
+      0,
+      75,
+      75
+    ],
+    [
+      1,
+      73,
+      73
+    ],
+    [
+      2,
+      70,
+      70
+    ],
+    [
+      3,
+      69,
+      69
+    ]
+  ],
+  "processNamesToFix": 8,
+  "ownerDecisions": [
+    {
+      "appId": "a103918e-63a2-4b26-ae5b-a5b1b7af8fd1",
+      "field": "Processes",
+      "before": "BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Receive to Store L1;Manufacturing",
+      "after": "BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Receive to Store L1",
+      "note": "Owner decision applied: removed 'Manufacturing' from BMLP_Nexeed_IAS@WxP processes"
+    }
+  ]
+}

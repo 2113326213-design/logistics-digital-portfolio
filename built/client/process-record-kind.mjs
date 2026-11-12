@@ -2,7 +2,7 @@ import {norm} from './codes.mjs';
 
 // A process record without a level, shown for what it is (V21, owner 2026-11-12: "让别人一眼就能看出是什么问题", then
 // "详细的对比展示", plan A + B). The tool reads a process's level from its name: standard records are written
-// "BBM PM <chain> <name> L0–L3" (or carry an M. or ETAS code). A record written another way — an old or plant-made name
+// "BBM PM <chain> <name> L0–L3" (or carry an M., ETAS or BBM_SWS code). A record written another way — an old or plant-made name
 // such as "BBM_P2S_LE_01 Production Replenishment" or "RBCC | Warehouse Delivery" — is not in the standard form: no
 // level, not in the standard list, so the tool cannot place it. A record in the standard form that only lacks the level
 // keeps "Process level not specified".
@@ -13,7 +13,7 @@ import {norm} from './codes.mjs';
 export const NOT_STANDARD_LABEL='Process name not in the standard form';
 export const NO_LEVEL_LABEL='Process level not specified';
 export const NO_LEVEL_TEXT='No process level (L0–L3) recorded.';
-const STANDARD_FORM=/^\s*(?:BBM\s+PM\s+[A-Z0-9]+\s|M\.[A-Z0-9]+\.|ETAS\.)/i;
+const STANDARD_FORM=/^\s*(?:BBM\s+PM\s+[A-Z0-9]+\s|M\.[A-Z0-9]+\.|ETAS\.|BBM_SWS\.)/i;
 const LEVEL=/\s+(L[0-3])V?\s*$/i;
 const NEXT_REPLACE='In LeanIX, replace it with a standard process (written "BBM PM <chain> <name> L1", "L2" or "L3"), or remove it if another process already covers it.';
 // Used when an application has no standard record to compare with.

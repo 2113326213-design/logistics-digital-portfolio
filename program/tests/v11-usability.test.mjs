@@ -26,7 +26,8 @@ test('a change is kept in this browser; leaving then needs no warning',()=>{
  const kept=JSON.parse(storage.m.get(LOCAL_SAVE_KEY));
  // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): the bundled data's source is now that export
  // (was 20261021_logistic_inventory.xlsx), and the kept work names it.
- assert.deepEqual([kept.version,kept.release,kept.source],[1,'V11','20261102_025607_zApwu_inventory.xlsx']);
+ // 2026-11-12 data: kept work identifies the new LeanIX export without changing the workspace format.
+ assert.deepEqual([kept.version,kept.release,kept.source],[1,'V11','20261112_055820_sqAhl_inventory.xlsx']);
  assert.equal(importWorkspace(kept.workspace).similarityThreshold,45);
  assert.equal(importWorkspace(kept.workspace).apps.length,75);
  assert.equal(autosave.exportState(),'kept');
@@ -58,7 +59,8 @@ test('on opening: kept work that differs from the file asks; continue restores i
  assert.equal(await resume.autosave.load(),true);
  // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): the file's source is that export and its date is
  // read from the file name (was 20261021_logistic_inventory.xlsx, 2026-10-21).
- assert.deepEqual(asked.info,{release:'V11',source:'20261102_025607_zApwu_inventory.xlsx',dataAsOf:'2026-11-02'},'V14: with the date of the data in this file');
+ // 2026-11-12 data: restore information follows the new source and its filename date.
+ assert.deepEqual(asked.info,{release:'V11',source:'20261112_055820_sqAhl_inventory.xlsx',dataAsOf:'2026-11-12'},'V14: with the date of the data in this file');
  assert.equal(resume.log.restored.similarityThreshold,35);
  assert.equal(resume.autosave.exportState(),'clean','continuing is not a new change');
  const fresh=adapter({storage,choose:async()=>'fresh'});
@@ -95,7 +97,8 @@ test('To review exports every open issue of the filtered applications, one row p
  // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): Business Capability 39 -> 27 applications (12 now
  // record a matching Level 3 capability, e.g. B.06.5.2; see tests/to-review.test.mjs), Process 11 -> 10 (CDR_EM now records
  // two P2F L3 processes, so its missing levels are gone).
- assert.deepEqual([new Set(rows.filter(r=>r.dimension==='Business Capability').map(r=>r.appId)).size,new Set(rows.filter(r=>r.dimension==='Process').map(r=>r.appId)).size],[27,10]);
+ // 2026-11-12 data: detailed capabilities reduce the review set to 13; Control Tower V2's P2F L3 leaves 9 process applications.
+ assert.deepEqual([new Set(rows.filter(r=>r.dimension==='Business Capability').map(r=>r.appId)).size,new Set(rows.filter(r=>r.dimension==='Process').map(r=>r.appId)).size],[13,9]);
  const processRows=rows.filter(r=>r.dimension==='Process');
  for(const name of ['RBAC_ME_Szh5 Intralogistics control system','RBCD LOM Scrap Management Platform','RBCD WI management system','RBCW E-Queue system','RBHP_LOG_QualManager','ShzP_DAVIS','Szh5_ASRS_WCS_WMS','VM-CN_WACOS_Szh5','VM/LOG-Szh2_DAVIS (recovered 2026-09-21 09:32:15)','VMCN_iSCMP: Intelligent Supply Chain management platform'])
   assert(!processRows.some(r=>r.application===name),`${name}: no process row`);
@@ -118,7 +121,8 @@ test('To review exports every open issue of the filtered applications, one row p
  assert.equal(csv.split('\r\n').length,plant.length+1);
  // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): the Data source column names the new source file
  // (was 20261021_logistic_inventory.xlsx).
- assert(csv.includes('"20261102_025607_zApwu_inventory.xlsx"'));
+ // 2026-11-12 data: every exported review row names the current inventory source.
+ assert(csv.includes('"20261112_055820_sqAhl_inventory.xlsx"'));
  assert.deepEqual([toReviewFileName({entity:'RBCW'},'2026-10-22'),toReviewFileName({division:'PS'},'2026-10-22'),toReviewFileName({},'2026-10-22'),toReviewFileName({entity:'MA-ShzP'},'2026-10-22')],
   ['To_review_RBCW_2026-10-22.csv','To_review_PS_2026-10-22.csv','To_review_all_plants_2026-10-22.csv','To_review_MA-ShzP_2026-10-22.csv']);
  assert(source('overview.mjs').includes('<button id="overviewExportReview" type="button"'));

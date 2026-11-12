@@ -30,8 +30,9 @@ test('one rule for the catalogue and the records: a code that starts with "HC."'
 test('Wuj HK AGV: the HC record stays in the source field and is left out of every analysis',()=>{
  const model=buildModel(data),wuj=wujOf(model);
  assert(wuj['Business Capabilities'].includes(WUJ),'the source field is unchanged');
- assert.equal(data.apps.find(a=>a.Name.startsWith('Wuj HK AGV'))['Business Capabilities'],'B.06.5 Material Flow Orchestration;'+WUJ);
- assert.deepEqual([wuj.rawCap,wuj.otherCompany,wuj.cap,wuj.capLeaf],[['B.06.5 Material Flow Orchestration'],[WUJ],['B.06.5'],['B.06.5']]);
+ // 2026-11-12 data: retain the export's padded source spelling; the normalized B.06.5 code below is unchanged.
+ assert.equal(data.apps.find(a=>a.Name.startsWith('Wuj HK AGV'))['Business Capabilities'],'B.06.05 Material Flow Orchestration;'+WUJ);
+ assert.deepEqual([wuj.rawCap,wuj.otherCompany,wuj.cap,wuj.capLeaf],[['B.06.05 Material Flow Orchestration'],[WUJ],['B.06.5'],['B.06.5']]);
  assert.deepEqual([...model.caps.keys()].filter(id=>id.startsWith('HC')),[],'no HC category');
  // The landscape lost its HC.02 column (13 → 12 columns) and its category list never had HC.
  // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): 12 → 11 columns. CDR_EM now records B.06.2.9
@@ -71,6 +72,7 @@ test('an owner mapping on an HC record is a decision about it: the record then c
  const wuj=data.apps.find(a=>a.Name.startsWith('Wuj HK AGV'));
  const mapping=createCorrection(data,{appId:wuj.ID,dimension:'cap',raw:WUJ,targetId:'B.06.3.2',reviewer:'Owner',reason:'Test: mapped to our catalogue'});
  const model=buildModel({...data,corrections:[...(data.corrections||[]),mapping]}),app=wujOf(model);
- assert.deepEqual([app.rawCap,app.otherCompany],[['B.06.5 Material Flow Orchestration',WUJ],[]]);
+ // 2026-11-12 data: source text is padded even when an HC owner mapping is applied.
+ assert.deepEqual([app.rawCap,app.otherCompany],[['B.06.05 Material Flow Orchestration',WUJ],[]]);
  assert(app.cap.includes('B.06.3.2'));assert(!app.cap.some(id=>id.startsWith('HC')));
 });

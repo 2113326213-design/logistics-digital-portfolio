@@ -74,5 +74,7 @@ test('owner example: a LeanIX process only one side records does not lower the s
  // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): 13 -> 12. CGQB_Logistic_system <-> Iris is now
  // Below threshold: Iris gained capability B.06.5.2, which CGQB_Logistic_system does not record, so that direction's
  // capability score falls from 1/3 to 1/5. The four owner pairs above are unchanged.
- assert.equal(overlap.length,12);
+ // 2026-11-12 data: Control Tower and Physical Logistics Management System now share B.06.8.2, adding one overlap.
+ // The four owner pairs above still overlap, preserving the union-rule checks.
+ assert.equal(overlap.length,13);
 });

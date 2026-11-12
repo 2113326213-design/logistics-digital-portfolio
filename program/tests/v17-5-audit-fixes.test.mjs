@@ -24,7 +24,8 @@ test('V17.5 (1): the plant table lists as many Level 3 applications to review as
  // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): 8 -> 7. CDR_EM recorded only
  // "BBM PM I2D Intralogistics to Demand L0"; the export gives it two P2F Level 3 processes (Identify external / internal
  // supply constraints L3), so it now matches at Level 3 and leaves the card.
- assert.equal(card.length,7);
+ // 2026-11-12 data: Control Tower V2 now records the matching P2F L3 Monitoring Dashboards; L3 to review 7 -> 6.
+ assert.equal(card.length,6);
  for(const name of ['RBCD LOG Xone','RBCD LOM Scrap Management Platform','RBCD WI management system','RBCW E-Queue system','RBHP_LOG_QualManager','ShzP_DAVIS','Szh5_ASRS_WCS_WMS','VM-CN_WACOS_Szh5','VM/LOG-Szh2_DAVIS (recovered 2026-09-21 09:32:15)','VMCN_iSCMP: Intelligent Supply Chain management platform'])
   assert(!card.includes(name)&&L3(report).valid.some(a=>a.id===app(name).id),`${name}: its Level 3 outside the Signavio list now matches`);
  assert.deepEqual(applicationsToReviewAtLevel(report,report,L3(report)).map(a=>a.Name).sort(),card);
@@ -84,8 +85,9 @@ test('V17.5 (4): importing a workspace backup keeps the release\'s owner decisio
  const next=buildModel(preview.next),without=buildModel(importWorkspace(backup));
  // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): 8 -> 7 either way. CDR_EM now records two P2F
  // Level 3 processes instead of only an L0, so it matches at Level 3 (the same card as V17.5 (1)).
- assert.equal(l3MaintenanceMetrics(maintenanceReport(next,{},'process')).notPassing.length,7);
- assert.equal(l3MaintenanceMetrics(maintenanceReport(without,{},'process')).notPassing.length,7);
+ // 2026-11-12 data: Control Tower V2 gains its matching P2F L3, so 7 -> 6 with or without the two owner decisions.
+ assert.equal(l3MaintenanceMetrics(maintenanceReport(next,{},'process')).notPassing.length,6);
+ assert.equal(l3MaintenanceMetrics(maintenanceReport(without,{},'process')).notPassing.length,6);
  // The kept decisions still take effect: the confirmed records are held on the applications instead of being open
  // records of the model (so they stay out of the similarity check's pending records), as without the backup.
  for(const decision of data.acceptedRecords){

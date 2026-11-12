@@ -49,10 +49,12 @@ test('V19.1: on the bundled data every process with a level matches; only missin
  // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): [11,67,67,8,0] -> [10,68,68,7,0]. CDR_EM recorded
  // only "BBM PM I2D Intralogistics to Demand L0"; the export gives it two P2F Level 3 processes, so it matches at Level 3
  // and leaves To review and the Level 3 card.
- assert.deepEqual([report.needsReview.length,l3.complete.length,l3.quality.length,l3.notPassing.length,l3.confirmed.length],[10,68,68,7,0],'To review 21 → 11 → 10 (2026-11-02 data); Level 3 matches 55 → 67 → 68');
+ // 2026-11-12 data: Control Tower V2's new P2F L3 resolves its remaining missing level, with no owner confirmation.
+ assert.deepEqual([report.needsReview.length,l3.complete.length,l3.quality.length,l3.notPassing.length,l3.confirmed.length],[9,69,69,6,0],'2026-11-12 data: To review 10 -> 9; Level 3 matches 68 -> 69');
  // 2026-11-02 data: Level 3 67 -> 68 (CDR_EM, as above). Levels 1 and 2 stay 73 and 70: CDR_EM joins them while
  // VMCN_iWPC_AKL_Szh5 (now only "BBM PM Others L0") leaves them.
- assert.deepEqual(report.levels.map(l=>[l.level,l.filled.length,l.valid.length]),[[0,75,75],[1,73,73],[2,70,70],[3,68,68]]);
+ // 2026-11-12 data: Control Tower V2 joins Level 3; it already had matching lower levels.
+ assert.deepEqual(report.levels.map(l=>[l.level,l.filled.length,l.valid.length]),[[0,75,75],[1,73,73],[2,70,70],[3,69,69]]);
  const labels=new Set(model.apps.flatMap(a=>report.issues.get(a.id).map(i=>i.label.replace(/\d/,'N'))));
  // V21: a record not in the standard form ("BBM_…", no level) is labelled "Process name not in the standard form". Every record without a level in the bundled data is written that way.
  assert.deepEqual([...labels].sort(),['Level N missing','Process name not in the standard form']);
@@ -101,7 +103,10 @@ test('V19.1: the similarity check follows the union too ("也按并集"); mappin
  // overlap 13}. The 16 changed applications (mostly new Level 3 capabilities such as B.06.5.2, and new processes) move
  // pairs between labels; Potential overlap 13 -> 12 because CGQB_Logistic_system <-> Iris is now Below threshold (Iris
  // gained B.06.5.2, which CGQB_Logistic_system does not record, so its capability score falls from 1/3 to 1/5).
- assert.deepEqual(labels,{'Below threshold':876,'No shared registrations':691,'No complete score':251,'More detail needed':61,'Out of scope':564,'Needs confirmation':320,'Potential overlap':12},'until V19: Needs confirmation 726, Potential overlap 10');
+ // 2026-11-12 data: new capability and process detail reduces No complete score from 251 to 216 and redistributes
+ // the scored pairs. Control Tower and Physical Logistics now share B.06.8.2, adding one Potential overlap (12 -> 13);
+ // the pending/out-of-scope/detail counts below retain their prior values.
+ assert.deepEqual(labels,{'Below threshold':890,'No shared registrations':711,'No complete score':216,'More detail needed':61,'Out of scope':564,'Needs confirmation':320,'Potential overlap':13},'2026-11-12 data: exact pair labels after the 77 field changes');
  const readiness=comparisonReadiness(pairs,threshold),listed=readiness.apps.map(row=>row.app.Name).sort();
  // 2026-11-02 data: CDR_EM leaves (it was listed for its Level 0-only "BBM PM I2D Intralogistics to Demand L0"; it now
  // records two P2F Level 3 processes). VMCN_Packaging Data System joins for its four BBM_PKG_* processes without a level,
@@ -119,7 +124,8 @@ test('V19.1: the similarity check follows the union too ("也按并集"); mappin
  // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): ShzP_ALICE no longer records B.05.2 Material Field
  // Management (the export lists only B.06 capabilities for it), so the check uses the equivalent unchanged case:
  // CngP/MSE-Nbo Supplier SCM's B.05.3.7, also a capability outside B.06 and an issue before this data as well.
- assert(capabilityIssues(model,byName(model,'CngP/MSE-Nbo Supplier SCM')).some(i=>i.raw==='B.05.3.7 Supplier Collaboration Management'));
+ // 2026-11-12 data: the export pads capability segments; the same out-of-B.06 record remains an issue.
+ assert(capabilityIssues(model,byName(model,'CngP/MSE-Nbo Supplier SCM')).some(i=>i.raw==='B.05.03.07 Supplier Collaboration Management'));
 });
 
 test('V19.1: the explanation and the one-time update notice say it in plain words, with no version number',()=>{

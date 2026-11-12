@@ -1,6 +1,16 @@
 # 更新日志 · Changelog
 
-每个版本的离线包在 [Releases](https://github.com/2113326213-design/logistics-digital-portfolio/releases)；详细的修改说明和用户决定在 [`00_Claude先读.md`](00_Claude先读.md)，验证记录在 [`verification/`](verification/)。
+正式版本的离线包在 [Releases](https://github.com/2113326213-design/logistics-digital-portfolio/releases)；详细的修改说明和用户决定在 [`00_Claude先读.md`](00_Claude先读.md)，验证记录在 [`verification/`](verification/)。
+
+## [V21.1](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v21.1-20261022) · 2026-11-12
+
+验证完成：589/589 测试通过，Windows 普通非管理员终端的部署模拟 19/19 通过。已生成 `offline/logistics-offline-20261022-v21.1.zip`；发布记录以 [PR #1](https://github.com/2113326213-design/logistics-digital-portfolio/pull/1) 和 [Release](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v21.1-20261022) 为准。真实 IIS 仍未部署。
+
+1. **数据更新**：通过程序自己的导入路径并入 `20261112_055820_sqAhl_inventory.xlsx`：71 个应用更新、0 新增、0 删除、4 个未列出但保留，总数仍为 75。77 处字段变化中 56 处仅为能力编号补零，另有 21 处字段变化涉及 18 个应用（含流程前缀变化）。`VMCN_iWPC_AKL_Szh5` 新增为导出未包含的应用，原记录保留。原始 Excel 不进仓库。
+2. **流程编号**：`processLookup` 同时识别 `ETAS.` 和 `BBM_SWS.`，编号与名称都一致才匹配；支持无数字段的 Level 0，例如 `BBM_SWS.P2F Plan to Fulfill`。合法新前缀不会出现在“Process names to fix in LeanIX”清单里，旧 ETAS 规则仍保留。
+3. **旧映射核验**：10 条流程原文和目标未变的映射按既有做法撤销旧记录、建立可追溯的新记录；Control Tower V2 已消失的旧 DM 流程映射撤销，不移接到新 P2F 流程；RBCW LOM Dashboard 的映射原样保留。结果为 11 Applied、18 Revoked、0 Needs review；没有放宽全局映射检查。
+4. **能力编号与更新提示**：原始两位编号保留，现有 `capCode` 仍匹配同一标准编号；导入预览会记录补零造成的文字变化。更新提示 id 为 `2026-11-12-2`，新数据说明置前，保留以前的提示；页面仍不显示版本号。
+5. **验证边界**：Windows 全量 589 项全部通过，0 失败、0 跳过；build、export:offline 和 release:files 成功。旧断言按已核验的新数据更新，新增 6 项代码回归测试。代码已做小范围独立审查；完整结果见 [`verification/v21.1-verification.md`](verification/v21.1-verification.md)。Windows PowerShell 5.1.26100.9711、非管理员终端实测 19/19 通过。离线浏览器实读 8 条工厂 CSV、5 个应用，无脚本错误。
 
 ## [V21](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v21-20261022) · 2026-11-12
 

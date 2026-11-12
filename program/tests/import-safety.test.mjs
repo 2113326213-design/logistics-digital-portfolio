@@ -75,12 +75,13 @@ function xlsxFile(sheets,{shared=[]}={}){
  return zipFile(files);
 }
 
-test('an inventory without Description and Lifecycle columns keeps existing values and all 12 applied mappings',()=>{
- assert.equal(correctionStates(data).filter(c=>c.state==='Applied').length,12);
+test('an inventory without Description and Lifecycle columns keeps existing values and all 11 applied mappings',()=>{
+ // 2026-11-12 data: ten mappings were carried over; Control Tower's removed DM record was retired, leaving eleven applied.
+ assert.equal(correctionStates(data).filter(c=>c.state==='Applied').length,11);
  const parsed=inventoryFromSheets({'Logistic Apps':[required,...data.apps.map(app=>required.map(key=>app[key]))]});
  assert(parsed.every(app=>optional.every(key=>!Object.hasOwn(app,key))),'absent optional columns are not written as blank values');
  const preview=previewImport(data,{...data,apps:mergeInventoryEvidence(data.apps,parsed),source:'without-optional-columns.xlsx'});
- assert.equal(preview.appliedMappings,12);assert.equal(preview.staleMappings,0);
+ assert.equal(preview.appliedMappings,11);assert.equal(preview.staleMappings,0);
  assert.deepEqual(preview.updated.map(app=>app.ID),[]);assert.equal(preview.descriptionsCleared,0);assert.equal(preview.lifecycleValuesCleared,0);
  for(const app of preview.next.apps){const original=data.apps.find(a=>a.ID===app.ID);for(const key of optional)assert.equal(app[key],original[key],`${app.ID} keeps ${key}`);}
 });
@@ -90,7 +91,8 @@ test('the same inventory read from an .xlsx file (cells without r references) ke
  const parsed=inventoryFromSheets(sheets);
  assert.deepEqual(parsed.map(app=>required.map(key=>String(app[key]))),data.apps.map(app=>required.map(key=>app[key])));
  const preview=previewImport(data,{...data,apps:mergeInventoryEvidence(data.apps,parsed),source:'inventory.xlsx'});
- assert.equal(preview.appliedMappings,12);assert.equal(preview.updated.length,0);
+ // 2026-11-12 data: the retired Control Tower DM record leaves eleven applied mappings to preserve.
+ assert.equal(preview.appliedMappings,11);assert.equal(preview.updated.length,0);
  assert(preview.next.apps.every(app=>app.Description&&app['Lifecycle: Current Lifecycle']&&app['Lifecycle: Active']));
 });
 
@@ -162,7 +164,8 @@ test('re-uploading the identical taxonomy workbook is reported as Unchanged',asy
   assert(taxonomy.capabilityRows.every(row=>row.length===3&&[0,1,2].every(i=>i in row)));
   assert.equal(taxonomy.capabilityRows.length,workspace.capabilityRows.length,'blank formatted rows are not taxonomy rows');
   const preview=previewImport(workspace,{...workspace,...taxonomy,taxonomySource:'same-taxonomy.xlsx'});
-  assert.equal(preview.taxonomyChanged,false);assert.equal(preview.appliedMappings,12);
+  // 2026-11-12 data: the capability catalogues are unchanged; both fixtures preserve all eleven applied process mappings.
+  assert.equal(preview.taxonomyChanged,false);assert.equal(preview.appliedMappings,11);
   assert.deepEqual(preview.capabilityChanges,{renamed:0,added:0,removed:0,total:0},'no capability name, added or removed code is reported');
  }
 });
