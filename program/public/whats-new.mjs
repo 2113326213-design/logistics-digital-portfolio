@@ -10,17 +10,16 @@
 // 12 November 2026 (V21): process names the tool cannot read are named and compared with the standard form, with a list
 // for the plants; the Import data window uses simpler words. New id, the earlier lines stay below.
 export const WHATS_NEW=Object.freeze({
- id:'2026-11-12-2',
+ id:'2026-11-12-3',
  date:'12 November 2026',
  items:Object.freeze([
+  'Only application process records starting with BBM PM are kept. Other records, including BBM_SWS, ETAS and M.P2F, are removed from the current data and incoming data. PESS keeps its 12 BBM PM records; Control Tower has no process records left and needs new BBM PM entries.',
   'The data now comes from the LeanIX export of 12 November 2026. Capability codes use two-digit segments. Updates include Control Tower, D-sample tracking, Dolly call off, Material Requistion Digitalization, Davis, PMS, E-Queue, CDP, IDPS, VNA and Scrap Management; several dashboards have more detailed capabilities. DEMOS has a new description, and RBCE Auto Warehouse Management System has a new lifecycle date.',
-  'Process codes starting with BBM_SWS, including a whole process chain such as BBM_SWS.P2F, now match when both the code and the name agree with the process list.',
   'A process name the tool cannot read is now called "Process name not in the standard form". The application details show it part by part next to a standard name, and Overview, Process, lists every such name with what to change in LeanIX. Export for plants (CSV) gives that list to the plants.',
   'The Import data window uses simpler words: "LeanIX file (.xlsx)", "Share with everyone" and "Put back an earlier upload".',
   'Before you apply an import, the tool now names what looks wrong, for example many new or removed applications, applications of another department, or older data. Tick that you checked it, then apply.',
   'Upload to server now protects the shared data. It does not overwrite data that someone else uploaded first, it asks again when many applications would be added or removed, and the server keeps the last five uploads. To put one back: Import data, Share with everyone, Put back an earlier upload.',
   'The data now comes from the LeanIX export of 2 November 2026. 16 applications changed, mostly their business capabilities and processes.',
-  'A process recorded with an ETAS number (for example ETAS.I2D.010.050.010) now counts as the same standard process when the number and the name match.',
   'Data checks now list the same items as Issues to review, at every level.',
   'A level with no entry now counts as complete when a deeper level matches the standard. For example, if Level 3 matches, Levels 2, 1 and 0 count as complete.',
   'Import data no longer compares LeanIX process exports. If you choose one, the tool says so and changes nothing.',

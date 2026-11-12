@@ -86,6 +86,9 @@ export function applyInventory(base,incomingApps,fileName){
 }
 // raw: the data as read, before workspaceData applies owner decisions (defaults to incoming).
 export function previewImport(current,incoming,raw=incoming){
+ // Carry the current owner policy into older workspaces and incoming inventories.
+ const policy=current.processPolicy||incoming.processPolicy;
+ incoming={...incoming,...(policy?{processPolicy:policy}:{})};raw={...raw,...(policy?{processPolicy:policy}:{})};
  const next=keepThreshold(current,workspaceData(incoming));buildModel(next);
  const before=new Map(current.apps.map(a=>[String(a.ID).trim(),a])),after=new Map(next.apps.map(a=>[String(a.ID).trim(),a]));
  const added=[],removed=[],updated=[];
@@ -96,7 +99,7 @@ export function previewImport(current,incoming,raw=incoming){
  // The LeanIX local process layer is part of the process catalogue (V17).
  const taxonomyChanged=JSON.stringify([current.capabilityRows,current.processRows,current.localProcesses??[]])!==JSON.stringify([next.capabilityRows,next.processRows,next.localProcesses??[]]);
  const pairReviews=pairReviewChanges(current.pairReviews,next.pairReviews);
- const workspaceChanged=pairReviews.total>0||['reviews','corrections','reviewHistory','applicationEvents','importHistory','similarityWeights','similarityThreshold','inventoryExport','acceptedRecords','dataPackage'].some(key=>JSON.stringify(current[key]??null)!==JSON.stringify(next[key]??null));
+ const workspaceChanged=pairReviews.total>0||['processPolicy','reviews','corrections','reviewHistory','applicationEvents','importHistory','similarityWeights','similarityThreshold','inventoryExport','acceptedRecords','dataPackage'].some(key=>JSON.stringify(current[key]??null)!==JSON.stringify(next[key]??null));
  const costScoresRemoved=updated.filter(app=>cleanCostScore(before.get(String(app.ID).trim())?.operationCostScore)!==null&&cleanCostScore(app.operationCostScore)===null).length;
  const scopeExclusionsRemoved=updated.filter(app=>!opportunityEligibility(before.get(String(app.ID).trim())).eligible&&opportunityEligibility(app).eligible).length;
  // Applications this import leaves out of cost totals, ROI and the similarity check (no score, or not still active).

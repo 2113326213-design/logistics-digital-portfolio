@@ -1,3 +1,5 @@
+// 2026-11-12 policy: historical V21.1 process fixture keeps the original assertions; current cleanup has dedicated tests.
+import {v211ProcessFixture} from './v21-1-process-fixture.mjs';
 // V9.20 (owner request 2026-10-22): the import preview lists every changed field of every application, old value → new
 // value, before Apply, and exports the same details as CSV. Checked on a real case: importing the current bundled
 // workspace into the V9.16 records reproduces exactly the field changes stored for the owner workbook of 2026-10-21.
@@ -11,7 +13,7 @@ import {renderImportChanges} from '../public/import-changes-view.mjs';
 import {RECORDS_V916} from './records-v916.mjs';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
-const raw=JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url),'utf8'));
+const raw=v211ProcessFixture(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url),'utf8')));
 const v916=workspaceData(JSON.parse(readFileSync(RECORDS_V916,'utf8'))),bundled=workspaceData(raw);
 const event=raw.importHistory.find(e=>e.inventoryFile==='20261021_logistic_inventory.xlsx');
 // 2026-11-12 data: undo the latest 77 field changes before undoing the 21 changes of 2026-11-02. Reversing imports in

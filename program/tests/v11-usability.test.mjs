@@ -1,3 +1,4 @@
+// 2026-11-12 policy: deleting non-BBM PM records leaves 7 process applications to review.
 // V11 (owner request 2026-10-22): changes are kept in this browser on this computer, the To review list exports to
 // CSV for Excel, and a link opens one application's details.
 import test from 'node:test';
@@ -98,7 +99,7 @@ test('To review exports every open issue of the filtered applications, one row p
  // record a matching Level 3 capability, e.g. B.06.5.2; see tests/to-review.test.mjs), Process 11 -> 10 (CDR_EM now records
  // two P2F L3 processes, so its missing levels are gone).
  // 2026-11-12 data: detailed capabilities reduce the review set to 13; Control Tower V2's P2F L3 leaves 9 process applications.
- assert.deepEqual([new Set(rows.filter(r=>r.dimension==='Business Capability').map(r=>r.appId)).size,new Set(rows.filter(r=>r.dimension==='Process').map(r=>r.appId)).size],[13,9]);
+ assert.deepEqual([new Set(rows.filter(r=>r.dimension==='Business Capability').map(r=>r.appId)).size,new Set(rows.filter(r=>r.dimension==='Process').map(r=>r.appId)).size],[13,7]);
  const processRows=rows.filter(r=>r.dimension==='Process');
  for(const name of ['RBAC_ME_Szh5 Intralogistics control system','RBCD LOM Scrap Management Platform','RBCD WI management system','RBCW E-Queue system','RBHP_LOG_QualManager','ShzP_DAVIS','Szh5_ASRS_WCS_WMS','VM-CN_WACOS_Szh5','VM/LOG-Szh2_DAVIS (recovered 2026-09-21 09:32:15)','VMCN_iSCMP: Intelligent Supply Chain management platform'])
   assert(!processRows.some(r=>r.application===name),`${name}: no process row`);
@@ -108,7 +109,7 @@ test('To review exports every open issue of the filtered applications, one row p
  assert(!processRows.some(r=>r.record&&inLeanix.get(r.appId).has(r.record)),'no row for a process in LeanIX');
  assert(!processRows.some(r=>/match needs review|name differs between sources/i.test(r.issue)));
  // V21: a record not in the standard form ("BBM_…", no level) is labelled "Process name not in the standard form".
- assert.deepEqual(processRows.filter(r=>r.application==='RBCD LOG Xone').map(r=>[r.issue,r.record]),[['Process name not in the standard form','BBM_O2C_OM_01 Schedule Agreement for Goods']]);
+ assert.deepEqual(processRows.filter(r=>r.application==='RBCD LOG Xone').map(r=>[r.issue,r.record]),[], '2026-11-12 policy: the non-BBM PM record was removed from LOG Xone');
  const rbcw=rows.filter(r=>r.application==='RBCW Auto Warehouse Management System'&&r.dimension==='Process');
  // V18.1 (fixed rule 2026-10-23): its matching L2 makes L0 and L1 full; its L3 is in LeanIX and matches (V19.1 union;
  // until V19 it was confirmed as recorded): nothing to review.

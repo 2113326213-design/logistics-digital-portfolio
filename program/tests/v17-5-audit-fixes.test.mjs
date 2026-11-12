@@ -1,3 +1,5 @@
+// 2026-11-12 policy: historical V21.1 process fixture keeps the original assertions; current cleanup has dedicated tests.
+import {v211ProcessFixture} from './v21-1-process-fixture.mjs';
 // V17.5: the five problems the 2026-10-23 audit confirmed (owner: "这 5 个问题全部修，做成 V17.5 发布"), each where a rule
 // was applied in one place but not in another, or the same number differed between two places.
 import test from 'node:test';
@@ -12,7 +14,7 @@ import {dataChecksForApp,dataChecksSummary} from '../public/data-checks.mjs';
 import {previewImport} from '../public/import-review.mjs';
 import {recordImport} from '../public/application-history.mjs';
 
-const data=workspaceData(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url),'utf8'))),model=buildModel(data);
+const data=workspaceData(v211ProcessFixture(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url),'utf8')))),model=buildModel(data);
 const app=name=>model.apps.find(a=>a.Name===name);
 const appJs=readFileSync(new URL('../public/app.js',import.meta.url),'utf8');
 

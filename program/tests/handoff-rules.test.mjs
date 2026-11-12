@@ -1,3 +1,5 @@
+// 2026-11-12 policy: historical V21.1 process fixture keeps the original assertions; current cleanup has dedicated tests.
+import {v211ProcessFixture} from './v21-1-process-fixture.mjs';
 // Pins the user-confirmed examples and status rules from the 2026-10-15 handoff
 // (00_Claude先读.md) plus the 2026-10-16 owner decisions on the real bundled data.
 import {test} from 'node:test';
@@ -16,7 +18,7 @@ import {workspaceData} from '../public/workspace.mjs';
 import {scopeReason} from '../public/display.mjs';
 import {recordsBefore20261020} from './records-before-20261020.mjs';
 
-const data=workspaceData(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url))));
+const data=workspaceData(v211ProcessFixture(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url)))));
 const model=buildModel(data),index=createWeightedSimilarity(model),cap=createSimilarity(model,'cap'),process=createSimilarity(model,'process');
 const app=name=>{const found=model.apps.find(a=>a.Name===name);assert(found,`bundled data includes ${name}`);return found;};
 const pair=(a,b)=>index.pair(app(a).id,app(b).id);
