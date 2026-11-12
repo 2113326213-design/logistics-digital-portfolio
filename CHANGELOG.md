@@ -1,5 +1,15 @@
 # 更新日志 · Changelog
 
+## V21.2 · 2026-11-12
+
+按用户确认，仅保留应用 Processes 中以 BBM PM 开头的记录；清理 7 个应用的 18 条记录，应用总数仍为 75。PESS 保留 12 条，EDCN AWS 保留 1 条，Control Tower V2 流程为空。
+
+- 此规则覆盖以前接受 ETAS/BBM_SWS 的应用登记范围；标准表和历史原文保留，用于追溯。
+- 工作区保存新规则，恢复旧保存、导入 Excel/工作区和应用服务器数据时不再把被排除的流程带回。
+- 更新提示 id 为 `2026-11-12-3`；PESS 不再出现那条已删除记录的提示。
+- 593 项回归测试通过；部署和发布状态见 `verification/v21.2-verification.md`。
+
+
 正式版本的离线包在 [Releases](https://github.com/2113326213-design/logistics-digital-portfolio/releases)；详细的修改说明和用户决定在 [`00_Claude先读.md`](00_Claude先读.md)，验证记录在 [`verification/`](verification/)。
 
 ## [V21.1](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v21.1-20261022) · 2026-11-12

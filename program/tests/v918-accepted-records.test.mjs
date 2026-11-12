@@ -1,3 +1,5 @@
+// 2026-11-12 policy: historical V21.1 process fixture keeps the original assertions; current cleanup has dedicated tests.
+import {v211ProcessFixture} from './v21-1-process-fixture.mjs';
 // V9.18 (owner decision 2026-10-22, "确定就是这样登记的", both records): RBCW Auto Warehouse Management System
 // "BBM PM I2D Transport Material Intra Plant L3" and AUTO-RACK "BBM PM I2D Putaway to Automated Warehouse L3V" are
 // registered correctly although the process catalogue has no such process. A confirmed record is not an open issue
@@ -19,7 +21,7 @@ import {reviewItems} from '../public/reviews.mjs';
 import {previewImport} from '../public/import-review.mjs';
 import {PRESERVED_KEYS} from '../scripts/prepare-data.mjs';
 
-const raw=JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url),'utf8'));
+const raw=v211ProcessFixture(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url),'utf8')));
 const data=workspaceData(raw),model=buildModel(data);
 const RBCW='RBCW Auto Warehouse Management System',TRANSPORT='BBM PM I2D Transport Material Intra Plant L3';
 const AUTORACK='AUTO-RACK',PUTAWAY='BBM PM I2D Putaway to Automated Warehouse L3V';

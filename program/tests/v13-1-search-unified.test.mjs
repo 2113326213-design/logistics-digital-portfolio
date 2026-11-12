@@ -1,3 +1,4 @@
+// 2026-11-12 policy: EDCN AWS no longer registers coded I2D processes; matching application count is 19.
 // V13.1 (owner choice 2026-10-22): every application search box has the same name ('Find applications'), the same
 // hint and the same rule — each word typed must appear in the application's name, ID, plant or business unit. The
 // Application landscape also keeps its category search. The comparison window has one Clear selection, not two.
@@ -72,7 +73,7 @@ test('the title search, the landscape, the Overview list and the three compariso
 test('the landscape keeps its category search on top of the common rule',()=>{
  const names=filterLandscape(model,'cap',{query:'transport management'}).apps.map(a=>a.Name);
  assert(names.includes('RBCW E-Queue system'),'found through its Transport Management category');
- assert.equal(filterLandscape(model,'process',{query:'M.I2D.10'}).apps.length,20,'displayed process codes still work');
+ assert.equal(filterLandscape(model,'process',{query:'M.I2D.10'}).apps.length,19,'displayed process codes still work');
  // Review finding (V13.1): categories are matched as one phrase, as before, so a name or plant search finds the same
  // applications as the other boxes. Word by word, 'RBCD LOG' had matched 12 applications through 'Logistics …' labels.
  for(const view of ['cap','process'])for(const query of ['RBCD LOG','AR Stock','Supply Chain Management System','rbcw ps']){

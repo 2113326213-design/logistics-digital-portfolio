@@ -1,3 +1,5 @@
+// 2026-11-12 policy: historical V21.1 process fixture keeps the original assertions; current cleanup has dedicated tests.
+import {v211ProcessFixture} from './v21-1-process-fixture.mjs';
 // V21 (owner 2026-11-12: "让别人一眼就能看出是什么问题", then "详细的对比展示", plan A + B): a process record whose level the
 // tool cannot read from its name is called "Process name not in the standard form", shown part by part next to a
 // standard record of the same application (A), and listed under Overview, Process, with what to change in LeanIX and a
@@ -15,7 +17,7 @@ import {nameFixRows,renderNameFixes,nameFixCSV,nameFixFileName} from '../public/
 import {WHATS_NEW,updateNoticeDue,updateNoticeHTML} from '../public/whats-new.mjs';
 
 const read=file=>readFileSync(new URL(`../public/${file}`,import.meta.url),'utf8');
-const data=JSON.parse(read('data.json')),model=buildModel(workspaceData(data)),esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const data=v211ProcessFixture(JSON.parse(read('data.json'))),model=buildModel(workspaceData(data)),esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 const byName=name=>model.apps.find(a=>a.Name===name);
 const PESS='RBCC Production Excution Support System(PESS)',OLD='BBM_P2S_LE_01 Production Replenishment',DAVIS='RBCC | Warehouse Delivery';
 const EIGHT=[['RBAC_ME_i-Warehouse','BBM_P2S_LE Warehousing & Material Flow:Internal Warehousing'],['RBCC I4.0 Visualization (Davis)',DAVIS],[PESS,OLD],['RBCD LOG Xone','BBM_O2C_OM_01 Schedule Agreement for Goods'],['VMCN_Packaging Data System','BBM_PKG_PD_02 Develop, test and release packaging concept (O2C, P2S, P2P)'],['VMCN_Packaging Data System','BBM_PKG_PD_03 Master data maintenance for packaging material and packaging specification (O2C, P2S, P2P)'],['VMCN_Packaging Data System','BBM_PKG_PD_04 Change management for existing packaging material and packaging specification (O2C, P2S, P2P)'],['VMCN_Packaging Data System','BBM_PKG_PM Packaging Management (O2C, P2S, P2P)']];
@@ -129,11 +131,12 @@ test('BBM_SWS records matched by code are not listed in Process names to fix in 
 test('V21: plain words only, and returning users are told once, with no version number',()=>{
  for(const file of ['process-record-kind.mjs','process-name-fixes.mjs'])assert.doesNotMatch(read(file).replace(/\/\/[^\n]*/g,''),/steward|catalogue|taxonomy/i,file);
  // 2026-11-12 data: the later data release has its own notice, including for users who dismissed V21 earlier that day.
- assert.equal(WHATS_NEW.id,'2026-11-12-2');
+ assert.equal(WHATS_NEW.id,'2026-11-12-3');
  const seen=id=>{const map=new Map([['logistics-portfolio:update-seen',id]]);return {get length(){return map.size;},key:i=>[...map.keys()][i]??null,getItem:k=>map.has(k)?map.get(k):null,setItem:(k,v)=>map.set(k,String(v))};};
  assert.equal(updateNoticeDue(seen('2026-11-02-2')),true,'someone who closed the V20 notice sees this one');
  assert.equal(updateNoticeDue(seen('2026-11-12')),true);
- assert.equal(updateNoticeDue(seen('2026-11-12-2')),false);
+ assert.equal(updateNoticeDue(seen('2026-11-12-2')),true,'2026-11-12 policy: V21.1 users see the new rule');
+ assert.equal(updateNoticeDue(seen('2026-11-12-3')),false);
  const html=updateNoticeHTML(s=>String(s));
  assert.match(html,/The tool was updated on 12 November 2026\./);
  assert.match(html,/<li>A process name the tool cannot read is now called "Process name not in the standard form"\./);

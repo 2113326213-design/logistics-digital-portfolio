@@ -1,3 +1,5 @@
+// 2026-11-12 policy: historical V21.1 process fixture keeps the original assertions; current cleanup has dedicated tests.
+import {v211ProcessFixture} from './v21-1-process-fixture.mjs';
 // V19.3 (owner 2026-11-02, "认，编号和名称一致就算同一个"): a process recorded with its ETAS number, as EDCN AWS does in the
 // LeanIX export of 2026-11-02 ("ETAS.I2D.010.050.010 Putaway of Automated Goods Receipt (AGR)"), is the Signavio process
 // with the same number (M.I2D.010.050.010) when the name is the same too. It then has that process's level.
@@ -10,7 +12,7 @@ import {maintenanceReport} from '../public/overview.mjs';
 import {processIssues} from '../public/process-issues.mjs';
 import {createSimilarity} from '../public/similarity.mjs';
 
-const base=()=>workspaceData(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url),'utf8')));
+const base=()=>workspaceData(v211ProcessFixture(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url),'utf8'))));
 const withProcesses=Processes=>{const data=base();return buildModel(workspaceData({...data,apps:[...data.apps,{ID:'etas-test',Name:'ETAS test',Description:'Test application.',Entity:'Plant A',Division:'PS','Business Capabilities':'B.06.5.1 Inbound Management and Receiving',Processes}]}));};
 const records=model=>maintenanceReport(model,{},'process').records.get('etas-test');
 
@@ -62,7 +64,7 @@ test('BBM_SWS records with a different name or an unknown code remain unmatched 
 });
 
 // 2026-11-12 data: EDCN AWS changed all seven prefixes from ETAS to BBM_SWS; the same codes/names still match at L3.
-test('the bundled data: EDCN AWS records its 7 processes with BBM_SWS numbers, all matched at Level 3',()=>{
+test('the historical V21.1 fixture: EDCN AWS records its 7 processes with BBM_SWS numbers, all matched at Level 3',()=>{
  const data=base(),model=buildModel(data),app=model.apps.find(a=>a.Name==='EDCN AWS');
  const sws=app.rawProcess.filter(raw=>/^BBM_SWS\./.test(raw));
  assert.equal(sws.length,7);
@@ -81,7 +83,9 @@ test('the update notice of 2 November 2026 tells returning users about the new d
  const html=updateNoticeHTML(s=>String(s));
  assert.match(html,/The tool was updated on 12 November 2026\./);
  assert(html.includes('<li>The data now comes from the LeanIX export of 2 November 2026. 16 applications changed, mostly their business capabilities and processes.</li>'));
- assert(html.includes('<li>A process recorded with an ETAS number (for example ETAS.I2D.010.050.010) now counts as the same standard process when the number and the name match.</li>'));
+ // 2026-11-12 policy: the old ETAS notice is superseded by the explicitly approved prefix restriction.
+ assert(html.includes('Only application process records starting with BBM PM are kept.'));
+ assert(html.includes('including BBM_SWS, ETAS and M.P2F, are removed'));
  assert.match(html,/Data checks now list the same items as Issues to review/,'the 23 October lines stay');
  assert.doesNotMatch(html,/\bV\d|version|release/i);
 });

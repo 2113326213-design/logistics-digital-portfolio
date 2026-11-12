@@ -9,6 +9,7 @@
       "process": 0.4
     },
     "similarityWeightsVersion": 2,
+    "processPolicy": "bbm-pm-only-v1",
     "source": "20261112_055820_sqAhl_inventory.xlsx",
     "taxonomySource": "standard+name.xlsx (capabilities); Business Capability + Process.xlsx (processes)",
     "inventoryExport": {
@@ -331,7 +332,7 @@
         "Entity": "RBCC",
         "Description": "Agile warehouse management system, used for label &TO(transfer order) management in RBCC&RBCS",
         "Business Capabilities": "B.06.05 Material Flow Orchestration;B.06.05.01 Inbound Management and Receiving;B.06.05.02 Material Flow and Storage Management",
-        "Processes": "BBM PM I2D Manage Warehouse Labels L3;BBM_SWS.I2D.010.050.010 Putaway of Automated Goods Receipt (AGR);BBM_SWS.I2D.010.050.020 Putaway to Warehouse Destination;BBM_SWS.I2D.010.050.030 Putaway to Shopfloor (Ship-to-Line);BBM_SWS.I2D.010.050.050 Putaway of Inspection Sample to Warehouse;BBM_SWS.I2D.020.030.010 Return Material to warehouse;BBM_SWS.I2D.020.030.020 Move material production internal;BBM_SWS.I2D.020.030.030 Manage Internal Transport",
+        "Processes": "BBM PM I2D Manage Warehouse Labels L3",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2019-09-13",
         "Main Business Capability": "B.06 Logistics Management",
@@ -471,7 +472,7 @@
         "Entity": "ME-CN",
         "Description": "i-Warehouse is an uniform platform for digitalization of the warehouse activities, harmonizinh the different warehouse operation/monitor/reporting relevant data sources and data flows, Providing KPI and analytic report  for CIP and management decision.\nIt is acting as the enabler of data driven logistics.\n",
         "Business Capabilities": "B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics",
-        "Processes": "BBM PM P2F Sales and Operations Planning L1;BBM_P2S_LE Warehousing & Material Flow:Internal Warehousing",
+        "Processes": "BBM PM P2F Sales and Operations Planning L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2019-09-19",
         "Main Business Capability": "B.06 Logistics Management",
@@ -591,7 +592,7 @@
         "Entity": "RBCC",
         "Description": "RBCC I4.0 Visualization | DESCRIPTION : This is a real time and analysis visualization application to monitor and analysis BIN utilization at RBCC | Serverlocation: Aachen | Marketingdescription: This is a real time and analysis visualization application to monitor and analysis BIN utilization at RBCC\nURL: https://cngvm019.apac.bosch.com:2760/login",
         "Business Capabilities": "B.06.03 Transport Management;B.06.03.01 Transport Planning and Optimization",
-        "Processes": "BBM PM O2C Delivery to Customer L1;BBM PM O2C Manage Outbound Delivery L3;BBM PM O2C Manage Outbound Delivery Reports L3;BBM PM O2C Order to Cash L0;BBM PM O2C Outbound Delivery L2;RBCC | Warehouse Delivery",
+        "Processes": "BBM PM O2C Delivery to Customer L1;BBM PM O2C Manage Outbound Delivery L3;BBM PM O2C Manage Outbound Delivery Reports L3;BBM PM O2C Order to Cash L0;BBM PM O2C Outbound Delivery L2",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2017-01-01",
         "Main Business Capability": "B.06 Logistics Management",
@@ -611,7 +612,7 @@
         "Entity": "RBCC",
         "Description": "A dashboard that shows the KPIs that logistics needs to focus on on a daily basis, as well as various applications and reports",
         "Business Capabilities": "B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.08.02 Supply Chain (Logistics) Monitoring and Dashboarding",
-        "Processes": "BBM_SWS.P2F Plan to Fulfill;BBM_SWS.P2F.040.090.030 Monitoring Dashboards;M.P2F.040.090 Plan to Supply Analytics and Reporting",
+        "Processes": "",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2025-02-01",
         "Main Business Capability": "B.06 Logistics Management",
@@ -631,7 +632,7 @@
         "Entity": "RBCC",
         "Description": "Dashboard to display production status and order sequence. Auto calculate demands and trigger replenishment  for package and raw materials. Visualize intralogistics process and support simply quality inspection.",
         "Business Capabilities": "B.06.02 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.02.02 Material Requirements Planning;B.06.05.02 Material Flow and Storage Management",
-        "Processes": "BBM PM I2D Block / Unblock Stock L3;BBM PM I2D Execute Warehouse Management (EWM) Reporting L3;BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Manage Manual Logistics Requests L3;BBM PM I2D Material Request L2;BBM PM I2D Receive In-House Finished Goods L3;BBM PM I2D Request material with Transport Kanban - OE L3;BBM PM I2D Request Packaging Kit L3;BBM PM I2D Supply material from shelf (Man to Goods) L3;BBM PM I2D Warehouse Processing L2;BBM PM I2D Warehouse to Consume L1;BBM PM M2S Initialize next order L3;BBM_P2S_LE_01 Production Replenishment",
+        "Processes": "BBM PM I2D Block / Unblock Stock L3;BBM PM I2D Execute Warehouse Management (EWM) Reporting L3;BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Manage Manual Logistics Requests L3;BBM PM I2D Material Request L2;BBM PM I2D Receive In-House Finished Goods L3;BBM PM I2D Request material with Transport Kanban - OE L3;BBM PM I2D Request Packaging Kit L3;BBM PM I2D Supply material from shelf (Man to Goods) L3;BBM PM I2D Warehouse Processing L2;BBM PM I2D Warehouse to Consume L1;BBM PM M2S Initialize next order L3",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2019-09-27",
         "Main Business Capability": "B.06 Logistics Management",
@@ -811,7 +812,7 @@
         "Entity": "RBCD",
         "Description": "Digitalization platform for logistics planning",
         "Business Capabilities": "B.06.02 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.02.10 Customer Order Planning;B.06.02.02 Material Requirements Planning;B.06.02.06 Procurement Planning",
-        "Processes": "BBM PM O2C Delivery to Customer - Data Management L2;BBM PM O2C Delivery to Customer - Reporting & Monitoring L2;BBM PM O2C Delivery to Customer L1;BBM PM O2C Manage archiving Delivery to Customer L3;BBM PM O2C Manage Delivery output master data L3;BBM PM O2C Manage Outbound Delivery determination and execution L3;BBM PM O2C Manage Outbound Delivery L3;BBM PM O2C Manage Outbound Delivery Reports L3;BBM PM O2C Order to Cash L0;BBM PM O2C Outbound Delivery L2;BBM PM P2F Demand Plan Release L2;BBM PM P2F Demand to Plan Analytics & Reporting L2;BBM PM P2F Demand to Plan Data Management L2;BBM PM P2F Demand to Plan L1;BBM PM P2F Demand to Plan Reports L3;BBM PM P2F Manage Demand to Plan Master Data L3;BBM PM P2F Plan to Fulfill L0;BBM PM P2F Release demand plan L3;BBM PM P2F Transmit Material and Sales Master Data L3;BBM_O2C_OM_01 Schedule Agreement for Goods",
+        "Processes": "BBM PM O2C Delivery to Customer - Data Management L2;BBM PM O2C Delivery to Customer - Reporting & Monitoring L2;BBM PM O2C Delivery to Customer L1;BBM PM O2C Manage archiving Delivery to Customer L3;BBM PM O2C Manage Delivery output master data L3;BBM PM O2C Manage Outbound Delivery determination and execution L3;BBM PM O2C Manage Outbound Delivery L3;BBM PM O2C Manage Outbound Delivery Reports L3;BBM PM O2C Order to Cash L0;BBM PM O2C Outbound Delivery L2;BBM PM P2F Demand Plan Release L2;BBM PM P2F Demand to Plan Analytics & Reporting L2;BBM PM P2F Demand to Plan Data Management L2;BBM PM P2F Demand to Plan L1;BBM PM P2F Demand to Plan Reports L3;BBM PM P2F Manage Demand to Plan Master Data L3;BBM PM P2F Plan to Fulfill L0;BBM PM P2F Release demand plan L3;BBM PM P2F Transmit Material and Sales Master Data L3",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2025-04-01",
         "Main Business Capability": "B.06 Logistics Management",
@@ -1471,7 +1472,7 @@
         "Entity": "VM-CN",
         "Description": "1. Master date module to save packaging material information(e.g. picture/dimension/weight) , label information and other information\n2. The PDS module to generate the internal PDS according the information saved in master data module and the information that from customer\n3. To ensure using the right packaging proposal to delivery goods to customer",
         "Business Capabilities": "B.06.06 Packaging and Returnables Management;B.06.06.02 Packaging Planning",
-        "Processes": "BBM PM P2F Sales and Operations Planning L1;BBM_PKG_PD_02 Develop, test and release packaging concept (O2C, P2S, P2P);BBM_PKG_PD_03 Master data maintenance for packaging material and packaging specification (O2C, P2S, P2P);BBM_PKG_PD_04 Change management for existing packaging material and packaging specification (O2C, P2S, P2P);BBM_PKG_PM Packaging Management (O2C, P2S, P2P)",
+        "Processes": "BBM PM P2F Sales and Operations Planning L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2025-12-31",
         "Main Business Capability": "B.06 Logistics Management",
@@ -11269,6 +11270,69 @@
         "recordedAt": "2026-10-21T14:51:09.885Z",
         "recorder": "Owner decision",
         "details": "Owner confirmed on 2026-10-22 that the process record \"BBM PM I2D Putaway to Automated Warehouse L3V\" is registered correctly as recorded. It is in neither the process snapshot of 21.02.2025 nor the LeanIX process export of 2026-10-20, so it has no standard code. It is no longer listed for review and does not count as matching the standard."
+      },
+      {
+        "id": "bbm-pm-only-20261112-0",
+        "appId": "df1f431f-c395-4bec-bf2f-7cf0b0bce105",
+        "kind": "updated",
+        "happenedAt": "2026-11-12T08:09:29.353Z",
+        "recordedAt": "2026-11-12T08:09:29.353Z",
+        "recorder": "Owner decision",
+        "details": "Keep only BBM PM process records. Removed: BBM_SWS.I2D.010.050.010 Putaway of Automated Goods Receipt (AGR); BBM_SWS.I2D.010.050.020 Putaway to Warehouse Destination; BBM_SWS.I2D.010.050.030 Putaway to Shopfloor (Ship-to-Line); BBM_SWS.I2D.010.050.050 Putaway of Inspection Sample to Warehouse; BBM_SWS.I2D.020.030.010 Return Material to warehouse; BBM_SWS.I2D.020.030.020 Move material production internal; BBM_SWS.I2D.020.030.030 Manage Internal Transport"
+      },
+      {
+        "id": "bbm-pm-only-20261112-1",
+        "appId": "809b28f2-77e8-44a2-bf87-52be13b5bab0",
+        "kind": "updated",
+        "happenedAt": "2026-11-12T08:09:29.353Z",
+        "recordedAt": "2026-11-12T08:09:29.353Z",
+        "recorder": "Owner decision",
+        "details": "Keep only BBM PM process records. Removed: BBM_P2S_LE Warehousing & Material Flow:Internal Warehousing"
+      },
+      {
+        "id": "bbm-pm-only-20261112-2",
+        "appId": "c13d36d9-2b58-4b81-b45b-0e829dd9a157",
+        "kind": "updated",
+        "happenedAt": "2026-11-12T08:09:29.353Z",
+        "recordedAt": "2026-11-12T08:09:29.353Z",
+        "recorder": "Owner decision",
+        "details": "Keep only BBM PM process records. Removed: RBCC | Warehouse Delivery"
+      },
+      {
+        "id": "bbm-pm-only-20261112-3",
+        "appId": "1dd3d164-c823-4e5e-a7c0-134e15ac32b6",
+        "kind": "updated",
+        "happenedAt": "2026-11-12T08:09:29.353Z",
+        "recordedAt": "2026-11-12T08:09:29.353Z",
+        "recorder": "Owner decision",
+        "details": "Keep only BBM PM process records. Removed: BBM_SWS.P2F Plan to Fulfill; BBM_SWS.P2F.040.090.030 Monitoring Dashboards; M.P2F.040.090 Plan to Supply Analytics and Reporting"
+      },
+      {
+        "id": "bbm-pm-only-20261112-4",
+        "appId": "27c39dea-6c97-497c-8487-7f5495bb183d",
+        "kind": "updated",
+        "happenedAt": "2026-11-12T08:09:29.353Z",
+        "recordedAt": "2026-11-12T08:09:29.353Z",
+        "recorder": "Owner decision",
+        "details": "Keep only BBM PM process records. Removed: BBM_P2S_LE_01 Production Replenishment"
+      },
+      {
+        "id": "bbm-pm-only-20261112-5",
+        "appId": "f5a1644f-ecc5-46ca-aca4-0cad0c844bb9",
+        "kind": "updated",
+        "happenedAt": "2026-11-12T08:09:29.353Z",
+        "recordedAt": "2026-11-12T08:09:29.353Z",
+        "recorder": "Owner decision",
+        "details": "Keep only BBM PM process records. Removed: BBM_O2C_OM_01 Schedule Agreement for Goods"
+      },
+      {
+        "id": "bbm-pm-only-20261112-6",
+        "appId": "8307f735-cee7-43c3-8c67-9329047dbdec",
+        "kind": "updated",
+        "happenedAt": "2026-11-12T08:09:29.353Z",
+        "recordedAt": "2026-11-12T08:09:29.353Z",
+        "recorder": "Owner decision",
+        "details": "Keep only BBM PM process records. Removed: BBM_PKG_PD_02 Develop, test and release packaging concept (O2C, P2S, P2P); BBM_PKG_PD_03 Master data maintenance for packaging material and packaging specification (O2C, P2S, P2P); BBM_PKG_PD_04 Change management for existing packaging material and packaging specification (O2C, P2S, P2P); BBM_PKG_PM Packaging Management (O2C, P2S, P2P)"
       }
     ],
     "importHistory": [

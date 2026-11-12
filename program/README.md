@@ -4,7 +4,13 @@
 
 Major version (V10, V11, …): a new data source, a new feature module, or a visible change to the page structure. Minor version (V10.1, V10.2, …): fixes, wording and display adjustments. RELEASE_VERSION in scripts/release.mjs is lower case (`v10`, `v10.1`); file names, the release ZIP, the deploy script and the release tag (`v10-20261022`) follow it.
 
-## Current state — V21.1 (2026-11-12)
+## Current state — V21.2 (2026-11-12)
+
+Only application process records beginning with BBM PM are retained. This owner decision removes 18 records on 7 applications, including BBM_SWS and M.P2F. PESS keeps 12 records, EDCN AWS 1, and Control Tower V2 has no process records. The processPolicy field carries the rule through saved workspaces, imports and server data. Standard tables and historical records are preserved. The old code parsers remain covered with an explicit historical V21.1 fixture; current data and migration behavior have dedicated regression tests.
+
+593 tests passed; deployment verification and final package details are in verification/v21.2-verification.md. Offline ZIP: offline/logistics-offline-20261022-v21.2.zip. The IIS server is not deployed.
+
+## Previous state — V21.1 (2026-11-12)
 
 The bundled inventory now merges `20261112_055820_sqAhl_inventory.xlsx` through the application's import path: 71 applications updated, none added or removed, 4 absent from the export retained, 75 in total. The import records 77 field changes: 56 are capability-code padding only; 21 other changes affect 18 applications, including process-prefix changes. Original two-digit capability strings are retained and resolve to the existing codes.
 

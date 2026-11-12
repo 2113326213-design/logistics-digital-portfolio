@@ -209,7 +209,8 @@ test('V20: returning users are told once about the checks and the kept uploads, 
  const html=updateNoticeHTML(s=>String(s));
  assert.match(html,/<li>Before you apply an import, the tool now names what looks wrong/);
  assert.match(html,/<li>Upload to server now protects the shared data\..*Put back an earlier upload\.<\/li>/);
- assert.match(html,/ETAS number/,'the earlier lines of the day stay');
+ // 2026-11-12 policy: the new restriction supersedes the earlier ETAS notice.
+ assert.match(html,/Only application process records starting with BBM PM are kept/);
  assert.doesNotMatch(html,/\bV\d|version|release|steward/i);
 });
 

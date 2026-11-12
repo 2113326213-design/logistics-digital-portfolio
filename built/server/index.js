@@ -79,6 +79,23 @@ function english(value2) {
   return text2.replace(/^第 (\d+) 行缺少 ID 或 Name$/, "Row $1 is missing ID or Name.").replace(/^应用 ID 重复：(.+)$/, "Duplicate application ID: $1").replace(/^Excel 中缺少 (.+)$/, "Missing Excel entry: $1").replace(/^应用清单缺少列：(.+)$/, "Missing inventory column: $1").replace(/^层级表缺少 (.+)$/, "Missing taxonomy column: $1").replace(/ 名称存在差异（(\d+) 种）$/, " \u2014 $1 name variants");
 }
 
+// public/process-policy.mjs
+var PROCESS_POLICY = "bbm-pm-only-v1";
+var allowedProcess = (record) => /^BBM\s+PM(?:\s|$)/i.test(String(record ?? "").trim());
+function processPolicyChanges(data) {
+  if (data?.processPolicy !== PROCESS_POLICY) return [];
+  return (data.apps || []).flatMap((app) => {
+    const before = String(app.Processes ?? ""), records = before.split(";").map((s) => s.trim()).filter(Boolean);
+    const removed = records.filter((record) => !allowedProcess(record));
+    if (!removed.length) return [];
+    return [{ appId: String(app.ID).trim(), field: "Processes", before, after: records.filter(allowedProcess).join(";"), removed, note: "Owner decision applied: only process records starting with BBM PM are kept." }];
+  });
+}
+function processPolicyApps(data) {
+  const changes = new Map(processPolicyChanges(data).map((change) => [change.appId, change.after]));
+  return data.apps.map((app) => changes.has(String(app.ID).trim()) ? { ...app, Processes: changes.get(String(app.ID).trim()) } : app);
+}
+
 // public/local-layer.mjs
 var LOCAL_ID = /^M\.[A-Z0-9]+(?:\.\d+)*(?:\.L[0-9a-f]{8,32})+$/;
 function cleanLocalProcesses(value2) {
@@ -601,7 +618,7 @@ function inventoryExportField(value2) {
 function workspaceData(data) {
   if (!data || !Array.isArray(data.apps) || !data.apps.length || !Array.isArray(data.capabilityRows) || !Array.isArray(data.processRows)) throw Error("\u5DE5\u4F5C\u533A\u7F3A\u5C11\u5E94\u7528\u6E05\u5355\u6216\u5206\u7C7B\u8868");
   if (!data.apps.every((a) => a && typeof a === "object" && !Array.isArray(a)) || !data.capabilityRows.every(Array.isArray) || !data.processRows.every(Array.isArray)) throw Error("\u5DE5\u4F5C\u533A\u6570\u636E\u7ED3\u6784\u65E0\u6548");
-  return { similarityWeights: workspaceWeights(data), similarityWeightsVersion: 2, ...thresholdField(data), source: String(data.source || "Imported workspace"), taxonomySource: String(data.taxonomySource || "Workspace taxonomy"), ...inventoryExportField(data.inventoryExport), ...localProcessesField(data.localProcesses), ...dataPackageField(data.dataPackage), ...serverBaseField(data.serverBase), isAcceptanceSample: data.isAcceptanceSample === true, apps: data.apps.map((a) => {
+  return { similarityWeights: workspaceWeights(data), similarityWeightsVersion: 2, ...thresholdField(data), ...data.processPolicy === PROCESS_POLICY ? { processPolicy: PROCESS_POLICY } : {}, source: String(data.source || "Imported workspace"), taxonomySource: String(data.taxonomySource || "Workspace taxonomy"), ...inventoryExportField(data.inventoryExport), ...localProcessesField(data.localProcesses), ...dataPackageField(data.dataPackage), ...serverBaseField(data.serverBase), isAcceptanceSample: data.isAcceptanceSample === true, apps: processPolicyApps(data).map((a) => {
     const app = Object.fromEntries(fields2.map((k) => [k, String(a[k] ?? "")]));
     if (Object.hasOwn(a, mainCapabilityField)) app[mainCapabilityField] = String(a[mainCapabilityField] ?? "");
     if (Object.hasOwn(a, "scopeNote")) {

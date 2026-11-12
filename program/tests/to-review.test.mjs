@@ -1,3 +1,4 @@
+// 2026-11-12 policy: deleting non-BBM PM records leaves 7 process applications to review.
 // Overview → Application maintenance → To review, its list and the application profile (owner specification
 // 2026-10-20): every applicable level, every open issue, one result for counts, list and profile.
 import test from 'node:test';
@@ -135,18 +136,18 @@ test('bundled data: To review counts and the profile shows exactly the same issu
  // 'BBM PM Others L0') and VMCN_Packaging Data System (four BBM_PKG records without a level) stay with more issues.
  // 2026-11-12 data: 14 applications gain matching L3 capabilities (including Control Tower, Davis, Karis and PMS);
  // Capability To review 27 -> 13. Control Tower V2 gains its P2F L3 Monitoring Dashboards, so Process 10 -> 9.
- assert.deepEqual([cap.needsReview.length,process.needsReview.length],[13,9],'2026-11-12 data: Capability −14, Process −1 (Control Tower V2)');
+ assert.deepEqual([cap.needsReview.length,process.needsReview.length],[13,7],'2026-11-12 policy: non-BBM PM records removed; missing levels remain');
  // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): Level 3 to review moves with the same applications:
  // Capability 39 -> 27 (the 12 above), Process 8 -> 7 (CDR_EM).
  // 2026-11-12 data: the same 14 capability applications and Control Tower V2 leave the Level 3 review lists.
- assert.deepEqual([l3MaintenanceMetrics(cap).notPassing.length,l3MaintenanceMetrics(process).notPassing.length],[13,6],'Level 3 metrics follow the same applications (2026-11-12 data: Capability −14, Process −1)');
+ assert.deepEqual([l3MaintenanceMetrics(cap).notPassing.length,l3MaintenanceMetrics(process).notPassing.length],[13,7],'2026-11-12 policy: Control Tower V2 now lacks process levels');
  const unionLeft=['RBCD LOM Scrap Management Platform','RBCD WI management system','RBCW E-Queue system','RBHP_LOG_QualManager','ShzP_DAVIS','Szh5_ASRS_WCS_WMS','VM-CN_WACOS_Szh5','VM/LOG-Szh2_DAVIS','VMCN_iSCMP'];
  for(const name of unionLeft){const a=model.apps.find(x=>x.Name.startsWith(name));assert(a.inLeanix.length>0,`${name} has records with a level outside the Signavio list`);assert.deepEqual(process.issues.get(a.id),[],`${name} left Process To review (V19.1 union)`);assert(!l3MaintenanceMetrics(process).notPassing.includes(a),name);}
  const nameOnly=model.apps.find(a=>a.Name==='RBAC_ME_Szh5 Intralogistics control system');
  assert.deepEqual([nameOnly.inLeanix,process.issues.get(nameOnly.id)],[[],[]],'V19.1: the Signavio and the LeanIX name are both valid, no name-difference issue');
  const xone=model.apps.find(a=>a.Name==='RBCD LOG Xone');
  // V21: a record not in the standard form ("BBM_…", no level) is labelled "Process name not in the standard form".
- assert.deepEqual([xone.inLeanix.map(x=>x.raw),process.issues.get(xone.id).map(i=>i.label)],[['BBM PM P2F Transmit Material and Sales Master Data L3'],['Process name not in the standard form']]);
+ assert.deepEqual([xone.inLeanix.map(x=>x.raw),process.issues.get(xone.id).map(i=>i.label)],[['BBM PM P2F Transmit Material and Sales Master Data L3'],[]]);
  assert(!l3MaintenanceMetrics(process).notPassing.includes(xone),'its Level 3 matches (V19.1 union)');
  // V19.1 union: the owner confirmations of 2026-10-22 are superseded; the records match and are not shown as confirmed.
  assert.deepEqual(l3MaintenanceMetrics(process).confirmed,[]);

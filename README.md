@@ -1,7 +1,7 @@
 <p align="center"><img src="docs/images/banner.svg" alt="Logistics Digital Portfolio — 物流数字化应用组合工具" width="1000"></p>
 
 <p align="center">
-  <a href="https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v21.1-20261022"><img src="docs/images/button-download.svg" alt="下载 V21.1 DOWNLOAD"></a>
+  <a href="https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v21.2-20261022"><img src="docs/images/button-download.svg" alt="下载 V21.2 DOWNLOAD"></a>
   <a href="http://wx-web-td02.apac.bosch.com:8083"><img src="docs/images/button-online.svg" alt="打开在线版 ONLINE"></a>
   <a href="#我想"><img src="docs/images/button-guide.svg" alt="使用说明 GUIDE"></a>
   <a href="CHANGELOG.md"><img src="docs/images/button-changelog.svg" alt="更新日志 CHANGELOG"></a>
@@ -30,7 +30,7 @@
 > 本仓库当前在 GitHub 为公开（public），包含应用清单数据；本次发布未更改仓库访问权限。原始 LeanIX 导出只能放在仓库目录外，不能提交到 GitHub 或加入发布包。
 
 > [!NOTE]
-> **V21.1 验证已完成。** 589 项测试与 Windows 非管理员终端的 19 项部署模拟全部通过；离线包已重建。发布记录以 PR 和 Release 页面为准；本页记录已完成的本地验证。[发布包](offline/logistics-offline-20261022-v21.1.zip) · [发布页](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v21.1-20261022) · [PR #1](https://github.com/2113326213-design/logistics-digital-portfolio/pull/1) · [验证记录](verification/v21.1-verification.md)。真实 IIS 仍未部署。
+> **V21.2 本地验证已完成。** 按用户确认，仅保留应用 Processes 中以 BBM PM 开头的记录；清理 7 个应用的 18 条记录，应用总数仍为 75。PESS 保留 12 条，EDCN AWS 保留 1 条，Control Tower V2 流程为空。 593 项测试全部通过，Windows 非管理员终端的 19 项部署模拟全部通过。[发布页](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v21.2-20261022) · [验证记录](verification/v21.2-verification.md)。真实 IIS 仍未部署。
 
 ## 打开工具
 
@@ -51,15 +51,15 @@
 </td>
 <td width="50%" valign="top">
 
-### 💾 离线版 V21.1
+### 💾 离线版 V21.2
 
 不在内网，或想自己保留一份时用：
 
-1. 从 [V21.1 发布页](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v21.1-20261022) 下载 **logistics-offline-20261022-v21.1.zip**（[仓库内同一发布包](offline/logistics-offline-20261022-v21.1.zip)）。
+1. 从 [V21.2 发布页](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v21.2-20261022) 下载 **logistics-offline-20261022-v21.2.zip**（[仓库内同一发布包](offline/logistics-offline-20261022-v21.2.zip)）。
 2. 右键 → **Extract all**。
 3. 用 Chrome 打开里面的 HTML（同一个 zip 里的 `deploy-iis.bat` 是给内网服务器部署用的，自己用时不用管）。
 
-解压出来的文件名里带 **v21.1** 就对了（页面上不再显示版本号）。
+解压出来的文件名里带 **v21.2** 就对了（页面上不再显示版本号）。
 
 </td>
 </tr>
@@ -69,8 +69,8 @@
   <tr>
     <td align="center" width="25%"><h3>75</h3><sub>应用 · 10 个工厂 · 5 个业务部门</sub></td>
     <td align="center" width="25%"><h3>71 / 4</h3><sub>本次导入 / 未列出但保留的应用</sub></td>
-    <td align="center" width="25%"><h3>77 / 56</h3><sub>字段变化 / 仅能力编号补零</sub></td>
-    <td align="center" width="25%"><h3>V21.1</h3><sub>2026-11-12 · 589 项测试 · Windows 19 项模拟通过</sub></td>
+    <td align="center" width="25%"><h3>18 / 7</h3><sub>移除流程记录 / 涉及应用</sub></td>
+    <td align="center" width="25%"><h3>V21.2</h3><sub>2026-11-12 · 593 项测试 · Windows 19 项模拟通过</sub></td>
   </tr>
 </table>
 
@@ -129,7 +129,7 @@
 <details>
 <summary><b>数据有多新？</b></summary>
 <br>
-页面标题下面那行（Data: 文件名 · as of 日期）就是当前数据的来源和日期；在页面里导入新表后会跟着变。导入的工作簿里有多张 Logistic Apps_<日期> 表时，读取日期最新的一张，导入预览的 Inventory 一行写明读的是哪一张。V21.1的内置应用数据已并入 2026-11-12 的 LeanIX 导出 <code>20261112_055820_sqAhl_inventory.xlsx</code>；未列出的 4 个应用保留，不能据此判定已停用。底表来自 2026-10-21 的自有工作簿（<code>20261021_logistic_inventory.xlsx</code> 的 Logistic Apps_1021，含 Status in Oct；不是 still active 的应用和 no score 的应用不计入成本、ROI 和相似度检查），此前依次并入了 2026-08-25 的清单和 2026-10-20 的 LeanIX 应用导出；流程标准以 2025-02-21 的快照为准，并按编号合并了 2026-10-20 的 LeanIX 流程导出（新旧名称并列保留，有差异的标为待确认）。能力或流程记录以 HC 开头的属于其他公司，不参与任何统计和比较，只在应用详情的 Source records 里原样列出并注明未使用。用内网网址打开时，如果数据管家在服务器上放了更新的数据包，标题下会出现 “New data on the server”：点 **Preview changes** 先看变化，再 **Apply**；你的备注、配对审核、打分设置和自己的映射都会保留。
+页面标题下面那行（Data: 文件名 · as of 日期）就是当前数据的来源和日期；在页面里导入新表后会跟着变。导入的工作簿里有多张 Logistic Apps_<日期> 表时，读取日期最新的一张，导入预览的 Inventory 一行写明读的是哪一张。V21.2的内置应用数据已并入 2026-11-12 的 LeanIX 导出 <code>20261112_055820_sqAhl_inventory.xlsx</code>；未列出的 4 个应用保留，不能据此判定已停用。底表来自 2026-10-21 的自有工作簿（<code>20261021_logistic_inventory.xlsx</code> 的 Logistic Apps_1021，含 Status in Oct；不是 still active 的应用和 no score 的应用不计入成本、ROI 和相似度检查），此前依次并入了 2026-08-25 的清单和 2026-10-20 的 LeanIX 应用导出；流程标准以 2025-02-21 的快照为准，并按编号合并了 2026-10-20 的 LeanIX 流程导出（新旧名称并列保留，有差异的标为待确认）。能力或流程记录以 HC 开头的属于其他公司，不参与任何统计和比较，只在应用详情的 Source records 里原样列出并注明未使用。用内网网址打开时，如果数据管家在服务器上放了更新的数据包，标题下会出现 “New data on the server”：点 **Preview changes** 先看变化，再 **Apply**；你的备注、配对审核、打分设置和自己的映射都会保留。
 </details>
 
 <details>
@@ -176,7 +176,9 @@
 
 完整更新日志见 [`CHANGELOG.md`](CHANGELOG.md)。
 
-**V21.1（当前，2026-11-12）**：并入 2026-11-12 的 LeanIX 应用导出：71 个应用更新、0 新增、0 删除，未列出的 4 个保留，总数仍为 75。77 处字段变化中，56 处只是能力编号补零，另外 21 处涉及 18 个应用（包括流程前缀变化）。支持 BBM_SWS 与 ETAS 编号，编号和名称一致才匹配，也支持 Level 0；保留经过核验的旧映射，撤销已从源数据消失的旧 DM 映射。Windows 非管理员终端的 19 项部署模拟全部通过，真实 IIS 仍未部署。已验证发布包见 `offline/logistics-offline-20261022-v21.1.zip`；发布状态见页首说明。
+**V21.2（当前，2026-11-12）**：按用户确认，仅保留应用 Processes 中以 BBM PM 开头的记录；清理 7 个应用的 18 条记录，应用总数仍为 75。PESS 保留 12 条，EDCN AWS 保留 1 条，Control Tower V2 流程为空。 旧工作区恢复和后续导入继续执行该规则，移除情况在导入预览显示。原始导入历史和标准表保留。
+
+**V21.1（历史，2026-11-12）**：并入 2026-11-12 的 LeanIX 应用导出：71 个应用更新、0 新增、0 删除，未列出的 4 个保留，总数仍为 75。77 处字段变化中，56 处只是能力编号补零，另外 21 处涉及 18 个应用（包括流程前缀变化）。支持 BBM_SWS 与 ETAS 编号，编号和名称一致才匹配，也支持 Level 0；保留经过核验的旧映射，撤销已从源数据消失的旧 DM 映射。Windows 非管理员终端的 19 项部署模拟全部通过，真实 IIS 仍未部署。已验证发布包见 `offline/logistics-offline-20261022-v21.1.zip`；发布状态见页首说明。
 
 **V21（正式版，2026-11-12）**：看不懂的流程记录一眼看清：工具读不出层级的流程名（如 PESS 的 BBM_P2S_LE_01 Production Replenishment）现在叫 “Process name not in the standard form”，应用详情里按 前缀 / 流程链 / 名称 / 层级 四段和同一应用的一条标准记录并排对比，错的标红并写明怎么改；Overview → Process 下新增 “Process names to fix in LeanIX” 清单（8 条、5 个应用），一键 “Export for plants (CSV)” 发给工厂；Import data 窗口改用更简单的英文（LeanIX file (.xlsx) / Share with everyone / Put back an earlier upload）。
 
@@ -242,6 +244,7 @@
 
 | 版本 | 主要变化 |
 |---|---|
+| [V21.2](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v21.2-20261022) | 按用户确认，仅保留应用 Processes 中以 BBM PM 开头的记录；清理 7 个应用的 18 条记录，应用总数仍为 75。PESS 保留 12 条，EDCN AWS 保留 1 条，Control Tower V2 流程为空。 |
 | [V21.1](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v21.1-20261022) | 并入 2026-11-12 的 LeanIX 应用导出：71 个应用更新、0 新增、0 删除，未列出的 4 个保留，总数仍为 75。77 处字段变化中，56 处只是能力编号补零，另外 21 处涉及 18 个应用（包括流程前缀变化）。支持 BBM_SWS 与 ETAS 编号，编号和名称一致才匹配，也支持 Level 0；保留经过核验的旧映射，撤销已从源数据消失的旧 DM 映射。Windows 非管理员终端的 19 项部署模拟全部通过，真实 IIS 仍未部署 |
 | [V21](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v21-20261022) | 看不懂的流程记录一眼看清：工具读不出层级的流程名（如 PESS 的 BBM_P2S_LE_01 Production Replenishment）现在叫 “Process name not in the standard form”，应用详情里按 前缀 / 流程链 / 名称 / 层级 四段和同一应用的一条标准记录并排对比，错的标红并写明怎么改；Overview → Process 下新增 “Process names to fix in LeanIX” 清单（8 条、5 个应用），一键 “Export for plants (CSV)” 发给工厂；Import data 窗口改用更简单的英文（LeanIX file (.xlsx) / Share with everyone / Put back an earlier upload） |
 | [V20](https://github.com/2113326213-design/logistics-digital-portfolio/releases/tag/v20-20261022) | 共享数据更安全：Upload to server 不会覆盖别人先上传的数据（先拿服务器数据再上传）；新增或删除很多应用时先列出、再点一次才上传；服务器保留最近 5 次上传，Import data → Share this data with everyone → Restore earlier server data 可以放回其中一份；Apply 前会列出看起来不对的地方（很多新增或删除的应用、导出被筛选、其他部门的应用、更旧的数据），勾选后才能 Apply；部署脚本只让登录的公司账号写数据文件，部署后自动试一次上传 |
@@ -416,7 +419,7 @@ V21.1还通过 Import data 的同一路径并入了 2026-11-12 的 LeanIX 应用
 | 导入 / 导出（Excel、工作区、CSV） | `program/public/xlsx.mjs`、`program/public/import-review.mjs`、`program/public/workspace.mjs`、`program/public/exports.mjs`、`program/public/score-settings.mjs`（阈值随备份）、`program/public/offline-save.mjs`（离线导出提示）；应用搜索在 `program/public/app-search.mjs`（6 个搜索框共用 matchesApplication 和同一个名称、提示） |
 | 样式 | `program/public/*.css` |
 | 构建和离线单文件 | `program/scripts/build.mjs`、`program/scripts/export-offline.mjs` |
-| 测试（`npm test`，589 项全部通过） | `program/tests/*.test.mjs`；最终日志在 `verification/v21.1-test-results.txt`；Windows 部署模拟 19/19 通过，日志在 `verification/deploy-sim-results.txt` |
+| 测试（`npm test`，593 项全部通过） | `program/tests/*.test.mjs`；最终日志在 `verification/v21.2-test-results.txt`；Windows 部署模拟 19/19 通过，日志在 `verification/deploy-sim-results.txt` |
 | 离线单文件版 | `offline/` |
 | IIS 部署脚本（每次发布自动生成） | `offline/deploy-iis.bat`（同一份脚本也在发布 zip `offline/logistics-offline-<日期>-<版本>.zip` 里，部署只需下载这个 zip）；生成器 `program/scripts/deploy-script.mjs`，模板 `program/scripts/deploy-iis.template.bat`，发布打包 `program/scripts/release-files.mjs`（`npm run release:files`），检查 `program/tests/deploy-script.test.mjs`，本机模拟 `program/scripts/deploy-sim.mjs`（`npm run deploy:sim`） |
 | 构建输出、文件校验清单 | `built/`、`MANIFEST.sha256` |
