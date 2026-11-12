@@ -78,11 +78,14 @@ test('a confirmed record is not an issue anywhere, and it still does not match t
  // 'BBM PM I2D Intralogistics to Demand L0'; it now records two P2F Level 3 processes ('Identify external/internal supply
  // constraints L3'), so it leaves Process To review (11 → 10, with or without the decisions), matches at Level 3
  // (67 → 68) and leaves the Level 3 not-passing list (8 → 7). The two decisions still change none of these counts.
- assert.deepEqual([before.needsReview.length,process.needsReview.length],[10,10]);
+ // 2026-11-12 data: Control Tower V2 gains P2F L3 and leaves review; the two confirmations still change no counts.
+ assert.deepEqual([before.needsReview.length,process.needsReview.length],[9,9]);
  const [l3,l3Before]=[l3MaintenanceMetrics(process),l3MaintenanceMetrics(before)];
- assert.deepEqual([l3Before.quality.length,l3.quality.length],[68,68],'Level 3 matches standard does not change');
+ // 2026-11-12 data: Control Tower V2 is the 69th application matching Level 3, with or without the decisions.
+ assert.deepEqual([l3Before.quality.length,l3.quality.length],[69,69],'Level 3 matches standard does not change');
  for(const name of [RBCW,AUTORACK])assert(l3.quality.some(a=>a.id===app(name).id),`${name} matches at Level 3`);
- assert.deepEqual([l3Before.notPassing.length,l3.notPassing.length,l3.confirmed.length],[7,7,0]);
+ // 2026-11-12 data: that new L3 reduces the not-passing list from 7 to 6; neither decision is confirmed-only.
+ assert.deepEqual([l3Before.notPassing.length,l3.notPassing.length,l3.confirmed.length],[6,6,0]);
  // The similarity check no longer holds AUTO-RACK's pairs back for this record.
  assert.equal(model.issues.filter(i=>i.appId===app(AUTORACK).id).length,0);
  // The rule itself is unchanged for a record a confirmation still applies to: one without a level. RBCD LOG Xone's only
@@ -100,7 +103,8 @@ test('a confirmed record is not an issue anywhere, and it still does not match t
  assert.deepEqual(dataChecksForApp(confirmed,a).checks.find(c=>c.dimension==='process'&&c.raw===XONE).tags.map(t=>t.label),['Confirmed by owner as recorded']);
  // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): 10 → 9, i.e. still one less than the 10 above;
  // CDR_EM already left Process To review with its new Level 3 records (see above).
- assert.equal(report.needsReview.length,9,'Xone leaves Process To review');
+ // 2026-11-12 data: confirming Xone removes one from the current 9 applications to review (Control Tower V2 left).
+ assert.equal(report.needsReview.length,8,'Xone leaves Process To review');
  // A record without a level belongs to no level, so the Level 3 reason "Confirmed by owner as recorded (not in the
  // catalogue)" no longer arises (it did for the two records above until V19).
  assert(!maintenanceGapReasons(report,report,a).some(r=>/Confirmed by owner/.test(r)));

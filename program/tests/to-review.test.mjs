@@ -133,10 +133,13 @@ test('bundled data: To review counts and the profile shows exactly the same issu
  // removed), Szh5_ASRS_WCS_WMS, VM-CN_WACOS_Szh5, VMCN_iSCMP; no application joined. Process To review 11 -> 10: CDR_EM now
  // records two P2F L3 processes instead of only the I2D L0 (its Level 1 / 2 / 3 missing are gone). VMCN_iWPC_AKL_Szh5 (now only
  // 'BBM PM Others L0') and VMCN_Packaging Data System (four BBM_PKG records without a level) stay with more issues.
- assert.deepEqual([cap.needsReview.length,process.needsReview.length],[27,10],'V9.17: Capability −1 (360° Supplier dashboard); V9.18: Process −1 (AUTO-RACK confirmed); V18.1: Process −1 (RBCW Auto Warehouse Management System); V19.1 union: Process −10; 2026-11-02 data: Capability −12, Process −1 (CDR_EM)');
+ // 2026-11-12 data: 14 applications gain matching L3 capabilities (including Control Tower, Davis, Karis and PMS);
+ // Capability To review 27 -> 13. Control Tower V2 gains its P2F L3 Monitoring Dashboards, so Process 10 -> 9.
+ assert.deepEqual([cap.needsReview.length,process.needsReview.length],[13,9],'2026-11-12 data: Capability −14, Process −1 (Control Tower V2)');
  // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): Level 3 to review moves with the same applications:
  // Capability 39 -> 27 (the 12 above), Process 8 -> 7 (CDR_EM).
- assert.deepEqual([l3MaintenanceMetrics(cap).notPassing.length,l3MaintenanceMetrics(process).notPassing.length],[27,7],'Level 3 metrics follow the same applications (V19.1 union: Process Level 3 −10; 2026-11-02 data: Capability −12, Process −1)');
+ // 2026-11-12 data: the same 14 capability applications and Control Tower V2 leave the Level 3 review lists.
+ assert.deepEqual([l3MaintenanceMetrics(cap).notPassing.length,l3MaintenanceMetrics(process).notPassing.length],[13,6],'Level 3 metrics follow the same applications (2026-11-12 data: Capability −14, Process −1)');
  const unionLeft=['RBCD LOM Scrap Management Platform','RBCD WI management system','RBCW E-Queue system','RBHP_LOG_QualManager','ShzP_DAVIS','Szh5_ASRS_WCS_WMS','VM-CN_WACOS_Szh5','VM/LOG-Szh2_DAVIS','VMCN_iSCMP'];
  for(const name of unionLeft){const a=model.apps.find(x=>x.Name.startsWith(name));assert(a.inLeanix.length>0,`${name} has records with a level outside the Signavio list`);assert.deepEqual(process.issues.get(a.id),[],`${name} left Process To review (V19.1 union)`);assert(!l3MaintenanceMetrics(process).notPassing.includes(a),name);}
  const nameOnly=model.apps.find(a=>a.Name==='RBAC_ME_Szh5 Intralogistics control system');

@@ -21,7 +21,10 @@ assert.equal(chosen.apps.length,5,'the walkthrough uses five real applications f
 // record that blocks four comparisons, by recording the same AUTO-RACK process without its level: a record without a
 // level ("Process level not specified") is still pending and goes through the same issue path in similarity.mjs.
 const OPEN_RECORD='BBM PM I2D Putaway to Automated Warehouse L3V',OPEN_RECORD_WITHOUT_LEVEL='BBM PM I2D Putaway to Automated Warehouse';
-const walkthrough={...chosen,apps:chosen.apps.map(app=>app.Name!=='AUTO-RACK'?app:{...app,Processes:app.Processes.split(';').map(raw=>raw===OPEN_RECORD?OPEN_RECORD_WITHOUT_LEVEL:raw).join(';')})};
+// 2026-11-12 data: Control Tower and Dolly now have different Level 3 capabilities. Keep their prior common Level 2
+// registration in this interaction fixture so the code-evidence action remains exercised; the real-data test below
+// uses chosen unchanged and checks the new classifications.
+const walkthrough={...chosen,apps:chosen.apps.map(app=>app.Name==='AUTO-RACK'?{...app,Processes:app.Processes.split(';').map(raw=>raw===OPEN_RECORD?OPEN_RECORD_WITHOUT_LEVEL:raw).join(';')}:['Control Tower','Dolly call off program'].includes(app.Name)?{...app,'Business Capabilities':'B.06.5 Material Flow Orchestration'}:app)};
 assert.notEqual(JSON.stringify(walkthrough.apps),JSON.stringify(chosen.apps),'the walkthrough record is recorded without its level');
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 
@@ -76,12 +79,9 @@ test('five-application example turns four AUTO-RACK comparisons into one direct 
  assert.doesNotMatch(markup,/Putaway to Automated Warehouse/,'record details stay inside View details');
 }));
 
-// V19.1 union (owner 2026-10-23, "也按并集"): on the real records (the owner's confirmation still left out) AUTO-RACK's
-// "Putaway to Automated Warehouse L3V" is in LeanIX, so it is not pending and adds no comparison evidence. The record check
-// is gone and AUTO-RACK's four comparisons get normal results (re-derived with node from public/data.json): Below
-// threshold with AR Stock Taking, Dolly call off program and Physical Logistics Management System, and No complete score
-// with code evidence 15 / 100 with Control Tower, which joins Control Tower ↔ Dolly call off program (30 / 100) in the
-// shared-classification group. The other six comparisons keep the results the walkthrough shows.
+// V19.1 union: AUTO-RACK's record with a level is in LeanIX and no longer pending.
+// 2026-11-12 data: Control Tower moved to B.06.8.2, Dolly to B.06.5.3, and Physical Logistics Management System gained
+// B.06.8.2. AUTO-RACK/Control Tower and Control Tower/Dolly now share no registration; Tower/PLMS is a full-score pair.
 test('V19.1: on the real records AUTO-RACK has no record check and its four comparisons get normal results',()=>withUI(({model,html})=>{
  const auto=appByName(model,'AUTO-RACK'),markup=html(),rows=pairButtons(markup);
  assert.deepEqual(auto.inLeanix.map(x=>x.raw),[OPEN_RECORD]);
@@ -92,15 +92,18 @@ test('V19.1: on the real records AUTO-RACK has no record check and its four comp
  assert.equal(rows.filter(row=>row[1]===auto.id||row[2]===auto.id).length,4);
  const index=createWeightedSimilarity(model,chosen.similarityWeights),label=name=>pairResultLabel(index.pair(auto.id,appByName(model,name).id),chosen.similarityThreshold);
  assert.deepEqual(chosenNames.filter(name=>name!=='AUTO-RACK').map(name=>[name,label(name)]),[
-  ['AR Stock Taking','Below threshold'],['Control Tower','No complete score'],
+  ['AR Stock Taking','Below threshold'],['Control Tower','No shared registrations'],
   ['Dolly call off program','Below threshold'],['Physical Logistics Management System','Below threshold']]);
- assert.equal(codeEvidenceScore(index.pair(auto.id,appByName(model,'Control Tower').id)),0.15);
+ assert.equal(codeEvidenceScore(index.pair(auto.id,appByName(model,'Control Tower').id)),null);
  const codeGroup=markup.match(/<details\b[^>]*><summary>[^<]*Shared business classifications[^<]*<\/summary>([\s\S]*?)<\/details>/)?.[0]||'';
- assert.match(codeGroup,/· 2 pairs<\/summary>/);
+ assert.equal(codeGroup,'','the real records no longer contain a code-evidence-only pair');
  assert.deepEqual(pairButtons(codeGroup).map(row=>[row[1],row[2]].map(id=>model.apps.find(app=>app.id===id).Name).sort()),
-  [['AUTO-RACK','Control Tower'],['Control Tower','Dolly call off program']]);
- assert.match(codeGroup,/Code evidence 15 \/ 100/);
- assert.match(markup,/No shared registrations · 3 pairs/);
+  []);
+ assert.doesNotMatch(codeGroup,/Code evidence/);
+ assert.match(markup,/No shared registrations · 5 pairs/);
+ const full=index.pair(appByName(model,'Control Tower').id,appByName(model,'Physical Logistics Management System').id);
+ assert.equal(pairResultLabel(full,chosen.similarityThreshold),'Potential overlap');
+ assert.equal(full.coverage,0.716);
  assert.doesNotMatch(markup,/Putaway to Automated Warehouse/);
 },chosen));
 
@@ -108,7 +111,8 @@ test('V19.1: on the real records AUTO-RACK has no record check and its four comp
 // B.06.1.4: Control Tower and Dolly call off program now record B.06.5 and Physical Logistics Management System B.06.8, so only
 // Control Tower ↔ Dolly call off program keeps code evidence (30 / 100); the other three former code-evidence pairs share no registration.
 // V19.1: the walkthrough keeps AUTO-RACK's record open (recorded without its level, see above), so these results hold;
-// on the real records AUTO-RACK ↔ Control Tower joins this group (previous test).
+// 2026-11-12 data: this fixture explicitly retains the old Level 2 registrations above; the real-data test no longer
+// expects this group after the updated Level 3 registrations.
 test('the code-evidence comparison remains grouped and opens its own evidence',()=>withUI(({ui,document,model,html})=>{
  const markup=html(),codeGroup=markup.match(/<details\b[^>]*><summary>[^<]*Shared business classifications[^<]*<\/summary>([\s\S]*?)<\/details>/)?.[0]||'';
  assert.match(codeGroup,/compare actual uses/);

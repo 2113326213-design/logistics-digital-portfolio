@@ -1,21 +1,41 @@
 {
-  "createdAt": "2026-11-12T05:14:38.520Z",
-  "snapshot": "20261022_v21",
+  "createdAt": "2026-11-12T07:49:02.278Z",
+  "snapshot": "20261022_v21.1",
   "applications": 75,
   "tests": {
-    "passed": 583,
+    "passed": 589,
     "failed": 0,
-    "log": "verification/v21-test-results.txt"
+    "skipped": 0,
+    "log": "verification/v21.1-test-results.txt"
   },
-  "offlineHTML": "offline/物流工具_最新版_离线单文件_20261022_v21.html",
+  "offlineHTML": "offline/物流工具_最新版_离线单文件_20261022_v21.1.html",
   "source": "program/",
   "workspace": "latest-workspace.json",
-  "browserVisualVerification": "offline HTML checked in a local browser over http://127.0.0.1 (not file://); hosted sign-in not verified",
+  "browserVisualVerification": "V21.1 offline HTML checked over http://127.0.0.1:8773: 12 November data date, Capability and Process levels, PESS name comparison, and plant CSV with 8 records for 5 applications; no script errors. Actual IIS sign-in and uploads not verified.",
   "browserTabUnsavedChangesIncluded": false,
   "gitHistoryIncluded": false,
   "nodeModulesIncluded": false,
   "workspaceFormatVersion": 6,
-  "nodeVerified": "v24.22.0",
-  "inventory": "20261102_025607_zApwu_inventory.xlsx (LeanIX application export, 2026-11-02 02:56 GMT) merged by ID through Import data into the owner workbook 20261021_logistic_inventory.xlsx",
-  "deployScriptFixed": "2026-10-22 (appcmd by full path, cmd /k window in every case; npm run deploy:sim)"
+  "nodeVerified": "v24.20.0",
+  "inventory": "20261112_055820_sqAhl_inventory.xlsx (LeanIX application export, 2026-11-12) merged by ID; 71 imported, 75 retained, 4 absent from export kept unchanged; 77 field changes including 56 capability-code padding changes",
+  "deployScriptFixed": "2026-10-22 (appcmd by full path, cmd /k window in every case; npm run deploy:sim)",
+  "offlineZIP": "offline/logistics-offline-20261022-v21.1.zip",
+  "offlineHTMLSHA256": "006002a3655ac7bc913e7ae811f455f6ef96a4135f85d87918f15d6899332780",
+  "offlineZIPSHA256": "11e3dc1130d003292b956d0bc87dbc576bffd2b3f30a543d3962933786ad96f1",
+  "repositoryVisibility": "public",
+  "deploymentSimulation": {
+    "status": "passed",
+    "passed": 19,
+    "failed": 0,
+    "nonElevatedWindows": true,
+    "powershell": "5.1.26100.9711",
+    "log": "verification/deploy-sim-results.txt"
+  },
+  "dependencyAudit": {
+    "status": "warnings retained",
+    "packages": 7,
+    "moderate": 4,
+    "high": 3,
+    "scope": "development tooling; separate upgrade and verification pending"
+  }
 }

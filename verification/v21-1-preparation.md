@@ -1,4 +1,6 @@
-# V21.1 source preparation — not a release
+# V21.1 initial source preparation — historical record
+
+**Current status:** the data import is now complete, but the full updated-data test suite and release steps are unfinished. Continue from `v21.1-handoff.md`. The following records the earlier code preparation and pre-import checks.
 
 Date: 2026-11-12. Base: V21, commit `5b53511cb7e2e23fc18e96c74db6e3131037b4ac`.
 

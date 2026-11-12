@@ -16,6 +16,8 @@ import {recordImport} from '../public/application-history.mjs';
 import {buildModel} from '../public/model.mjs';
 
 const bundled=workspaceData(JSON.parse(readFileSync(new URL('../public/data.json',import.meta.url),'utf8')));
+// 2026-11-12 data: this is the active successor of the old RBCD dashboard mapping; the old record remains revoked.
+const releaseMappingId='0114709eb1e3695b4c05bc27a8bd8958';
 const source=file=>readFileSync(new URL('../public/'+file,import.meta.url),'utf8');
 const WUJ_HC='HC.02.04.05 Transportation Management';
 const wujId=bundled.apps.find(a=>a.Name.startsWith('Wuj HK AGV')).ID;
@@ -32,9 +34,8 @@ const user=workspaceData({...bundled,reviews:{'review-key':{status:'待核对',r
 test('a package carries only the shared data, names itself by its content and states its date',()=>{
  assert.equal(DATA_PACKAGE_FILE,'logistics-data.json');
  assert.deepEqual(Object.keys(pkg),['format','version','id','publishedAt','dataAsOf','applications','data']);
- // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): the steward's data is the bundled data, whose
- // source is now that export, so the package is dated 2026-11-02 (was 2026-10-21 from 20261021_logistic_inventory.xlsx).
- assert.deepEqual([pkg.format,pkg.version,pkg.publishedAt,pkg.dataAsOf,pkg.applications],[DATA_PACKAGE_FORMAT,1,PUBLISHED,'2026-11-02',bundled.apps.length-1]);
+ // 2026-11-12 data: the shared content is dated by the new bundled export, independently of the publish timestamp.
+ assert.deepEqual([pkg.format,pkg.version,pkg.publishedAt,pkg.dataAsOf,pkg.applications],[DATA_PACKAGE_FORMAT,1,PUBLISHED,'2026-11-12',bundled.apps.length-1]);
  assert.match(pkg.id,/^[0-9a-f]{16}$/);
  for(const key of Object.keys(pkg.data))assert(['source','taxonomySource','inventoryExport','apps','capabilityRows','processRows','corrections','acceptedRecords','mappingNotes'].includes(key),key);
  for(const key of ['reviews','reviewHistory','pairReviews','similarityWeights','similarityThreshold','importHistory','applicationEvents'])assert(!(key in pkg.data),`no ${key}: it is each user's own`);
@@ -45,9 +46,8 @@ test('a package carries only the shared data, names itself by its content and st
 
 test('the page reads a package back exactly, and refuses anything else or anything edited',()=>{
  const text=dataPackageText(steward,{publishedAt:PUBLISHED}),read=readDataPackage(text);
- // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): the bundled source is now that export, so the
- // date read back from the content is 2026-11-02 (was 2026-10-21).
- assert.deepEqual(read,{id:pkg.id,publishedAt:PUBLISHED,dataAsOf:'2026-11-02',data:pkg.data});
+ // 2026-11-12 data: the date read back from the content follows the new bundled source.
+ assert.deepEqual(read,{id:pkg.id,publishedAt:PUBLISHED,dataAsOf:'2026-11-12',data:pkg.data});
  assert.throws(()=>readDataPackage('{not json'),/not valid JSON/);
  assert.throws(()=>readDataPackage({format:'something else'}),/not a data package of this tool/);
  assert.throws(()=>readDataPackage({...JSON.parse(text),version:2}),/version 2 is not supported/);
@@ -59,9 +59,8 @@ test('applying replaces the shared data and keeps everything that is the user\'s
  const read=readDataPackage(dataPackageText(steward,{publishedAt:PUBLISHED})),next=applyDataPackage(user,read);
  assert.deepEqual([next.apps,next.capabilityRows,next.processRows,next.source,next.taxonomySource],[steward.apps,steward.capabilityRows,steward.processRows,steward.source,steward.taxonomySource]);
  for(const key of ['reviews','reviewHistory','pairReviews','similarityWeights','similarityThreshold','importHistory','applicationEvents'])assert.deepEqual(next[key],user[key],key);
- // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): the package is dated 2026-11-02 (was 2026-10-21),
- // the date of the bundled source that export now is.
- assert.deepEqual(next.dataPackage,{id:pkg.id,publishedAt:PUBLISHED,dataAsOf:'2026-11-02',mappingIds:pkg.data.corrections.map(c=>c.id)});
+ // 2026-11-12 data: the applied package retains the new source date and every shared mapping ID.
+ assert.deepEqual(next.dataPackage,{id:pkg.id,publishedAt:PUBLISHED,dataAsOf:'2026-11-12',mappingIds:pkg.data.corrections.map(c=>c.id)});
  assert.equal(next.isAcceptanceSample,false);
  // The steward's mapping is added, since the user has none for that record; the shared ones are not duplicated.
  assert.equal(next.corrections.length,user.corrections.length+1);
@@ -83,9 +82,8 @@ test('through the page\'s preview and Apply: the changes are listed, history rec
  const applied=recordImport(user,preview.next,{inventoryFile:`${DATA_PACKAGE_FILE} (published 2026-10-22)`,taxonomyFile:''});
  assert.equal(applied.importHistory.length,user.importHistory.length+1);
  assert.equal(applied.importHistory.at(-1).inventoryFile,'logistics-data.json (published 2026-10-22)');
- // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): the package is dated 2026-11-02 (was 2026-10-21),
- // the date of the bundled source that export now is.
- assert.deepEqual(applied.dataPackage,{id:pkg.id,publishedAt:PUBLISHED,dataAsOf:'2026-11-02',mappingIds:pkg.data.corrections.map(c=>c.id)});
+ // 2026-11-12 data: the history and reload path preserve the package's new source date.
+ assert.deepEqual(applied.dataPackage,{id:pkg.id,publishedAt:PUBLISHED,dataAsOf:'2026-11-12',mappingIds:pkg.data.corrections.map(c=>c.id)});
  const reloaded=workspaceData(JSON.parse(JSON.stringify(applied)));
  assert.deepEqual(reloaded.dataPackage,applied.dataPackage,'kept in a saved or exported workspace');
  assert.equal(packageIsNew(reloaded,read),false,'not offered again after applying');
@@ -94,11 +92,10 @@ test('through the page\'s preview and Apply: the changes are listed, history rec
 
 test('a package with older data than the page shows is not offered (a server file left from before a newer release)',()=>{
  const dated=day=>createDataPackage(workspaceData({...steward,source:`${day}_logistic_inventory.xlsx`}));
- // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): the page now shows data as of 2026-11-02 (was
- // 2026-10-21), so the same-day package is dated 20261102 (was 20261021, which is now older and would not be offered).
- const older=dated('20261001'),sameDay=dated('20261102'),newer=dated('20261105');
- assert.deepEqual([older.dataAsOf,sameDay.dataAsOf,newer.dataAsOf],['2026-10-01','2026-11-02','2026-11-05']);
- assert.deepEqual([packageIsNew(user,older),packageIsNew(user,sameDay),packageIsNew(user,newer)],[false,true,true],'the page shows data as of 2026-11-02');
+ // 2026-11-12 data: use November 12/13 for the same-day/newer fixtures; November 5 is now older than the page.
+ const older=dated('20261001'),sameDay=dated('20261112'),newer=dated('20261113');
+ assert.deepEqual([older.dataAsOf,sameDay.dataAsOf,newer.dataAsOf],['2026-10-01','2026-11-12','2026-11-13']);
+ assert.deepEqual([packageIsNew(user,older),packageIsNew(user,sameDay),packageIsNew(user,newer)],[false,true,true],'the page shows data as of 2026-11-12');
  assert.equal(packageIsNew(user,{...newer,dataAsOf:''}),true,'a package without a date is judged by its content only');
 });
 
@@ -115,7 +112,9 @@ test('the page wiring: only the intranet page looks for the package; Not now rem
 
 // Review findings (V14, before release) — each case is the scenario the review reproduced.
 test('review: the steward\'s mapping decisions reach users — revocations and replacements, not blocked by release copies',()=>{
- const X='l3v-12681baf83d23b3f1ca2137c';// a mapping that comes with the release (Applied)
+ // 2026-11-12 data: revoke the active carried-over mapping, rather than its already revoked predecessor.
+ const X=releaseMappingId;
+ assert.equal(correctionStates(bundled).find(c=>c.id===X).state,'Applied');
  const afterRevoke=applyDataPackage(user,readDataPackage(dataPackageText(revokeCorrection(bundled,X))));
  assert.equal(correctionStates(afterRevoke).find(c=>c.id===X).state,'Revoked','the steward revoked it, so the user\'s copy is revoked too');
  // P1 maps Wuj HK AGV's HC record to B.06.3.1; P2 revokes that mapping and maps the record to B.06.3.2.
@@ -143,30 +142,30 @@ test('review: "confirmed as recorded" comes from the package as it is',()=>{
 test('review: a package is offered only when applying it changes something, and an offered package can always be applied',()=>{
  const own=workspaceData({...user,corrections:[...user.corrections,mapWuj(user,'B.06.3.1','User')]});
  assert.equal(packageIsNew(own,readDataPackage(dataPackageText(bundled))),false,'the release data again: nothing to apply, so no notice');
- const redated=readDataPackage(dataPackageText({...bundled,source:'20261105_logistic_inventory.xlsx'}));
+ // 2026-11-12 data: keep the fixture genuinely newer than the current bundled source.
+ const redated=readDataPackage(dataPackageText({...bundled,source:'20261113_logistic_inventory.xlsx'}));
  assert.equal(packageIsNew(own,redated),true,'the same records with a newer date');
  const preview=previewImport(own,applyDataPackage(own,redated));
  assert.equal(preview.hasChanges,true,'Apply is offered');
- const applied=recordImport(own,preview.next,{inventoryFile:'logistics-data.json (published 2026-11-05)'});
- assert.equal(dataAsOfText(applied),'Data: 20261105_logistic_inventory.xlsx · as of 2026-11-05');
+ const applied=recordImport(own,preview.next,{inventoryFile:'logistics-data.json (published 2026-11-13)'});
+ assert.equal(dataAsOfText(applied),'Data: 20261113_logistic_inventory.xlsx · as of 2026-11-13');
  assert.equal(packageIsNew(applied,redated),false,'and then the notice goes away');
  assert(buildModel(applied).apps.find(a=>a.ID===wujId).cap.includes('B.06.3.1'),'the user\'s own mapping stays');
 });
 
 test('review: the date rule compares the data\'s own dates, not import dates; a forged header date is ignored',()=>{
- // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): the bundled data now records that export's time
- // (inventoryExport.exportedAt 2026-11-02 02:56:08 GMT), which dates a package even without a date in its file name. The
- // undated package is therefore built explicitly without the export record, as the bundled data was before (no
- // inventoryExport): no date in the file name and no export time.
- const {inventoryExport:_export,...stewardWithoutExport}=steward;
+ // 2026-11-12 data: the repaired bundled export no longer has an export-info time. An explicit fixture retains the
+ // export-time fallback check, before removing that metadata to make a genuinely undated package.
+ const withExportTime={...steward,source:'Logistics inventory final.xlsx',inventoryExport:{...steward.inventoryExport,exportedAt:'2026-11-12 08:00:00 GMT'}};
+ assert.equal(readDataPackage(dataPackageText(withExportTime)).dataAsOf,'2026-11-12');
+ const {inventoryExport:_export,...stewardWithoutExport}=withExportTime;
  const undated=readDataPackage(dataPackageText({...stewardWithoutExport,source:'Logistics inventory final.xlsx'}));
  assert.equal(undated.dataAsOf,'');
  const afterUndated=recordImport(user,previewImport(user,applyDataPackage(user,undated)).next,{inventoryFile:'logistics-data.json',at:'2026-11-10T08:00:00.000Z'});
  const later=readDataPackage(dataPackageText({...bundled,source:'20261108_logistic_inventory.xlsx'}));
  assert.equal(packageIsNew(afterUndated,later),true,'data of 2026-11-08 is still offered after an import on 2026-11-10');
- // 2026-11-02 data (LeanIX export 20261102_025607_zApwu_inventory.xlsx): the content's own date is now 2026-11-02 (was
- // 2026-10-21), from the bundled source file name; the forged header date is still ignored.
- assert.equal(readDataPackage({...JSON.parse(dataPackageText(steward)),dataAsOf:'2099-01-01'}).dataAsOf,'2026-11-02');
+ // 2026-11-12 data: the content's date comes from the new source file name; the forged header is still ignored.
+ assert.equal(readDataPackage({...JSON.parse(dataPackageText(steward)),dataAsOf:'2099-01-01'}).dataAsOf,'2026-11-12');
 });
 
 test('review: kept work from a server package is not called earlier data when the page opens',()=>{
@@ -193,7 +192,8 @@ test('review: hiding the notice is not the only way — the Import data dialog k
 
 // Second review (V14, before release).
 test('review 2: a later Excel or taxonomy import ends the "from the server" state, so the server data is offered again',()=>{
- const redated=readDataPackage(dataPackageText({...bundled,source:'20261105_logistic_inventory.xlsx',apps:bundled.apps.map(a=>a.Name==='AUTO-RACK'?{...a,Description:'From the server'}:a)}));
+ // 2026-11-12 data: this server fixture must be newer than the release before the later file import clears its marker.
+ const redated=readDataPackage(dataPackageText({...bundled,source:'20261113_logistic_inventory.xlsx',apps:bundled.apps.map(a=>a.Name==='AUTO-RACK'?{...a,Description:'From the server'}:a)}));
  const applied=recordImport(user,previewImport(user,applyDataPackage(user,redated)).next,{inventoryFile:'logistics-data.json'});
  assert.equal(packageIsNew(applied,redated),false);
  const ownFile=applyInventory(applied,bundled.apps,'20261101_logistic_inventory.xlsx');
@@ -205,16 +205,18 @@ test('review 2: a later Excel or taxonomy import ends the "from the server" stat
 });
 
 test('review 2: mappings bundled with the release are shared, so the steward\'s mapping of the same record reaches users',()=>{
- const X=bundled.corrections.find(c=>c.id==='l3v-12681baf83d23b3f1ca2137c'),releaseIds=bundled.corrections.map(c=>c.id);
+ // 2026-11-12 data: exercise replacement of the active successor while retaining its revoked predecessor in every result.
+ const X=bundled.corrections.find(c=>c.id===releaseMappingId),releaseIds=bundled.corrections.map(c=>c.id);
+ assert.equal(correctionStates(bundled).find(c=>c.id===X.id).state,'Applied');
  // The steward's workspace never had X (an older base); the steward mapped the record again (S).
  const base={...bundled,corrections:bundled.corrections.filter(c=>c.id!==X.id)};
  const S=createCorrection(base,{appId:X.appId,dimension:X.dimension,raw:X.raw,targetId:X.targetId,reviewer:'Steward',reason:'Mapped again'});
  const pkg2=readDataPackage(dataPackageText({...base,corrections:[...base.corrections,S]}));
  const stateOf=data=>correctionStates(data).filter(c=>c.appId===X.appId&&c.raw===X.raw).map(c=>[c.id===S.id?'S':c.id===X.id?'X':'other',c.state]);
- assert.deepEqual(stateOf(applyDataPackage(user,pkg2,{releaseIds})),[['S','Applied']],'S applies; the release copy X gives way');
+ assert.deepEqual(stateOf(applyDataPackage(user,pkg2,{releaseIds})),[['other','Revoked'],['S','Applied']],'S applies; the release copy X gives way, and the earlier revocation stays');
  // A release mapping the package says nothing about stays.
  const silent=readDataPackage(dataPackageText({...base,apps:base.apps.map(a=>a.Name==='AUTO-RACK'?{...a,Description:'Changed'}:a)}));
- assert.deepEqual(stateOf(applyDataPackage(user,silent,{releaseIds})),[['X','Applied']]);
+ assert.deepEqual(stateOf(applyDataPackage(user,silent,{releaseIds})),[['other','Revoked'],['X','Applied']]);
  // A mapping the user made in this browser still wins over the package for its record.
  const userBase=revokeCorrection(user,X.id),own=createCorrection(userBase,{appId:X.appId,dimension:X.dimension,raw:X.raw,targetId:X.targetId,reviewer:'User',reason:'Own'});
  const withOwn=workspaceData({...userBase,corrections:[...userBase.corrections,own]});
@@ -231,7 +233,8 @@ test('review 2: an undated package is not judged older; the steward\'s revocatio
  assert.match(text.text,/published on the intranet server\)/);assert.equal(text.warning,'');
  assert(source('app.js').includes("const fromPackage=packageNotOlder(merged.data.dataPackage,dataAsOf(initialData)?.date||'');"));
  // The steward revokes a release mapping with the usual note; users see who and why, not "Reason was not recorded".
- const X='l3v-12681baf83d23b3f1ca2137c',note={id:'revoke-steward-1',action:'revoke',at:'2026-10-22T09:00:00.000Z',reviewer:'Data steward',mappingId:X,reason:'Demand planning is not done in this tool'};
+ // 2026-11-12 data: record a new revocation of the active successor, retaining the original mapping history.
+ const X=releaseMappingId,note={id:'revoke-steward-1',action:'revoke',at:'2026-11-13T09:00:00.000Z',reviewer:'Data steward',mappingId:X,reason:'Demand planning is not done in this tool'};
  const stewardData=workspaceData({...revokeCorrection(bundled,X),reviewHistory:[...bundled.reviewHistory,note]});
  const read=readDataPackage(dataPackageText(stewardData));
  assert.deepEqual(read.data.mappingNotes.map(n=>[n.id,n.reviewer]),[['revoke-steward-1','Data steward']]);
@@ -258,8 +261,10 @@ test('review 3: mappings from an earlier package follow the steward — a later 
  assert.equal(packageIsNew(afterP1,p4,options),true);
  assert(!applyDataPackage(afterP1,p4,options).corrections.some(c=>c.id===m1.id));
  // A release mapping the next package leaves out still stays (the release rule), even though P1 carried it.
- const X='l3v-12681baf83d23b3f1ca2137c',p5=readDataPackage(dataPackageText({...bundled,corrections:bundled.corrections.filter(c=>c.id!==X)}));
+ // 2026-11-12 data: the release's active successor must survive a package that says nothing about it.
+ const X=releaseMappingId,p5=readDataPackage(dataPackageText({...bundled,corrections:bundled.corrections.filter(c=>c.id!==X)}));
  assert(applyDataPackage(afterP1,p5,options).corrections.some(c=>c.id===X));
+ assert.equal(correctionStates(applyDataPackage(afterP1,p5,options)).find(c=>c.id===X).state,'Applied');
 });
 
 test('review 3: the package the workspace came from is not offered again when a newer release adds fields on reload',()=>{

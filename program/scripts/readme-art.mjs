@@ -7,7 +7,7 @@
 //
 //   npm run readme:art        (run in program/ after the test log is copied to verification/)
 //
-// Self-contained SVG files in docs/images: no external badge service, so they also show in the private repository.
+// Self-contained SVG files in docs/images: no external badge service.
 import {readFileSync,writeFileSync,existsSync} from 'node:fs';
 import path from 'node:path';
 import {RELEASE_VERSION} from './release.mjs';
@@ -41,7 +41,7 @@ badge('badge-version.svg','version',VERSION,'#0071a8');
 badge('badge-tests.svg','tests',`${tests.pass} passed`,'#2e9e5b');
 badge('badge-offline.svg','offline','single HTML · no install','#5b6b7a');
 badge('badge-data.svg','data',`${apps} apps · ${plants} plants`,'#7c5cbf');
-badge('badge-private.svg','visibility','private','#b7791f');
+badge('badge-private.svg','visibility','public','#2b7fd4');
 
 // ---- link buttons (the "for-the-badge" look: square, bold, an icon and spaced capitals) ------------------------------
 const ICONS={

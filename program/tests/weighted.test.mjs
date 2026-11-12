@@ -65,7 +65,9 @@ test('description ignores English filler words while names retain domain tokens'
 test('incomplete directions show known points and missing weight without a normalized estimate',()=>{
  // Legacy catalogue (before 2026-10-16) had no B.06.9, so ShzP_Karis' only capability record was unconfirmed.
  const current=JSON.parse(fs.readFileSync(new URL('../public/data.json',import.meta.url))),old=JSON.parse(fs.readFileSync(new URL('./capability-rows-2026-10-15.json',import.meta.url)));
- const data={...current,capabilityRows:old.capabilityRows,taxonomySource:old.taxonomySource};
+ // 2026-11-12 data: Karis gained B.06.5.6, absent from this deliberately old capability list. Keep its original
+ // B.06.5-only registration in the legacy fixture so this still tests a complete peer beside an incomplete peer.
+ const data={...current,apps:current.apps.map(a=>a.Name==='RBCC E-Queue system(Karis)'?{...a,'Business Capabilities':'B.06.5 Material Flow Orchestration'}:a),capabilityRows:old.capabilityRows,taxonomySource:old.taxonomySource};
  const model=buildModel(data),target=model.apps.find(a=>a.Name==='RBCC E-Queue system(Karis)');
  const index=createWeightedSimilarity(model),rbcw=model.apps.find(a=>a.Name==='RBCW E-Queue system'),shzp=model.apps.find(a=>a.Name==='ShzP_Karis');
  const confirmed=index.compare(target.id,rbcw.id),estimate=index.compare(target.id,shzp.id);

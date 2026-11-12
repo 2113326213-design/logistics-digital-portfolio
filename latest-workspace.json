@@ -9,15 +9,16 @@
       "process": 0.4
     },
     "similarityWeightsVersion": 2,
-    "source": "20261102_025607_zApwu_inventory.xlsx",
+    "source": "20261112_055820_sqAhl_inventory.xlsx",
     "taxonomySource": "standard+name.xlsx (capabilities); Business Capability + Process.xlsx (processes)",
     "inventoryExport": {
-      "file": "20261102_025607_zApwu_inventory.xlsx",
-      "exportedAt": "2026-11-02 02:56:08 GMT",
-      "sheet": "bbm-cn log (Export 2026-11-02…",
+      "file": "20261112_055820_sqAhl_inventory.xlsx",
+      "exportedAt": "",
+      "sheet": "bbm-cn log (Export 2026-11-12…",
       "missingIds": [
         "88f9245b-a883-4a29-add6-43e8efca840c",
         "4d48feff-c805-47c2-a69b-95f781777f51",
+        "8794cd2e-71f8-43c8-b734-8fc56ec5ed89",
         "41999b96-cf85-4804-ad13-099ac9c91e70"
       ]
     },
@@ -29,7 +30,7 @@
         "Division": "PS",
         "Entity": "RBCD",
         "Description": "AGR is the system for auto goods receiving in warehouse to make the goods receiving process transparent and automation.",
-        "Business Capabilities": "B.06.5 Material Flow Orchestration;B.06.5.1 Inbound Management and Receiving",
+        "Business Capabilities": "B.06.05 Material Flow Orchestration;B.06.05.01 Inbound Management and Receiving",
         "Processes": "BBM PM I2D Identification & Booking L2;BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Post Goods Receipt in EWM on HU level (AGR) L3;BBM PM I2D Receive to Store L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2021-02-01",
@@ -49,7 +50,7 @@
         "Division": "PS",
         "Entity": "RBCD",
         "Description": "AR Stock Taking is used for stock taking in Auto Rack by RFID scanning manner",
-        "Business Capabilities": "B.06.1 Supply Chain (Logistics) Strategy and Design Management;B.06.1.4 Supply Chain (Logistics) Technology Strategy;B.06.4 Inventory Management",
+        "Business Capabilities": "B.06.01 Supply Chain (Logistics) Strategy and Design Management;B.06.01.04 Supply Chain (Logistics) Technology Strategy;B.06.04 Inventory Management",
         "Processes": "BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Perform IM Stocktaking L3;BBM PM I2D Physical Inventory L2;BBM PM I2D Warehouse to Consume L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2021-07-18",
@@ -69,7 +70,7 @@
         "Division": "EM",
         "Entity": "RBCC",
         "Description": "ARS, automatic replenishment system, is used to control the AGV forklift in copper wire high rack area @RBCC. ",
-        "Business Capabilities": "B.06.5.2 Material Flow and Storage Management",
+        "Business Capabilities": "B.06.05.02 Material Flow and Storage Management",
         "Processes": "BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Manage Manual Logistics Requests L3;BBM PM I2D Post Stock Transfer L3;BBM PM I2D Warehouse Processing L2;BBM PM I2D Warehouse to Consume L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2019-08-01",
@@ -89,7 +90,7 @@
         "Division": "PS",
         "Entity": "RBCD",
         "Description": "To 100% full-fill customer demand , detect CRI(N) line flexibility bottleneck in advance, include Wuxi and QinP , with digitalized and real time data of release statues, and proposal of release type and fixture investment based on algorithm",
-        "Business Capabilities": "B.06.2 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.2.5 Production Planning & Production Control",
+        "Business Capabilities": "B.06.02 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.02.05 Production Planning & Production Control",
         "Processes": "BBM PM O2C Manage Order output master data L3;BBM PM O2C Order to Cash L0;BBM PM O2C Order to Perform - Data Management L2;BBM PM O2C Order to Perform L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2021-11-29",
@@ -109,7 +110,7 @@
         "Division": "PS",
         "Entity": "RBCD",
         "Description": "AUTO-RACK system is a fully automatic solution for high efficiency of put away, storage and pick up processes.?",
-        "Business Capabilities": "B.06.1 Supply Chain (Logistics) Strategy and Design Management;B.06.1.4 Supply Chain (Logistics) Technology Strategy;B.06.5 Material Flow Orchestration",
+        "Business Capabilities": "B.06.01 Supply Chain (Logistics) Strategy and Design Management;B.06.01.04 Supply Chain (Logistics) Technology Strategy;B.06.05 Material Flow Orchestration",
         "Processes": "BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Putaway L2;BBM PM I2D Putaway of Automated Goods Receipt (AGR) L3V;BBM PM I2D Putaway to Automated Warehouse L3V;BBM PM I2D Putaway to Warehouse Destination L3;BBM PM I2D Receive to Store L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2020-12-21",
@@ -129,7 +130,7 @@
         "Division": "PS",
         "Entity": "RBCD",
         "Description": "BMLP Nexeed IAS application used by the plant WxP",
-        "Business Capabilities": "B.06.4 Inventory Management;B.06.4.1 Commercial Inventory Management;B.06.4.2 Physical Inventory;B.06.5 Material Flow Orchestration",
+        "Business Capabilities": "B.06.04 Inventory Management;B.06.04.01 Commercial Inventory Management;B.06.04.02 Physical Inventory;B.06.05 Material Flow Orchestration",
         "Processes": "BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Receive to Store L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2023-05-01",
@@ -149,7 +150,7 @@
         "Division": "EM",
         "Entity": "RBCC",
         "Description": "Critical Delivery Report, collect and review all EM bottlenecks with escalation level 3/4",
-        "Business Capabilities": "B.06.2.9 Supply Chain (Logistics) Crisis Management",
+        "Business Capabilities": "B.06.02.09 Supply Chain (Logistics) Crisis Management",
         "Processes": "BBM PM P2F Identify external supply constraints L3;BBM PM P2F Identify internal supply constraints L3",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2019-02-11",
@@ -169,7 +170,7 @@
         "Division": "PS",
         "Entity": "RBHP",
         "Description": "It is a monitoring client system to monitor the logistic system.",
-        "Business Capabilities": "B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.8.2 Supply Chain (Logistics) Monitoring and Dashboarding",
+        "Business Capabilities": "B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.08.02 Supply Chain (Logistics) Monitoring and Dashboarding",
         "Processes": "BBM PM I2D Monitor and Control Warehouse Processes L3",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2023-08-05",
@@ -189,7 +190,7 @@
         "Division": "PS",
         "Entity": "RBHP",
         "Description": "CGQB_Logistic_system is a platform that manages and coordinates the movement, actions, and interactions of AGVs.It integrates with WMS and IES for scheduling and managing AGVs o achieve automated stock in and out operations. ",
-        "Business Capabilities": "B.06.4 Inventory Management;B.06.4.1 Commercial Inventory Management;B.06.4.2 Physical Inventory;B.06.5 Material Flow Orchestration;B.06.5.1 Inbound Management and Receiving;B.06.5.2 Material Flow and Storage Management;B.06.5.3 Production Logistics",
+        "Business Capabilities": "B.06.04 Inventory Management;B.06.04.01 Commercial Inventory Management;B.06.04.02 Physical Inventory;B.06.05 Material Flow Orchestration;B.06.05.01 Inbound Management and Receiving;B.06.05.02 Material Flow and Storage Management;B.06.05.03 Production Logistics",
         "Processes": "BBM PM I2D Manage Internal Transport L3",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2023-08-05",
@@ -209,7 +210,7 @@
         "Division": "EM",
         "Entity": "RBMC",
         "Description": "RBMC Supplier SCM is to help suppliers to realize confirmation of orders and payments.",
-        "Business Capabilities": "B.05.3.7 Supplier Collaboration Management;B.06.9 Logistics Partner Management and Supply Chain Collaboration;B.06.9.1 Logistics Collaboration Suppliers",
+        "Business Capabilities": "B.05.03.07 Supplier Collaboration Management;B.06.09 Logistics Partner Management and Supply Chain Collaboration;B.06.09.01 Logistics Collaboration Suppliers",
         "Processes": "BBM PM S2P Manage Purchase Requisition L3;BBM PM S2P Manage Source List L3;BBM PM S2P Operative Procurement L2;BBM PM S2P P2P Data Management L2;BBM PM S2P Procure to Pay L1;BBM PM S2P Source to Pay L0",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2017-01-01",
@@ -229,7 +230,7 @@
         "Division": "PS",
         "Entity": "RBCD",
         "Description": "Integrate and real time visualize warehouse equipment status ,first time alarm trigger , quickly response and fast problem solving , to ensure equipment and business been under control ",
-        "Business Capabilities": "B.06.5 Material Flow Orchestration",
+        "Business Capabilities": "B.06.08.02 Supply Chain (Logistics) Monitoring and Dashboarding",
         "Processes": "BBM PM I2D Monitor and Control Warehouse Processes L3",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2020-12-31",
@@ -249,7 +250,7 @@
         "Division": "PS",
         "Entity": "RBCD",
         "Description": "To track and visualize D-sample sourcing and delivery status",
-        "Business Capabilities": "B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics",
+        "Business Capabilities": "B.06.08.04 Traceability",
         "Processes": "BBM PM P2F Demand to Plan L1;BBM PM P2F Manage Demand to Plan Master Data L3",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2022-05-07",
@@ -269,7 +270,7 @@
         "Division": "PS",
         "Entity": "RBCW",
         "Description": "Customer demand management",
-        "Business Capabilities": "B.06.2 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.2.3 Demand Planning",
+        "Business Capabilities": "B.06.02 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.02.03 Demand Planning",
         "Processes": "BBM PM O2C Manage Sales order L3",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2022-06-01",
@@ -288,8 +289,8 @@
         "Name": "DEMOS#CGD",
         "Division": "VM",
         "Entity": "RBAG",
-        "Description": "Outbound Delivery&Monitoring system",
-        "Business Capabilities": "B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics",
+        "Description": "Outbound Delivery&Monitoring system, a web app, which developed by VM/LOG-CGD&VM/BPS-CGD, managed by VM/LOG-CGD. The App integrated whole delivery process information, from the stock availability to delivery note closure, make whole delivery process more transparent and more efficient",
+        "Business Capabilities": "B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics",
         "Processes": "BBM PM O2C Delivery to Customer L1;BBM PM O2C Manage Outbound Delivery L3;BBM PM O2C Order to Cash L0;BBM PM O2C Outbound Delivery L2",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2023-02-01",
@@ -309,7 +310,7 @@
         "Division": "PS",
         "Entity": "RBCD",
         "Description": "Dolly call off program is used for DNOX raw material call off from Auto Rack.",
-        "Business Capabilities": "B.06.5 Material Flow Orchestration",
+        "Business Capabilities": "B.06.05.03 Production Logistics",
         "Processes": "BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Material Request L2;BBM PM I2D Request material with Transport Kanban - OE L3;BBM PM I2D Warehouse to Consume L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2021-01-04",
@@ -329,8 +330,8 @@
         "Division": "EM",
         "Entity": "RBCC",
         "Description": "Agile warehouse management system, used for label &TO(transfer order) management in RBCC&RBCS",
-        "Business Capabilities": "B.06.5 Material Flow Orchestration;B.06.5.1 Inbound Management and Receiving;B.06.5.2 Material Flow and Storage Management",
-        "Processes": "BBM PM I2D Manage Warehouse Labels L3;ETAS.I2D.010.050.010 Putaway of Automated Goods Receipt (AGR);ETAS.I2D.010.050.020 Putaway to Warehouse Destination;ETAS.I2D.010.050.030 Putaway to Shopfloor (Ship-to-Line);ETAS.I2D.010.050.050 Putaway of Inspection Sample to Warehouse;ETAS.I2D.020.030.010 Return Material to warehouse;ETAS.I2D.020.030.020 Move material production internal;ETAS.I2D.020.030.030 Manage Internal Transport",
+        "Business Capabilities": "B.06.05 Material Flow Orchestration;B.06.05.01 Inbound Management and Receiving;B.06.05.02 Material Flow and Storage Management",
+        "Processes": "BBM PM I2D Manage Warehouse Labels L3;BBM_SWS.I2D.010.050.010 Putaway of Automated Goods Receipt (AGR);BBM_SWS.I2D.010.050.020 Putaway to Warehouse Destination;BBM_SWS.I2D.010.050.030 Putaway to Shopfloor (Ship-to-Line);BBM_SWS.I2D.010.050.050 Putaway of Inspection Sample to Warehouse;BBM_SWS.I2D.020.030.010 Return Material to warehouse;BBM_SWS.I2D.020.030.020 Move material production internal;BBM_SWS.I2D.020.030.030 Manage Internal Transport",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2019-09-13",
         "Main Business Capability": "B.06 Logistics Management",
@@ -349,7 +350,7 @@
         "Division": "EM",
         "Entity": "RBCC",
         "Description": "Intelligent Replenishment System, based on goods' detinitions, automatically informs & reminds our MR drivers. And it records their shipping route and monitor their KPI in time. URL: http://10.8.152.39:9090/map/index",
-        "Business Capabilities": "B.06.5 Material Flow Orchestration;B.06.5.2 Material Flow and Storage Management",
+        "Business Capabilities": "B.06.05 Material Flow Orchestration;B.06.05.02 Material Flow and Storage Management",
         "Processes": "BBM PM I2D Internal Transport L2;BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Manage Internal Transport L3;BBM PM I2D Warehouse to Consume L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2020-04-01",
@@ -369,7 +370,7 @@
         "Division": "PS",
         "Entity": "RBCD",
         "Description": "This project aims to build an interface for visualizing damage handling status, enhancing process transparency, automating case reminders, and reducing total lead time through data standardization and improved coordination.",
-        "Business Capabilities": "B.06.5 Material Flow Orchestration;B.06.6 Packaging and Returnables Management;B.06.6.2 Packaging Planning",
+        "Business Capabilities": "B.06.05 Material Flow Orchestration;B.06.06 Packaging and Returnables Management;B.06.06.02 Packaging Planning",
         "Processes": "BBM PM I2D Identification & Booking L2;BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Manage Deviations During Inbound Process L3;BBM PM I2D Receive to Store L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2021-11-29",
@@ -389,7 +390,7 @@
         "Division": "PS",
         "Entity": "RBCD",
         "Description": "Cancel the existing paper picking process and use the electronic picking process to realize online approval and paperless operation",
-        "Business Capabilities": "B.06.5 Material Flow Orchestration",
+        "Business Capabilities": "B.06.05.03 Production Logistics",
         "Processes": "BBM PM I2D Manage Manual Logistics Requests L3;BBM PM I2D Material Request L2;BBM PM I2D Request Packaging Kit L3;BBM PM I2D Warehouse to Consume L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2022-06-30",
@@ -409,7 +410,7 @@
         "Division": "PS",
         "Entity": "RBCD",
         "Description": "Dashboard is the system for digitalization in warehouse to make warehouse business and KPI transparency",
-        "Business Capabilities": "B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics",
+        "Business Capabilities": "B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.08.02 Supply Chain (Logistics) Monitoring and Dashboarding",
         "Processes": "BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Monitor and Control Warehouse Processes L3;BBM PM I2D Warehouse Monitoring L2;BBM PM I2D Warehouse to Consume L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2025-03-01",
@@ -429,7 +430,7 @@
         "Division": "EM",
         "Entity": "RBCC",
         "Description": "PMS is used for package system release and data base management.",
-        "Business Capabilities": "B.06.6 Packaging and Returnables Management",
+        "Business Capabilities": "B.06.06 Packaging and Returnables Management;B.06.06.01 Packaging Design and Engineering",
         "Processes": "BBM PM S2P Packaging Management L2;BBM PM S2P Procure to Pay L1;BBM PM S2P Release Packing Concept L3;BBM PM S2P Source to Pay L0",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2021-11-01",
@@ -449,7 +450,7 @@
         "Division": "PS",
         "Entity": "RBCD",
         "Description": "Obtain real-time data from SAP data sources, and visualize the data after label validation",
-        "Business Capabilities": "B.06.5 Material Flow Orchestration",
+        "Business Capabilities": "B.06.05 Material Flow Orchestration",
         "Processes": "BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Manage Over-Delivery and Under-Delivery L3;BBM PM I2D Store to Ship L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2022-11-01",
@@ -469,7 +470,7 @@
         "Division": "ME",
         "Entity": "ME-CN",
         "Description": "i-Warehouse is an uniform platform for digitalization of the warehouse activities, harmonizinh the different warehouse operation/monitor/reporting relevant data sources and data flows, Providing KPI and analytic report  for CIP and management decision.\nIt is acting as the enabler of data driven logistics.\n",
-        "Business Capabilities": "B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics",
+        "Business Capabilities": "B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics",
         "Processes": "BBM PM P2F Sales and Operations Planning L1;BBM_P2S_LE Warehousing & Material Flow:Internal Warehousing",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2019-09-19",
@@ -489,7 +490,7 @@
         "Division": "ME",
         "Entity": "ME-CN",
         "Description": "RBAC_ME_Logistics is a platform to consolidate, standardize, store, manage and secured consume LOG data.",
-        "Business Capabilities": "B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics",
+        "Business Capabilities": "B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics",
         "Processes": "BBM PM DM Data Management L0;BBM PM MDM Change/Block Purchasing & Logistic Reference Master Data L3;BBM PM MDM Check supplier purchasing/plant data L3;BBM PM MDM Create Purchasing & Logistic Reference Master Data L3;BBM PM MDM Create supplier specific general data L3;BBM PM MDM Customer Master Data Management L2;BBM PM MDM Display report Purchasing/Logistic Reference Master Data L3;BBM PM MDM Purchasing & Logistic Reference Master Data Management L2;BBM PM MDM Supplier Master Data Management L2",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2025-10-31",
@@ -509,7 +510,7 @@
         "Division": "ME",
         "Entity": "ME-CN",
         "Description": "Used to maintain packaging methods and customer's special requirements",
-        "Business Capabilities": "B.06.6 Packaging and Returnables Management;B.06.6.2 Packaging Planning",
+        "Business Capabilities": "B.06.06 Packaging and Returnables Management;B.06.06.02 Packaging Planning",
         "Processes": "BBM PM I2D Consolidate Materials L3;BBM PM I2D Execute Label Validation L3;BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Packing for Outbound L2;BBM PM I2D Packing L3;BBM PM I2D Store to Ship L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2015-09-29",
@@ -529,7 +530,7 @@
         "Division": "ME",
         "Entity": "ME-CN",
         "Description": "It's an embedded system which can control ME-CN Szh5 intra logistics AGV and conveyor system",
-        "Business Capabilities": "B.06.5 Material Flow Orchestration",
+        "Business Capabilities": "B.06.05 Material Flow Orchestration",
         "Processes": "BBM PM I2D Block / Unblock Stock L3;BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Packaging Handling L2;BBM PM I2D Perform EWM Stocktaking L3;BBM PM I2D Physical Inventory L2;BBM PM I2D Pick via Picking Area (Goods to Man) L3;BBM PM I2D Picking for Outbound L2;BBM PM I2D Putaway L2;BBM PM I2D Putaway to Warehouse Destination L3;BBM PM I2D Receive to Store L1;BBM PM I2D Return Empty Packaging from Production to Warehouse L3;BBM PM I2D Store to Ship L1;BBM PM I2D Supply material via picking area (goods to man) - OE L3;BBM PM I2D Transfer Empties in Warehouse L3;BBM PM I2D Warehouse Processing L2;BBM PM I2D Warehouse to Consume L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2025-06-25",
@@ -549,7 +550,7 @@
         "Division": "EM",
         "Entity": "RBCC",
         "Description": "RBCC E-Queue system is to manage the material and goods truck from supplier/customer, making the delivery process visualized, orderly and improving the efficiency of delivery process. Developed via WeChat platform. Application can be reached by suppliers via: https://rbccapp.bosch.com.cn/",
-        "Business Capabilities": "B.06.5 Material Flow Orchestration",
+        "Business Capabilities": "B.06.05 Material Flow Orchestration;B.06.05.06 Dock and Yard Management",
         "Processes": "BBM PM I2D Dock & Yard Management L2;BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Manage Time-Windows L3;BBM PM I2D Receive to Store L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2018-04-01",
@@ -569,7 +570,7 @@
         "Division": "EM",
         "Entity": "RBCC",
         "Description": "Used for MSE and Logistics to material plan",
-        "Business Capabilities": "B.06.5.2 Material Flow and Storage Management",
+        "Business Capabilities": "B.06.05.02 Material Flow and Storage Management",
         "Processes": "BBM PM I2D Create and Maintain Material and Product Master (WH Management) L3;BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Request Material with Min/Max Replenishment - OE L3;BBM PM I2D Warehouse to Consume L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2024-04-01",
@@ -589,8 +590,8 @@
         "Division": "EM",
         "Entity": "RBCC",
         "Description": "RBCC I4.0 Visualization | DESCRIPTION : This is a real time and analysis visualization application to monitor and analysis BIN utilization at RBCC | Serverlocation: Aachen | Marketingdescription: This is a real time and analysis visualization application to monitor and analysis BIN utilization at RBCC\nURL: https://cngvm019.apac.bosch.com:2760/login",
-        "Business Capabilities": "B.06.5 Material Flow Orchestration",
-        "Processes": "BBM PM O2C Delivery to Customer L1;BBM PM O2C Manage Outbound Delivery L3;BBM PM O2C Order to Cash L0;BBM PM O2C Outbound Delivery L2;RBCC | Warehouse Delivery",
+        "Business Capabilities": "B.06.03 Transport Management;B.06.03.01 Transport Planning and Optimization",
+        "Processes": "BBM PM O2C Delivery to Customer L1;BBM PM O2C Manage Outbound Delivery L3;BBM PM O2C Manage Outbound Delivery Reports L3;BBM PM O2C Order to Cash L0;BBM PM O2C Outbound Delivery L2;RBCC | Warehouse Delivery",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2017-01-01",
         "Main Business Capability": "B.06 Logistics Management",
@@ -609,8 +610,8 @@
         "Division": "EM",
         "Entity": "RBCC",
         "Description": "A dashboard that shows the KPIs that logistics needs to focus on on a daily basis, as well as various applications and reports",
-        "Business Capabilities": "B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics",
-        "Processes": "BBM PM DM Data Management L0;BBM PM MDM Implementation and Target Tracking L2;BBM PM MDM Requirement to Target L1",
+        "Business Capabilities": "B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.08.02 Supply Chain (Logistics) Monitoring and Dashboarding",
+        "Processes": "BBM_SWS.P2F Plan to Fulfill;BBM_SWS.P2F.040.090.030 Monitoring Dashboards;M.P2F.040.090 Plan to Supply Analytics and Reporting",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2025-02-01",
         "Main Business Capability": "B.06 Logistics Management",
@@ -629,7 +630,7 @@
         "Division": "EM",
         "Entity": "RBCC",
         "Description": "Dashboard to display production status and order sequence. Auto calculate demands and trigger replenishment  for package and raw materials. Visualize intralogistics process and support simply quality inspection.",
-        "Business Capabilities": "B.06.2 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.2.2 Material Requirements Planning;B.06.5.2 Material Flow and Storage Management",
+        "Business Capabilities": "B.06.02 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.02.02 Material Requirements Planning;B.06.05.02 Material Flow and Storage Management",
         "Processes": "BBM PM I2D Block / Unblock Stock L3;BBM PM I2D Execute Warehouse Management (EWM) Reporting L3;BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Manage Manual Logistics Requests L3;BBM PM I2D Material Request L2;BBM PM I2D Receive In-House Finished Goods L3;BBM PM I2D Request material with Transport Kanban - OE L3;BBM PM I2D Request Packaging Kit L3;BBM PM I2D Supply material from shelf (Man to Goods) L3;BBM PM I2D Warehouse Processing L2;BBM PM I2D Warehouse to Consume L1;BBM PM M2S Initialize next order L3;BBM_P2S_LE_01 Production Replenishment",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2019-09-27",
@@ -649,7 +650,7 @@
         "Division": "EM",
         "Entity": "RBCC",
         "Description": "RBCC Supplier Logistics Management Platform, integrate supplier key logistics info.",
-        "Business Capabilities": "B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.9 Logistics Partner Management and Supply Chain Collaboration;B.06.9.1 Logistics Collaboration Suppliers",
+        "Business Capabilities": "B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.09 Logistics Partner Management and Supply Chain Collaboration;B.06.09.01 Logistics Collaboration Suppliers",
         "Processes": "BBM PM DM Data Management L0;BBM PM MDM Display report Purchasing/Logistic Reference Master Data L3;BBM PM MDM Provide to Process L1;BBM PM MDM Purchasing & Logistic Reference Master Data Management L2",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2025-01-10",
@@ -669,7 +670,7 @@
         "Division": "EM",
         "Entity": "RBCC",
         "Description": "Intrologistics real-time status monitoring platform",
-        "Business Capabilities": "B.06.5.2 Material Flow and Storage Management",
+        "Business Capabilities": "B.06.05.02 Material Flow and Storage Management",
         "Processes": "BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Manage Warehouse Resources L3;BBM PM I2D Warehouse Monitoring L2;BBM PM I2D Warehouse to Consume L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2025-05-12",
@@ -689,7 +690,7 @@
         "Division": "EM",
         "Entity": "RBCC",
         "Description": "A platform to save customer demand",
-        "Business Capabilities": "B.06.2 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment",
+        "Business Capabilities": "B.06.02 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.02.03 Demand Planning",
         "Processes": "BBM PM O2C Manage Sales order L3;BBM PM O2C Order to Cash L0;BBM PM O2C Order to Perform L1;BBM PM O2C Sales Order Management L2",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2023-02-17",
@@ -709,7 +710,7 @@
         "Division": "EM",
         "Entity": "RBCC",
         "Description": "this application use for customer document preparation ",
-        "Business Capabilities": "B.06.5 Material Flow Orchestration",
+        "Business Capabilities": "B.06 Logistics Management;B.06.05.02 Material Flow and Storage Management",
         "Processes": "BBM PM I2D Load and Execute Load Control L3",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2021-12-30",
@@ -729,7 +730,7 @@
         "Division": "EM",
         "Entity": "RBCC",
         "Description": "RBCC_VNA task management",
-        "Business Capabilities": "B.06.5 Material Flow Orchestration",
+        "Business Capabilities": "B.06.05.02 Material Flow and Storage Management",
         "Processes": "BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Picking for Material Supply L2;BBM PM I2D Supply material from shelf (Man to Goods) L3;BBM PM I2D Warehouse to Consume L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2018-04-01",
@@ -749,7 +750,7 @@
         "Division": "PS",
         "Entity": "RBCD",
         "Description": "AUTO BLUESHEET aims to automate bluesheet filling process",
-        "Business Capabilities": "B.06.2 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.2.2 Material Requirements Planning",
+        "Business Capabilities": "B.06.02 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.02.02 Material Requirements Planning",
         "Processes": "BBM PM P2F Execute optimizer and review results L3;BBM PM P2F Plan to Supply L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2021-07-01",
@@ -769,7 +770,7 @@
         "Division": "PS",
         "Entity": "RBCD",
         "Description": "As a pilot project of intralogistics automation @RBCD, this project is targeted to realize automatic material transportation for labor cost avoidance in growth of fuel cell business.\n(AGV is bought from Linde)\n",
-        "Business Capabilities": "B.06.5 Material Flow Orchestration",
+        "Business Capabilities": "B.06.05 Material Flow Orchestration",
         "Processes": "BBM PM I2D Manage Internal Transport L3",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2024-09-30",
@@ -789,7 +790,7 @@
         "Division": "PS",
         "Entity": "RBCD",
         "Description": "ESA is used for SAP emergency status.",
-        "Business Capabilities": "B.06.1 Supply Chain (Logistics) Strategy and Design Management;B.06.1.6 Supply Chain (Logistics) IT, Data & Innovation Management",
+        "Business Capabilities": "B.06.01 Supply Chain (Logistics) Strategy and Design Management;B.06.01.06 Supply Chain (Logistics) IT, Data & Innovation Management",
         "Processes": "BBM PM M2S Prepare to Produce L1;BBM PM M2S Request material L3",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2019-01-01",
@@ -809,7 +810,7 @@
         "Division": "PS",
         "Entity": "RBCD",
         "Description": "Digitalization platform for logistics planning",
-        "Business Capabilities": "B.06.2 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.2.10 Customer Order Planning;B.06.2.2 Material Requirements Planning;B.06.2.6 Procurement Planning",
+        "Business Capabilities": "B.06.02 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.02.10 Customer Order Planning;B.06.02.02 Material Requirements Planning;B.06.02.06 Procurement Planning",
         "Processes": "BBM PM O2C Delivery to Customer - Data Management L2;BBM PM O2C Delivery to Customer - Reporting & Monitoring L2;BBM PM O2C Delivery to Customer L1;BBM PM O2C Manage archiving Delivery to Customer L3;BBM PM O2C Manage Delivery output master data L3;BBM PM O2C Manage Outbound Delivery determination and execution L3;BBM PM O2C Manage Outbound Delivery L3;BBM PM O2C Manage Outbound Delivery Reports L3;BBM PM O2C Order to Cash L0;BBM PM O2C Outbound Delivery L2;BBM PM P2F Demand Plan Release L2;BBM PM P2F Demand to Plan Analytics & Reporting L2;BBM PM P2F Demand to Plan Data Management L2;BBM PM P2F Demand to Plan L1;BBM PM P2F Demand to Plan Reports L3;BBM PM P2F Manage Demand to Plan Master Data L3;BBM PM P2F Plan to Fulfill L0;BBM PM P2F Release demand plan L3;BBM PM P2F Transmit Material and Sales Master Data L3;BBM_O2C_OM_01 Schedule Agreement for Goods",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2025-04-01",
@@ -829,7 +830,7 @@
         "Division": "PS",
         "Entity": "RBCD",
         "Description": "Scrap Management Platform is a application to get scrap operation data and tracking these information.",
-        "Business Capabilities": "B.06.5 Material Flow Orchestration;B.14.09.1 Waste Management",
+        "Business Capabilities": "B.06.05.02 Material Flow and Storage Management;B.14.09.01 Waste Management",
         "Processes": "BBM PM B2P Manage Fixed Assets Scrapping L3V;BBM PM B2P Record to Report L1;BBM PM I2D Execute Physical Scrapping of Materials L3;BBM PM I2D Warehouse to Consume L1;BBM PM I2P Disposal due to Scrapping L3V;BBM PM I2P Equipment Management L1;BBM PM P2F Manage scrapping L3;BBM PM P2F Plan to Supply L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2025-06-01",
@@ -849,7 +850,7 @@
         "Division": "PS",
         "Entity": "RBCD",
         "Description": "Build up the standardization: this tool aims to guide planners solve problems systematically by unifying current digital tools such as bluesheet, istar, workon,etc.\nImprove transparency & traceability:  one interface can automatically document measures with real time information.   \nImprove overview& contentiousness: team leaders/managers can easily have the overview of measures taken and pick up quickly without any information missing.",
-        "Business Capabilities": "B.06.2 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.2.2 Material Requirements Planning",
+        "Business Capabilities": "B.06.02 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.02.02 Material Requirements Planning",
         "Processes": "BBM PM P2F Management of Plan Scenarios in Plan to Supply L2;BBM PM P2F Plan network and bottleneck scenario L3;BBM PM P2F Plan to Fulfill L0;BBM PM P2F Plan to Supply L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2024-08-01",
@@ -869,7 +870,7 @@
         "Division": "PS",
         "Entity": "RBCD",
         "Description": "Visualize the Key Performance Indicators (KPIs) in the Logistics Planning process with the help of reports.",
-        "Business Capabilities": "B.06.2 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics",
+        "Business Capabilities": "B.06.02 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.08.02 Supply Chain (Logistics) Monitoring and Dashboarding",
         "Processes": "BBM PM I2D Manage Manual Logistics Requests L3;BBM PM I2D Receive to Store L1;BBM PM M2S Report process data production L3V;BBM PM O2C Manage Outbound Delivery Reports L3",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2021-11-29",
@@ -889,7 +890,7 @@
         "Division": "PS",
         "Entity": "RBCD",
         "Description": "Red Stock management",
-        "Business Capabilities": "B.06.4 Inventory Management;B.06.4.1 Commercial Inventory Management",
+        "Business Capabilities": "B.06.04 Inventory Management;B.06.04.01 Commercial Inventory Management",
         "Processes": "BBM PM I2D Execute Inventory Management (IM) Reporting for Stock Figures L3;BBM PM I2D Receive to Store L1;BBM PM I2D Warehouse to Consume L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2024-04-01",
@@ -909,7 +910,7 @@
         "Division": "PS",
         "Entity": "RBCD",
         "Description": "Monitor transportation KPIs",
-        "Business Capabilities": "B.06.3 Transport Management;B.06.3.2 Transport Execution Management;B.06.3.4 Freight Cost Clearing;B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics",
+        "Business Capabilities": "B.06.03 Transport Management;B.06.03.02 Transport Execution Management;B.06.03.04 Freight Cost Clearing;B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics",
         "Processes": "BBM PM I2D Create and Process Inbound Delivery L3;BBM PM I2D Manage Outbound Delivery Order L3;BBM PM I2D Receive to Store L1;BBM PM I2D Store to Ship L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2022-04-01",
@@ -929,7 +930,7 @@
         "Division": "PS",
         "Entity": "RBCD",
         "Description": "This project develops a digital Work Instruction (WI) system to replace manual paper/email processes, enabling automated workflow from WI drafting to release. It features real-time approval tracking, a visual dashboard for WI status monitoring, and historical process reviewing",
-        "Business Capabilities": "B.06.1.7 Supply Chain (Logistics) Process Management",
+        "Business Capabilities": "B.06.01.07 Supply Chain (Logistics) Process Management",
         "Processes": "BBM PM I2D Load Truck L3;BBM PM I2D Putaway of Automated Goods Receipt (AGR) L3",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2025-06-01",
@@ -949,10 +950,10 @@
         "Division": "EM",
         "Entity": "RBCE",
         "Description": "RBCE new automation warehouse, which is part of new building release, set up an integrated system, incl. AGV, auto goods receiving, auto high rack, RFID, auto packing etc, to realize warehouse productivity improve and warehouse storage capacity increase to save external storage cost.",
-        "Business Capabilities": "B.06.5 Material Flow Orchestration",
+        "Business Capabilities": "B.06.05 Material Flow Orchestration",
         "Processes": "BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Putaway L2",
-        "Lifecycle: Current Lifecycle": "active",
-        "Lifecycle: Active": "2026-11-01",
+        "Lifecycle: Current Lifecycle": "phaseIn",
+        "Lifecycle: Active": "2027-04-01",
         "Main Business Capability": "B.06 Logistics Management",
         "scopeNote": "no score, not go-live",
         "scopeSource": "Logistic Apps_1021!D49",
@@ -969,7 +970,7 @@
         "Division": "PS",
         "Entity": "RBCW",
         "Description": "RBCW new automation warehouse which is part of new building release, set up an integrated system, incl. AGV, auto goods receiving, auto high rack, RFID, auto packing etc, to realize warehouse productivity improve and warehouse storage capacity increase to save external storage cost.",
-        "Business Capabilities": "B.06.5 Material Flow Orchestration",
+        "Business Capabilities": "B.06.05 Material Flow Orchestration",
         "Processes": "BBM PM I2D Material Consumption L2;BBM PM I2D Putaway L2;BBM PM I2D Putaway of Automated Goods Receipt (AGR) L3;BBM PM I2D Putaway to Warehouse Destination L3;BBM PM I2D Transport Material Intra Plant L3",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2025-12-01",
@@ -989,7 +990,7 @@
         "Division": "PS",
         "Entity": "RBCW",
         "Description": "RBCC E-Queue system is to manage the material and goods truck from supplier/customer, making the delivery process visualized, orderly and improving the efficiency of delivery process. Developed via WeChat platform. Application can be reached by suppliers via: https://rbccapp.bosch.com.cn/",
-        "Business Capabilities": "B.06.3 Transport Management;B.06.3.1 Transport Planning and Optimization;B.06.3.2 Transport Execution Management",
+        "Business Capabilities": "B.06.03 Transport Management;B.06.03.01 Transport Planning and Optimization;B.06.03.02 Transport Execution Management",
         "Processes": "BBM PM I2D Manage Time-Windows L3;BBM PM I2D Register Truck L3",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2018-04-01",
@@ -1029,7 +1030,7 @@
         "Division": "PS",
         "Entity": "RBCW",
         "Description": "to pull in packages according to production plan",
-        "Business Capabilities": "B.06.6 Packaging and Returnables Management;B.06.6.2 Packaging Planning",
+        "Business Capabilities": "B.06.06 Packaging and Returnables Management;B.06.06.02 Packaging Planning",
         "Processes": "BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Material Request L2;BBM PM I2D Request Packaging Kit L3V;BBM PM I2D Warehouse to Consume L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2025-03-01",
@@ -1049,7 +1050,7 @@
         "Division": "PS",
         "Entity": "RBHP",
         "Description": "The application is Oracle Data Base which used for RBHP LOG related data store and analyse.",
-        "Business Capabilities": "B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics",
+        "Business Capabilities": "B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.08.02 Supply Chain (Logistics) Monitoring and Dashboarding",
         "Processes": "BBM PM I2D Create and Maintain Material and Product Master (WH Management) L3",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2024-07-01",
@@ -1069,7 +1070,7 @@
         "Division": "PS",
         "Entity": "RBHP",
         "Description": "This app monitors the difference between target and actual efficiency of AGV by integrating circle time and OEE metrics, enhancing automation performance and production efficiency.",
-        "Business Capabilities": "B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.8.2 Supply Chain (Logistics) Monitoring and Dashboarding",
+        "Business Capabilities": "B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.08.02 Supply Chain (Logistics) Monitoring and Dashboarding",
         "Processes": "BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Manage Warehouse Resources L3;BBM PM I2D Monitor and Control Warehouse Processes L3V;BBM PM I2D Optimize Warehouse L3V;BBM PM I2D Warehouse Master Data L2;BBM PM I2D Warehouse Monitoring L2;BBM PM I2D Warehouse to Consume L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2024-09-02",
@@ -1089,7 +1090,7 @@
         "Division": "PS",
         "Entity": "RBHP",
         "Description": "This application is designed to track the RBHP dispatch process. Serving as a frontend interface, the app gathers critical system shipping details inputted by users, along with SAP delivery note and transportation information. Integrated with Power Automate, it autonomously generates delivery requisition lists, transportation orders, and RBHP Transportation Document. Furthermore, it leverages SharePoint to archive user-uploaded attachments for comprehensive documentation and accessibility.",
-        "Business Capabilities": "B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.8.2 Supply Chain (Logistics) Monitoring and Dashboarding",
+        "Business Capabilities": "B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.08.02 Supply Chain (Logistics) Monitoring and Dashboarding",
         "Processes": "BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Process and Release Outbound Delivery Order L2;BBM PM I2D Store to Ship L1;BBM PM O2C Delivery to Customer L1;BBM PM O2C Manage Outbound Delivery L3;BBM PM O2C Manage Proof-Of-Delivery Outbound L3;BBM PM O2C Manage Transport output L3;BBM PM O2C Manage Transport Preparation L3;BBM PM O2C Order to Cash L0;BBM PM O2C Transport Preparation L2",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2024-07-31",
@@ -1109,7 +1110,7 @@
         "Division": "PS",
         "Entity": "RBHP",
         "Description": "This APP provides a unified platform for supplier, order, and packaging management.",
-        "Business Capabilities": "B.06.6 Packaging and Returnables Management;B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.8.2 Supply Chain (Logistics) Monitoring and Dashboarding;B.06.9 Logistics Partner Management and Supply Chain Collaboration;B.06.9.1 Logistics Collaboration Suppliers",
+        "Business Capabilities": "B.06.06 Packaging and Returnables Management;B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.08.02 Supply Chain (Logistics) Monitoring and Dashboarding;B.06.09 Logistics Partner Management and Supply Chain Collaboration;B.06.09.01 Logistics Collaboration Suppliers",
         "Processes": "BBM PM DM Data Management L0;BBM PM MDM Approve Purchasing & Logistic Reference Master Data L3;BBM PM MDM Change/Block Purchasing & Logistic Reference Master Data L3;BBM PM MDM Create Purchasing & Logistic Reference Master Data L3;BBM PM MDM Display report Purchasing/Logistic Reference Master Data L3;BBM PM MDM Finance Reference Master Data Management L2;BBM PM MDM Provide to Process L1;BBM PM MDM Supplier Master Data Management L2;BBM PM P2F Plan to Fulfill L0;BBM PM P2F Plan to Supply L1;BBM PM P2F Review and resolve supply planning alerts L3;BBM PM P2F Supply Planning L2",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2025-04-20",
@@ -1129,7 +1130,7 @@
         "Division": "PS",
         "Entity": "RBHP",
         "Description": "This app tracks departmental deviations, analyzes root causes, and manages resolution progress, streamlining deviation management and enhancing operational efficiency.",
-        "Business Capabilities": "B.06.7 Supply Chain (Logistics) Quality Management;B.06.7.1 Complaint Management Supplier / LSP / Internal",
+        "Business Capabilities": "B.06.07 Supply Chain (Logistics) Quality Management;B.06.07.01 Complaint Management Supplier / LSP / Internal",
         "Processes": "BBM PM Q2E Create internal investigation task L3;BBM PM Q2E Document Issue L3;BBM PM Q2E Issue Management L2;BBM PM Q2E Problem Solving L2;BBM PM Q2E Quality Issue Handling and Complaint to Solution L1;BBM PM Q2E Quality to Excellence L0;BBM PM Q2E Segregate suspicious products L3",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2024-12-20",
@@ -1149,7 +1150,7 @@
         "Division": "EM",
         "Entity": "RBCC",
         "Description": "Hikrobot AGV control systerm\nManage AGV fleet and AGV task ",
-        "Business Capabilities": "B.06.5.2 Material Flow and Storage Management",
+        "Business Capabilities": "B.06.05.02 Material Flow and Storage Management",
         "Processes": "BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Putaway from Production L2;BBM PM I2D Store to Ship L1;BBM PM I2D Transport to Handover Point L3",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2023-04-14",
@@ -1169,7 +1170,7 @@
         "Division": "PS",
         "Entity": "RBCW",
         "Description": "Subcontractor raw material management",
-        "Business Capabilities": "B.06.2 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.2.6 Procurement Planning",
+        "Business Capabilities": "B.06.02 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.02.06 Procurement Planning",
         "Processes": "BBM PM S2P Manage Vendor Performance Evaluation L3",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2022-06-01",
@@ -1189,7 +1190,7 @@
         "Division": "PS",
         "Entity": "RBCW",
         "Description": "Traceable close loop management system for scrap processing",
-        "Business Capabilities": "B.06.4 Inventory Management;B.06.4.2 Physical Inventory",
+        "Business Capabilities": "B.06.04 Inventory Management;B.06.04.02 Physical Inventory",
         "Processes": "BBM PM I2D Execute Physical Scrapping of Materials L3",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2022-06-17",
@@ -1209,7 +1210,7 @@
         "Division": "MA",
         "Entity": "MA-ShzP",
         "Description": "Raw Material available to produce check by shift, get data from Dali and to support local planners.\n\noneIDM name is *ShzP_ALICE*",
-        "Business Capabilities": "B.06 Logistics Management;B.06.5 Material Flow Orchestration;B.06.5.2 Material Flow and Storage Management",
+        "Business Capabilities": "B.06 Logistics Management;B.06.05 Material Flow Orchestration;B.06.05.02 Material Flow and Storage Management",
         "Processes": "BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Manage Stock Differences L3;BBM PM I2D Warehouse Monitoring L2;BBM PM I2D Warehouse to Consume L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2023-06-05",
@@ -1229,7 +1230,7 @@
         "Division": "MA",
         "Entity": "MA-ShzP",
         "Description": "Daily shipping plan and shipping process status visualization. ShzP_DAVIS (Dispatch Area Visualization System) for MA\n\noneIDM name is *ShzP_DAVIS*",
-        "Business Capabilities": "B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.8.2 Supply Chain (Logistics) Monitoring and Dashboarding",
+        "Business Capabilities": "B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.08.02 Supply Chain (Logistics) Monitoring and Dashboarding",
         "Processes": "BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Load Truck L3;BBM PM I2D Loading L2;BBM PM I2D Store to Ship L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2024-11-01",
@@ -1249,7 +1250,7 @@
         "Division": "MA",
         "Entity": "MA-ShzP",
         "Description": "Vendors delivery appointment and monitoring Ex/internal KPI\n\noneIDM name is *ShzP_Karis*",
-        "Business Capabilities": "B.06.9 Logistics Partner Management and Supply Chain Collaboration",
+        "Business Capabilities": "B.06.09 Logistics Partner Management and Supply Chain Collaboration",
         "Processes": "BBM PM I2D Dock & Yard Management L2;BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Manage Time-Windows L3;BBM PM I2D Receive to Store L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2023-09-01",
@@ -1269,7 +1270,7 @@
         "Division": "MA",
         "Entity": "MA-ShzP",
         "Description": "Pad System will be implemented for automatic TO/TR creation for material replenishment and for automatic booking for finished goods and label printing.\n\noneIDM name is \\*ShzP_Pad_System\\*",
-        "Business Capabilities": "B.06.5 Material Flow Orchestration",
+        "Business Capabilities": "B.06.05 Material Flow Orchestration",
         "Processes": "BBM PM I2D Internal Transport L2;BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Manage Internal Transport L3;BBM PM I2D Warehouse to Consume L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2022-10-17",
@@ -1289,7 +1290,7 @@
         "Division": "PS",
         "Entity": "RBCW",
         "Description": "To Transparent logistics planning information",
-        "Business Capabilities": "B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.8.1 Supply Chain (Logistics) Standard Reporting;B.06.8.2 Supply Chain (Logistics) Monitoring and Dashboarding;B.06.8.3 Supply Chain (Logistics) Analytics",
+        "Business Capabilities": "B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.08.01 Supply Chain (Logistics) Standard Reporting;B.06.08.02 Supply Chain (Logistics) Monitoring and Dashboarding;B.06.08.03 Supply Chain (Logistics) Analytics",
         "Processes": "BBM PM O2C Manage Outbound Delivery Reports L3",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2022-11-01",
@@ -1309,7 +1310,7 @@
         "Division": "VM",
         "Entity": "VM-CN",
         "Description": "As the control system of Szh5 ASRS, it can manage logistics flow, including RM and FG automatic movement and storage.",
-        "Business Capabilities": "B.06 Logistics Management;B.06.5 Material Flow Orchestration;B.06.5.1 Inbound Management and Receiving;B.06.5.2 Material Flow and Storage Management;B.06.5.3 Production Logistics;B.06.5.4 Outbound Distribution;B.06.5.5 Shipping;B.06.5.7 Intralogistics Infrastructure (Resource and Infrastructure Optimization)",
+        "Business Capabilities": "B.06 Logistics Management;B.06.05 Material Flow Orchestration;B.06.05.01 Inbound Management and Receiving;B.06.05.02 Material Flow and Storage Management;B.06.05.03 Production Logistics;B.06.05.04 Outbound Distribution;B.06.05.05 Shipping;B.06.05.07 Intralogistics Infrastructure (Resource and Infrastructure Optimization)",
         "Processes": "BBM PM I2D Physical Inventory L2;BBM PM I2D Pick via Picking Area (Goods to Man)-Automated warehouse L3V;BBM PM I2D Putaway L2",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2026-02-01",
@@ -1329,7 +1330,7 @@
         "Division": "VM",
         "Entity": "VM-CN",
         "Description": "This project will automate the finish goods receiving from production process by integrating the Lifting AGV, OCR camera, Conveyer and auto label & apply machine. One web-based application, that enable the communications between these hardware and SAP, would be delivered within this project. It helps to build the automation circle ,which combines with existing Forklift AGV and auto packing machine in finish goods warehouse to replace manual FG receiving process",
-        "Business Capabilities": "B.06.5 Material Flow Orchestration;B.06.5.7 Intralogistics Infrastructure (Resource and Infrastructure Optimization)",
+        "Business Capabilities": "B.06.05 Material Flow Orchestration;B.06.05.07 Intralogistics Infrastructure (Resource and Infrastructure Optimization)",
         "Processes": "BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Putaway from Handover Point to Destination L3;BBM PM I2D Putaway from Production L2;BBM PM I2D Putaway of semi finished goods (subsequent shopfloor, warehouse) L3;BBM PM I2D Receive Finished Samples L3;BBM PM I2D Receive In-House Finished Goods L3;BBM PM I2D Receive In-House Subassamblies or 10-digit Finished Goods L3;BBM PM I2D Receive to Store L1;BBM PM I2D Store to Ship L1;BBM PM I2D Transport to Handover Point L3;BBM PM I2D Warehouse to Consume L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2022-06-18",
@@ -1349,7 +1350,7 @@
         "Division": "VM",
         "Entity": "VM-CN",
         "Description": "K.Motion WCS (WACOS) is an application for the new intralogistics Szh5 in VM-CN to support KLT direct connection from a shuttle warehouse to production. Similar concept as BhP IPL project.K.Motion WCS has the following interfaces:\no Interfaces to the SAP systems (POE, P99) based on the SAP standard interface ALE-IDoc.\no Interfaces to the PLCs for the box conveyor system and the shuttle warehouse based on\nTCP/IP (TGW standard commander interface)\no Interfaces to the PLCs for the pallet conveyor technology based on TCP/IP (TGW standard\ncommander interface)\no Interfaces to label printers (Zebra ZPL printer language)\no Interface to Solace (9EPS message) based on WebService",
-        "Business Capabilities": "B.06.5 Material Flow Orchestration;B.06.5.1 Inbound Management and Receiving;B.06.5.2 Material Flow and Storage Management;B.06.5.3 Production Logistics;B.06.6 Packaging and Returnables Management;B.06.6.3 Packaging Operations",
+        "Business Capabilities": "B.06.05 Material Flow Orchestration;B.06.05.01 Inbound Management and Receiving;B.06.05.02 Material Flow and Storage Management;B.06.05.03 Production Logistics;B.06.06 Packaging and Returnables Management;B.06.06.03 Packaging Operations",
         "Processes": "BBM PM I2D Consume Stock During Production Confirmation L3;BBM PM I2D Execute Physical Scrapping of Materials L3;BBM PM I2D Internal Transport L2;BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Manage Internal Transport L3;BBM PM I2D Manage Manual Logistics Requests L3;BBM PM I2D Manage Missing Parts L3;BBM PM I2D Manage Packaging Kit L3;BBM PM I2D Manage T-Kanban status change RFID L3;BBM PM I2D Manual Consumption to Cost Element / Order L3;BBM PM I2D Material Consumption L2;BBM PM I2D Material Request L2;BBM PM I2D Move Material Production to Production L3V;BBM PM I2D Packaging Handling L2;BBM PM I2D Pick of IM material - OE L3;BBM PM I2D Picking for Material Supply L2;BBM PM I2D Request Material with Min/Max Replenishment - OE L3;BBM PM I2D Request material with Transport Kanban - OE L3;BBM PM I2D Request Packaging Kit L3;BBM PM I2D Return Empty Packaging from Production to Warehouse L3;BBM PM I2D Return from Production L3V;BBM PM I2D Round quantity in material request and picking L3V;BBM PM I2D Supply material from shelf (Man to Goods) L3;BBM PM I2D Supply material via picking area (goods to man) - OE L3;BBM PM I2D Transfer Empties in Warehouse L3;BBM PM I2D Warehouse to Consume L1",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2025-01-01",
@@ -1389,7 +1390,7 @@
         "Division": "VM",
         "Entity": "VM-CN",
         "Description": "CONNEX was the Platform for VM/LOG-CN which involved w/ Customer Planning / Production Planning / Warehousing / etc..",
-        "Business Capabilities": "B.06.2.3 Demand Planning;B.06.2.6 Procurement Planning",
+        "Business Capabilities": "B.06.02.03 Demand Planning;B.06.02.06 Procurement Planning",
         "Processes": "BBM PM P2F Prepare demand forecasting L3",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2026-10-31",
@@ -1409,7 +1410,7 @@
         "Division": "VM",
         "Entity": "VM-CN",
         "Description": "Architecture: Each Use Case in LH is an component in the implementation. For component \"Admin\", the Web-Front is used in the implementation. For the other components, the MVC architecture is used in the implementation. Interface to SAP: Interfaces in project are built to use the following web services from SAP WM web service TO Creation: o TransferOrderCreate_In WM Web Service TO confirmation: o TransferOrderConfirmTransferOrderItem_In These two Interfaces are planed but not implemented due to the current frozen zone of the SAP. Currently, the RFC is using in the release 1 and in release 2 the web service for WM should be implemented) PP Back Flush web service (for User case 1 in LH) is used o REMOrderBackflushCreateRequest_In Inbound o REMOrderBackflushCreateResponse_Out Outbound \n\nFor more detail, please refer to the project \"Digital dynamic supermarket for Pump Housing in CC-CN - 62_4634\" (see project link below in section Projects)",
-        "Business Capabilities": "B.06.4 Inventory Management;B.06.5 Material Flow Orchestration;B.06.5.2 Material Flow and Storage Management",
+        "Business Capabilities": "B.06.04 Inventory Management;B.06.05 Material Flow Orchestration;B.06.05.02 Material Flow and Storage Management",
         "Processes": "BBM PM I2D Receive to Store L1;BBM PM M2S Assign orders to non-pacemaker lines L3;BBM PM M2S Check feasibility production schedule L3;BBM PM M2S Initialize next order L3;BBM PM M2S Manufacture to Supply L0;BBM PM M2S Prepare to Produce L1;BBM PM M2S Produce to Demand L1;BBM PM M2S Production Control L2;BBM PM M2S Production Preparation L2;BBM PM M2S Request material L3;BBM PM M2S Supply material to point of use L3",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2017-12-30",
@@ -1429,7 +1430,7 @@
         "Division": "VM",
         "Entity": "VM-CN",
         "Description": "Application definition: Applications are IT solutions, which provide data and processes to users.  ",
-        "Business Capabilities": "B.06.2 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.2.10 Customer Order Planning;B.06.2.3 Demand Planning;B.06.2.5 Production Planning & Production Control;B.06.2.6 Procurement Planning;B.06.2.8 Inventory Planning",
+        "Business Capabilities": "B.06.02 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.02.10 Customer Order Planning;B.06.02.03 Demand Planning;B.06.02.05 Production Planning & Production Control;B.06.02.06 Procurement Planning;B.06.02.08 Inventory Planning",
         "Processes": "BBM PM P2F Check availability of relevant data for Demand Validation L3;BBM PM P2F Demand to Plan L1;BBM PM P2F Execute finite heuristic L3;BBM PM P2F Execute infinite heuristic L3;BBM PM P2F Execute optimizer and review results L3;BBM PM P2F Execute system forecast L3;BBM PM P2F Finalize Demand Validation L3;BBM PM P2F Forecast Execution L2;BBM PM P2F Handling the unconstrained demand plan L3;BBM PM P2F Identify actual deviations L3;BBM PM P2F Identify forecast deviations L3;BBM PM P2F Manage External Customer Collaboration L3;BBM PM P2F Plan rough-cut internal capacity L3;BBM PM P2F Plan to Fulfill L0;BBM PM P2F Plan to Supply L1;BBM PM P2F Plan vendor capacity L3;BBM PM P2F Review & consider input from business plan L3;BBM PM P2F Review & consider lifecycle plan L3;BBM PM P2F Review & consider promotion plan L3;BBM PM P2F Review & consider sales plan L3;BBM PM P2F Review and consider project demands L3;BBM PM P2F Review and resolve demand alerts L3;BBM PM P2F Review and resolve supply planning alerts L3;BBM PM P2F Review and update supply plan L3;BBM PM P2F Review system forecast L3;BBM PM P2F Sales and Operations Planning Demand Validation L2;BBM PM P2F Sales and Operations Planning L1;BBM PM P2F Supply Planning L2;BBM PM P2F Unconstrained Demand Plan Creation L2;BBM PM P2F Update and create receipt elements L3;BBM PM P2F Validate deviations L3",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2022-04-30",
@@ -1469,7 +1470,7 @@
         "Division": "VM",
         "Entity": "VM-CN",
         "Description": "1. Master date module to save packaging material information(e.g. picture/dimension/weight) , label information and other information\n2. The PDS module to generate the internal PDS according the information saved in master data module and the information that from customer\n3. To ensure using the right packaging proposal to delivery goods to customer",
-        "Business Capabilities": "B.06.6 Packaging and Returnables Management;B.06.6.2 Packaging Planning",
+        "Business Capabilities": "B.06.06 Packaging and Returnables Management;B.06.06.02 Packaging Planning",
         "Processes": "BBM PM P2F Sales and Operations Planning L1;BBM_PKG_PD_02 Develop, test and release packaging concept (O2C, P2S, P2P);BBM_PKG_PD_03 Master data maintenance for packaging material and packaging specification (O2C, P2S, P2P);BBM_PKG_PD_04 Change management for existing packaging material and packaging specification (O2C, P2S, P2P);BBM_PKG_PM Packaging Management (O2C, P2S, P2P)",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2025-12-31",
@@ -1489,7 +1490,7 @@
         "Division": "ME",
         "Entity": "ME-CN",
         "Description": "include the WMS for inventory and task management\nDB for inventory and task storage",
-        "Business Capabilities": "B.06.5 Material Flow Orchestration;HC.02.04.05 Transportation Management",
+        "Business Capabilities": "B.06.05 Material Flow Orchestration;HC.02.04.05 Transportation Management",
         "Processes": "BBM PM I2D Create and Process Inbound Delivery L3;BBM PM I2D Putaway to Warehouse Destination L3",
         "Lifecycle: Current Lifecycle": "active",
         "Lifecycle: Active": "2025-04-01",
@@ -12867,6 +12868,595 @@
             "note": "Owner decision applied: removed 'Manufacturing' from BMLP_Nexeed_IAS@WxP processes"
           }
         ]
+      },
+      {
+        "id": "2b27948ffb2ce04ad249a27567028539",
+        "at": "2026-11-12T07:12:12.238Z",
+        "kind": "import",
+        "source": "20261112_055820_sqAhl_inventory.xlsx",
+        "taxonomySource": "standard+name.xlsx (capabilities); Business Capability + Process.xlsx (processes)",
+        "inventoryFile": "20261112_055820_sqAhl_inventory.xlsx",
+        "taxonomyFile": "",
+        "appIds": [],
+        "appIdsBase": "163d6c216b59cab9056ab40d3d05cf85",
+        "removedIds": [],
+        "addedIds": [],
+        "changes": [
+          {
+            "appId": "830c8445-c34f-463c-bc08-d494e5e18dc9",
+            "field": "Business Capabilities",
+            "before": "B.06.5 Material Flow Orchestration;B.06.5.1 Inbound Management and Receiving",
+            "after": "B.06.05 Material Flow Orchestration;B.06.05.01 Inbound Management and Receiving",
+            "truncated": false
+          },
+          {
+            "appId": "07901df9-4f80-47df-9119-4c86b773d5cc",
+            "field": "Business Capabilities",
+            "before": "B.06.1 Supply Chain (Logistics) Strategy and Design Management;B.06.1.4 Supply Chain (Logistics) Technology Strategy;B.06.4 Inventory Management",
+            "after": "B.06.01 Supply Chain (Logistics) Strategy and Design Management;B.06.01.04 Supply Chain (Logistics) Technology Strategy;B.06.04 Inventory Management",
+            "truncated": false
+          },
+          {
+            "appId": "a968f639-7afd-4fed-ad47-a1fff4e081d9",
+            "field": "Business Capabilities",
+            "before": "B.06.5.2 Material Flow and Storage Management",
+            "after": "B.06.05.02 Material Flow and Storage Management",
+            "truncated": false
+          },
+          {
+            "appId": "0bd00479-d233-43f3-84b2-478e7ae90dcb",
+            "field": "Business Capabilities",
+            "before": "B.06.2 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.2.5 Production Planning & Production Control",
+            "after": "B.06.02 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.02.05 Production Planning & Production Control",
+            "truncated": false
+          },
+          {
+            "appId": "b97561de-87df-46ec-a86c-477fe0e431f9",
+            "field": "Business Capabilities",
+            "before": "B.06.1 Supply Chain (Logistics) Strategy and Design Management;B.06.1.4 Supply Chain (Logistics) Technology Strategy;B.06.5 Material Flow Orchestration",
+            "after": "B.06.01 Supply Chain (Logistics) Strategy and Design Management;B.06.01.04 Supply Chain (Logistics) Technology Strategy;B.06.05 Material Flow Orchestration",
+            "truncated": false
+          },
+          {
+            "appId": "a103918e-63a2-4b26-ae5b-a5b1b7af8fd1",
+            "field": "Business Capabilities",
+            "before": "B.06.4 Inventory Management;B.06.4.1 Commercial Inventory Management;B.06.4.2 Physical Inventory;B.06.5 Material Flow Orchestration",
+            "after": "B.06.04 Inventory Management;B.06.04.01 Commercial Inventory Management;B.06.04.02 Physical Inventory;B.06.05 Material Flow Orchestration",
+            "truncated": false
+          },
+          {
+            "appId": "33b19059-2d78-4752-9aa8-b08e1613a27a",
+            "field": "Business Capabilities",
+            "before": "B.06.2.9 Supply Chain (Logistics) Crisis Management",
+            "after": "B.06.02.09 Supply Chain (Logistics) Crisis Management",
+            "truncated": false
+          },
+          {
+            "appId": "cf227366-6b40-4b94-bfc2-3e0225b7adb3",
+            "field": "Business Capabilities",
+            "before": "B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.8.2 Supply Chain (Logistics) Monitoring and Dashboarding",
+            "after": "B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.08.02 Supply Chain (Logistics) Monitoring and Dashboarding",
+            "truncated": false
+          },
+          {
+            "appId": "69fc3b20-172c-477a-bcbb-58a159be720b",
+            "field": "Business Capabilities",
+            "before": "B.06.4 Inventory Management;B.06.4.1 Commercial Inventory Management;B.06.4.2 Physical Inventory;B.06.5 Material Flow Orchestration;B.06.5.1 Inbound Management and Receiving;B.06.5.2 Material Flow and Storage Management;B.06.5.3 Production Logistics",
+            "after": "B.06.04 Inventory Management;B.06.04.01 Commercial Inventory Management;B.06.04.02 Physical Inventory;B.06.05 Material Flow Orchestration;B.06.05.01 Inbound Management and Receiving;B.06.05.02 Material Flow and Storage Management;B.06.05.03 Production Logistics",
+            "truncated": false
+          },
+          {
+            "appId": "e354d01b-6ae7-4fe2-8dc3-301980b2f508",
+            "field": "Business Capabilities",
+            "before": "B.05.3.7 Supplier Collaboration Management;B.06.9 Logistics Partner Management and Supply Chain Collaboration;B.06.9.1 Logistics Collaboration Suppliers",
+            "after": "B.05.03.07 Supplier Collaboration Management;B.06.09 Logistics Partner Management and Supply Chain Collaboration;B.06.09.01 Logistics Collaboration Suppliers",
+            "truncated": false
+          },
+          {
+            "appId": "10ddca54-501c-4f09-9663-e5970e365c7b",
+            "field": "Business Capabilities",
+            "before": "B.06.5 Material Flow Orchestration",
+            "after": "B.06.08.02 Supply Chain (Logistics) Monitoring and Dashboarding",
+            "truncated": false
+          },
+          {
+            "appId": "4035f956-1dc8-4468-94db-0ffe603e29a2",
+            "field": "Business Capabilities",
+            "before": "B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics",
+            "after": "B.06.08.04 Traceability",
+            "truncated": false
+          },
+          {
+            "appId": "a9f9cb71-6ac1-4da8-b374-2c6f675508d4",
+            "field": "Business Capabilities",
+            "before": "B.06.2 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.2.3 Demand Planning",
+            "after": "B.06.02 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.02.03 Demand Planning",
+            "truncated": false
+          },
+          {
+            "appId": "b517de7b-eefe-4486-8c96-5abeeb16d8ec",
+            "field": "Description",
+            "before": "Outbound Delivery&Monitoring system",
+            "after": "Outbound Delivery&Monitoring system, a web app, which developed by VM/LOG-CGD&VM/BPS-CGD, managed by VM/LOG-CGD. The App integrated whole delivery process information, from the stock availability to delivery note closure, make whole delivery process more transparent and more efficient",
+            "truncated": false
+          },
+          {
+            "appId": "b517de7b-eefe-4486-8c96-5abeeb16d8ec",
+            "field": "Business Capabilities",
+            "before": "B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics",
+            "after": "B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics",
+            "truncated": false
+          },
+          {
+            "appId": "530143c3-4d5b-4afc-a38b-6b250aeb49dd",
+            "field": "Business Capabilities",
+            "before": "B.06.5 Material Flow Orchestration",
+            "after": "B.06.05.03 Production Logistics",
+            "truncated": false
+          },
+          {
+            "appId": "df1f431f-c395-4bec-bf2f-7cf0b0bce105",
+            "field": "Business Capabilities",
+            "before": "B.06.5 Material Flow Orchestration;B.06.5.1 Inbound Management and Receiving;B.06.5.2 Material Flow and Storage Management",
+            "after": "B.06.05 Material Flow Orchestration;B.06.05.01 Inbound Management and Receiving;B.06.05.02 Material Flow and Storage Management",
+            "truncated": false
+          },
+          {
+            "appId": "df1f431f-c395-4bec-bf2f-7cf0b0bce105",
+            "field": "Processes",
+            "before": "BBM PM I2D Manage Warehouse Labels L3;ETAS.I2D.010.050.010 Putaway of Automated Goods Receipt (AGR);ETAS.I2D.010.050.020 Putaway to Warehouse Destination;ETAS.I2D.010.050.030 Putaway to Shopfloor (Ship-to-Line);ETAS.I2D.010.050.050 Putaway of Inspection Sample to Warehouse;ETAS.I2D.020.030.010 Return Material to warehouse;ETAS.I2D.020.030.020 Move material production internal;ETAS.I2D.020.030.030 Manage Internal Transport",
+            "after": "BBM PM I2D Manage Warehouse Labels L3;BBM_SWS.I2D.010.050.010 Putaway of Automated Goods Receipt (AGR);BBM_SWS.I2D.010.050.020 Putaway to Warehouse Destination;BBM_SWS.I2D.010.050.030 Putaway to Shopfloor (Ship-to-Line);BBM_SWS.I2D.010.050.050 Putaway of Inspection Sample to Warehouse;BBM_SWS.I2D.020.030.010 Return Material to warehouse;BBM_SWS.I2D.020.030.020 Move material production internal;BBM_SWS.I2D.020.030.030 Manage Internal Transport",
+            "truncated": false
+          },
+          {
+            "appId": "92d00cf1-e5c5-49d0-b142-96747cb836bf",
+            "field": "Business Capabilities",
+            "before": "B.06.5 Material Flow Orchestration;B.06.5.2 Material Flow and Storage Management",
+            "after": "B.06.05 Material Flow Orchestration;B.06.05.02 Material Flow and Storage Management",
+            "truncated": false
+          },
+          {
+            "appId": "9acec7d1-a4b3-4cd0-b6b2-b49cc115dcab",
+            "field": "Business Capabilities",
+            "before": "B.06.5 Material Flow Orchestration;B.06.6 Packaging and Returnables Management;B.06.6.2 Packaging Planning",
+            "after": "B.06.05 Material Flow Orchestration;B.06.06 Packaging and Returnables Management;B.06.06.02 Packaging Planning",
+            "truncated": false
+          },
+          {
+            "appId": "e63e283d-69e0-4cf2-88f6-8732786791af",
+            "field": "Business Capabilities",
+            "before": "B.06.5 Material Flow Orchestration",
+            "after": "B.06.05.03 Production Logistics",
+            "truncated": false
+          },
+          {
+            "appId": "56de5b25-adb2-46cf-99b4-9a8379029e2f",
+            "field": "Business Capabilities",
+            "before": "B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics",
+            "after": "B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.08.02 Supply Chain (Logistics) Monitoring and Dashboarding",
+            "truncated": false
+          },
+          {
+            "appId": "92035830-bcce-4565-bd22-f9e617c560a1",
+            "field": "Business Capabilities",
+            "before": "B.06.6 Packaging and Returnables Management",
+            "after": "B.06.06 Packaging and Returnables Management;B.06.06.01 Packaging Design and Engineering",
+            "truncated": false
+          },
+          {
+            "appId": "5983762a-5662-49a8-bafb-ea91b3262180",
+            "field": "Business Capabilities",
+            "before": "B.06.5 Material Flow Orchestration",
+            "after": "B.06.05 Material Flow Orchestration",
+            "truncated": false
+          },
+          {
+            "appId": "809b28f2-77e8-44a2-bf87-52be13b5bab0",
+            "field": "Business Capabilities",
+            "before": "B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics",
+            "after": "B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics",
+            "truncated": false
+          },
+          {
+            "appId": "6b5a70a7-c8f4-4509-b687-16b50825612c",
+            "field": "Business Capabilities",
+            "before": "B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics",
+            "after": "B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics",
+            "truncated": false
+          },
+          {
+            "appId": "42e63efb-b4da-4ba9-9dca-d25cd58bfb2b",
+            "field": "Business Capabilities",
+            "before": "B.06.6 Packaging and Returnables Management;B.06.6.2 Packaging Planning",
+            "after": "B.06.06 Packaging and Returnables Management;B.06.06.02 Packaging Planning",
+            "truncated": false
+          },
+          {
+            "appId": "6631772d-f6a7-4684-a904-d4b1364add5c",
+            "field": "Business Capabilities",
+            "before": "B.06.5 Material Flow Orchestration",
+            "after": "B.06.05 Material Flow Orchestration",
+            "truncated": false
+          },
+          {
+            "appId": "93b4213f-b93d-48de-a6ea-fce24d4ab9e7",
+            "field": "Business Capabilities",
+            "before": "B.06.5 Material Flow Orchestration",
+            "after": "B.06.05 Material Flow Orchestration;B.06.05.06 Dock and Yard Management",
+            "truncated": false
+          },
+          {
+            "appId": "5595ff60-8afa-4eac-acf8-1d9ed1a2769d",
+            "field": "Business Capabilities",
+            "before": "B.06.5.2 Material Flow and Storage Management",
+            "after": "B.06.05.02 Material Flow and Storage Management",
+            "truncated": false
+          },
+          {
+            "appId": "c13d36d9-2b58-4b81-b45b-0e829dd9a157",
+            "field": "Business Capabilities",
+            "before": "B.06.5 Material Flow Orchestration",
+            "after": "B.06.03 Transport Management;B.06.03.01 Transport Planning and Optimization",
+            "truncated": false
+          },
+          {
+            "appId": "c13d36d9-2b58-4b81-b45b-0e829dd9a157",
+            "field": "Processes",
+            "before": "BBM PM O2C Delivery to Customer L1;BBM PM O2C Manage Outbound Delivery L3;BBM PM O2C Order to Cash L0;BBM PM O2C Outbound Delivery L2;RBCC | Warehouse Delivery",
+            "after": "BBM PM O2C Delivery to Customer L1;BBM PM O2C Manage Outbound Delivery L3;BBM PM O2C Manage Outbound Delivery Reports L3;BBM PM O2C Order to Cash L0;BBM PM O2C Outbound Delivery L2;RBCC | Warehouse Delivery",
+            "truncated": false
+          },
+          {
+            "appId": "1dd3d164-c823-4e5e-a7c0-134e15ac32b6",
+            "field": "Business Capabilities",
+            "before": "B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics",
+            "after": "B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.08.02 Supply Chain (Logistics) Monitoring and Dashboarding",
+            "truncated": false
+          },
+          {
+            "appId": "1dd3d164-c823-4e5e-a7c0-134e15ac32b6",
+            "field": "Processes",
+            "before": "BBM PM DM Data Management L0;BBM PM MDM Implementation and Target Tracking L2;BBM PM MDM Requirement to Target L1",
+            "after": "BBM_SWS.P2F Plan to Fulfill;BBM_SWS.P2F.040.090.030 Monitoring Dashboards;M.P2F.040.090 Plan to Supply Analytics and Reporting",
+            "truncated": false
+          },
+          {
+            "appId": "27c39dea-6c97-497c-8487-7f5495bb183d",
+            "field": "Business Capabilities",
+            "before": "B.06.2 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.2.2 Material Requirements Planning;B.06.5.2 Material Flow and Storage Management",
+            "after": "B.06.02 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.02.02 Material Requirements Planning;B.06.05.02 Material Flow and Storage Management",
+            "truncated": false
+          },
+          {
+            "appId": "751f82b8-32c1-430a-9e33-efba92ee55ca",
+            "field": "Business Capabilities",
+            "before": "B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.9 Logistics Partner Management and Supply Chain Collaboration;B.06.9.1 Logistics Collaboration Suppliers",
+            "after": "B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.09 Logistics Partner Management and Supply Chain Collaboration;B.06.09.01 Logistics Collaboration Suppliers",
+            "truncated": false
+          },
+          {
+            "appId": "6dacdae3-8add-42dc-82e5-ecc40fdbe194",
+            "field": "Business Capabilities",
+            "before": "B.06.5.2 Material Flow and Storage Management",
+            "after": "B.06.05.02 Material Flow and Storage Management",
+            "truncated": false
+          },
+          {
+            "appId": "37ff84ff-1c5b-472a-8bff-466871657649",
+            "field": "Business Capabilities",
+            "before": "B.06.2 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment",
+            "after": "B.06.02 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.02.03 Demand Planning",
+            "truncated": false
+          },
+          {
+            "appId": "649d1547-ea4f-4f09-a681-ad1e9e316d68",
+            "field": "Business Capabilities",
+            "before": "B.06.5 Material Flow Orchestration",
+            "after": "B.06 Logistics Management;B.06.05.02 Material Flow and Storage Management",
+            "truncated": false
+          },
+          {
+            "appId": "8bbd60cd-83f3-4051-af64-0141b8c1d4a7",
+            "field": "Business Capabilities",
+            "before": "B.06.5 Material Flow Orchestration",
+            "after": "B.06.05.02 Material Flow and Storage Management",
+            "truncated": false
+          },
+          {
+            "appId": "1dd68a89-660c-45ad-9b42-f3856fce0dd7",
+            "field": "Business Capabilities",
+            "before": "B.06.2 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.2.2 Material Requirements Planning",
+            "after": "B.06.02 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.02.02 Material Requirements Planning",
+            "truncated": false
+          },
+          {
+            "appId": "bd361d21-3886-4c1c-a570-fa66f8dfc6a1",
+            "field": "Business Capabilities",
+            "before": "B.06.5 Material Flow Orchestration",
+            "after": "B.06.05 Material Flow Orchestration",
+            "truncated": false
+          },
+          {
+            "appId": "79a83169-bae4-4512-87bb-bf64ceee4569",
+            "field": "Business Capabilities",
+            "before": "B.06.1 Supply Chain (Logistics) Strategy and Design Management;B.06.1.6 Supply Chain (Logistics) IT, Data & Innovation Management",
+            "after": "B.06.01 Supply Chain (Logistics) Strategy and Design Management;B.06.01.06 Supply Chain (Logistics) IT, Data & Innovation Management",
+            "truncated": false
+          },
+          {
+            "appId": "f5a1644f-ecc5-46ca-aca4-0cad0c844bb9",
+            "field": "Business Capabilities",
+            "before": "B.06.2 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.2.10 Customer Order Planning;B.06.2.2 Material Requirements Planning;B.06.2.6 Procurement Planning",
+            "after": "B.06.02 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.02.10 Customer Order Planning;B.06.02.02 Material Requirements Planning;B.06.02.06 Procurement Planning",
+            "truncated": false
+          },
+          {
+            "appId": "dbc9d3d1-531d-4a1e-9d36-46135de8345b",
+            "field": "Business Capabilities",
+            "before": "B.06.5 Material Flow Orchestration;B.14.09.1 Waste Management",
+            "after": "B.06.05.02 Material Flow and Storage Management;B.14.09.01 Waste Management",
+            "truncated": false
+          },
+          {
+            "appId": "223de1a7-83f4-4d57-9a48-ea6d7a7564ee",
+            "field": "Business Capabilities",
+            "before": "B.06.2 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.2.2 Material Requirements Planning",
+            "after": "B.06.02 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.02.02 Material Requirements Planning",
+            "truncated": false
+          },
+          {
+            "appId": "6a541a4a-a100-463c-8301-8facd86d5e46",
+            "field": "Business Capabilities",
+            "before": "B.06.2 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics",
+            "after": "B.06.02 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.08.02 Supply Chain (Logistics) Monitoring and Dashboarding",
+            "truncated": false
+          },
+          {
+            "appId": "bdfd379a-767a-423b-ba86-3336b57ca863",
+            "field": "Business Capabilities",
+            "before": "B.06.4 Inventory Management;B.06.4.1 Commercial Inventory Management",
+            "after": "B.06.04 Inventory Management;B.06.04.01 Commercial Inventory Management",
+            "truncated": false
+          },
+          {
+            "appId": "5bde649c-2738-49fd-a00c-ffda8d67382a",
+            "field": "Business Capabilities",
+            "before": "B.06.3 Transport Management;B.06.3.2 Transport Execution Management;B.06.3.4 Freight Cost Clearing;B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics",
+            "after": "B.06.03 Transport Management;B.06.03.02 Transport Execution Management;B.06.03.04 Freight Cost Clearing;B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics",
+            "truncated": false
+          },
+          {
+            "appId": "e94c1657-4165-4b0f-a6be-399dcd8ed9bc",
+            "field": "Business Capabilities",
+            "before": "B.06.1.7 Supply Chain (Logistics) Process Management",
+            "after": "B.06.01.07 Supply Chain (Logistics) Process Management",
+            "truncated": false
+          },
+          {
+            "appId": "523a5b92-1f35-41f8-82e3-df5b80ae4f6b",
+            "field": "Business Capabilities",
+            "before": "B.06.5 Material Flow Orchestration",
+            "after": "B.06.05 Material Flow Orchestration",
+            "truncated": false
+          },
+          {
+            "appId": "523a5b92-1f35-41f8-82e3-df5b80ae4f6b",
+            "field": "Lifecycle: Current Lifecycle",
+            "before": "active",
+            "after": "phaseIn",
+            "truncated": false
+          },
+          {
+            "appId": "523a5b92-1f35-41f8-82e3-df5b80ae4f6b",
+            "field": "Lifecycle: Active",
+            "before": "2026-11-01",
+            "after": "2027-04-01",
+            "truncated": false
+          },
+          {
+            "appId": "269d5f6c-041a-4c7d-b895-1f52f57a7396",
+            "field": "Business Capabilities",
+            "before": "B.06.5 Material Flow Orchestration",
+            "after": "B.06.05 Material Flow Orchestration",
+            "truncated": false
+          },
+          {
+            "appId": "3fbe3989-8217-4f2e-9ae5-086cbe17f6e6",
+            "field": "Business Capabilities",
+            "before": "B.06.3 Transport Management;B.06.3.1 Transport Planning and Optimization;B.06.3.2 Transport Execution Management",
+            "after": "B.06.03 Transport Management;B.06.03.01 Transport Planning and Optimization;B.06.03.02 Transport Execution Management",
+            "truncated": false
+          },
+          {
+            "appId": "9dfee743-fe9b-40c6-8dd0-98c0ce8c69e3",
+            "field": "Business Capabilities",
+            "before": "B.06.6 Packaging and Returnables Management;B.06.6.2 Packaging Planning",
+            "after": "B.06.06 Packaging and Returnables Management;B.06.06.02 Packaging Planning",
+            "truncated": false
+          },
+          {
+            "appId": "e1f6056d-a173-4e52-a186-91dabec5ba33",
+            "field": "Business Capabilities",
+            "before": "B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics",
+            "after": "B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.08.02 Supply Chain (Logistics) Monitoring and Dashboarding",
+            "truncated": false
+          },
+          {
+            "appId": "9a639b2d-30be-4ab0-830b-5bb66e75d8e8",
+            "field": "Business Capabilities",
+            "before": "B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.8.2 Supply Chain (Logistics) Monitoring and Dashboarding",
+            "after": "B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.08.02 Supply Chain (Logistics) Monitoring and Dashboarding",
+            "truncated": false
+          },
+          {
+            "appId": "996143e3-b7d5-402a-a358-3e745f700391",
+            "field": "Business Capabilities",
+            "before": "B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.8.2 Supply Chain (Logistics) Monitoring and Dashboarding",
+            "after": "B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.08.02 Supply Chain (Logistics) Monitoring and Dashboarding",
+            "truncated": false
+          },
+          {
+            "appId": "030326f7-8a54-4fc3-888c-bed9dca08cbb",
+            "field": "Business Capabilities",
+            "before": "B.06.6 Packaging and Returnables Management;B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.8.2 Supply Chain (Logistics) Monitoring and Dashboarding;B.06.9 Logistics Partner Management and Supply Chain Collaboration;B.06.9.1 Logistics Collaboration Suppliers",
+            "after": "B.06.06 Packaging and Returnables Management;B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.08.02 Supply Chain (Logistics) Monitoring and Dashboarding;B.06.09 Logistics Partner Management and Supply Chain Collaboration;B.06.09.01 Logistics Collaboration Suppliers",
+            "truncated": false
+          },
+          {
+            "appId": "c64a1851-242b-4cca-a1d6-45ef72bcc6bb",
+            "field": "Business Capabilities",
+            "before": "B.06.7 Supply Chain (Logistics) Quality Management;B.06.7.1 Complaint Management Supplier / LSP / Internal",
+            "after": "B.06.07 Supply Chain (Logistics) Quality Management;B.06.07.01 Complaint Management Supplier / LSP / Internal",
+            "truncated": false
+          },
+          {
+            "appId": "47d69572-ffee-410c-a1e5-97aaf6bcf712",
+            "field": "Business Capabilities",
+            "before": "B.06.5.2 Material Flow and Storage Management",
+            "after": "B.06.05.02 Material Flow and Storage Management",
+            "truncated": false
+          },
+          {
+            "appId": "28b2d4fc-337d-4e39-8e7e-9539c723f141",
+            "field": "Business Capabilities",
+            "before": "B.06.2 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.2.6 Procurement Planning",
+            "after": "B.06.02 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.02.06 Procurement Planning",
+            "truncated": false
+          },
+          {
+            "appId": "6baa068e-d834-4009-a47b-9efe1633c1bc",
+            "field": "Business Capabilities",
+            "before": "B.06.4 Inventory Management;B.06.4.2 Physical Inventory",
+            "after": "B.06.04 Inventory Management;B.06.04.02 Physical Inventory",
+            "truncated": false
+          },
+          {
+            "appId": "87cbdb25-29b7-433f-8c4c-72fe713a3779",
+            "field": "Business Capabilities",
+            "before": "B.06 Logistics Management;B.06.5 Material Flow Orchestration;B.06.5.2 Material Flow and Storage Management",
+            "after": "B.06 Logistics Management;B.06.05 Material Flow Orchestration;B.06.05.02 Material Flow and Storage Management",
+            "truncated": false
+          },
+          {
+            "appId": "6030f219-4b53-4513-a861-f12d5824ee15",
+            "field": "Business Capabilities",
+            "before": "B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.8.2 Supply Chain (Logistics) Monitoring and Dashboarding",
+            "after": "B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.08.02 Supply Chain (Logistics) Monitoring and Dashboarding",
+            "truncated": false
+          },
+          {
+            "appId": "9ae4e147-43c8-4bcb-9aa8-6bea810d6556",
+            "field": "Business Capabilities",
+            "before": "B.06.9 Logistics Partner Management and Supply Chain Collaboration",
+            "after": "B.06.09 Logistics Partner Management and Supply Chain Collaboration",
+            "truncated": false
+          },
+          {
+            "appId": "942751cc-40d6-4538-a369-93f0cfa5a55c",
+            "field": "Business Capabilities",
+            "before": "B.06.5 Material Flow Orchestration",
+            "after": "B.06.05 Material Flow Orchestration",
+            "truncated": false
+          },
+          {
+            "appId": "48579920-a761-404b-abe2-86068060c58b",
+            "field": "Business Capabilities",
+            "before": "B.06.8 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.8.1 Supply Chain (Logistics) Standard Reporting;B.06.8.2 Supply Chain (Logistics) Monitoring and Dashboarding;B.06.8.3 Supply Chain (Logistics) Analytics",
+            "after": "B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.08.01 Supply Chain (Logistics) Standard Reporting;B.06.08.02 Supply Chain (Logistics) Monitoring and Dashboarding;B.06.08.03 Supply Chain (Logistics) Analytics",
+            "truncated": false
+          },
+          {
+            "appId": "b40b60a2-2111-42b4-bdfc-2c46dc73e6dc",
+            "field": "Business Capabilities",
+            "before": "B.06 Logistics Management;B.06.5 Material Flow Orchestration;B.06.5.1 Inbound Management and Receiving;B.06.5.2 Material Flow and Storage Management;B.06.5.3 Production Logistics;B.06.5.4 Outbound Distribution;B.06.5.5 Shipping;B.06.5.7 Intralogistics Infrastructure (Resource and Infrastructure Optimization)",
+            "after": "B.06 Logistics Management;B.06.05 Material Flow Orchestration;B.06.05.01 Inbound Management and Receiving;B.06.05.02 Material Flow and Storage Management;B.06.05.03 Production Logistics;B.06.05.04 Outbound Distribution;B.06.05.05 Shipping;B.06.05.07 Intralogistics Infrastructure (Resource and Infrastructure Optimization)",
+            "truncated": false
+          },
+          {
+            "appId": "a1ead9e6-7d92-4aea-abd9-748c0a0b8177",
+            "field": "Business Capabilities",
+            "before": "B.06.5 Material Flow Orchestration;B.06.5.7 Intralogistics Infrastructure (Resource and Infrastructure Optimization)",
+            "after": "B.06.05 Material Flow Orchestration;B.06.05.07 Intralogistics Infrastructure (Resource and Infrastructure Optimization)",
+            "truncated": false
+          },
+          {
+            "appId": "712d13a7-d96a-40c1-bbba-2b792b294068",
+            "field": "Business Capabilities",
+            "before": "B.06.5 Material Flow Orchestration;B.06.5.1 Inbound Management and Receiving;B.06.5.2 Material Flow and Storage Management;B.06.5.3 Production Logistics;B.06.6 Packaging and Returnables Management;B.06.6.3 Packaging Operations",
+            "after": "B.06.05 Material Flow Orchestration;B.06.05.01 Inbound Management and Receiving;B.06.05.02 Material Flow and Storage Management;B.06.05.03 Production Logistics;B.06.06 Packaging and Returnables Management;B.06.06.03 Packaging Operations",
+            "truncated": false
+          },
+          {
+            "appId": "8aa81a3c-259e-400e-9eb4-1a792cb12d08",
+            "field": "Business Capabilities",
+            "before": "B.06.2.3 Demand Planning;B.06.2.6 Procurement Planning",
+            "after": "B.06.02.03 Demand Planning;B.06.02.06 Procurement Planning",
+            "truncated": false
+          },
+          {
+            "appId": "d1c48c78-b4ff-45b8-84aa-ef15629dde06",
+            "field": "Business Capabilities",
+            "before": "B.06.4 Inventory Management;B.06.5 Material Flow Orchestration;B.06.5.2 Material Flow and Storage Management",
+            "after": "B.06.04 Inventory Management;B.06.05 Material Flow Orchestration;B.06.05.02 Material Flow and Storage Management",
+            "truncated": false
+          },
+          {
+            "appId": "14388434-6679-4f88-8e80-6d3a60eae484",
+            "field": "Business Capabilities",
+            "before": "B.06.2 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.2.10 Customer Order Planning;B.06.2.3 Demand Planning;B.06.2.5 Production Planning & Production Control;B.06.2.6 Procurement Planning;B.06.2.8 Inventory Planning",
+            "after": "B.06.02 Supply Chain (Logistics) Planning \nfor Demand-Driven Fulfillment;B.06.02.10 Customer Order Planning;B.06.02.03 Demand Planning;B.06.02.05 Production Planning & Production Control;B.06.02.06 Procurement Planning;B.06.02.08 Inventory Planning",
+            "truncated": false
+          },
+          {
+            "appId": "8307f735-cee7-43c3-8c67-9329047dbdec",
+            "field": "Business Capabilities",
+            "before": "B.06.6 Packaging and Returnables Management;B.06.6.2 Packaging Planning",
+            "after": "B.06.06 Packaging and Returnables Management;B.06.06.02 Packaging Planning",
+            "truncated": false
+          },
+          {
+            "appId": "2be34702-a301-49bd-b00c-0d235639253d",
+            "field": "Business Capabilities",
+            "before": "B.06.5 Material Flow Orchestration;HC.02.04.05 Transportation Management",
+            "after": "B.06.05 Material Flow Orchestration;HC.02.04.05 Transportation Management",
+            "truncated": false
+          }
+        ],
+        "issues": [
+          {
+            "appId": "e354d01b-6ae7-4fe2-8dc3-301980b2f508",
+            "kind": "flagged",
+            "category": "能力编码缺失",
+            "record": "B.05.03.07 Supplier Collaboration Management"
+          },
+          {
+            "appId": "e354d01b-6ae7-4fe2-8dc3-301980b2f508",
+            "kind": "cleared",
+            "category": "能力编码缺失",
+            "record": "B.05.3.7 Supplier Collaboration Management"
+          },
+          {
+            "appId": "dbc9d3d1-531d-4a1e-9d36-46135de8345b",
+            "kind": "flagged",
+            "category": "能力编码缺失",
+            "record": "B.14.09.01 Waste Management"
+          },
+          {
+            "appId": "dbc9d3d1-531d-4a1e-9d36-46135de8345b",
+            "kind": "cleared",
+            "category": "能力编码缺失",
+            "record": "B.14.09.1 Waste Management"
+          }
+        ],
+        "decisions": [
+          {
+            "appId": "a103918e-63a2-4b26-ae5b-a5b1b7af8fd1",
+            "field": "Processes",
+            "before": "BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Receive to Store L1;Manufacturing",
+            "after": "BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Receive to Store L1",
+            "note": "Owner decision applied: removed 'Manufacturing' from BMLP_Nexeed_IAS@WxP processes"
+          }
+        ]
       }
     ],
     "corrections": [
@@ -12896,7 +13486,7 @@
         "reviewer": "Taxonomy audit",
         "reason": "Unique exact L3 name and process-chain match in Business Capability + Process(2).xlsx",
         "createdAt": "2026-09-23T00:00:00.000Z",
-        "revokedAt": ""
+        "revokedAt": "2026-11-12T07:12:12.185Z"
       },
       {
         "id": "l3v-6bd7754f7890bd4ba1528599",
@@ -12924,7 +13514,7 @@
         "reviewer": "Taxonomy audit",
         "reason": "Unique exact L3 name and process-chain match in Business Capability + Process(2).xlsx",
         "createdAt": "2026-09-23T00:00:00.000Z",
-        "revokedAt": ""
+        "revokedAt": "2026-11-12T07:12:12.189Z"
       },
       {
         "id": "l3v-d8f83cf93e9559adbc4e49c8",
@@ -12966,7 +13556,7 @@
         "reviewer": "Business owner",
         "reason": "Owner confirmed DM is the same L0 Data Management process as standard M.MDM; extra M in reference code is acceptable.",
         "createdAt": "2026-09-23T09:03:50.308Z",
-        "revokedAt": ""
+        "revokedAt": "2026-11-12T07:12:12.192Z"
       },
       {
         "id": "l0-dm-88e9e2a4a30ce130072ad418",
@@ -12994,7 +13584,7 @@
         "reviewer": "Business owner",
         "reason": "Owner confirmed DM is the same L0 Data Management process as standard M.MDM; extra M in reference code is acceptable.",
         "createdAt": "2026-09-23T09:03:50.313Z",
-        "revokedAt": ""
+        "revokedAt": "2026-11-12T07:12:12.195Z"
       },
       {
         "id": "l0-dm-f45bacf463a522b3cb091aef",
@@ -13008,7 +13598,7 @@
         "reviewer": "Business owner",
         "reason": "Owner confirmed DM is the same L0 Data Management process as standard M.MDM; extra M in reference code is acceptable.",
         "createdAt": "2026-09-23T09:03:50.315Z",
-        "revokedAt": ""
+        "revokedAt": "2026-11-12T07:12:12.199Z"
       },
       {
         "id": "90c4c63f7e25ba803d0af8876a477d45",
@@ -13050,7 +13640,7 @@
         "reviewer": "Owner decision carried over · import 2026-10-21",
         "reason": "Carried over from the mapping by Taxonomy audit (Unique exact L3 name and process-chain match in Business Capability + Process(2).xlsx). The Processes record is unchanged in the LeanIX export of 2026-10-20; the mapping needed re-confirmation only because other fields of this application changed.",
         "createdAt": "2026-10-21T03:51:37.554Z",
-        "revokedAt": ""
+        "revokedAt": "2026-11-12T07:12:12.203Z"
       },
       {
         "id": "c3264f5906a5594c6fdd4399d7b505b0",
@@ -13064,7 +13654,7 @@
         "reviewer": "Owner decision carried over · import 2026-10-21",
         "reason": "Carried over from the mapping by Taxonomy audit (Unique exact L3 name and process-chain match in Business Capability + Process(2).xlsx). The Processes record is unchanged in the LeanIX export of 2026-10-20; the mapping needed re-confirmation only because other fields of this application changed.",
         "createdAt": "2026-10-21T03:51:37.556Z",
-        "revokedAt": ""
+        "revokedAt": "2026-11-12T07:12:12.208Z"
       },
       {
         "id": "dad58bb16c11077e470d52f3a8806c34",
@@ -13078,7 +13668,7 @@
         "reviewer": "Owner decision carried over · import 2026-10-21",
         "reason": "Carried over from the mapping by Taxonomy audit (Unique exact L3 name and process-chain match in Business Capability + Process(2).xlsx). The Processes record is unchanged in the LeanIX export of 2026-10-20; the mapping needed re-confirmation only because other fields of this application changed.",
         "createdAt": "2026-10-21T03:51:37.558Z",
-        "revokedAt": ""
+        "revokedAt": "2026-11-12T07:12:12.214Z"
       },
       {
         "id": "9029d9adb41f92e5cb8bf264a16b6125",
@@ -13092,7 +13682,7 @@
         "reviewer": "Owner decision carried over · import 2026-10-21",
         "reason": "Carried over from the mapping by Business owner (Owner confirmed DM is the same L0 Data Management process as standard M.MDM; extra M in reference code is acceptable.). The Processes record is unchanged in the LeanIX export of 2026-10-20; the mapping needed re-confirmation only because other fields of this application changed.",
         "createdAt": "2026-10-21T03:51:37.561Z",
-        "revokedAt": ""
+        "revokedAt": "2026-11-12T07:12:12.218Z"
       },
       {
         "id": "0edbaefc59ff8cf733212865199805f1",
@@ -13106,7 +13696,7 @@
         "reviewer": "Owner decision carried over · import 2026-10-21",
         "reason": "Carried over from the mapping by Taxonomy audit (Same M2S chain and L3 meaning; source feasibility corrects the typo feasabiltiy in the unique standard label.). The Processes record is unchanged in the LeanIX export of 2026-10-20; the mapping needed re-confirmation only because other fields of this application changed.",
         "createdAt": "2026-10-21T03:51:37.565Z",
-        "revokedAt": ""
+        "revokedAt": "2026-11-12T07:12:12.222Z"
       },
       {
         "id": "0c33476a09c0396d5f7944db76c2a493",
@@ -13134,6 +13724,146 @@
         "reviewer": "Owner decision carried over · import 2026-11-02",
         "reason": "Carried over from the mapping by Taxonomy audit (Same P2F chain and L3 action; source Handling the unconstrained demand plan matches the unique standard Handle Unconstrained Demand Plan in the Demand Plan Creation branch.). The Processes record is unchanged in the LeanIX export of 2026-11-02; the mapping needed re-confirmation only because other fields of this application changed.",
         "createdAt": "2026-11-02T06:24:05.099Z",
+        "revokedAt": "2026-11-12T07:12:12.232Z"
+      },
+      {
+        "id": "0114709eb1e3695b4c05bc27a8bd8958",
+        "appId": "6a541a4a-a100-463c-8301-8facd86d5e46",
+        "dimension": "process",
+        "raw": "BBM PM M2S Report process data production L3V",
+        "targetId": "M.M2S.030.030.020",
+        "appSnapshot": "[\"6a541a4a-a100-463c-8301-8facd86d5e46\",\"RBCD LOP Digital Dashboard\",\"PS\",\"RBCD\",\"Visualize the Key Performance Indicators (KPIs) in the Logistics Planning process with the help of reports.\",\"B.06.02 Supply Chain (Logistics) Planning \\nfor Demand-Driven Fulfillment;B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.08.02 Supply Chain (Logistics) Monitoring and Dashboarding\",\"BBM PM I2D Manage Manual Logistics Requests L3;BBM PM I2D Receive to Store L1;BBM PM M2S Report process data production L3V;BBM PM O2C Manage Outbound Delivery Reports L3\",\"active\"]",
+        "taxonomySnapshot": "[{\"id\":\"M.M2S\",\"label\":\"Manufacture to Supply\",\"level\":\"L0\",\"chain\":\"Manufacture to Supply (M2S)\",\"ambiguous\":false},{\"id\":\"M.M2S.030\",\"label\":\"Produce to Demand\",\"level\":\"L1\",\"chain\":\"Manufacture to Supply (M2S)\",\"ambiguous\":false},{\"id\":\"M.M2S.030.030\",\"label\":\"Production Reporting\",\"level\":\"L2\",\"chain\":\"Manufacture to Supply (M2S)\",\"ambiguous\":false},{\"id\":\"M.M2S.030.030.020\",\"label\":\"Report process data production\",\"level\":\"L3\",\"chain\":\"Manufacture to Supply (M2S)\",\"ambiguous\":false}]",
+        "reviewKey": "[\"流程匹配\",[\"6a541a4a-a100-463c-8301-8facd86d5e46\"],\"\",\"BBM PM M2S Report process data production L3V\",\"M.M2S.030.030.020 Report process data production\"]",
+        "reviewer": "Codex (carried over 2026-11-12)",
+        "reason": "Carried over from mapping l3v-12681baf83d23b3f1ca2137c by Taxonomy audit (Unique exact L3 name and process-chain match in Business Capability + Process(2).xlsx). Application ID, name, complete Processes field, source process and standard target/ancestor snapshot are unchanged in the LeanIX export of 2026-11-12; only Business Capabilities changed.",
+        "createdAt": "2026-11-12T07:12:12.188Z",
+        "revokedAt": ""
+      },
+      {
+        "id": "f53829c006d47edd8fde0c7de4bc8b54",
+        "appId": "9dfee743-fe9b-40c6-8dd0-98c0ce8c69e3",
+        "dimension": "process",
+        "raw": "BBM PM I2D Request Packaging Kit L3V",
+        "targetId": "M.I2D.020.010.050",
+        "appSnapshot": "[\"9dfee743-fe9b-40c6-8dd0-98c0ce8c69e3\",\"RBCW LOM PSTU Management System\",\"PS\",\"RBCW\",\"to pull in packages according to production plan\",\"B.06.06 Packaging and Returnables Management;B.06.06.02 Packaging Planning\",\"BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Material Request L2;BBM PM I2D Request Packaging Kit L3V;BBM PM I2D Warehouse to Consume L1\",\"active\"]",
+        "taxonomySnapshot": "[{\"id\":\"M.I2D\",\"label\":\"Intralogistics to Demand\",\"level\":\"L0\",\"chain\":\"Intralogistics to Demand (I2D)\",\"ambiguous\":false},{\"id\":\"M.I2D.020\",\"label\":\"Warehouse to Consume\",\"level\":\"L1\",\"chain\":\"Intralogistics to Demand (I2D)\",\"ambiguous\":false},{\"id\":\"M.I2D.020.010\",\"label\":\"Material Request\",\"level\":\"L2\",\"chain\":\"Intralogistics to Demand (I2D)\",\"ambiguous\":false},{\"id\":\"M.I2D.020.010.050\",\"label\":\"Request Packaging Kit\",\"level\":\"L3\",\"chain\":\"Intralogistics to Demand (I2D)\",\"ambiguous\":false}]",
+        "reviewKey": "[\"流程匹配\",[\"9dfee743-fe9b-40c6-8dd0-98c0ce8c69e3\"],\"\",\"BBM PM I2D Request Packaging Kit L3V\",\"M.I2D.020.010.050 Request Packaging Kit\"]",
+        "reviewer": "Codex (carried over 2026-11-12)",
+        "reason": "Carried over from mapping l3v-72e8086df8fcd8f0a0b97ba8 by Taxonomy audit (Unique exact L3 name and process-chain match in Business Capability + Process(2).xlsx). Application ID, name, complete Processes field, source process and standard target/ancestor snapshot are unchanged in the LeanIX export of 2026-11-12; only Business Capabilities changed.",
+        "createdAt": "2026-11-12T07:12:12.190Z",
+        "revokedAt": ""
+      },
+      {
+        "id": "cb78eb9408798d18c7323c9d858ce0b4",
+        "appId": "6b5a70a7-c8f4-4509-b687-16b50825612c",
+        "dimension": "process",
+        "raw": "BBM PM DM Data Management L0",
+        "targetId": "M.MDM",
+        "appSnapshot": "[\"6b5a70a7-c8f4-4509-b687-16b50825612c\",\"RBAC_ME_Logistics Data Platform\",\"ME\",\"ME-CN\",\"RBAC_ME_Logistics is a platform to consolidate, standardize, store, manage and secured consume LOG data.\",\"B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics\",\"BBM PM DM Data Management L0;BBM PM MDM Change/Block Purchasing & Logistic Reference Master Data L3;BBM PM MDM Check supplier purchasing/plant data L3;BBM PM MDM Create Purchasing & Logistic Reference Master Data L3;BBM PM MDM Create supplier specific general data L3;BBM PM MDM Customer Master Data Management L2;BBM PM MDM Display report Purchasing/Logistic Reference Master Data L3;BBM PM MDM Purchasing & Logistic Reference Master Data Management L2;BBM PM MDM Supplier Master Data Management L2\",\"active\"]",
+        "taxonomySnapshot": "[{\"id\":\"M.MDM\",\"label\":\"Data Management\",\"level\":\"L0\",\"chain\":\"Data Management (MDM)\",\"ambiguous\":false}]",
+        "reviewKey": "[\"流程匹配\",[\"6b5a70a7-c8f4-4509-b687-16b50825612c\"],\"\",\"BBM PM DM Data Management L0\",\"M.MDM Data Management\"]",
+        "reviewer": "Codex (carried over 2026-11-12)",
+        "reason": "Carried over from mapping l0-dm-135730a1862ff02f56ed6dc4 by Business owner (Owner confirmed DM is the same L0 Data Management process as standard M.MDM; extra M in reference code is acceptable.). Application ID, name, complete Processes field, source process and standard target/ancestor snapshot are unchanged in the LeanIX export of 2026-11-12; only Business Capabilities changed.",
+        "createdAt": "2026-11-12T07:12:12.193Z",
+        "revokedAt": ""
+      },
+      {
+        "id": "89ed8e83b7ac1ca9f66acff919d3bf4e",
+        "appId": "751f82b8-32c1-430a-9e33-efba92ee55ca",
+        "dimension": "process",
+        "raw": "BBM PM DM Data Management L0",
+        "targetId": "M.MDM",
+        "appSnapshot": "[\"751f82b8-32c1-430a-9e33-efba92ee55ca\",\"RBCC Supplier Logistics Management Platform\",\"EM\",\"RBCC\",\"RBCC Supplier Logistics Management Platform, integrate supplier key logistics info.\",\"B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.09 Logistics Partner Management and Supply Chain Collaboration;B.06.09.01 Logistics Collaboration Suppliers\",\"BBM PM DM Data Management L0;BBM PM MDM Display report Purchasing/Logistic Reference Master Data L3;BBM PM MDM Provide to Process L1;BBM PM MDM Purchasing & Logistic Reference Master Data Management L2\",\"active\"]",
+        "taxonomySnapshot": "[{\"id\":\"M.MDM\",\"label\":\"Data Management\",\"level\":\"L0\",\"chain\":\"Data Management (MDM)\",\"ambiguous\":false}]",
+        "reviewKey": "[\"流程匹配\",[\"751f82b8-32c1-430a-9e33-efba92ee55ca\"],\"\",\"BBM PM DM Data Management L0\",\"M.MDM Data Management\"]",
+        "reviewer": "Codex (carried over 2026-11-12)",
+        "reason": "Carried over from mapping l0-dm-694123cdb65494ae26a9519d by Business owner (Owner confirmed DM is the same L0 Data Management process as standard M.MDM; extra M in reference code is acceptable.). Application ID, name, complete Processes field, source process and standard target/ancestor snapshot are unchanged in the LeanIX export of 2026-11-12; only Business Capabilities changed.",
+        "createdAt": "2026-11-12T07:12:12.196Z",
+        "revokedAt": ""
+      },
+      {
+        "id": "0ea156c192dde2c03fc38dc220faa0c7",
+        "appId": "030326f7-8a54-4fc3-888c-bed9dca08cbb",
+        "dimension": "process",
+        "raw": "BBM PM DM Data Management L0",
+        "targetId": "M.MDM",
+        "appSnapshot": "[\"030326f7-8a54-4fc3-888c-bed9dca08cbb\",\"RBHP_LOG SupplierManager\",\"PS\",\"RBHP\",\"This APP provides a unified platform for supplier, order, and packaging management.\",\"B.06.06 Packaging and Returnables Management;B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.08.02 Supply Chain (Logistics) Monitoring and Dashboarding;B.06.09 Logistics Partner Management and Supply Chain Collaboration;B.06.09.01 Logistics Collaboration Suppliers\",\"BBM PM DM Data Management L0;BBM PM MDM Approve Purchasing & Logistic Reference Master Data L3;BBM PM MDM Change/Block Purchasing & Logistic Reference Master Data L3;BBM PM MDM Create Purchasing & Logistic Reference Master Data L3;BBM PM MDM Display report Purchasing/Logistic Reference Master Data L3;BBM PM MDM Finance Reference Master Data Management L2;BBM PM MDM Provide to Process L1;BBM PM MDM Supplier Master Data Management L2;BBM PM P2F Plan to Fulfill L0;BBM PM P2F Plan to Supply L1;BBM PM P2F Review and resolve supply planning alerts L3;BBM PM P2F Supply Planning L2\",\"active\"]",
+        "taxonomySnapshot": "[{\"id\":\"M.MDM\",\"label\":\"Data Management\",\"level\":\"L0\",\"chain\":\"Data Management (MDM)\",\"ambiguous\":false}]",
+        "reviewKey": "[\"流程匹配\",[\"030326f7-8a54-4fc3-888c-bed9dca08cbb\"],\"\",\"BBM PM DM Data Management L0\",\"M.MDM Data Management\"]",
+        "reviewer": "Codex (carried over 2026-11-12)",
+        "reason": "Carried over from mapping l0-dm-f45bacf463a522b3cb091aef by Business owner (Owner confirmed DM is the same L0 Data Management process as standard M.MDM; extra M in reference code is acceptable.). Application ID, name, complete Processes field, source process and standard target/ancestor snapshot are unchanged in the LeanIX export of 2026-11-12; only Business Capabilities changed.",
+        "createdAt": "2026-11-12T07:12:12.200Z",
+        "revokedAt": ""
+      },
+      {
+        "id": "8fb9b714d40323c1a7c7876a0dfb225c",
+        "appId": "b97561de-87df-46ec-a86c-477fe0e431f9",
+        "dimension": "process",
+        "raw": "BBM PM I2D Putaway of Automated Goods Receipt (AGR) L3V",
+        "targetId": "M.I2D.010.050.010",
+        "appSnapshot": "[\"b97561de-87df-46ec-a86c-477fe0e431f9\",\"AUTO-RACK\",\"PS\",\"RBCD\",\"AUTO-RACK system is a fully automatic solution for high efficiency of put away, storage and pick up processes.?\",\"B.06.01 Supply Chain (Logistics) Strategy and Design Management;B.06.01.04 Supply Chain (Logistics) Technology Strategy;B.06.05 Material Flow Orchestration\",\"BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Putaway L2;BBM PM I2D Putaway of Automated Goods Receipt (AGR) L3V;BBM PM I2D Putaway to Automated Warehouse L3V;BBM PM I2D Putaway to Warehouse Destination L3;BBM PM I2D Receive to Store L1\",\"active\"]",
+        "taxonomySnapshot": "[{\"id\":\"M.I2D\",\"label\":\"Intralogistics to Demand\",\"level\":\"L0\",\"chain\":\"Intralogistics to Demand (I2D)\",\"ambiguous\":false},{\"id\":\"M.I2D.010\",\"label\":\"Receive to Store\",\"level\":\"L1\",\"chain\":\"Intralogistics to Demand (I2D)\",\"ambiguous\":false},{\"id\":\"M.I2D.010.050\",\"label\":\"Putaway\",\"level\":\"L2\",\"chain\":\"Intralogistics to Demand (I2D)\",\"ambiguous\":false},{\"id\":\"M.I2D.010.050.010\",\"label\":\"Putaway of Automated Goods Receipt (AGR)\",\"level\":\"L3\",\"chain\":\"Intralogistics to Demand (I2D)\",\"ambiguous\":false}]",
+        "reviewKey": "[\"流程匹配\",[\"b97561de-87df-46ec-a86c-477fe0e431f9\"],\"\",\"BBM PM I2D Putaway of Automated Goods Receipt (AGR) L3V\",\"M.I2D.010.050.010 Putaway of Automated Goods Receipt (AGR)\"]",
+        "reviewer": "Codex (carried over 2026-11-12)",
+        "reason": "Carried over from mapping 09edf2367f0a5f905393802ad29f8449 by Owner decision carried over · import 2026-10-21 (Carried over from the mapping by Taxonomy audit (Unique exact L3 name and process-chain match in Business Capability + Process(2).xlsx). The Processes record is unchanged in the LeanIX export of 2026-10-20; the mapping needed re-confirmation only because other fields of this application changed.). Application ID, name, complete Processes field, source process and standard target/ancestor snapshot are unchanged in the LeanIX export of 2026-11-12; only Business Capabilities changed.",
+        "createdAt": "2026-11-12T07:12:12.205Z",
+        "revokedAt": ""
+      },
+      {
+        "id": "17a8a8cb5c237bdd43f25b2b798c894a",
+        "appId": "9a639b2d-30be-4ab0-830b-5bb66e75d8e8",
+        "dimension": "process",
+        "raw": "BBM PM I2D Monitor and Control Warehouse Processes L3V",
+        "targetId": "M.I2D.020.100.030",
+        "appSnapshot": "[\"9a639b2d-30be-4ab0-830b-5bb66e75d8e8\",\"RBHP_LOG AGV Performance Tracking System\",\"PS\",\"RBHP\",\"This app monitors the difference between target and actual efficiency of AGV by integrating circle time and OEE metrics, enhancing automation performance and production efficiency.\",\"B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.08.02 Supply Chain (Logistics) Monitoring and Dashboarding\",\"BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Manage Warehouse Resources L3;BBM PM I2D Monitor and Control Warehouse Processes L3V;BBM PM I2D Optimize Warehouse L3V;BBM PM I2D Warehouse Master Data L2;BBM PM I2D Warehouse Monitoring L2;BBM PM I2D Warehouse to Consume L1\",\"active\"]",
+        "taxonomySnapshot": "[{\"id\":\"M.I2D\",\"label\":\"Intralogistics to Demand\",\"level\":\"L0\",\"chain\":\"Intralogistics to Demand (I2D)\",\"ambiguous\":false},{\"id\":\"M.I2D.020\",\"label\":\"Warehouse to Consume\",\"level\":\"L1\",\"chain\":\"Intralogistics to Demand (I2D)\",\"ambiguous\":false},{\"id\":\"M.I2D.020.100\",\"label\":\"Warehouse Monitoring\",\"level\":\"L2\",\"chain\":\"Intralogistics to Demand (I2D)\",\"ambiguous\":false},{\"id\":\"M.I2D.020.100.030\",\"label\":\"Monitor and Control Warehouse Processes\",\"level\":\"L3\",\"chain\":\"Intralogistics to Demand (I2D)\",\"ambiguous\":false}]",
+        "reviewKey": "[\"流程匹配\",[\"9a639b2d-30be-4ab0-830b-5bb66e75d8e8\"],\"\",\"BBM PM I2D Monitor and Control Warehouse Processes L3V\",\"M.I2D.020.100.030 Monitor and Control Warehouse Processes\"]",
+        "reviewer": "Codex (carried over 2026-11-12)",
+        "reason": "Carried over from mapping c3264f5906a5594c6fdd4399d7b505b0 by Owner decision carried over · import 2026-10-21 (Carried over from the mapping by Taxonomy audit (Unique exact L3 name and process-chain match in Business Capability + Process(2).xlsx). The Processes record is unchanged in the LeanIX export of 2026-10-20; the mapping needed re-confirmation only because other fields of this application changed.). Application ID, name, complete Processes field, source process and standard target/ancestor snapshot are unchanged in the LeanIX export of 2026-11-12; only Business Capabilities changed.",
+        "createdAt": "2026-11-12T07:12:12.210Z",
+        "revokedAt": ""
+      },
+      {
+        "id": "eafc62bb60e09db95eb6e6624a6f685e",
+        "appId": "9a639b2d-30be-4ab0-830b-5bb66e75d8e8",
+        "dimension": "process",
+        "raw": "BBM PM I2D Optimize Warehouse L3V",
+        "targetId": "M.I2D.020.100.020",
+        "appSnapshot": "[\"9a639b2d-30be-4ab0-830b-5bb66e75d8e8\",\"RBHP_LOG AGV Performance Tracking System\",\"PS\",\"RBHP\",\"This app monitors the difference between target and actual efficiency of AGV by integrating circle time and OEE metrics, enhancing automation performance and production efficiency.\",\"B.06.08 Supply Chain (Logistics) Performance Monitoring and Analytics;B.06.08.02 Supply Chain (Logistics) Monitoring and Dashboarding\",\"BBM PM I2D Intralogistics to Demand L0;BBM PM I2D Manage Warehouse Resources L3;BBM PM I2D Monitor and Control Warehouse Processes L3V;BBM PM I2D Optimize Warehouse L3V;BBM PM I2D Warehouse Master Data L2;BBM PM I2D Warehouse Monitoring L2;BBM PM I2D Warehouse to Consume L1\",\"active\"]",
+        "taxonomySnapshot": "[{\"id\":\"M.I2D\",\"label\":\"Intralogistics to Demand\",\"level\":\"L0\",\"chain\":\"Intralogistics to Demand (I2D)\",\"ambiguous\":false},{\"id\":\"M.I2D.020\",\"label\":\"Warehouse to Consume\",\"level\":\"L1\",\"chain\":\"Intralogistics to Demand (I2D)\",\"ambiguous\":false},{\"id\":\"M.I2D.020.100\",\"label\":\"Warehouse Monitoring\",\"level\":\"L2\",\"chain\":\"Intralogistics to Demand (I2D)\",\"ambiguous\":false},{\"id\":\"M.I2D.020.100.020\",\"label\":\"Optimize Warehouse\",\"level\":\"L3\",\"chain\":\"Intralogistics to Demand (I2D)\",\"ambiguous\":false}]",
+        "reviewKey": "[\"流程匹配\",[\"9a639b2d-30be-4ab0-830b-5bb66e75d8e8\"],\"\",\"BBM PM I2D Optimize Warehouse L3V\",\"M.I2D.020.100.020 Optimize Warehouse\"]",
+        "reviewer": "Codex (carried over 2026-11-12)",
+        "reason": "Carried over from mapping dad58bb16c11077e470d52f3a8806c34 by Owner decision carried over · import 2026-10-21 (Carried over from the mapping by Taxonomy audit (Unique exact L3 name and process-chain match in Business Capability + Process(2).xlsx). The Processes record is unchanged in the LeanIX export of 2026-10-20; the mapping needed re-confirmation only because other fields of this application changed.). Application ID, name, complete Processes field, source process and standard target/ancestor snapshot are unchanged in the LeanIX export of 2026-11-12; only Business Capabilities changed.",
+        "createdAt": "2026-11-12T07:12:12.216Z",
+        "revokedAt": ""
+      },
+      {
+        "id": "11144da5fe3fb6494aca4199d4588460",
+        "appId": "d1c48c78-b4ff-45b8-84aa-ef15629dde06",
+        "dimension": "process",
+        "raw": "BBM PM M2S Check feasibility production schedule L3",
+        "targetId": "M.M2S.020.010.010",
+        "appSnapshot": "[\"d1c48c78-b4ff-45b8-84aa-ef15629dde06\",\"VMCN_Digital Dynamic Supermarket\",\"VM\",\"VM-CN\",\"Architecture: Each Use Case in LH is an component in the implementation. For component \\\"Admin\\\", the Web-Front is used in the implementation. For the other components, the MVC architecture is used in the implementation. Interface to SAP: Interfaces in project are built to use the following web services from SAP WM web service TO Creation: o TransferOrderCreate_In WM Web Service TO confirmation: o TransferOrderConfirmTransferOrderItem_In These two Interfaces are planed but not implemented due to the current frozen zone of the SAP. Currently, the RFC is using in the release 1 and in release 2 the web service for WM should be implemented) PP Back Flush web service (for User case 1 in LH) is used o REMOrderBackflushCreateRequest_In Inbound o REMOrderBackflushCreateResponse_Out Outbound \\n\\nFor more detail, please refer to the project \\\"Digital dynamic supermarket for Pump Housing in CC-CN - 62_4634\\\" (see project link below in section Projects)\",\"B.06.04 Inventory Management;B.06.05 Material Flow Orchestration;B.06.05.02 Material Flow and Storage Management\",\"BBM PM I2D Receive to Store L1;BBM PM M2S Assign orders to non-pacemaker lines L3;BBM PM M2S Check feasibility production schedule L3;BBM PM M2S Initialize next order L3;BBM PM M2S Manufacture to Supply L0;BBM PM M2S Prepare to Produce L1;BBM PM M2S Produce to Demand L1;BBM PM M2S Production Control L2;BBM PM M2S Production Preparation L2;BBM PM M2S Request material L3;BBM PM M2S Supply material to point of use L3\",\"active\"]",
+        "taxonomySnapshot": "[{\"id\":\"M.M2S\",\"label\":\"Manufacture to Supply\",\"level\":\"L0\",\"chain\":\"Manufacture to Supply (M2S)\",\"ambiguous\":false},{\"id\":\"M.M2S.020\",\"label\":\"Prepare to Produce\",\"level\":\"L1\",\"chain\":\"Manufacture to Supply (M2S)\",\"ambiguous\":false},{\"id\":\"M.M2S.020.010\",\"label\":\"Production Control\",\"level\":\"L2\",\"chain\":\"Manufacture to Supply (M2S)\",\"ambiguous\":false},{\"id\":\"M.M2S.020.010.010\",\"label\":\"Check feasabiltiy production schedule\",\"level\":\"L3\",\"chain\":\"Manufacture to Supply (M2S)\",\"ambiguous\":false}]",
+        "reviewKey": "[\"流程匹配\",[\"d1c48c78-b4ff-45b8-84aa-ef15629dde06\"],\"\",\"BBM PM M2S Check feasibility production schedule L3\",\"标准表未找到唯一对应项\"]",
+        "reviewer": "Codex (carried over 2026-11-12)",
+        "reason": "Carried over from mapping 0edbaefc59ff8cf733212865199805f1 by Owner decision carried over · import 2026-10-21 (Carried over from the mapping by Taxonomy audit (Same M2S chain and L3 meaning; source feasibility corrects the typo feasabiltiy in the unique standard label.). The Processes record is unchanged in the LeanIX export of 2026-10-20; the mapping needed re-confirmation only because other fields of this application changed.). Application ID, name, complete Processes field, source process and standard target/ancestor snapshot are unchanged in the LeanIX export of 2026-11-12; only Business Capabilities changed.",
+        "createdAt": "2026-11-12T07:12:12.225Z",
+        "revokedAt": ""
+      },
+      {
+        "id": "cb713b333c3f4f8a50756a81fa12848a",
+        "appId": "14388434-6679-4f88-8e80-6d3a60eae484",
+        "dimension": "process",
+        "raw": "BBM PM P2F Handling the unconstrained demand plan L3",
+        "targetId": "M.P2F.010.040.090",
+        "appSnapshot": "[\"14388434-6679-4f88-8e80-6d3a60eae484\",\"VMCN_iSCMP: Intelligent Supply Chain management platform\",\"VM\",\"VM-CN\",\"Application definition: Applications are IT solutions, which provide data and processes to users.  \",\"B.06.02 Supply Chain (Logistics) Planning \\nfor Demand-Driven Fulfillment;B.06.02.10 Customer Order Planning;B.06.02.03 Demand Planning;B.06.02.05 Production Planning & Production Control;B.06.02.06 Procurement Planning;B.06.02.08 Inventory Planning\",\"BBM PM P2F Check availability of relevant data for Demand Validation L3;BBM PM P2F Demand to Plan L1;BBM PM P2F Execute finite heuristic L3;BBM PM P2F Execute infinite heuristic L3;BBM PM P2F Execute optimizer and review results L3;BBM PM P2F Execute system forecast L3;BBM PM P2F Finalize Demand Validation L3;BBM PM P2F Forecast Execution L2;BBM PM P2F Handling the unconstrained demand plan L3;BBM PM P2F Identify actual deviations L3;BBM PM P2F Identify forecast deviations L3;BBM PM P2F Manage External Customer Collaboration L3;BBM PM P2F Plan rough-cut internal capacity L3;BBM PM P2F Plan to Fulfill L0;BBM PM P2F Plan to Supply L1;BBM PM P2F Plan vendor capacity L3;BBM PM P2F Review & consider input from business plan L3;BBM PM P2F Review & consider lifecycle plan L3;BBM PM P2F Review & consider promotion plan L3;BBM PM P2F Review & consider sales plan L3;BBM PM P2F Review and consider project demands L3;BBM PM P2F Review and resolve demand alerts L3;BBM PM P2F Review and resolve supply planning alerts L3;BBM PM P2F Review and update supply plan L3;BBM PM P2F Review system forecast L3;BBM PM P2F Sales and Operations Planning Demand Validation L2;BBM PM P2F Sales and Operations Planning L1;BBM PM P2F Supply Planning L2;BBM PM P2F Unconstrained Demand Plan Creation L2;BBM PM P2F Update and create receipt elements L3;BBM PM P2F Validate deviations L3\",\"active\"]",
+        "taxonomySnapshot": "[{\"id\":\"M.P2F\",\"label\":\"Plan to Fulfill\",\"level\":\"L0\",\"chain\":\"Plan to Fulfill (P2F)\",\"ambiguous\":false},{\"id\":\"M.P2F.010\",\"label\":\"Demand to Plan\",\"level\":\"L1\",\"chain\":\"Plan to Fulfill (P2F)\",\"ambiguous\":false},{\"id\":\"M.P2F.010.040\",\"label\":\"Unconstrained Demand Plan Creation\",\"level\":\"L2\",\"chain\":\"Plan to Fulfill (P2F)\",\"ambiguous\":false},{\"id\":\"M.P2F.010.040.090\",\"label\":\"Handle Unconstrained Demand Plan\",\"level\":\"L3\",\"chain\":\"Plan to Fulfill (P2F)\",\"ambiguous\":false}]",
+        "reviewKey": "[\"流程匹配\",[\"14388434-6679-4f88-8e80-6d3a60eae484\"],\"\",\"BBM PM P2F Handling the unconstrained demand plan L3\",\"标准表未找到唯一对应项\"]",
+        "reviewer": "Codex (carried over 2026-11-12)",
+        "reason": "Carried over from mapping 256c0f80a532579ff6bad571ea176325 by Owner decision carried over · import 2026-11-02 (Carried over from the mapping by Taxonomy audit (Same P2F chain and L3 action; source Handling the unconstrained demand plan matches the unique standard Handle Unconstrained Demand Plan in the Demand Plan Creation branch.). The Processes record is unchanged in the LeanIX export of 2026-11-02; the mapping needed re-confirmation only because other fields of this application changed.). Application ID, name, complete Processes field, source process and standard target/ancestor snapshot are unchanged in the LeanIX export of 2026-11-12; only Business Capabilities changed.",
+        "createdAt": "2026-11-12T07:12:12.235Z",
         "revokedAt": ""
       }
     ],

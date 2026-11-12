@@ -128,10 +128,12 @@ test('BBM_SWS records matched by code are not listed in Process names to fix in 
 
 test('V21: plain words only, and returning users are told once, with no version number',()=>{
  for(const file of ['process-record-kind.mjs','process-name-fixes.mjs'])assert.doesNotMatch(read(file).replace(/\/\/[^\n]*/g,''),/steward|catalogue|taxonomy/i,file);
- assert.equal(WHATS_NEW.id,'2026-11-12');
+ // 2026-11-12 data: the later data release has its own notice, including for users who dismissed V21 earlier that day.
+ assert.equal(WHATS_NEW.id,'2026-11-12-2');
  const seen=id=>{const map=new Map([['logistics-portfolio:update-seen',id]]);return {get length(){return map.size;},key:i=>[...map.keys()][i]??null,getItem:k=>map.has(k)?map.get(k):null,setItem:(k,v)=>map.set(k,String(v))};};
  assert.equal(updateNoticeDue(seen('2026-11-02-2')),true,'someone who closed the V20 notice sees this one');
- assert.equal(updateNoticeDue(seen('2026-11-12')),false);
+ assert.equal(updateNoticeDue(seen('2026-11-12')),true);
+ assert.equal(updateNoticeDue(seen('2026-11-12-2')),false);
  const html=updateNoticeHTML(s=>String(s));
  assert.match(html,/The tool was updated on 12 November 2026\./);
  assert.match(html,/<li>A process name the tool cannot read is now called "Process name not in the standard form"\./);
