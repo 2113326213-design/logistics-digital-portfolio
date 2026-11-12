@@ -113,6 +113,19 @@ test('V21 (B): every such record of the Overview plants, with what is wrong and 
  assert(read('interface.css').includes('.name-compare{')&&read('interface.css').includes('.name-fixes-table{'));
 });
 
+test('BBM_SWS records matched by code are not listed in Process names to fix in LeanIX',()=>{
+ // 2026-11-12 export compatibility: both numbered records and a Level 0 chain can carry the BBM_SWS prefix.
+ const raw=['BBM_SWS.P2F Plan to Fulfill','BBM_SWS.P2F.040.090.030 Monitoring Dashboards'];
+ const updated=buildModel(workspaceData({...data,apps:[...data.apps,{ID:'bbm-sws-test',Name:'BBM SWS test',Entity:'Plant A',Division:'PS','Business Capabilities':'B.06.5.1 Inbound Management and Receiving',Processes:raw.join(';')}]}));
+ const app=updated.apps.find(a=>a.id==='bbm-sws-test'),report=maintenanceReport(updated,{},'process');
+ assert.deepEqual(app.processMatches.map(m=>[m.id,m.via]),[['M.P2F','code'],['M.P2F.040.090.030','code']]);
+ assert.deepEqual(report.records.get(app.id).map(r=>[r.level,r.valid]),[[0,true],[3,true]]);
+ assert(!processIssues(updated,app).some(i=>raw.includes(i.raw)));
+ assert.deepEqual(nameFixRows(updated,report).map(r=>[r.application,r.record]),EIGHT,'the existing eight unresolved records stay; BBM_SWS adds none');
+ for(const record of raw)assert(!nameFixCSV(updated,report).includes(record));
+ assert.equal(noLevelRecord(updated,'BBM_SWS.P2F A different name').label,NO_LEVEL_LABEL,'an unmatched BBM_SWS name still has the standard code form');
+});
+
 test('V21: plain words only, and returning users are told once, with no version number',()=>{
  for(const file of ['process-record-kind.mjs','process-name-fixes.mjs'])assert.doesNotMatch(read(file).replace(/\/\/[^\n]*/g,''),/steward|catalogue|taxonomy/i,file);
  assert.equal(WHATS_NEW.id,'2026-11-12');

@@ -32,6 +32,35 @@ test('a different name, or a number the Signavio list does not have, is not matc
  }
 });
 
+// 2026-11-12 export compatibility: BBM_SWS replaces ETAS and also writes the Level 0 chain code without numbers.
+test('BBM_SWS numbers keep the ETAS code-and-name rule, including normalised names and similarity evidence',()=>{
+ const model=withProcesses('BBM_SWS.I2D.010.050.010 Putaway of Automated Goods Receipt (AGR);bbm_sws.i2d.010.050.020 putaway to  warehouse destination');
+ const app=model.apps.find(a=>a.id==='etas-test');
+ assert.deepEqual(app.processMatches.map(m=>[m.id,m.via]),[['M.I2D.010.050.010','code'],['M.I2D.010.050.020','code']]);
+ assert.deepEqual(app.inLeanix,[]);
+ assert.deepEqual(records(model).map(r=>[r.level,r.valid]),[[3,true],[3,true]]);
+ assert(!processIssues(model,app).some(i=>/BBM_SWS/i.test(i.raw||'')));
+ assert.deepEqual(createSimilarity(model,'process').scopes.get('etas-test').known.map(n=>n.id).sort(),['M.I2D.010.050.010','M.I2D.010.050.020']);
+});
+
+test('a BBM_SWS or ETAS chain code without numbers matches Level 0 only when its name also matches',()=>{
+ for(const prefix of ['BBM_SWS','ETAS']){
+  const raw=`${prefix}.P2F Plan to Fulfill`,model=withProcesses(raw),app=model.apps.find(a=>a.id==='etas-test');
+  assert.deepEqual(app.processMatches,[{raw,id:'M.P2F',via:'code'}]);
+  assert.deepEqual(records(model).map(r=>[r.level,r.valid]),[[0,true]]);
+  assert(!processIssues(model,app).some(i=>i.raw===raw));
+ }
+});
+
+test('BBM_SWS records with a different name or an unknown code remain unmatched and keep the missing-level issue',()=>{
+ for(const raw of ['BBM_SWS.I2D.010.050.010 Something else','BBM_SWS.I2D.999.999.999 Putaway of Automated Goods Receipt (AGR)','BBM_SWS.P2F Something else','BBM_SWS.UNKNOWN Plan to Fulfill']){
+  const model=withProcesses(raw),app=model.apps.find(a=>a.id==='etas-test');
+  assert.deepEqual(app.processMatches,[],raw);
+  assert.deepEqual(app.inLeanix,[],raw);
+  assert.deepEqual(processIssues(model,app).filter(i=>i.raw===raw).map(i=>i.label),['Process level not specified'],raw);
+ }
+});
+
 test('the bundled data: EDCN AWS records its 7 processes with ETAS numbers, all matched at Level 3',()=>{
  const data=base(),model=buildModel(data),app=model.apps.find(a=>a.Name==='EDCN AWS');
  const etas=app.rawProcess.filter(raw=>/^ETAS\./.test(raw));
